@@ -42,6 +42,7 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+class QCheckBox;
 class SMESHGUI;
 class SMESH_Actor;
 
@@ -88,6 +89,7 @@ private:
     QButtonGroup* GroupConstructors;
     QRadioButton* RadioButton1;
     QRadioButton* RadioButton2;
+    QCheckBox* Preview;
     QGroupBox* GroupButtons;
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
@@ -109,6 +111,7 @@ private:
     private slots:
 
     void ConstructorsClicked(int constructorId);
+    void ClickOnPreview(bool theToggled);
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
