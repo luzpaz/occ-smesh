@@ -104,7 +104,8 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_PatternUtils.cxx \
 		SMESHGUI_HypothesesUtils.cxx \
 		SMESHGUI_PrecisionDlg.cxx \
-		SMESHGUI_VTKUtils.cxx 
+		SMESHGUI_VTKUtils.cxx \
+		SMESHGUI_CreatePolyhedralVolumeDlg.cxx 
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -146,7 +147,8 @@ LIB_MOC = \
 		SMESHGUI_SymmetryDlg.h \
 		SMESHGUI_SewingDlg.h \
 		SMESHGUI_PrecisionDlg.h \
-		SMESHGUI_MergeNodesDlg.h
+		SMESHGUI_MergeNodesDlg.h \
+		SMESHGUI_CreatePolyhedralVolumeDlg.h
     
 LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 GEOM_Gen.idl \

@@ -368,6 +368,10 @@ msgstr "Remove Elements"
 msgid "SMESH_ID_NODES"
 msgstr "Id Nodes"
 
+#Id Faces
+msgid "SMESH_ID_FACES"
+msgstr "Id Faces"
+
 #Nodes
 msgid "SMESH_NODES"
 msgstr "Nodes"
@@ -456,6 +460,9 @@ msgstr "Add Polyedre"
 msgid "SMESH_ADD_HEXAS"
 msgstr "Add Hexahedron"
 
+#Create Polyhedral Volume
+msgid "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE"
+msgstr "Create Polyhedral Volume"
 
 #Angle
 msgid "SMESH_ANGLE"
@@ -1781,6 +1788,11 @@ msgstr "Do not use"
 
 msgid "NON_SMESH_OBJECTS_SELECTED"
 msgstr "There are objects selected which do not belong to %1 component."
+
+#-------------------------------------------------------------------------
+
+msgid "SMESHGUI_CreatePolyhedralVolumeDlg::FACES_BY_NODES"
+msgstr "Faces by nodes"
 
 
 

@@ -62,6 +62,7 @@
 #include "SMESHGUI_MergeNodesDlg.h"
 #include "SMESHGUI_MeshPatternDlg.h"
 #include "SMESHGUI_PrecisionDlg.h"
+#include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 
 #include "VTKViewer_ViewFrame.h"
 #include "VTKViewer_InteractorStyleSALOME.h"
@@ -1918,7 +1919,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
   case 4023:					// POLYGON
   case 4031:					// TETRA
   case 4032:					// HEXA
-  case 4033:					// POLYHEDRON
+    //case 4033:					// POLYHEDRON
     {
       if(checkLock(aStudy)) break;
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
@@ -1950,7 +1951,21 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       }
       break;
     }
-
+  case 4033:					// POLYHEDRON
+    {
+      if(checkLock(aStudy)) break;
+      if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
+	EmitSignalDeactivateDialog();
+	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
+	new SMESHGUI_CreatePolyhedralVolumeDlg(parent, "", Sel);
+      }
+      else {
+	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
+			      tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
+			      tr("SMESH_BUT_OK"));
+      }
+      break;
+    }
   case 4041:					// REMOVES NODES
     {
       if(checkLock(aStudy)) break;
