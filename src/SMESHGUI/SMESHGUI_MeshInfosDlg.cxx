@@ -42,6 +42,7 @@ using namespace std;
 #include <qwidgetstack.h>
 #include <qlayout.h>
 #include <qmap.h>
+#include <qpushbutton.h>
 
 #define COLONIZE( str )   ( QString( str ).contains( ":" ) > 0 ? QString( str ) : QString( str ) + " :"  )
 
