@@ -101,7 +101,7 @@ void DriverUNV_W_SMDS_Mesh::Write()
 	fprintf(myFileId, "%s\n", sUNV_SEPARATOR);
 	fprintf(myFileId, "%s\n", sNODE_UNV_ID);
 
-	SMDS_Iterator<const SMDS_MeshNode *> * itNodes=myMesh->nodesIterator();
+	SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
 	while(itNodes->more())
 	{
 		const SMDS_MeshNode * node = itNodes->next();
@@ -110,7 +110,6 @@ void DriverUNV_W_SMDS_Mesh::Write()
 		fprintf(myFileId, "%25.16E%25.16E%25.16E\n", node->X(), node->Y(),
 			node->Z());
 	}
-	delete itNodes;
 	fprintf(myFileId, "%s\n", sUNV_SEPARATOR);
 
   /****************************************************************************
@@ -124,11 +123,11 @@ void DriverUNV_W_SMDS_Mesh::Write()
 	fprintf(myFileId, "%s\n", sUNV_SEPARATOR);
 	fprintf(myFileId, "%s\n", sELT_UNV_ID);
 
-	SMDS_Iterator<const SMDS_MeshEdge *> * itEdges=myMesh->edgesIterator();
+	SMDS_EdgeIteratorPtr itEdges=myMesh->edgesIterator();
 	while(itEdges->more())
 	{
 		const SMDS_MeshElement * elem = itEdges->next();
-		SMDS_Iterator<const SMDS_MeshElement*> *itn=elem->nodesIterator();
+		SMDS_ElemIteratorPtr itn=elem->nodesIterator();
 
 		switch (elem->NbNodes())
 		{
@@ -149,11 +148,9 @@ void DriverUNV_W_SMDS_Mesh::Write()
 
 			break;
 		}
-		delete itn;
 	}
-	delete itEdges;
 
-	SMDS_Iterator<const SMDS_MeshFace*> * itFaces=myMesh->facesIterator();
+	SMDS_FaceIteratorPtr itFaces=myMesh->facesIterator();
 	while(itFaces->more())
 	{
 		const SMDS_MeshElement * elem = itFaces->next();
@@ -184,15 +181,13 @@ void DriverUNV_W_SMDS_Mesh::Write()
 			fprintf(myFileId, "element not registered\n");
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement*> *itn=elem->nodesIterator();
+		SMDS_ElemIteratorPtr itn=elem->nodesIterator();
 		while(itn->more()) fprintf(myFileId, "%10d", itn->next()->GetID());
-		delete itn;
 
 		fprintf(myFileId, "\n");
 	}
-	delete itFaces;
 
-	SMDS_Iterator<const SMDS_MeshVolume*> * itVolumes=myMesh->volumesIterator();
+	SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
 	while(itVolumes->more())
 	{
 		const SMDS_MeshElement * elem = itVolumes->next();
@@ -216,13 +211,11 @@ void DriverUNV_W_SMDS_Mesh::Write()
 			break;
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement*> *itn=elem->nodesIterator();
+		SMDS_ElemIteratorPtr itn=elem->nodesIterator();
 		while(itn->more()) fprintf(myFileId, "%10d", itn->next()->GetID());
-		delete itn;
 
 		fprintf(myFileId, "\n");
 	}
-	delete itVolumes;
 
 	fprintf(myFileId, "%s\n", sUNV_SEPARATOR);
 

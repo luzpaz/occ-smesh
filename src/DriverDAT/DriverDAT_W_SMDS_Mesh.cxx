@@ -111,7 +111,7 @@ void DriverDAT_W_SMDS_Mesh::Write()
 	fprintf(stdout, "(* NOEUDS DU MAILLAGE : *)\n");
 	fprintf(stdout, "(************************)\n");
 
-	SMDS_Iterator<const SMDS_MeshNode *> * itNodes=myMesh->nodesIterator();
+	SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
 	while(itNodes->more())
 	{		
 		const SMDS_MeshNode * node = itNodes->next();
@@ -127,7 +127,7 @@ void DriverDAT_W_SMDS_Mesh::Write()
 	fprintf(stdout, "(**************************)");
 	/* Ecriture des connectivites, noms, numeros des mailles */
 
-	SMDS_Iterator<const SMDS_MeshEdge *> * itEdges=myMesh->edgesIterator();
+	SMDS_EdgeIteratorPtr itEdges=myMesh->edgesIterator();
 	while(itEdges->more())
 	{
 		const SMDS_MeshElement * elem = itEdges->next();
@@ -146,13 +146,13 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		}
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement *> * it=elem->nodesIterator();
+		SMDS_ElemIteratorPtr it=elem->nodesIterator();
 		while(it->more()) fprintf(myFileId, "%d ", it->next()->GetID());
 
 		fprintf(myFileId, "\n");
 	}
 
-	SMDS_Iterator<const SMDS_MeshFace *> * itFaces=myMesh->facesIterator();
+	SMDS_FaceIteratorPtr itFaces=myMesh->facesIterator();
 	while(itFaces->more())
 	{
 		const SMDS_MeshElement * elem = itFaces->next();
@@ -176,13 +176,13 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		}
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement *> * it=elem->nodesIterator();
+		SMDS_ElemIteratorPtr it=elem->nodesIterator();
 		while(it->more()) fprintf(myFileId, "%d ", it->next()->GetID());
 
 		fprintf(myFileId, "\n");
 	}
 
-	SMDS_Iterator<const SMDS_MeshVolume *> * itVolumes=myMesh->volumesIterator();
+	SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
 	while(itVolumes->more())
 	{
 		const SMDS_MeshElement * elem = itVolumes->next();
@@ -196,7 +196,7 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		}
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement *> * it=elem->nodesIterator();
+		SMDS_ElemIteratorPtr it=elem->nodesIterator();
 		while(it->more()) fprintf(myFileId, "%d ", it->next()->GetID());
 
 		fprintf(myFileId, "\n");
