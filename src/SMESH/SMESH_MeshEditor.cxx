@@ -1593,6 +1593,8 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
     SMDS_MeshElement* aNewElem = 0;
     switch ( nbNodes )
     {
+    case 0:
+      return;
     case 1: { // NODE
       if ( nbSame == 0 )
         aNewElem = aMesh->AddEdge( prevNod[ 0 ], nextNod[ 0 ] );
@@ -1655,8 +1657,31 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
       }
       break;
     }
-    default:
-      return;
+    default: {
+      // realized for extrusion only
+      vector<const SMDS_MeshNode*> polyedre_nodes (nbNodes*2 + 4*nbNodes);
+      vector<int> quantities (nbNodes + 2);
+
+      quantities[0] = nbNodes; // bottom of prism
+      for (int inode = 0; inode < nbNodes; inode++) {
+        polyedre_nodes[inode] = prevNod[inode];
+      }
+
+      quantities[1] = nbNodes; // top of prism
+      for (int inode = 0; inode < nbNodes; inode++) {
+        polyedre_nodes[nbNodes + inode] = nextNod[inode];
+      }
+
+      for (int iface = 0; iface < nbNodes; iface++) {
+        quantities[iface + 2] = 4;
+        int inextface = (iface == nbNodes - 1) ? 0 : iface + 1;
+        polyedre_nodes[2*nbNodes + 4*iface + 0] = prevNod[iface];
+        polyedre_nodes[2*nbNodes + 4*iface + 1] = prevNod[inextface];
+        polyedre_nodes[2*nbNodes + 4*iface + 2] = nextNod[inextface];
+        polyedre_nodes[2*nbNodes + 4*iface + 3] = nextNod[iface];
+      }
+      aNewElem = aMesh->AddPolyhedralVolume (polyedre_nodes, quantities);
+    }
     }
     if ( aNewElem )
       newElems.push_back( aNewElem );
@@ -1790,6 +1815,16 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
               aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ] ); break;
             case 4:
               aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] ); break;
+            default:
+              {
+                int nbPolygonNodes = vTool.NbFaceNodes( *ind );
+                vector<const SMDS_MeshNode*> polygon_nodes (nbPolygonNodes);
+                for (int inode = 0; inode < nbPolygonNodes; inode++) {
+                  polygon_nodes[inode] = nodes[inode];
+                }
+                aMesh->AddPolygonalFace(polygon_nodes);
+                break;
+              }
             }
           }
           // go to the next volume
@@ -1817,6 +1852,16 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
         if (!hasFreeLinks ||
             !aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ]))
           aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] );
+        break;
+      default:
+        {
+          int nbPolygonNodes = lastVol.NbFaceNodes( iF );
+          vector<const SMDS_MeshNode*> polygon_nodes (nbPolygonNodes);
+          for (int inode = 0; inode < nbPolygonNodes; inode++) {
+            polygon_nodes[inode] = nodes[inode];
+          }
+          aMesh->AddPolygonalFace(polygon_nodes);
+        }
         break;
       }
     }
