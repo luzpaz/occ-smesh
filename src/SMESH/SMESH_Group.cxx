@@ -35,12 +35,15 @@
  */
 //=============================================================================
 
-SMESH_Group::SMESH_Group (const SMESH_Mesh*         theMesh,
+SMESH_Group::SMESH_Group (int                       theID,
+                          const SMESH_Mesh*         theMesh,
                           const SMDSAbs_ElementType theType,
                           const char*               theName)
      : myName(theName)
 {
-  myGroupDS = new SMESHDS_Group (const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(), theType);
+  myGroupDS = new SMESHDS_Group (theID,
+                                 const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
+                                 theType);
 }
 
 //=============================================================================

@@ -37,8 +37,11 @@ class SMESHDS_Group : public SMDS_MeshGroup
 {
  public:
 
-  SMESHDS_Group (const SMESHDS_Mesh*       theMesh,
+  SMESHDS_Group (const int                 theID,
+                 const SMESHDS_Mesh*       theMesh,
                  const SMDSAbs_ElementType theType);
+
+  int GetID() const { return myID; }
 
   void SetStoreName (const char* theName)
   { myStoreName = theName; }
@@ -63,9 +66,10 @@ class SMESHDS_Group : public SMDS_MeshGroup
 
   const SMDS_MeshElement* findInMesh (const int theID) const;
 
-  string myStoreName;
-  int    myCurIndex;
-  int    myCurID;
+  int         myID;
+  std::string myStoreName;
+  int         myCurIndex;
+  int         myCurID;
 
 };
 

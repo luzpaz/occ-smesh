@@ -40,7 +40,6 @@
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
-#include CORBA_SERVER_HEADER(GEOM_Shape)
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 
 class QGroupBox;
@@ -63,7 +62,7 @@ public:
 
 protected:
     void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;
+    void enterEvent( QEvent * ) ;
 
 private:
     void Init( SALOME_Selection* Sel ) ;
@@ -74,7 +73,7 @@ private:
     SMESHGUI*                     mySMESHGUI ;
     SALOME_Selection*             mySelection ;
              
-    GEOM::GEOM_Shape_var          myGeomShape ;
+    GEOM::GEOM_Object_var         myGeomShape ;
     QLineEdit*                    myEditCurrentArgument; 
 
     Handle(SALOME_TypeFilter)     myGeomFilter;

@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -63,19 +62,16 @@ using namespace std;
 
 #include "SMESHDS_Document.hxx"
 #include "SMESHDS_Group.hxx"
-#include "SMESH_topo.hxx"
 #include "SMESH_Group.hxx"
+
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
-#include "SMESH_Filter_i.hxx"
 
-#include "Document_Reader.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverMED_R_SMESHDS_Document.h"
-#include "DriverUNV_R_SMESHDS_Document.h"
-#include "DriverDAT_R_SMESHDS_Document.h"
 
 #include "SALOMEDS_Tool.hxx"
 #include "SALOME_NamingService.hxx"
@@ -89,8 +85,17 @@ using namespace std;
 #include "Utils_ExceptHandlers.hxx"
 
 #include <map>
+#include <boost/filesystem/path.hpp>
+
+using namespace std;
 
 #define NUM_TMP_FILES 2
+
+#ifdef _DEBUG_
+static int MYDEBUG = 0;
+#else
+static int MYDEBUG = 0;
+#endif
 
 // Tags definition ===========================================================
 // Top level
@@ -103,13 +108,15 @@ long Tag_RefOnAppliedAlgorithms = 3; // applied algorithms root
 // Mesh only
 long Tag_SubMeshOnVertex        = 4; // sub-meshes roots by type
 long Tag_SubMeshOnEdge          = 5; // ...
-long Tag_SubMeshOnFace          = 6; // ...
-long Tag_SubMeshOnSolid         = 7; // ...
-long Tag_SubMeshOnCompound      = 8; // ...
-long Tag_NodeGroups             = 9; // Group roots by type
-long Tag_EdgeGroups             = 10; // ...
-long Tag_FaceGroups             = 11; // ...
-long Tag_VolumeGroups           = 12; // ...
+long Tag_SubMeshOnWire          = 6; // ...
+long Tag_SubMeshOnFace          = 7; // ...
+long Tag_SubMeshOnShell         = 8; // ...
+long Tag_SubMeshOnSolid         = 9; // ...
+long Tag_SubMeshOnCompound      = 10; // ...
+long Tag_NodeGroups             = 11; // Group roots by type
+long Tag_EdgeGroups             = 12; // ...
+long Tag_FaceGroups             = 13; // ...
+long Tag_VolumeGroups           = 14; // ...
 // ===========================================================================
 
 // Static variables definition
@@ -117,6 +124,7 @@ CORBA::ORB_var          SMESH_Gen_i::myOrb;
 PortableServer::POA_var SMESH_Gen_i::myPoa;
 SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
 SALOME_LifeCycleCORBA*  SMESH_Gen_i::myLCC = NULL;
+SMESH_Gen_i*            SMESH_Gen_i::mySMESHGen = NULL;
 
 //=============================================================================
 /*!
@@ -201,6 +209,16 @@ long SMESH_Gen_i::GetSubMeshOnCompoundTag()
   return Tag_SubMeshOnCompound;
 }
 
+long SMESH_Gen_i::GetSubMeshOnWireTag()
+{
+  return Tag_SubMeshOnWire;
+}
+
+long SMESH_Gen_i::GetSubMeshOnShellTag()
+{
+  return Tag_SubMeshOnShell;
+}
+
 long SMESH_Gen_i::GetNodeGroupsTag()
 {
   return Tag_NodeGroups;
@@ -238,7 +256,7 @@ PortableServer::ServantBase_var SMESH_Gen_i::GetServant( CORBA::Object_ptr theOb
     return aServant;
   } 
   catch (...) {
-    MESSAGE( "GetServant - Unknown exception was caught!!!" ); 
+    INFOS( "GetServant - Unknown exception was caught!!!" ); 
     return NULL;
   }
 }
@@ -265,7 +283,7 @@ CORBA::Object_var SMESH_Gen_i::SObjectToObject( SALOMEDS::SObject_ptr theSObject
 	}
     }
     catch( ... ) {
-      MESSAGE( "SObjectToObject - Unknown exception was caught!!!" );
+      INFOS( "SObjectToObject - Unknown exception was caught!!!" );
     }
   }
   return anObj;
@@ -327,7 +345,7 @@ GEOM::GEOM_Gen_ptr SMESH_Gen_i::GetGeomEngine() {
 
 SMESH_Gen_i::SMESH_Gen_i()
 {
-  MESSAGE( "SMESH_Gen_i::SMESH_Gen_i : default constructor" );
+  INFOS( "SMESH_Gen_i::SMESH_Gen_i : default constructor" );
 }
 
 //=============================================================================
@@ -345,7 +363,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
                           const char*               interfaceName )
      : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
 {
-  MESSAGE( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
+  INFOS( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
 
   myOrb = CORBA::ORB::_duplicate(orb);
   myPoa = PortableServer::POA::_duplicate(poa);
@@ -354,6 +372,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   _id = myPoa->activate_object( _thisObj );
   
   myShapeReader = NULL;  // shape reader
+  mySMESHGen = this;
 }
 
 //=============================================================================
@@ -366,7 +385,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 
 SMESH_Gen_i::~SMESH_Gen_i()
 {
-  MESSAGE( "SMESH_Gen_i::~SMESH_Gen_i" );
+  INFOS( "SMESH_Gen_i::~SMESH_Gen_i" );
 
   // delete hypothesis creators
   map<string, GenericHypothesisCreator_i*>::iterator itHyp;
@@ -389,21 +408,6 @@ SMESH_Gen_i::~SMESH_Gen_i()
   
 //=============================================================================
 /*!
- *  SMESH_Gen_i::CreateFilterManager
- *
- *  Create filter manager
- */
-//=============================================================================
-
-SMESH::FilterManager_ptr SMESH_Gen_i::CreateFilterManager()
-{
-  SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
-  SMESH::FilterManager_var anObj = aFilter->_this();
-  return anObj._retn();
-}
-
-//=============================================================================
-/*!
  *  SMESH_Gen_i::createHypothesis
  *
  *  Create hypothesis of given type
@@ -414,7 +418,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
      throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "Create Hypothesis <" << theHypName << "> from " << theLibName);
+  if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << theLibName);
 
   // get study context
   StudyContext* myStudyContext = GetCurrentStudyContext();
@@ -429,7 +433,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     if (myHypCreatorMap.find(string(theHypName)) == myHypCreatorMap.end())
     {
       // load plugin library
-      MESSAGE("Loading server meshers plugin library ...");
+      if(MYDEBUG) MESSAGE("Loading server meshers plugin library ...");
       void* libHandle = dlopen (theLibName, RTLD_LAZY);
       if (!libHandle)
       {
@@ -439,7 +443,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
       }
 
       // get method, returning hypothesis creator
-      MESSAGE("Find GetHypothesisCreator() method ...");
+      if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
       typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char* theHypName);
       GetHypothesisCreator procHandle =
         (GetHypothesisCreator)dlsym( libHandle, "GetHypothesisCreator" );
@@ -450,7 +454,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
       }
 
       // get hypothesis creator
-      MESSAGE("Get Hypothesis Creator for " << theHypName);
+      if(MYDEBUG) MESSAGE("Get Hypothesis Creator for " << theHypName);
       GenericHypothesisCreator_i* aCreator = procHandle(theHypName);
       if (!aCreator)
       {
@@ -462,7 +466,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     }
 
     // create a new hypothesis object, store its ref. in studyContext
-    MESSAGE("Create Hypothesis " << theHypName);
+    if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
     myHypothesis_i =
       myHypCreatorMap[string(theHypName)]->Create
         (myPoa, myCurrentStudy->StudyId(), &myGen);
@@ -482,7 +486,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   hypothesis_i = SMESH::SMESH_Hypothesis::_narrow( myHypothesis_i->_this() );
   string iorString = GetORB()->object_to_string( hypothesis_i );
   int nextId = myStudyContext->addObject( iorString );
-  MESSAGE( "Add hypo to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+  if(MYDEBUG) MESSAGE( "Add hypo to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
 
   return hypothesis_i._retn();
 }
@@ -498,7 +502,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::createMesh" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::createMesh" );
 
   // get current study
   StudyContext* myStudyContext = GetCurrentStudyContext();
@@ -516,7 +520,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     SMESH::SMESH_Mesh_var mesh = meshServant->_this();
     string iorString = GetORB()->object_to_string( mesh );
     int nextId = myStudyContext->addObject( iorString );
-    MESSAGE( "Add mesh to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+    if(MYDEBUG) MESSAGE( "Add mesh to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
     return mesh._retn();
   }
   catch (SALOME_Exception& S_ex) {
@@ -551,17 +555,19 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
 
 void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 {
-  MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
   int studyId = myCurrentStudy->StudyId();
-  MESSAGE( "SMESH_Gen_i::SetCurrentStudy: study Id = " << studyId );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SetCurrentStudy: study Id = " << studyId );
   if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() ) {
     myStudyContextMap[ studyId ] = new StudyContext;      
   }
   // set current study for geom engine
+  /*
   if ( !CORBA::is_nil( GetGeomEngine() ) )
     GetGeomEngine()->GetCurrentStudy( myCurrentStudy->StudyId() );
+  */
 }
 
 //=============================================================================
@@ -574,7 +580,7 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 
 SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 {
-  MESSAGE( "SMESH_Gen_i::GetCurrentStudy: study Id = " << myCurrentStudy->StudyId() );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetCurrentStudy: study Id = " << myCurrentStudy->StudyId() );
   return SALOMEDS::Study::_duplicate( myCurrentStudy );
 }
 
@@ -624,11 +630,11 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
  */
 //=============================================================================
 
-SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Shape_ptr theShape )
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::CreateMesh" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMesh" );
   ASSERT( !CORBA::is_nil( myCurrentStudy ) );
   // create mesh
   SMESH::SMESH_Mesh_var mesh = this->createMesh();
@@ -639,10 +645,37 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Shape_ptr theShape )
   // set shape
   SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
   ASSERT( meshServant );
-  meshServant->SetShape( theShape );
+  meshServant->SetShape( theShapeObject );
   return mesh._retn();
 }
   
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CreateMeshFromUNV
+ *
+ *  Create mesh and import data from UNV file
+ */
+//=============================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromUNV" );
+  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
+
+  SMESH::SMESH_Mesh_var aMesh = createMesh();
+  string aFileName; // = boost::filesystem::path(theFileName).leaf();
+  // publish mesh in the study
+  if ( CanPublishInStudy( aMesh ) ) {
+    PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
+  }
+  SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
+  ASSERT( aServant );
+  aServant->ImportUNVFile( theFileName );
+  return aMesh._retn();
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMeshFromMED
@@ -656,42 +689,70 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
   ASSERT( !CORBA::is_nil( myCurrentStudy ) );
 
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( theFileName );
   myReader.SetMeshId( -1 );
-  list<string> aNames = myReader.GetMeshNames();
-
+  Driver_Mesh::Status aStatus;
+  list<string> aNames = myReader.GetMeshNames(aStatus);
   SMESH::mesh_array_var aResult = new SMESH::mesh_array();
-  aResult->length( aNames.size() );
-  int i = 0;
-
-  // Iterate through all meshes and create mesh objects
-  theStatus = SMESH::DRS_OK;
-  for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
-    // create mesh
-    SMESH::SMESH_Mesh_var mesh = createMesh();
+  theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+  if(theStatus == SMESH::DRS_OK){
+    aResult->length( aNames.size() );
+    int i = 0;
     
-    // publish mesh in the study
-    if ( CanPublishInStudy( mesh ) ) {
-      PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), mesh.in(), (*it).c_str() );
+    // Iterate through all meshes and create mesh objects
+    for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
+      // create mesh
+      SMESH::SMESH_Mesh_var mesh = createMesh();
+      
+      // publish mesh in the study
+      if ( CanPublishInStudy( mesh ) ) {
+	PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), mesh.in(), (*it).c_str() );
+      }
+      
+      // Read mesh data (groups are published automatically by ImportMEDFile())
+      SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
+      ASSERT( meshServant );
+      SMESH::DriverMED_ReadStatus status1 =
+	meshServant->ImportMEDFile( theFileName, (*it).c_str() );
+      if (status1 > theStatus)
+	theStatus = status1;
+      
+      aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
     }
-
-    // Read mesh data (groups are published automatically by ImportMEDFile())
-    SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
-    ASSERT( meshServant );
-    SMESH::DriverMED_ReadStatus status1 =
-      meshServant->ImportMEDFile( theFileName, (*it).c_str() );
-    if (status1 > theStatus)
-      theStatus = status1;
-
-    aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
   }
-
   return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CreateMeshFromSTL
+ *
+ *  Create mesh and import data from STL file
+ */
+//=============================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
+  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
+
+  SMESH::SMESH_Mesh_var aMesh = createMesh();
+  string aFileName; // = boost::filesystem::path(theFileName).leaf();
+  // publish mesh in the study
+  if ( CanPublishInStudy( aMesh ) ) {
+    PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
+  }
+  SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
+  ASSERT( aServant );
+  aServant->ImportSTLFile( theFileName );
+  return aMesh._retn();
 }
 
 //=============================================================================
@@ -703,14 +764,14 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
 //=============================================================================
 
 CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
-                                              GEOM::GEOM_Shape_ptr  theShape )
+                                              GEOM::GEOM_Object_ptr theShapeObject )
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::IsReadyToCompute" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::IsReadyToCompute" );
 
-  if ( CORBA::is_nil( theShape ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape reference", 
+  if ( CORBA::is_nil( theShapeObject ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", 
                                   SALOME::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
@@ -723,14 +784,14 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       // get local TopoDS_Shape
-      TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), theShape );
+      TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), theShapeObject );
       // call implementation
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       return myGen.CheckAlgoState( myLocMesh, myLocShape );
     }
   }
   catch ( SALOME_Exception& S_ex ) {
-    MESSAGE( "catch exception "<< S_ex.what() );
+    INFOS( "catch exception "<< S_ex.what() );
   }
   return false;
 }
@@ -743,53 +804,55 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Shape_ptr      theMainShape,
-					        const SMESH::shape_array& theListOfSubShape )
+SMESH::long_array* SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Object_ptr theMainShapeObject,
+					    const SMESH::object_array& theListOfSubShapeObject )
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::GetSubShapesId" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetSubShapesId" );
 
   SMESH::long_array_var shapesId = new SMESH::long_array;
   set<int> setId;
 
-  if ( CORBA::is_nil( theMainShape ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape reference",
+  if ( CORBA::is_nil( theMainShapeObject ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference",
                                   SALOME::BAD_PARAM );
 
   try
     {
-      if (! myShapeReader) myShapeReader = new GEOM_Client(GetContainerRef());
+      if ( !myShapeReader )
+	myShapeReader = new GEOM_Client( GetContainerRef() );
       ASSERT(myShapeReader);
-      TopoDS_Shape myMainShape  = GetShapeReader()->GetShape(GetGeomEngine(),theMainShape);
+      TopoDS_Shape myMainShape  = GetShapeReader()->GetShape(GetGeomEngine(),theMainShapeObject);
       TopTools_IndexedMapOfShape myIndexToShape;      
       TopExp::MapShapes(myMainShape,myIndexToShape);
 
-      for (int i=0; i<theListOfSubShape.length(); i++)
+      for ( int i = 0; i < theListOfSubShapeObject.length(); i++ )
 	{
-	  GEOM::GEOM_Shape_var aShape
-	    = GEOM::GEOM_Shape::_narrow(theListOfSubShape[i]);
-	  if (CORBA::is_nil(aShape))
-	    THROW_SALOME_CORBA_EXCEPTION("bad shape reference", \
-					 SALOME::BAD_PARAM);
-	  TopoDS_Shape locShape  = GetShapeReader()->GetShape(GetGeomEngine(),aShape);
+	  GEOM::GEOM_Object_var aShapeObject
+	    = GEOM::GEOM_Object::_narrow(theListOfSubShapeObject[i]);
+	  if ( CORBA::is_nil( aShapeObject ) )
+	    THROW_SALOME_CORBA_EXCEPTION ("bad shape object reference", \
+				        SALOME::BAD_PARAM );
+
+	  TopoDS_Shape locShape  = GetShapeReader()->GetShape(GetGeomEngine(),aShapeObject);
 	  for (TopExp_Explorer exp(locShape,TopAbs_FACE); exp.More(); exp.Next())
 	    {
 	      const TopoDS_Face& F = TopoDS::Face(exp.Current());
 	      setId.insert(myIndexToShape.FindIndex(F));
-	      SCRUTE(myIndexToShape.FindIndex(F));
+	      if(MYDEBUG) SCRUTE(myIndexToShape.FindIndex(F));
 	    }
 	  for (TopExp_Explorer exp(locShape,TopAbs_EDGE); exp.More(); exp.Next())
 	    {
 	      const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
 	      setId.insert(myIndexToShape.FindIndex(E));
-	      SCRUTE(myIndexToShape.FindIndex(E));
+	      if(MYDEBUG) SCRUTE(myIndexToShape.FindIndex(E));
 	    }
 	  for (TopExp_Explorer exp(locShape,TopAbs_VERTEX); exp.More(); exp.Next())
 	    {
 	      const TopoDS_Vertex& V = TopoDS::Vertex(exp.Current());
 	      setId.insert(myIndexToShape.FindIndex(V));
-	      SCRUTE(myIndexToShape.FindIndex(V));
+	      if(MYDEBUG) SCRUTE(myIndexToShape.FindIndex(V));
 	    }
 	}
       shapesId->length(setId.size());
@@ -797,9 +860,9 @@ SMESH::long_array* SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Shape_ptr      theMai
       int i=0;
       for (iind = setId.begin(); iind != setId.end(); iind++)
 	{
-	  SCRUTE((*iind));
+	  if(MYDEBUG) SCRUTE((*iind));
 	  shapesId[i] = (*iind);
-	  SCRUTE(shapesId[i]);
+	  if(MYDEBUG) SCRUTE(shapesId[i]);
 	  i++;
 	}
     }
@@ -820,14 +883,14 @@ SMESH::long_array* SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Shape_ptr      theMai
 //=============================================================================
 
 CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
-                                     GEOM::GEOM_Shape_ptr  theShape )
+                                     GEOM::GEOM_Object_ptr theShapeObject )
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::Compute" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Compute" );
 
-  if ( CORBA::is_nil( theShape ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape reference", 
+  if ( CORBA::is_nil( theShapeObject ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", 
                                   SALOME::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
@@ -840,17 +903,17 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       // get local TopoDS_Shape
-      TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), theShape );
+      TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), theShapeObject );
       // call implementarion compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       return myGen.Compute( myLocMesh, myLocShape);
     }
   }
   catch ( SALOME_Exception& S_ex ) {
-    MESSAGE( "Compute(): catch exception "<< S_ex.what() );
+    INFOS( "Compute(): catch exception "<< S_ex.what() );
   }
   catch ( ... ) {
-    MESSAGE( "Compute(): unknown exception " );
+    INFOS( "Compute(): unknown exception " );
   }
   return false;
 }
@@ -868,7 +931,13 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 {
   INFOS( "SMESH_Gen_i::Save" );
 
-  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
+//  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
+  // san -- in case <myCurrentStudy> differs from theComponent's study,
+  // use that of the component
+  if ( myCurrentStudy->_is_nil() || 
+       theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
+    SetCurrentStudy( theComponent->GetStudy() );
+
   StudyContext* myStudyContext = GetCurrentStudyContext();
   
   // Declare a byte stream
@@ -876,7 +945,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   
   // Obtain a temporary dir
   TCollection_AsciiString tmpDir =
-    ( isMultiFile ) ? TCollection_AsciiString( ( char* )theURL ) : SALOMEDS_Tool::GetTmpDir();
+    ( isMultiFile ) ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
 
   // Create a sequence of files processed
   SALOMEDS::ListOfFileNames_var aFileSeq = new SALOMEDS::ListOfFileNames;
@@ -884,7 +953,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile ) 
-    aStudyName = ( SALOMEDS_Tool::GetNameFromPath( myCurrentStudy->URL() ) );
+    aStudyName = ( (char*)SALOMEDS_Tool::GetNameFromPath( myCurrentStudy->URL() ).c_str() );
 
   // Set names of temporary files
   TCollection_AsciiString filename =
@@ -1163,8 +1232,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		  strcpy( name_meshgroup, "SubMeshes On Vertex" );
 		else if ( i == GetSubMeshOnEdgeTag() )
 		  strcpy( name_meshgroup, "SubMeshes On Edge" );
+		else if ( i == GetSubMeshOnWireTag() )
+		  strcpy( name_meshgroup, "SubMeshes On Wire" );
 		else if ( i == GetSubMeshOnFaceTag() )
 		  strcpy( name_meshgroup, "SubMeshes On Face" );
+		else if ( i == GetSubMeshOnShellTag() )
+		  strcpy( name_meshgroup, "SubMeshes On Shell" );
 		else if ( i == GetSubMeshOnSolidTag() )
 		  strcpy( name_meshgroup, "SubMeshes On Solid" );
 		else if ( i == GetSubMeshOnCompoundTag() )
@@ -1191,7 +1264,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
 //		    // Put submesh data to MED convertor
 //		    if ( myImpl->_mapSubMesh.find( mySubMesh->GetId() ) != myImpl->_mapSubMesh.end() ) {
-//		      MESSAGE( "VSR - SMESH_Gen_i::Save(): saving submesh with ID = "
+//		      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving submesh with ID = "
 //                              << mySubMesh->GetId() << " to MED file" );
 //		      ::SMESH_subMesh* aLocalSubmesh = myImpl->_mapSubMesh[mySubMesh->GetId()];
 //		      myWriter.AddSubMesh( aLocalSubmesh->GetSubMeshDS(), subid );
@@ -1337,7 +1410,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
 		    // Store the group contents into MED file
 		    if ( myLocMesh.GetGroup( myGroupImpl->GetLocalID() ) ) {
-		      MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
+		      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
                               << grpName << " to MED file" );
 		      SMESHDS_Group* aGrpDS = myLocMesh.GetGroup( myGroupImpl->GetLocalID() )->GetGroupDS();
 		      aGrpDS->SetStoreName( grpName );
@@ -1351,9 +1424,140 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	      }
 	    }
 
-	    // Flush current mesh information into MED file
-	    if ( strcmp( strHasData.c_str(), "1" ) == 0 ) 	      
-	      myWriter.Add();
+	    if ( strcmp( strHasData.c_str(), "1" ) == 0 )
+            {
+              // Flush current mesh information into MED file
+	      myWriter.Perform();
+
+
+              // Store node positions on sub-shapes (SMDS_Position):
+
+              aGroup = new HDFgroup( "Node Positions", aTopGroup );
+              aGroup->CreateOnDisk();
+
+              // in aGroup, create 5 datasets to contain:
+              // "Nodes on Edges" - ID of node on edge
+              // "Edge positions" - U parameter on node on edge
+              // "Nodes on Faces" - ID of node on face
+              // "Face U positions" - U parameter of node on face
+              // "Face V positions" - V parameter of node on face
+
+              // Find out nb of nodes on edges and faces
+              // Collect corresponing sub-meshes
+              int nbEdgeNodes = 0, nbFaceNodes = 0;
+              list<SMESHDS_SubMesh*> aEdgeSM, aFaceSM;
+              // loop on SMESHDS_SubMesh'es
+              const map<int,SMESHDS_SubMesh*>& aSubMeshes = mySMESHDSMesh->SubMeshes();
+              map<int,SMESHDS_SubMesh*>::const_iterator itSubM ( aSubMeshes.begin() );
+              for ( ; itSubM != aSubMeshes.end() ; itSubM++ )
+              {
+                SMESHDS_SubMesh* aSubMesh = (*itSubM).second;
+                int nbNodes = aSubMesh->NbNodes();
+                if ( nbNodes == 0 ) continue;
+                
+                int aShapeID = (*itSubM).first;
+                int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();
+                // write only SMDS_FacePosition and SMDS_EdgePosition
+                switch ( aShapeType ) {
+                case TopAbs_FACE:
+                  nbFaceNodes += nbNodes;
+                  aFaceSM.push_back( aSubMesh );
+                  break;
+                case TopAbs_EDGE:
+                  nbEdgeNodes += nbNodes;
+                  aEdgeSM.push_back( aSubMesh );
+                  break;
+                default:
+                  continue;
+                }
+              }
+              // Treat positions on edges or faces
+              for ( int onFace = 0; onFace < 2; onFace++ )
+              {
+                // Create arrays to store in datasets
+                int iNode = 0, nbNodes = ( onFace ? nbFaceNodes : nbEdgeNodes );
+                if (!nbNodes) continue;
+                int* aNodeIDs = new int [ nbNodes ];
+                double* aUPos = new double [ nbNodes ];
+                double* aVPos = ( onFace ? new double[ nbNodes ] : 0 );
+
+                // Fill arrays
+                // loop on sub-meshes
+                list<SMESHDS_SubMesh*> * pListSM = ( onFace ? &aFaceSM : &aEdgeSM );
+                list<SMESHDS_SubMesh*>::iterator itSM = pListSM->begin();
+                for ( ; itSM != pListSM->end(); itSM++ )
+                {
+                  SMESHDS_SubMesh* aSubMesh = (*itSM);
+
+                  SMDS_NodeIteratorPtr itNode = aSubMesh->GetNodes();
+                  // loop on nodes in aSubMesh
+                  while ( itNode->more() )
+                  {
+                    //node ID
+                    const SMDS_MeshNode* node = itNode->next();
+                    aNodeIDs [ iNode ] = node->GetID();
+
+                    // Position
+                    const SMDS_PositionPtr pos = node->GetPosition();
+                    if ( onFace ) { // on FACE
+                      const SMDS_FacePosition* fPos =
+                        dynamic_cast<const SMDS_FacePosition*>( pos.get() );
+                      if ( fPos ) {
+                        aUPos[ iNode ] = fPos->GetUParameter();
+                        aVPos[ iNode ] = fPos->GetVParameter();
+                        iNode++;
+                      }
+                      else
+                        nbNodes--;
+                    }
+                    else { // on EDGE
+                      const SMDS_EdgePosition* ePos =
+                        dynamic_cast<const SMDS_EdgePosition*>( pos.get() );
+                      if ( ePos ) {
+                        aUPos[ iNode ] = ePos->GetUParameter();
+                        iNode++;
+                      }
+                      else
+                        nbNodes--;
+                    }
+                  } // loop on nodes in aSubMesh
+                } // loop on sub-meshes
+
+                // Write datasets
+                if ( nbNodes )
+                {
+                  aSize[ 0 ] = nbNodes;
+                  // IDS
+                  string aDSName( onFace ? "Nodes on Faces" : "Nodes on Edges");
+                  aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_INT32, aSize, 1 );
+                  aDataset->CreateOnDisk();
+                  aDataset->WriteOnDisk( aNodeIDs );
+                  aDataset->CloseOnDisk();
+                  
+                  // U Positions
+                  aDSName = ( onFace ? "Face U positions" : "Edge positions");
+                  aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_FLOAT64, aSize, 1);
+                  aDataset->CreateOnDisk();
+                  aDataset->WriteOnDisk( aUPos );
+                  aDataset->CloseOnDisk();
+                  // V Positions
+                  if ( onFace ) {
+                    aDataset = new HDFdataset( "Face V positions", aGroup, HDF_FLOAT64, aSize, 1);
+                    aDataset->CreateOnDisk();
+                    aDataset->WriteOnDisk( aVPos );
+                    aDataset->CloseOnDisk();
+                  }
+                }
+                delete [] aNodeIDs;
+                delete [] aUPos;
+                if ( aVPos ) delete [] aVPos;
+
+              } // treat positions on edges or faces
+
+              // close "Node Positions" group
+              aGroup->CloseOnDisk(); 
+
+            } // if ( hasData )
 
 	    // close mesh HDF group
 	    aTopGroup->CloseOnDisk();
@@ -1389,7 +1593,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent,
 					   const char*              theURL,
 					   bool                     isMultiFile ) {
-  MESSAGE( "SMESH_Gen_i::SaveASCII" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SaveASCII" );
   SALOMEDS::TMPFile_var aStreamFile = Save( theComponent, theURL, isMultiFile );
   return aStreamFile._retn();
 }
@@ -1430,12 +1634,15 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 {
   INFOS( "SMESH_Gen_i::Load" );
 
-  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
+  if ( myCurrentStudy->_is_nil() || 
+       theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
+    SetCurrentStudy( theComponent->GetStudy() );
+
   StudyContext* myStudyContext = GetCurrentStudyContext();
   
   // Get temporary files location
   TCollection_AsciiString tmpDir =
-    isMultiFile ? TCollection_AsciiString( ( char* )theURL ) : SALOMEDS_Tool::GetTmpDir();
+    isMultiFile ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
 
   // Convert the stream into sequence of files to process
   SALOMEDS::ListOfFileNames_var aFileSeq = SALOMEDS_Tool::PutStreamToFiles( theStream,
@@ -1443,7 +1650,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 									    isMultiFile );
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile ) 
-    aStudyName = ( SALOMEDS_Tool::GetNameFromPath( myCurrentStudy->URL() ) );
+    aStudyName = ( (char*)SALOMEDS_Tool::GetNameFromPath( myCurrentStudy->URL() ).c_str() );
 
   // Set names of temporary files
   TCollection_AsciiString filename = tmpDir + aStudyName + TCollection_AsciiString( "_SMESH.hdf" );
@@ -1464,7 +1671,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     aFile->OpenOnDisk( HDF_RDONLY );
   }
   catch ( HDFexception ) {
-    MESSAGE( "Load(): " << filename << " not found!" );
+    INFOS( "Load(): " << filename << " not found!" );
     return false;
   }
 
@@ -1522,7 +1729,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      size = aDataset->GetSize();
 	      char* libname_str = new char[ size ];
 	      aDataset->ReadFromDisk( libname_str );
-	      SCRUTE( libname_str );
+	      if(MYDEBUG) SCRUTE( libname_str );
 	      libname = string( libname_str );
 	      delete libname_str;
 	      aDataset->CloseOnDisk();
@@ -1544,7 +1751,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
 	  // --> restore hypothesis from data
 	  if ( id > 0 && !hypname.empty()/* && !hypdata.empty()*/ ) { // VSR : persistent data can be empty
-	    MESSAGE("VSR - load hypothesis : id = " << id <<
+	    if(MYDEBUG) MESSAGE("VSR - load hypothesis : id = " << id <<
                     ", name = " << hypname.c_str() << ", persistent string = " << hypdata.c_str());
             SMESH::SMESH_Hypothesis_var myHyp;
 	    
@@ -1552,7 +1759,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      myHyp = this->createHypothesis( hypname.c_str(), libname.c_str() );
 	    }
 	    catch (...) {
-	      MESSAGE( "Exception during hypothesis creation" );
+	      INFOS( "Exception during hypothesis creation" );
 	    }
 
 	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
@@ -1563,7 +1770,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      myStudyContext->mapOldToNew( id, newId );
 	    }
 	    else
-	      MESSAGE( "VSR - SMESH_Gen::Load - can't get servant" );
+	      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen::Load - can't get servant" );
           }
         }
       }
@@ -1619,7 +1826,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      size = aDataset->GetSize();
 	      char* libname_str = new char[ size ];
 	      aDataset->ReadFromDisk( libname_str );
-	      SCRUTE( libname_str );
+	      if(MYDEBUG) SCRUTE( libname_str );
 	      libname = string( libname_str );
 	      delete libname_str;
 	      aDataset->CloseOnDisk();
@@ -1631,7 +1838,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      size = aDataset->GetSize();
 	      char* hypdata_str = new char[ size ];
 	      aDataset->ReadFromDisk( hypdata_str );
-	      SCRUTE( hypdata_str );
+	      if(MYDEBUG) SCRUTE( hypdata_str );
 	      hypdata = string( hypdata_str );
 	      delete hypdata_str;
 	      aDataset->CloseOnDisk();
@@ -1642,7 +1849,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	  
 	  // --> restore algorithm from data
 	  if ( id > 0 && !hypname.empty()/* && !hypdata.empty()*/ ) { // VSR : persistent data can be empty
-	    MESSAGE("VSR - load algo : id = " << id <<
+	    if(MYDEBUG) MESSAGE("VSR - load algo : id = " << id <<
                     ", name = " << hypname.c_str() << ", persistent string = " << hypdata.c_str());
             SMESH::SMESH_Hypothesis_var myHyp;
 	    	    
@@ -1650,7 +1857,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      myHyp = this->createHypothesis( hypname.c_str(), libname.c_str() );
 	    }
 	    catch (...) {
-	      MESSAGE( "Exception during hypothesis creation" );
+	      INFOS( "Exception during hypothesis creation" );
 	    }
 	    
 	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
@@ -1661,7 +1868,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      myStudyContext->mapOldToNew( id, newId );
 	    }
 	    else
-	      MESSAGE( "VSR - SMESH_Gen::Load - can't get servant" );
+	      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen::Load - can't get servant" );
           }
         }
       }
@@ -1691,10 +1898,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	int aNbObjects = aTopGroup->nInternalObjects(); 
 	if ( aNbObjects > 0 ) {
 	  // create mesh
-	  MESSAGE( "VSR - load mesh : id = " << id );
+	  if(MYDEBUG) MESSAGE( "VSR - load mesh : id = " << id );
 	  SMESH::SMESH_Mesh_var myNewMesh = this->createMesh();
 	  SMESH_Mesh_i* myNewMeshImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( myNewMesh ).in() );
-	  if ( !myNewMeshImpl )
+          if ( !myNewMeshImpl )
 	    continue;
 	  string iorString = GetORB()->object_to_string( myNewMesh );
 	  int newId = myStudyContext->findId( iorString );
@@ -1716,13 +1923,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      // read mesh data from MED file
 	      myReader.SetMesh( mySMESHDSMesh );
 	      myReader.SetMeshId( id );
-	      myReader.ReadMySelf();
+	      myReader.Perform();
 	      hasData = true;
 	    }
 	  }
 
 	  // try to read and set reference to shape
-	  GEOM::GEOM_Shape_var aShape;
+	  GEOM::GEOM_Object_var aShapeObject;
 	  if ( aTopGroup->ExistInternalObject( "Ref on shape" ) ) {
 	    // load mesh "Ref on shape" - it's an entry to SObject
 	    aDataset = new HDFdataset( "Ref on shape", aTopGroup );
@@ -1739,9 +1946,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
 	      CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
 	      if ( !CORBA::is_nil( shapeObject ) ) {
-		aShape = GEOM::GEOM_Shape::_narrow( shapeObject );
-		if ( !aShape->_is_nil() )
-		  myNewMeshImpl->setShape( aShape );
+		aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
+		if ( !aShapeObject->_is_nil() )
+		  myNewMeshImpl->setShape( aShapeObject );
 	      }
 	    }
 	  }
@@ -1752,7 +1959,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	    aGroup->OpenOnDisk();
 	    // get number of applied hypotheses
 	    int aNbSubObjects = aGroup->nInternalObjects(); 
-	    MESSAGE( "VSR - number of applied hypotheses = " << aNbSubObjects );
 	    for ( int j = 0; j < aNbSubObjects; j++ ) {
 	      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
 	      aGroup->InternalObjectIndentify( j, name_dataset );
@@ -1775,22 +1981,22 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
 		  if ( !CORBA::is_nil( hypObject ) ) {
 		    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-		    if ( !anHyp->_is_nil() && !aShape->_is_nil() )
-		      myNewMeshImpl->addHypothesis( aShape, anHyp );
+		    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+		      myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
 		  }
 		}
 	      }
 	    }
 	    aGroup->CloseOnDisk();
 	  }
-	
+
 	  // try to get applied algorithms
 	  if ( aTopGroup->ExistInternalObject( "Applied Algorithms" ) ) {
 	    aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
 	    aGroup->OpenOnDisk();
 	    // get number of applied algorithms
 	    int aNbSubObjects = aGroup->nInternalObjects(); 
-	    MESSAGE( "VSR - number of applied algos " << aNbSubObjects );
+	    if(MYDEBUG) MESSAGE( "VSR - number of applied algos " << aNbSubObjects );
 	    for ( int j = 0; j < aNbSubObjects; j++ ) {
 	      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
 	      aGroup->InternalObjectIndentify( j, name_dataset );
@@ -1813,8 +2019,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
 		  if ( !CORBA::is_nil( hypObject ) ) {
 		    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-		    if ( !anHyp->_is_nil() && !aShape->_is_nil() )
-		      myNewMeshImpl->addHypothesis( aShape, anHyp );
+		    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+		      myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
 		  }
 		}
 	      }
@@ -1829,8 +2035,12 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      strcpy( name_meshgroup, "SubMeshes On Vertex" );
 	    else if ( j == GetSubMeshOnEdgeTag() )
 	      strcpy( name_meshgroup, "SubMeshes On Edge" );
+	    else if ( j == GetSubMeshOnWireTag() )
+	      strcpy( name_meshgroup, "SubMeshes On Wire" );
 	    else if ( j == GetSubMeshOnFaceTag() )
 	      strcpy( name_meshgroup, "SubMeshes On Face" );
+	    else if ( j == GetSubMeshOnShellTag() )
+	      strcpy( name_meshgroup, "SubMeshes On Shell" );
 	    else if ( j == GetSubMeshOnSolidTag() )
 	      strcpy( name_meshgroup, "SubMeshes On Solid" );
 	    else if ( j == GetSubMeshOnCompoundTag() )
@@ -1858,9 +2068,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  aSubGroup->OpenOnDisk();
 		  
 		  // try to read and set reference to subshape
-		  GEOM::GEOM_Shape_var     aSubShape;
+		  GEOM::GEOM_Object_var aSubShapeObject;
 		  SMESH::SMESH_subMesh_var aSubMesh;
-		    
+
 		  if ( aSubGroup->ExistInternalObject( "Ref on shape" ) ) {
 		    // load submesh "Ref on shape" - it's an entry to SObject
 		    aDataset = new HDFdataset( "Ref on shape", aSubGroup );
@@ -1873,10 +2083,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		      SALOMEDS::SObject_var subShapeSO = myCurrentStudy->FindObjectID( refFromFile );
 		      CORBA::Object_var subShapeObject = SObjectToObject( subShapeSO );
 		      if ( !CORBA::is_nil( subShapeObject ) ) {
-			aSubShape = GEOM::GEOM_Shape::_narrow( subShapeObject );
-			if ( !aSubShape->_is_nil() )
+			aSubShapeObject = GEOM::GEOM_Object::_narrow( subShapeObject );
+			if ( !aSubShapeObject->_is_nil() )
 			  aSubMesh = SMESH::SMESH_subMesh::_duplicate
-                            ( myNewMeshImpl->createSubMesh( aSubShape ) );
+                            ( myNewMeshImpl->createSubMesh( aSubShapeObject ) );
 			if ( aSubMesh->_is_nil() )
 			  continue;
 			string iorSubString = GetORB()->object_to_string( aSubMesh );
@@ -1892,12 +2102,12 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  // VSR: Get submesh data from MED convertor
 //		  int anInternalSubmeshId = aSubMesh->GetId(); // this is not a persistent ID, it's an internal one computed from sub-shape
 //		  if (myNewMeshImpl->_mapSubMesh.find(anInternalSubmeshId) != myNewMeshImpl->_mapSubMesh.end()) {
-//		    MESSAGE("VSR - SMESH_Gen_i::Load(): loading from MED file submesh with ID = " <<
+//		    if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): loading from MED file submesh with ID = " <<
 //                            subid << " for subshape # " << anInternalSubmeshId);
 //		    SMESHDS_SubMesh* aSubMeshDS =
 //                      myNewMeshImpl->_mapSubMesh[anInternalSubmeshId]->CreateSubMeshDS();
 //		    if ( !aSubMeshDS ) {
-//		      MESSAGE("VSR - SMESH_Gen_i::Load(): FAILED to create a submesh for subshape # " <<
+//		      if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): FAILED to create a submesh for subshape # " <<
 //                              anInternalSubmeshId << " in current mesh!");
 //		    }
 //		    else
@@ -1931,8 +2141,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 			  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
 			  if ( !CORBA::is_nil( hypObject ) ) {
 			    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-			    if ( !anHyp->_is_nil() && !aShape->_is_nil() )
-			      myNewMeshImpl->addHypothesis( aSubShape, anHyp );
+			    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+			      myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
 			  }
 			}
 		      }
@@ -1968,8 +2178,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 			  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
 			  if ( !CORBA::is_nil( hypObject ) ) {
 			    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-			    if ( !anHyp->_is_nil() && !aShape->_is_nil() )
-			      myNewMeshImpl->addHypothesis( aSubShape, anHyp );
+			    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+			      myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
 			  }
 			}
 		      }
@@ -1987,22 +2197,120 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	    }
 	  }
 
-	  if(hasData){
+	  if(hasData) {
 	    // Read sub-meshes from MED
-	    MESSAGE("JFA - Create all sub-meshes");
+	    if(MYDEBUG) MESSAGE("JFA - Create all sub-meshes");
 	    myReader.CreateAllSubMeshes();
-	  }
+
+
+            // Read node positions on sub-shapes (SMDS_Position)
+
+            if ( aTopGroup->ExistInternalObject( "Node Positions" ))
+            {
+              // There are 5 datasets to read:
+              // "Nodes on Edges" - ID of node on edge
+              // "Edge positions" - U parameter on node on edge
+              // "Nodes on Faces" - ID of node on face
+              // "Face U positions" - U parameter of node on face
+              // "Face V positions" - V parameter of node on face
+              char* aEid_DSName = "Nodes on Edges";
+              char* aEu_DSName  = "Edge positions";
+              char* aFu_DSName  = "Face U positions";
+              //char* aFid_DSName = "Nodes on Faces";
+              //char* aFv_DSName  = "Face V positions";
+
+              // data to retrieve
+              int nbEids = 0, nbFids = 0;
+              int *aEids = 0, *aFids  = 0;
+              double *aEpos = 0, *aFupos = 0, *aFvpos = 0;
+
+              // open a group
+              aGroup = new HDFgroup( "Node Positions", aTopGroup ); 
+              aGroup->OpenOnDisk();
+
+              // loop on 5 data sets
+              int aNbObjects = aGroup->nInternalObjects();
+              for ( int i = 0; i < aNbObjects; i++ )
+              {
+                // identify dataset
+                char aDSName[ HDF_NAME_MAX_LEN+1 ];
+                aGroup->InternalObjectIndentify( i, aDSName );
+                // read data
+                aDataset = new HDFdataset( aDSName, aGroup );
+                aDataset->OpenOnDisk();
+                if ( aDataset->GetType() == HDF_FLOAT64 ) // Positions
+                {
+                  double* pos = new double [ aDataset->GetSize() ];
+                  aDataset->ReadFromDisk( pos );
+                  // which one?
+                  if ( strncmp( aDSName, aEu_DSName, strlen( aEu_DSName )) == 0 )
+                    aEpos = pos;
+                  else if ( strncmp( aDSName, aFu_DSName, strlen( aFu_DSName )) == 0 )
+                    aFupos = pos;
+                  else
+                    aFvpos = pos;
+                }
+                else // NODE IDS
+                {
+                  int* ids = new int [ aDataset->GetSize() ];
+                  aDataset->ReadFromDisk( ids );
+                  // on face or nodes?
+                  if ( strncmp( aDSName, aEid_DSName, strlen( aEid_DSName )) == 0 ) {
+                    aEids = ids;
+                    nbEids = aDataset->GetSize();
+                  }
+                  else {
+                    aFids = ids;
+                    nbFids = aDataset->GetSize();
+                  }
+                }
+              } // loop on 5 datasets
+
+              // Set node positions on edges or faces
+              for ( int onFace = 0; onFace < 2; onFace++ )
+              {
+                int nbNodes = ( onFace ? nbFids : nbEids );
+                if ( nbNodes == 0 ) continue;
+                int* aNodeIDs = ( onFace ? aFids : aEids );
+                double* aUPos = ( onFace ? aFupos : aEpos );
+                double* aVPos = ( onFace ? aFvpos : 0 );
+                // loop on node IDs
+                for ( int iNode = 0; iNode < nbNodes; iNode++ )
+                {
+                  const SMDS_MeshNode* node = mySMESHDSMesh->FindNode( aNodeIDs[ iNode ]);
+                  ASSERT( node );
+                  SMDS_PositionPtr aPos = node->GetPosition();
+                  ASSERT( aPos )
+                  if ( onFace ) {
+                    ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );
+                    SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
+                      ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
+                    fPos->SetUParameter( aUPos[ iNode ]);
+                    fPos->SetVParameter( aVPos[ iNode ]);
+                  }
+                  else {
+                    ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );
+                    SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
+                      ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
+                    fPos->SetUParameter( aUPos[ iNode ]);
+                  }
+                }
+              }
+              if ( aEids ) delete [] aEids;
+              if ( aFids ) delete [] aFids;
+              if ( aEpos ) delete [] aEpos;
+              if ( aFupos ) delete [] aFupos;
+              if ( aFvpos ) delete [] aFvpos;
+              
+              aGroup->CloseOnDisk();
+
+            } // if ( aTopGroup->ExistInternalObject( "Node Positions" ) )
+	  } // if ( hasData )
 
           // Recompute State (as computed sub-meshes are restored from MED)
-	  if ( !aShape->_is_nil() ) {
+	  if ( !aShapeObject->_is_nil() ) {
 	    MESSAGE("JFA - Compute State Engine ...");
-//          map<int, ::SMESH_subMesh*>::iterator anAllSubMeshes = myNewMeshImpl->_mapSubMesh.begin();
-//          for (; anAllSubMeshes != myNewMeshImpl->_mapSubMesh.end(); anAllSubMeshes++)
-//          {
-//            (*anAllSubMeshes).second->GetSubMeshDS(); // init SMESH_subMesh::_meshDS
-//            (*anAllSubMeshes).second->ComputeStateEngine(SMESH_subMesh::SUBMESH_RESTORED);
-//          }
-	    TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), aShape );
+	    TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), aShapeObject );
 	    myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine(SMESH_subMesh::SUBMESH_RESTORED);
 	    MESSAGE("JFA - Compute State Engine finished");
 	  }
@@ -2102,7 +2410,7 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
 			     const SALOMEDS::TMPFile& theStream,
 			     const char*              theURL,
 			     bool                     isMultiFile ) {
-  MESSAGE( "SMESH_Gen_i::LoadASCII" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::LoadASCII" );
   return Load( theComponent, theStream, theURL, isMultiFile );
 }
 
@@ -2116,7 +2424,7 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
 
 void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
 {
-  MESSAGE( "SMESH_Gen_i::Close" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Close" );
 
   // Clear study contexts data
   int studyId = myCurrentStudy->StudyId();
@@ -2137,8 +2445,8 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
 
 char* SMESH_Gen_i::ComponentDataType()
 {
-  MESSAGE( "SMESH_Gen_i::ComponentDataType" );
-  return strdup( "SMESH" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::ComponentDataType" );
+  return CORBA::string_dup( "SMESH" );
 }
 
     
@@ -2155,19 +2463,19 @@ char* SMESH_Gen_i::IORToLocalPersistentID( SALOMEDS::SObject_ptr theSObject,
 					   CORBA::Boolean        isMultiFile,
 					   CORBA::Boolean        isASCII )
 {
-  MESSAGE( "SMESH_Gen_i::IORToLocalPersistentID" );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::IORToLocalPersistentID" );
   StudyContext* myStudyContext = GetCurrentStudyContext();
   
   if ( strcmp( IORString, "" ) != 0 ) {
     int anId = myStudyContext->findId( IORString );
     if ( anId ) {
-      MESSAGE( "VSR " << anId )
+      if(MYDEBUG) MESSAGE( "VSR " << anId )
       char strId[ 20 ];
       sprintf( strId, "%d", anId );
       return  CORBA::string_dup( strId );
     }
   }
-  return strdup( "" );
+  return CORBA::string_dup( "" );
 }
 
 //=============================================================================
@@ -2183,14 +2491,14 @@ char* SMESH_Gen_i::LocalPersistentIDToIOR( SALOMEDS::SObject_ptr theSObject,
 					   CORBA::Boolean        isMultiFile,
 					   CORBA::Boolean        isASCII )
 {
-  MESSAGE( "SMESH_Gen_i::LocalPersistentIDToIOR(): id = " << aLocalPersistentID );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::LocalPersistentIDToIOR(): id = " << aLocalPersistentID );
   StudyContext* myStudyContext = GetCurrentStudyContext();
 
   if ( strcmp( aLocalPersistentID, "" ) != 0 ) {
     int anId = atoi( aLocalPersistentID );
     return CORBA::string_dup( myStudyContext->getIORbyOldId( anId ).c_str() );
   }
-  return strdup( "" );
+  return CORBA::string_dup( "" );
 }
 
 //=============================================================================
@@ -2237,24 +2545,11 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr theStudy,
 throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "********** SMESH_Gen_i::PublishInStudy()" );
+  if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy()" );
   SALOMEDS::SObject_var aSO;
 
-  // san - first try to find SObject corresponding to SMESH component in theStudy
-  // It is dangerous to use FindComponent("MESH") for this, as some other component
-  // of type "MESH" might be present in theStudy.
-  // So component's user name obtained from ModuleCatalog is passed to FindObject()...
-  SALOME_ModuleCatalog::ModuleCatalog_var aCat =
-    SALOME_ModuleCatalog::ModuleCatalog::_narrow( GetNS()->Resolve("/Kernel/ModulCatalog") );
-  if ( CORBA::is_nil( aCat ) )
-    return aSO._retn();
-
-  SALOME_ModuleCatalog::Acomponent_var   aComp = aCat->GetComponent( "SMESH" );
-  if ( CORBA::is_nil( aComp ) )
-    return aSO._retn();
-
   SALOMEDS::SComponent_var father =
-    SALOMEDS::SComponent::_narrow( theStudy->FindObject( strdup( aComp->componentusername() ) ) );
+    SALOMEDS::SComponent::_narrow( theStudy->FindComponent( ComponentDataType() ) );
   SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder(); 
 
   SALOMEDS::GenericAttribute_var anAttr;
@@ -2262,10 +2557,19 @@ throw (SALOME::SALOME_Exception)
   SALOMEDS::AttributePixMap_var  aPixmap;
   
   if ( father->_is_nil() ) {
-    father  = aStudyBuilder->NewComponent( "MESH" );
+    SALOME_ModuleCatalog::ModuleCatalog_var aCat =
+      SALOME_ModuleCatalog::ModuleCatalog::_narrow( GetNS()->Resolve("/Kernel/ModulCatalog") );
+    if ( CORBA::is_nil( aCat ) )
+      return aSO._retn();
+
+    SALOME_ModuleCatalog::Acomponent_var   aComp = aCat->GetComponent( ComponentDataType() );
+    if ( CORBA::is_nil( aComp ) )
+      return aSO._retn();
+
+    father  = aStudyBuilder->NewComponent( ComponentDataType() );
     anAttr  = aStudyBuilder->FindOrCreateAttribute( father, "AttributeName" );
     aName   = SALOMEDS::AttributeName::_narrow( anAttr );
-    aName   ->SetValue( strdup( aComp->componentusername() ) );
+    aName   ->SetValue( aComp->componentusername() );
     anAttr  = aStudyBuilder->FindOrCreateAttribute( father, "AttributePixMap" );
     aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
     aPixmap ->SetPixMap( "ICON_OBJBROWSER_SMESH" );
@@ -2304,7 +2608,7 @@ throw (SALOME::SALOME_Exception)
   SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( theIOR );
   if( aSO->_is_nil() && !aSubMesh->_is_nil() ) {
     // try to obtain a parent mesh's SObject
-    MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing submesh..." );
+    if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing submesh..." );
     SALOMEDS::SObject_var aParentSO;
     SMESH::SMESH_Mesh_var aParentMesh;
     SMESH_subMesh_i* aServant = dynamic_cast<SMESH_subMesh_i*>( GetServant( aSubMesh ).in() );
@@ -2322,7 +2626,7 @@ throw (SALOME::SALOME_Exception)
 
       SMESH_Mesh_i* aMeshServant = aServant->_mesh_i;
       if ( aMeshServant->_mapSubMesh.find( aServant->GetId() ) != aMeshServant->_mapSubMesh.end() ) {
-	MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): local submesh found" )
+	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): local submesh found" )
 	SMESH_subMesh* aLocalSubMesh = aMeshServant->_mapSubMesh[aServant->GetId()];
 	switch ( aLocalSubMesh->GetSubShape().ShapeType() ) {
 	case TopAbs_VERTEX:
@@ -2331,11 +2635,19 @@ throw (SALOME::SALOME_Exception)
 	  break;
 	case TopAbs_EDGE:
 	  aRootTag  = GetSubMeshOnEdgeTag();
-	  aRootName = "SubMeshes on Edge";	  
+	  aRootName = "SubMeshes on Edge";
+	  break;
+	case TopAbs_WIRE:
+	  aRootTag  = GetSubMeshOnWireTag();
+	  aRootName = "SubMeshes on Wire";
 	  break;
 	case TopAbs_FACE:
 	  aRootTag  = GetSubMeshOnFaceTag();
 	  aRootName = "SubMeshes on Face";	  
+	  break;
+	case TopAbs_SHELL:
+	  aRootTag  = GetSubMeshOnShellTag();
+	  aRootName = "SubMeshes on Shell";	  
 	  break;
 	case TopAbs_SOLID:
 	  aRootTag  = GetSubMeshOnSolidTag();
@@ -2347,11 +2659,14 @@ throw (SALOME::SALOME_Exception)
 	  break;
 	}
       }
+      else {
+        if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): local submesh NOT found" );
+      }
 
       // Find or create submesh root
       SALOMEDS::SObject_var aRootSO;
       if ( !aParentSO->FindSubObject ( aRootTag, aRootSO ) ) {
-	    MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): creating submesh root..." )
+	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): creating submesh root..." );
 	aRootSO  = aStudyBuilder->NewObjectToTag( aParentSO, aRootTag );
 	anAttr   = aStudyBuilder->FindOrCreateAttribute( aRootSO, "AttributeName" );
 	aName    = SALOMEDS::AttributeName::_narrow( anAttr );
@@ -2362,7 +2677,7 @@ throw (SALOME::SALOME_Exception)
       }
 
       // Add new submesh to corresponding sub-tree
-      MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): adding submesh to study..." )
+      if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): adding submesh to study..." );
       SALOMEDS::SObject_var newMesh = aStudyBuilder->NewObject( aRootSO );
       anAttr  = aStudyBuilder->FindOrCreateAttribute( newMesh, "AttributePixMap" );
       aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
@@ -2372,6 +2687,9 @@ throw (SALOME::SALOME_Exception)
       anIOR   ->SetValue( GetORB()->object_to_string( aSubMesh ) );
       aSO     = SALOMEDS::SObject::_narrow( newMesh );
       anObjName = TCollection_AsciiString( "SubMesh" );
+    }
+    else {
+      if(MYDEBUG) SCRUTE( aParentSO->_is_nil() );
     }
   }
 
@@ -2415,35 +2733,35 @@ throw (SALOME::SALOME_Exception)
   SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow(theIOR);
   if( aSO->_is_nil() && !aGroup->_is_nil() ) {
     // try to obtain a parent mesh's SObject
-    MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group..." );
+    if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group..." );
     SALOMEDS::SObject_var aParentSO;
     SMESH::SMESH_Mesh_var aParentMesh;
     SMESH_Group_i* aServant = dynamic_cast<SMESH_Group_i*>( GetServant( aGroup ).in() );
     if ( aServant != NULL ) {
       aParentMesh = SMESH::SMESH_Mesh::_narrow( GetPOA()->servant_to_reference( aServant->GetMeshServant() ) );
       if ( !aParentMesh->_is_nil() ) {
-	MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: refernce to mesh is OK" );
+	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: refernce to mesh is OK" );
 	string anIOR = GetORB()->object_to_string( aParentMesh );
-	MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: mesh IOR = "<<anIOR.c_str() );
+	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: mesh IOR = "<<anIOR.c_str() );
 	aParentSO = theStudy->FindObjectIOR( anIOR.c_str() );
       }
     }
 
     // Find proper group sub-tree tag
     if ( !aParentSO->_is_nil() ) {
-      MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: parent mesh found" );
+      if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: parent mesh found" );
       int aType = (int)aGroup->GetType();
       const char* aRootNames[] = { "Compound Groups", "Groups of Nodes", "Groups of Edges", "Groups of Faces", "Groups of Volumes" };
 
       // Currently, groups with heterogenous content are not supported
       if ( aType != SMESH::ALL ) {
-	MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: group type OK" );
+	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: group type OK" );
 	long aRootTag = GetNodeGroupsTag() + aType - 1;
 
 	// Find or create groups root
 	SALOMEDS::SObject_var aRootSO;
 	if ( !aParentSO->FindSubObject ( aRootTag, aRootSO ) ) {
-	  MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): creating groups root..." )
+	  if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): creating groups root..." )
 	  aRootSO  = aStudyBuilder->NewObjectToTag( aParentSO, aRootTag );
 	  anAttr   = aStudyBuilder->FindOrCreateAttribute( aRootSO, "AttributeName" );
 	  aName    = SALOMEDS::AttributeName::_narrow( anAttr );
@@ -2454,7 +2772,7 @@ throw (SALOME::SALOME_Exception)
 	}
 
 	// Add new group to corresponding sub-tree
-	MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): adding group to study..." )
+	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): adding group to study..." )
 	SALOMEDS::SObject_var aGroupSO = aStudyBuilder->NewObject( aRootSO );
 	anAttr  = aStudyBuilder->FindOrCreateAttribute( aGroupSO, "AttributePixMap" );
 	aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
@@ -2473,13 +2791,14 @@ throw (SALOME::SALOME_Exception)
     if ( strlen( theName ) == 0 ) 
       anObjName += TCollection_AsciiString( "_" ) + TCollection_AsciiString( aSO->Tag() );
     else 
-      anObjName = TCollection_AsciiString( strdup( theName ) );
+      anObjName = TCollection_AsciiString( (char*)theName );
     anAttr  = aStudyBuilder->FindOrCreateAttribute( aSO, "AttributeName" );
     aName   = SALOMEDS::AttributeName::_narrow( anAttr );
-    aName   ->SetValue( anObjName.ToCString() );    
+    aName   ->SetValue( anObjName.ToCString() );
+    if(MYDEBUG) MESSAGE ("********** SMESH_Gen_i: \"" << anObjName.ToCString() << "\" PUBLISHED");
   }
 
-  MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): COMPLETED" )
+  if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): COMPLETED" )
   return aSO._retn();
 }
       
@@ -2499,10 +2818,9 @@ extern "C"
 						 const char*               instanceName, 
 						 const char*               interfaceName )
   {
-    MESSAGE( "PortableServer::ObjectId* SMESHEngine_factory()" );
-    SCRUTE(interfaceName);
-    SMESH_Gen_i * mySMESH_Gen 
-      = new SMESH_Gen_i(orb, poa, contId, instanceName, interfaceName);
-    return mySMESH_Gen->getId() ;
+    if(MYDEBUG) MESSAGE( "PortableServer::ObjectId* SMESHEngine_factory()" );
+    if(MYDEBUG) SCRUTE(interfaceName);
+    SMESH_Gen_i* aSMESHGen = new SMESH_Gen_i(orb, poa, contId, instanceName, interfaceName);
+    return aSMESHGen->getId() ;
   }
 }

@@ -26,8 +26,11 @@
 //  Module : SMESH
 //  $Header: 
 
-using namespace std;
 #include "SMESHDS_SubMesh.hxx"
+
+#include "utilities.h"
+
+using namespace std;
 
 //=======================================================================
 //function : AddElement
@@ -63,6 +66,7 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 //function : RemoveNode
 //purpose  : 
 //=======================================================================
+
 bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 {
   if ( NbNodes() )
@@ -77,17 +81,38 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 //=======================================================================
 int SMESHDS_SubMesh::NbElements() const
 {
-	return myElements.size();
+  if ( mySubMeshes.empty() )
+    return myElements.size();
+
+  int nbElems = 0;
+  set<const SMESHDS_SubMesh*>::iterator it = mySubMeshes.begin();
+  for ( ; it != mySubMeshes.end(); it++ )
+    nbElems += (*it)->NbElements();
+
+  return nbElems;
 }
 
 //=======================================================================
 //function : NbNodes
 //purpose  : 
 //=======================================================================
+
 int SMESHDS_SubMesh::NbNodes() const
 {
-	return myNodes.size();
+ if ( mySubMeshes.empty() )
+   return myNodes.size(); 
+
+  int nbElems = 0;
+  set<const SMESHDS_SubMesh*>::iterator it = mySubMeshes.begin();
+  for ( ; it != mySubMeshes.end(); it++ )
+    nbElems += (*it)->NbNodes();
+
+  return nbElems;
 }
+
+// =====================
+// class MySetIterator
+// =====================
 
 template<typename T> class MySetIterator:public SMDS_Iterator<const T*>
 {
@@ -111,21 +136,140 @@ template<typename T> class MySetIterator:public SMDS_Iterator<const T*>
 		return t;			
 	}
 };
-///////////////////////////////////////////////////////////////////////////////
-///Return an iterator on the elements of submesh
-///The created iterator must be free by the caller
-///////////////////////////////////////////////////////////////////////////////
+
+// =====================
+// class MyIterator
+// =====================
+
+template<typename VALUE> class MyIterator : public SMDS_Iterator<VALUE>
+{
+ public:
+  MyIterator (const set<const SMESHDS_SubMesh*>& theSubMeshes)
+    : mySubMeshes( theSubMeshes ), mySubIt( theSubMeshes.begin() ) {}
+  bool more()
+  {
+    while (( !myElemIt.get() || !myElemIt->more() ) &&
+           mySubIt != mySubMeshes.end())
+    {
+      myElemIt = getElements(*mySubIt);
+      mySubIt++;
+    }
+    return myElemIt.get() && myElemIt->more();
+  }
+  VALUE next()
+  {
+    if ( more() )
+      return myElemIt->next();
+    return 0;
+  }
+ protected:
+  virtual boost::shared_ptr< SMDS_Iterator<VALUE> >
+    getElements(const SMESHDS_SubMesh*) const = 0;
+
+ private:
+  const set<const SMESHDS_SubMesh*>&          mySubMeshes;
+  set<const SMESHDS_SubMesh*>::const_iterator mySubIt;
+  boost::shared_ptr< SMDS_Iterator<VALUE> >   myElemIt;
+};
+
+// =====================
+// class MyElemIterator
+// =====================
+
+class MyElemIterator: public MyIterator<const SMDS_MeshElement*>
+{
+ public:
+  MyElemIterator (const set<const SMESHDS_SubMesh*>& theSubMeshes)
+    :MyIterator<const SMDS_MeshElement*>( theSubMeshes ) {}
+  SMDS_ElemIteratorPtr getElements(const SMESHDS_SubMesh* theSubMesh) const
+  { return theSubMesh->GetElements(); }
+};
+
+// =====================
+// class MyNodeIterator
+// =====================
+
+class MyNodeIterator: public MyIterator<const SMDS_MeshNode*>
+{
+ public:
+  MyNodeIterator (const set<const SMESHDS_SubMesh*>& theSubMeshes)
+    :MyIterator<const SMDS_MeshNode*>( theSubMeshes ) {}
+  SMDS_NodeIteratorPtr getElements(const SMESHDS_SubMesh* theSubMesh) const
+  { return theSubMesh->GetNodes(); }
+};
+  
+//=======================================================================
+//function : GetElements
+//purpose  : 
+//=======================================================================
+
 SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
 {
-  return SMDS_ElemIteratorPtr(new MySetIterator<SMDS_MeshElement>(myElements));
+  if ( mySubMeshes.empty() )
+    return SMDS_ElemIteratorPtr(new MySetIterator<SMDS_MeshElement>(myElements));
+
+  return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Return an iterator on the nodes of submesh
-///The created iterator must be free by the caller
-///////////////////////////////////////////////////////////////////////////////
+//=======================================================================
+//function : GetNodes
+//purpose  : 
+//=======================================================================
+
 SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
 {
-  return SMDS_NodeIteratorPtr(new MySetIterator<SMDS_MeshNode>(myNodes));
+  if ( mySubMeshes.empty() )
+    return SMDS_NodeIteratorPtr(new MySetIterator<SMDS_MeshNode>(myNodes));
+
+  return SMDS_NodeIteratorPtr( new MyNodeIterator( mySubMeshes ));
 }
 
+//=======================================================================
+//function : Contains
+//purpose  : check if elem or node is in
+//=======================================================================
+
+bool SMESHDS_SubMesh::Contains(const SMDS_MeshElement * ME)
+{
+  if ( !ME )
+    return false;
+
+  // DO NOT TRY TO FIND A REMOVED ELEMENT !!
+  if ( ME->GetType() == SMDSAbs_Node ) {
+    const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( ME );
+    return ( myNodes.find( n ) != myNodes.end() );
+  }
+
+  return ( myElements.find( ME ) != myElements.end() );
+}
+
+//=======================================================================
+//function : AddSubMesh
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_SubMesh::AddSubMesh( const SMESHDS_SubMesh* theSubMesh )
+{
+  ASSERT( theSubMesh );
+  mySubMeshes.insert( theSubMesh );
+}
+
+//=======================================================================
+//function : RemoveSubMesh
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_SubMesh::RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh )
+{
+  return mySubMeshes.erase( theSubMesh );
+}
+
+//=======================================================================
+//function : ContainsSubMesh
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_SubMesh::ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const
+{
+  return mySubMeshes.find( theSubMesh ) != mySubMeshes.end();
+}

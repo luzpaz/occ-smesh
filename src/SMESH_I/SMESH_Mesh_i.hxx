@@ -34,28 +34,27 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
-#include CORBA_CLIENT_HEADER(GEOM_Shape)
 #include CORBA_CLIENT_HEADER(MED)
-
-class SMESH_Gen_i;
-class SMESH_Group_i;
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
-#include "SMESH_topo.hxx"
-
-#include <map>
 
 #include "SALOME_GenericObj_i.hh"
+
+class SMESH_Gen_i;
+class SMESH_Group_i;
+
+#include <map>
 
 class SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
   public virtual SALOME::GenericObj_i
 {
-public:
   SMESH_Mesh_i();
+  SMESH_Mesh_i(const SMESH_Mesh_i&);
+public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                 SMESH_Gen_i*            myGen_i,
 	        CORBA::Long             studyId );
@@ -63,21 +62,21 @@ public:
   virtual ~SMESH_Mesh_i();
 
   // --- CORBA
-  void SetShape( GEOM::GEOM_Shape_ptr theShape )
+  void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
     throw (SALOME::SALOME_Exception);
 
-  SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+  SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                          SMESH::SMESH_Hypothesis_ptr anHyp)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::Hypothesis_Status RemoveHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+  SMESH::Hypothesis_Status RemoveHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                             SMESH::SMESH_Hypothesis_ptr anHyp)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Shape_ptr aSubShape)
+  SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Object_ptr aSubShapeObject)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Shape_ptr aSubShape, const char* theName)
+  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Object_ptr aSubShapeObject, const char* theName)
     throw (SALOME::SALOME_Exception);
 
   void RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
@@ -86,7 +85,29 @@ public:
   SMESH::SMESH_Group_ptr CreateGroup( SMESH::ElementType theElemType, const char* theName )
     throw (SALOME::SALOME_Exception);
   
+  SMESH::SMESH_Group_ptr CreateGroupFromGEOM( SMESH::ElementType theElemType,  const char* theName,                     
+					      GEOM::GEOM_Object_ptr theGEOMGroup )
+    throw (SALOME::SALOME_Exception); 
+
   void RemoveGroup( SMESH::SMESH_Group_ptr theGroup )
+    throw (SALOME::SALOME_Exception);
+  
+  void RemoveGroupWithContents( SMESH::SMESH_Group_ptr theGroup )
+    throw (SALOME::SALOME_Exception);
+  
+  SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_Group_ptr theGroup1, 
+                                      SMESH::SMESH_Group_ptr theGroup2, 
+                                      const char* theName )
+    throw (SALOME::SALOME_Exception);
+  
+  SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_Group_ptr theGroup1, 
+                                          SMESH::SMESH_Group_ptr theGroup2, 
+                                          const char* theName )
+    throw (SALOME::SALOME_Exception);
+  
+  SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_Group_ptr theGroup1, 
+                                    SMESH::SMESH_Group_ptr theGroup2, 
+                                    const char* theName )
     throw (SALOME::SALOME_Exception);
 
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
@@ -113,6 +134,12 @@ public:
 
   SMESH_Gen_i* GetGen() { return _gen_i; }
   
+  int ImportUNVFile( const char* theFileName )
+    throw (SALOME::SALOME_Exception);
+
+  int ImportSTLFile( const char* theFileName )
+    throw (SALOME::SALOME_Exception);
+
   /*!
    * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
    */
@@ -124,6 +151,8 @@ public:
   void ExportDAT( const char* file )
     throw (SALOME::SALOME_Exception);
   void ExportUNV( const char* file )
+    throw (SALOME::SALOME_Exception);
+  void ExportSTL( const char* file, const bool isascii )
     throw (SALOME::SALOME_Exception);
 
   SALOME_MED::MESH_ptr GetMEDMesh()
@@ -166,19 +195,19 @@ public:
   
   // Internal methods not available through CORBA
   // They are called by corresponding interface methods
-  SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+  SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                     SMESH::SMESH_Hypothesis_ptr anHyp);
 
-  SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+  SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
   
-  bool setShape( GEOM::GEOM_Shape_ptr theShape );
+  bool setShape( GEOM::GEOM_Object_ptr theShapeObject );
 
   int importMEDFile( const char* theFileName, const char* theMeshName );
 
-  SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Shape_ptr theSubShape );
+  SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
 
-  void removeSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh, GEOM::GEOM_Shape_ptr theSubShape );
+  void removeSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh, GEOM::GEOM_Object_ptr theSubShapeObject );
 
   SMESH::SMESH_Group_ptr createGroup( SMESH::ElementType theElemType, const char* theName );
 

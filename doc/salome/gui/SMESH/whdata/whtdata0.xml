@@ -8,10 +8,16 @@
     <item name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
     <book name="Defining hypotheses" >
       <item name="About hypotheses" url="files/about_hypotheses.htm" />
-      <item name="Local Length hypothesis" url="files/local_length_hypothesis.htm" />
-      <item name="Number of segments hypothesis" url="files/number_of_segments_hypothesis.htm" />
+      <item name="Arithmetic 1D hypothesis" url="files/arithmetic_1d.htm" />
+      <item name="Average Length hypothesis" url="files/local_length_hypothesis.htm" />
+      <item name="Deflection 1D hypothesis" url="files/deflection_1d.htm" />
+      <item name="Length from edges hypothesis" url="files/length_from_edges.htm" />
       <item name="Max Element Area hypothesis" url="files/max._element_area_hypothesis.htm" />
       <item name="Max Element Volume hypothesis" url="files/max._element_volume_hypothsis.htm" />
+      <item name="Number of segments hypothesis" url="files/number_of_segments_hypothesis.htm" />
+      <item name="Non conform mesh allowed hypothesis" url="files/non_conform_mesh_allowed_hypothesis.htm" />
+      <item name="Propagation of 1D Hypothesis on opposite edges" url="files/propagation_of_1d_hypothesis_on_opposite_edges.htm" />
+      <item name="Start and End Length hypothesis" url="files/start_and_end_length_hypothesis.htm" />
     </book>
     <book name="Defining meshing algorithms" >
       <item name="About meshing algorithms" url="files/about_meshing_algorithms.htm" />
@@ -25,6 +31,7 @@
       <book name="3D meshing algorithms" >
         <item name="Hexahedron meshing algorithm" url="files/3d_meshing_algorithm.htm" />
         <item name="Tetrahedron (Netgen) meshing algorithm" url="files/tetrahedron_(netgen)_meshing_algorithm.htm" />
+        <item name="Tetrahedron (GHS3D) meshing algorithm" url="tetrahedron_(ghs3d)_meshing_algorithm.htm" />
       </book>
     </book>
     <item name="Constructing meshes" url="files/constructing_meshes.htm" />

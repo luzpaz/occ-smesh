@@ -42,6 +42,7 @@
 
 class QLineEdit;
 class QButtonGroup;
+class QGroupBox;
 class QListBox;
 class QPushButton;
 class QCheckBox;
@@ -78,24 +79,29 @@ private slots:
     void onOK();
     void onClose();
     bool onApply();
+    void onDeactivate();
 
     void onListSelectionChanged();
     void onObjectSelectionChanged();
 
     void onSelectSubMesh(bool on);
     void onSelectGroup(bool on);
+    void onSelectGeomGroup(bool on);
     void setCurrentSelection();
 
     void setFilters();
     void onSort();
 
     void onNameChanged(const QString& text);
+    void onFilterAccepted();
 
 private:
     void initDialog(SALOME_Selection* theSel, bool create);
     void init(SMESH::SMESH_Mesh_ptr theMesh);
     void init(SMESH::SMESH_Group_ptr theGroup);
     void closeEvent(QCloseEvent* e);
+    void enterEvent ( QEvent * ) ;            
+    void hideEvent ( QHideEvent * );                        /* ESC key */
     void setSelectionMode(int theMode);
     void updateButtons();
 
@@ -109,7 +115,6 @@ private:
     QLineEdit*                    myName;
     QListBox*                     myElements;
     QPushButton*                  myFilter;
-
     QCheckBox*                    mySelectSubMesh;
     QPushButton*                  mySubMeshBtn;
     QLineEdit*                    mySubMeshLine;
@@ -118,9 +123,14 @@ private:
     QPushButton*                  myGroupBtn;
     QLineEdit*                    myGroupLine;
 
+    QCheckBox*                    mySelectGeomGroup;
+    QPushButton*                  myGeomGroupBtn;
+    QLineEdit*                    myGeomGroupLine;
+
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH::SMESH_Group_var        myGroup;
     QValueList<int>               myIdList;
+    GEOM::GEOM_Object_var         myGeomGroup;
 
     int                           mySelectionMode;
     Handle(SMESH_TypeFilter)      mySubMeshFilter;

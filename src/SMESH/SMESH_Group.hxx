@@ -30,7 +30,7 @@
 
 #include <SMDSAbs_ElementType.hxx>
 #include <string>
-using namespace std;
+
 
 class SMESHDS_Group;
 class SMESH_Mesh;
@@ -39,7 +39,8 @@ class SMESH_Group
 {
  public:
 
-  SMESH_Group (const SMESH_Mesh*         theMesh,
+  SMESH_Group (int                       theID,
+               const SMESH_Mesh*         theMesh,
                const SMDSAbs_ElementType theType,
                const char*               theName);
   ~SMESH_Group ();
@@ -57,7 +58,7 @@ class SMESH_Group
   // prohibited assign operator
 
   SMESHDS_Group * myGroupDS;
-  string          myName;
+  std::string     myName;
 
 };
 

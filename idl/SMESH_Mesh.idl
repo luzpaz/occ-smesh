@@ -27,15 +27,11 @@
 #define _SMESH_MESH_IDL_
 
 #include "SALOME_Exception.idl"
-//#include "SMESH_Hypothesis.idl"
-
 #include "SALOME_GenericObj.idl"
-//#include "GEOM_Shape.idl"
-//#include "MED.idl"
 
 module GEOM
 {
-  interface GEOM_Shape;
+  interface GEOM_Object;
 };
 
 
@@ -54,6 +50,7 @@ module SMESH
   typedef sequence<double> double_array ;
   typedef sequence<long> long_array ;
   typedef sequence<string> string_array ;
+  typedef sequence<long_array> array_of_long_array ;
 
   enum log_command
     {
@@ -66,7 +63,10 @@ module SMESH
       ADD_PRISM,
       ADD_HEXAHEDRON,
       REMOVE_NODE,
-      REMOVE_ELEMENT
+      REMOVE_ELEMENT,
+      MOVE_NODE,
+      CHANGE_ELEMENT_NODES,
+      RENUMBER
     };
 
   struct log_block
@@ -76,6 +76,18 @@ module SMESH
     double_array coords;
     long_array indexes;
   };
+
+  struct PointStruct { double x; 
+  		       double y; 
+  		       double z; } ; 
+  struct DirStruct   { PointStruct PS ; } ;          // analog to Occ Direction
+   
+  struct AxisStruct  { double x;
+  		       double y;
+  		       double z;
+  		       double vx;
+  		       double vy;
+  		       double vz; } ;
 
   
   /*!
@@ -131,7 +143,7 @@ module SMESH
      * Associate a Shape to a Mesh created with NewEmpty
      */
 
-//     boolean SetMesh(in GEOM::GEOM_Shape aShape)
+//     boolean SetMesh(in GEOM::GEOM_Object anObject)
 //        raises (SALOME::SALOME_Exception);
 
     /*!
@@ -140,7 +152,7 @@ module SMESH
      * SubMesh will be used instead of SubShape in a next idl version to 
      * adress a specific subMesh...
      */
-    SMESH_subMesh GetSubMesh(in GEOM::GEOM_Shape aSubShape, in string name)
+    SMESH_subMesh GetSubMesh(in GEOM::GEOM_Object aSubObject, in string name)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -163,10 +175,48 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Create a group from geometry group
+     */
+    SMESH_Group CreateGroupFromGEOM( in ElementType elem_type,
+ 	                             in string name,
+ 	                             in GEOM::GEOM_Object theGEOMGroup )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Remove a group
      */
     void RemoveGroup(in SMESH_Group aGroup)
       raises (SALOME::SALOME_Exception);
+
+     /*!
+     *  Remove group with its contents
+     */
+    void RemoveGroupWithContents( in SMESH_Group aGroup )
+        raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Union of two groups
+     *    New group is created. All mesh elements that are 
+     *    present in initial groups are added to the new one
+     */
+    SMESH_Group UnionGroups( in SMESH_Group aGroup1, in SMESH_Group aGroup2, in string name )
+        raises (SALOME::SALOME_Exception);
+
+    /*!
+     *  Intersection of two groups
+     *  New group is created. All mesh elements that are 
+     *  present in both initial groups are added to the new one.
+     */
+    SMESH_Group IntersectGroups( in SMESH_Group aGroup1, in SMESH_Group aGroup2, in string name )
+        raises (SALOME::SALOME_Exception);
+
+      /*!
+       *  Cut of two groups
+       *  New group is created. All mesh elements that are present in 
+       *  main group but do not present in tool group are added to the new one
+       */
+      SMESH_Group CutGroups( in SMESH_Group aMainGroup, in SMESH_Group aToolGroup, in string name )
+          raises (SALOME::SALOME_Exception);
 
     /*!
      * Add hypothesis to the mesh, under a particular subShape
@@ -185,7 +235,7 @@ module SMESH
      *   (or one previous hypothesis on the subShape)
      * raises exception if hypothesis has not been created
      */
-    Hypothesis_Status AddHypothesis(in GEOM::GEOM_Shape aSubShape,
+    Hypothesis_Status AddHypothesis(in GEOM::GEOM_Object aSubObject,
 				    in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
 //     boolean AddHypothesis(in SMESH_subMesh aSubMesh, in SMESH_Hypothesis anHyp)
@@ -195,7 +245,7 @@ module SMESH
     /*!
      * Remove an hypothesis previouly added with AddHypothesis.
      */
-    Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Shape aSubShape,
+    Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Object aSubObject,
 				       in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
 //     boolean RemoveHypothesis(in SMESH_subMesh aSubMesh,
@@ -205,7 +255,7 @@ module SMESH
     /*!
      * Get the list of hypothesis added on a subShape
      */
-    ListOfHypothesis GetHypothesisList(in GEOM::GEOM_Shape aSubShape)
+    ListOfHypothesis GetHypothesisList(in GEOM::GEOM_Object aSubObject)
       raises (SALOME::SALOME_Exception);
 //     ListOfHypothesis GetHypothesisList(in SMESH_subMesh aSubMesh)
 //       raises (SALOME::SALOME_Exception);
@@ -249,6 +299,8 @@ module SMESH
     void ExportMED( in string file, in boolean auto_groups )
       raises (SALOME::SALOME_Exception);
     void ExportUNV( in string file )
+      raises (SALOME::SALOME_Exception);
+    void ExportSTL( in string file, in boolean isascii )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -304,7 +356,7 @@ module SMESH
     /*!
      * 
      */
-    long GetNumberOfNodes()
+    long GetNumberOfNodes( in boolean all )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -344,28 +396,113 @@ module SMESH
   };
   
   /* 
-   * This interface makes modifications on the Mesh - removing elements and nodes
-   */     
+   * This interface makes modifications on the Mesh - removing elements and nodes etc.
+   */
+  interface NumericalFunctor;
   interface SMESH_MeshEditor {
 
 
-    boolean RemoveElements(in long_array IDsOfElements)
-       raises (SALOME::SALOME_Exception);
+    boolean RemoveElements(in long_array IDsOfElements);
 
-    boolean RemoveNodes(in long_array IDsOfNodes)
-      raises (SALOME::SALOME_Exception);
+    boolean RemoveNodes(in long_array IDsOfNodes);
 
-    boolean AddNode(in double x, in double y, in double z)
-      raises (SALOME::SALOME_Exception);
+    boolean AddNode(in double x, in double y, in double z);
 
-    boolean AddEdge(in long_array IDsOfNodes)
-      raises (SALOME::SALOME_Exception);
+    boolean AddEdge(in long_array IDsOfNodes);
 
-    boolean AddFace(in long_array IDsOfNodes)
-      raises (SALOME::SALOME_Exception);
+    boolean AddFace(in long_array IDsOfNodes);
 
-    boolean AddVolume(in long_array IDsOfNodes)
-      raises (SALOME::SALOME_Exception);
+    boolean AddVolume(in long_array IDsOfNodes);
+
+    boolean MoveNode(in long NodeID, in double x, in double y, in double z);
+
+    boolean InverseDiag(in long NodeID1, in long NodeID2);
+
+    boolean DeleteDiag(in long NodeID1, in long NodeID2);
+
+    boolean Reorient(in long_array IDsOfElements);
+
+    boolean TriToQuad(in long_array       IDsOfElements,
+                      in NumericalFunctor Criterion,
+                      in double           MaxAngle);
+
+    boolean QuadToTri(in long_array       IDsOfElements,
+                      in NumericalFunctor Criterion);
+
+    boolean SplitQuad(in long_array IDsOfElements,
+                      in boolean    Diag13);
+
+    enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
+
+    boolean Smooth(in long_array    IDsOfElements,
+                   in long_array    IDsOfFixedNodes,
+                   in long          MaxNbOfIterations,
+                   in double        MaxAspectRatio,
+                   in Smooth_Method Method);
+
+    void RenumberNodes();
+
+    void RenumberElements();
+
+    void RotationSweep(in long_array       IDsOfElements,
+                       in AxisStruct       Axix,
+                       in double           AngleInRadians,
+                       in long             NbOfSteps,
+                       in double           Tolerance);
+                       
+    void ExtrusionSweep(in long_array      IDsOfElements,
+                        in DirStruct       StepVector,
+                        in long            NbOfSteps);
+
+    enum MirrorType { POINT, AXIS, PLANE };
+
+    void Mirror (in long_array       IDsOfElements,
+                 in AxisStruct       Mirror,
+                 in MirrorType       theMirrorType,
+                 in boolean          Copy);
+
+    void Translate (in long_array      IDsOfElements,
+                    in DirStruct       Vector,
+                    in boolean         Copy);
+
+    void Rotate (in long_array       IDsOfElements,
+                 in AxisStruct       Axis,
+                 in double           AngleInRadians,
+                 in boolean          Copy);
+
+    void FindCoincidentNodes (in  double              Tolerance,
+                              out array_of_long_array GroupsOfNodes);
+
+    void MergeNodes (in array_of_long_array GroupsOfNodes);
+
+    void MergeEqualElements();
+
+    boolean SewFreeBorders (in long FirstNodeID1,
+                            in long SecondNodeID1,
+                            in long LastNodeID1,
+                            in long FirstNodeID2,
+                            in long SecondNodeID2,
+                            in long LastNodeID2);
+    
+    boolean SewConformFreeBorders (in long FirstNodeID1,
+                                   in long SecondNodeID1,
+                                   in long LastNodeID1,
+                                   in long FirstNodeID2,
+                                   in long SecondNodeID2);
+
+    boolean SewBorderToSide (in long FirstNodeIDOnFreeBorder,
+                             in long SecondNodeIDOnFreeBorder,
+                             in long LastNodeIDOnFreeBorder,
+                             in long FirstNodeIDOnSide,
+                             in long LastNodeIDOnSide);
+    
+    boolean SewSideElements (in long_array IDsOfSide1Elements,
+                             in long_array IDsOfSide2Elements,
+                             in long       NodeID1OfSide1ToMerge,
+                             in long       NodeID1OfSide2ToMerge,
+                             in long       NodeID2OfSide1ToMerge,
+                             in long       NodeID2OfSide2ToMerge);
+
   };
 };
 

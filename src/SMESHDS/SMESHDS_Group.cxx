@@ -28,15 +28,19 @@
 #include <SMESHDS_Group.hxx>
 #include <SMESHDS_Mesh.hxx>
 
+using namespace std;
+
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
 
-SMESHDS_Group::SMESHDS_Group (const SMESHDS_Mesh*       theMesh,
+SMESHDS_Group::SMESHDS_Group (const int                 theID,
+                              const SMESHDS_Mesh*       theMesh,
                               const SMDSAbs_ElementType theType)
-     : SMDS_MeshGroup(theMesh,theType), myStoreName(""),
+     : SMDS_MeshGroup(theMesh,theType),
+       myID(theID), myStoreName(""),
        myCurIndex(0), myCurID(0)
 {
 }

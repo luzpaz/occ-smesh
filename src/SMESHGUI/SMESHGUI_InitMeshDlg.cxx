@@ -26,16 +26,21 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_InitMeshDlg.h"
+
 #include "SMESHGUI.h"
-#include "SALOME_ListIteratorOfListIO.hxx"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_SMESHGenUtils.h"
+#include "SMESHGUI_HypothesesUtils.h"
 
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_MessageBox.h"
 #include "QAD_WaitCursor.h"
 #include "QAD_Operation.h"
+
+#include "SALOME_ListIteratorOfListIO.hxx"
+#include "SALOMEGUI_QtCatchCorbaException.hxx"
 
 #include "utilities.h"
 
@@ -46,6 +51,30 @@ using namespace std;
 #include <qpushbutton.h>
 #include <qlayout.h>
 #include <qpixmap.h>
+
+using namespace std;
+
+namespace SMESH{
+  SMESH::SMESH_Mesh_var InitMesh(GEOM::GEOM_Object_ptr theShapeObject, 
+				 const char* theMeshName)
+  {
+    SMESH::SMESH_Mesh_var aMesh;
+    try {
+      SMESH::SMESH_Gen_var aSMESHGen = SMESH::GetSMESHGen();
+      if ( !aSMESHGen->_is_nil() && !theShapeObject->_is_nil() ) {
+	aMesh = aSMESHGen->CreateMesh( theShapeObject );
+	if ( !aMesh->_is_nil() ) {
+	  SALOMEDS::SObject_var aMeshSObject = SMESH::FindSObject( aMesh.in() );
+	  SMESH::SetName( aMeshSObject, theMeshName );
+	}
+      }
+    }
+    catch( const SALOME::SALOME_Exception& S_ex ) {
+      QtCatchCorbaException( S_ex );
+    }
+    return aMesh._retn();
+  }
+}
 
 //=================================================================================
 // class    : SMESHGUI_InitMeshDlg()
@@ -88,6 +117,7 @@ SMESHGUI_InitMeshDlg::SMESHGUI_InitMeshDlg( QWidget* parent, const char* name, S
     SelectButtonC1A1->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A1, 1, 1 );
     LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
+    LineEditC1A1->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1, 1, 2 );
 
     TextLabelC1A1Hyp = new QLabel( tr( "SMESH_OBJECT_HYPOTHESIS" ), GroupC1, "TextLabelC1A1Hyp" );
@@ -96,6 +126,7 @@ SMESHGUI_InitMeshDlg::SMESHGUI_InitMeshDlg( QWidget* parent, const char* name, S
     SelectButtonC1A1Hyp->setPixmap( image0 );
     GroupC1Layout->addWidget( SelectButtonC1A1Hyp, 2, 1 );
     LineEditC1A1Hyp = new QLineEdit( GroupC1, "LineEditC1A1Hyp" );
+    LineEditC1A1Hyp->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1Hyp, 2, 2 );
 
     TextLabelC1A1Algo = new QLabel( tr( "SMESH_OBJECT_ALGORITHM" ), GroupC1, "TextLabelC1A1Algo" );
@@ -104,6 +135,7 @@ SMESHGUI_InitMeshDlg::SMESHGUI_InitMeshDlg( QWidget* parent, const char* name, S
     SelectButtonC1A1Algo->setPixmap( image0 );
     GroupC1Layout->addWidget( SelectButtonC1A1Algo, 3, 1 );
     LineEditC1A1Algo = new QLineEdit( GroupC1, "LineEditC1A1Algo" );
+    LineEditC1A1Algo->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1Algo, 3, 2 );
 
     SMESHGUI_InitMeshDlgLayout->addWidget( GroupC1, 1, 0 );
@@ -210,6 +242,9 @@ void SMESHGUI_InitMeshDlg::ClickOnOk()
 //=================================================================================
 bool SMESHGUI_InitMeshDlg::ClickOnApply()
 {
+  if (mySMESHGUI->ActiveStudyLocked())
+    return false;
+
   QString myNameMesh = LineEdit_NameMesh->text().stripWhiteSpace();
   if ( myNameMesh.isEmpty() ) {
     QAD_MessageBox::warn1( this, tr( "SMESH_WRN_WARNING" ), tr( "SMESH_WRN_EMPTY_NAME" ), tr( "SMESH_BUT_OK" ) );
@@ -227,18 +262,18 @@ bool SMESHGUI_InitMeshDlg::ClickOnApply()
   op->start();
   
   // create mesh
-  SMESH::SMESH_Mesh_var aMesh = mySMESHGUI->InitMesh( myGeomShape, myNameMesh ) ;
+  SMESH::SMESH_Mesh_var aMesh = SMESH::InitMesh( myGeomShape, myNameMesh ) ;
   
   if ( !aMesh->_is_nil() ) {
     // assign hypotheses
     for( int i = 0; i < HypoList.count(); i++ ) {
-      SALOMEDS::SObject_var aHypSO = mySMESHGUI->GetStudy()->FindObjectID( HypoList[i] );
+      SALOMEDS::SObject_var aHypSO = SMESH::GetActiveStudyDocument()->FindObjectID( HypoList[i] );
       if ( !aHypSO->_is_nil() ) {
 	CORBA::Object_var anObject = aHypSO->GetObject();
 	if ( !CORBA::is_nil( anObject ) ) {
 	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
 	  if ( !aHyp->_is_nil() ) {
-	    if ( !mySMESHGUI->AddHypothesisOnMesh( aMesh, aHyp ) ) {
+	    if ( !SMESH::AddHypothesisOnMesh( aMesh, aHyp ) ) {
 	      // abort transaction
 	      op->abort();
 	      return false;
@@ -249,13 +284,13 @@ bool SMESHGUI_InitMeshDlg::ClickOnApply()
     }
     // assign algorithms
     for( int i = 0; i < AlgoList.count(); i++ ) {
-      SALOMEDS::SObject_var aHypSO = mySMESHGUI->GetStudy()->FindObjectID( AlgoList[i] );
+      SALOMEDS::SObject_var aHypSO = SMESH::GetActiveStudyDocument()->FindObjectID( AlgoList[i] );
       if ( !aHypSO->_is_nil() ) {
 	CORBA::Object_var anObject = aHypSO->GetObject();
 	if ( !CORBA::is_nil( anObject ) ) {
 	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
 	  if ( !aHyp->_is_nil() ) {
-	    if ( !mySMESHGUI->AddAlgorithmOnMesh( aMesh, aHyp ) ) {
+	    if ( !SMESH::AddHypothesisOnMesh( aMesh, aHyp ) ) {
 	      // abort transaction
 	      op->abort();
 	      return false;
@@ -289,20 +324,19 @@ void SMESHGUI_InitMeshDlg::SelectionIntoArgument()
 {
   QString aString = ""; 
 
-  int nbSel = mySMESHGUI->GetNameOfSelectedIObjects(mySelection, aString) ;
+  int nbSel = SMESH::GetNameOfSelectedIObjects(mySelection, aString) ;
 
   if ( myEditCurrentArgument == LineEditC1A1 ) {
     // geom shape
     if ( nbSel != 1 ) {
-      myGeomShape = GEOM::GEOM_Shape::_nil();
+      myGeomShape = GEOM::GEOM_Object::_nil();
       aString = "";
     } 
     else {
       Standard_Boolean testResult ;
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-      myGeomShape = mySMESHGUI->ConvertIOinGEOMShape(IO, testResult) ;
-      if( !testResult )  {
-	myGeomShape = GEOM::GEOM_Shape::_nil();
+      myGeomShape = SMESH::IObjectToInterface<GEOM::GEOM_Object>(IO) ;
+      if( myGeomShape->_is_nil() )  {
 	aString = "";
       }
     }

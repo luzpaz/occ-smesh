@@ -34,7 +34,6 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
-#include CORBA_CLIENT_HEADER(GEOM_Shape)
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
@@ -44,7 +43,6 @@
 #include "SALOME_NamingService.hxx"
 
 #include "SMESH_Gen.hxx"
-#include "SMESH_topo.hxx"
 #include "GEOM_Client.hxx"
 
 #include <map>
@@ -124,6 +122,8 @@ class SMESH_Gen_i:
   public virtual Engines_Component_i 
 {
 public:
+  // Get last created instance of the class
+  static SMESH_Gen_i* GetSMESHGen() { return mySMESHGen;}
   // Get ORB object
   static CORBA::ORB_var GetORB() { return myOrb;}
   // Get SMESH module's POA object
@@ -165,7 +165,11 @@ public:
     throw ( SALOME::SALOME_Exception );
   
   // Create empty mesh on a shape
-  SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Shape_ptr theShape )
+  SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
+    throw ( SALOME::SALOME_Exception );
+
+  //  Create mesh(es) and import data from UNV file
+  SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName )
     throw ( SALOME::SALOME_Exception );
 
   //  Create mesh(es) and import data from MED file
@@ -173,19 +177,23 @@ public:
                                           SMESH::DriverMED_ReadStatus& theStatus )
     throw ( SALOME::SALOME_Exception );
 
+  //  Create mesh(es) and import data from STL file
+  SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName )
+    throw ( SALOME::SALOME_Exception );
+
   // Compute mesh on a shape
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
-                          GEOM::GEOM_Shape_ptr  theShape )
+                          GEOM::GEOM_Object_ptr  theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
   // Returns true if mesh contains enough data to be computed
   CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
-                                   GEOM::GEOM_Shape_ptr  theShape )
+                                   GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
   // Get sub-shapes unique ID's list
-  SMESH::long_array* GetSubShapesId( GEOM::GEOM_Shape_ptr      theMainShape,
-                                     const SMESH::shape_array& theListOfSubShape )
+  SMESH::long_array* GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
+                                     const SMESH::object_array& theListOfSubShape )
     throw ( SALOME::SALOME_Exception );
 
 
@@ -195,8 +203,8 @@ public:
 
   // Save SMESH data
   SALOMEDS::TMPFile* Save( SALOMEDS::SComponent_ptr theComponent,
-			   const char*              theURL,
-			   bool                     isMultiFile );
+			 const char*              theURL,
+			 bool                     isMultiFile );
   // Load SMESH data
   bool Load( SALOMEDS::SComponent_ptr theComponent,
 	     const SALOMEDS::TMPFile& theStream,
@@ -214,6 +222,9 @@ public:
 
   // Create filter manager
   SMESH::FilterManager_ptr CreateFilterManager();
+
+  // Return a pattern mesher
+  SMESH::SMESH_Pattern_ptr GetPattern();
 
   // Clears study-connected data when it is closed
   void Close( SALOMEDS::SComponent_ptr theComponent );
@@ -273,6 +284,8 @@ public:
   static long GetSubMeshOnFaceTag();
   static long GetSubMeshOnSolidTag();
   static long GetSubMeshOnCompoundTag();
+  static long GetSubMeshOnWireTag();
+  static long GetSubMeshOnShellTag();
   static long GetNodeGroupsTag();
   static long GetEdgeGroupsTag();
   static long GetFaceGroupsTag();
@@ -299,7 +312,7 @@ private:
   static PortableServer::POA_var myPoa;         // POA reference
   static SALOME_NamingService*   myNS;          // Naming Service
   static SALOME_LifeCycleCORBA*  myLCC;         // Life Cycle CORBA
-
+  static SMESH_Gen_i*            mySMESHGen;    // Point to last created instance of the class
   ::SMESH_Gen               myGen;              // SMESH_Gen local implementation
 
   // hypotheses managing

@@ -28,6 +28,8 @@
 #include "DriverMED_Family.h"
 #include <sstream>	
 
+using namespace std;
+
 //=============================================================================
 /*!
  *  Split each group from list <aGroups> on some parts (families)
