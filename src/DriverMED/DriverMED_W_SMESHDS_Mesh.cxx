@@ -620,7 +620,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         if (anElem->IsPoly()) {
           const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
             (const SMDS_PolyhedralVolumeOfNodes*) anElem;
-          if (!anElem) {
+          if (!aPolyedre) {
             MESSAGE("Warning: bad volumic element");
             continue;
           }

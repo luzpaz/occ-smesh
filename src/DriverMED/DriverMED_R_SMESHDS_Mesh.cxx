@@ -286,9 +286,24 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                 TInt aCurrPG_FirstNodeIndex = aIndex[iPG] - 1;
                 int nbNodes = aPolygoneInfo->GetNbConn(iPG);
                 std::vector<int> nodes_ids (nbNodes);
-                for (TInt inode = 0; inode < nbNodes; inode++) {
-                  nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
-                }
+                //for (TInt inode = 0; inode < nbNodes; inode++) {
+                //  nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
+                //}
+#ifdef _EDF_NODE_IDS_
+		if (anIsNodeNum) {
+		  for (TInt inode = 0; inode < nbNodes; inode++) {
+		    nodes_ids[inode] = aNodeInfo->GetElemNum(aConn[aCurrPG_FirstNodeIndex + inode] - 1);
+		  }
+		} else {
+		  for (TInt inode = 0; inode < nbNodes; inode++) {
+		    nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
+		  }
+		}
+#else
+		for (TInt inode = 0; inode < nbNodes; inode++) {
+		  nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
+		}
+#endif
 
                 bool isRenum = false;
                 SMDS_MeshElement* anElement = NULL;
@@ -359,9 +374,24 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                 int aCurrPE_FirstNodeIndex = aFacesIndex[aCurrPE_FirstFaceIndex] - 1;
                 int nbPENodes = aPolyedreInfo->GetNbConn(iPE);
                 std::vector<int> nodes_ids (nbPENodes);
-                for (int inode = 0; inode < nbPENodes; inode++) {
-                  nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
-                }
+                //for (int inode = 0; inode < nbPENodes; inode++) {
+                //  nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
+                //}
+#ifdef _EDF_NODE_IDS_
+		if (anIsNodeNum) {
+		  for (int inode = 0; inode < nbPENodes; inode++) {
+		    nodes_ids[inode] = aNodeInfo->GetElemNum(aConn[aCurrPE_FirstNodeIndex + inode] - 1);
+		  }
+		} else {
+		  for (int inode = 0; inode < nbPENodes; inode++) {
+		    nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
+		  }
+		}
+#else
+		for (int inode = 0; inode < nbPENodes; inode++) {
+		  nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
+		}
+#endif
 
                 bool isRenum = false;
                 SMDS_MeshElement* anElement = NULL;
