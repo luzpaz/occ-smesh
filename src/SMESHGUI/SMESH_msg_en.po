@@ -1537,6 +1537,12 @@ msgstr "Revolution of 2D elements"
 
 #----------------------------------------------------
 
+msgid "SMESHGUI_SewingDlg::CREATE_POLYGONS_INSTEAD_SPLITTING"
+msgstr "Create polygons instead of splitting"
+
+msgid "SMESHGUI_SewingDlg::CREATE_POLYEDRS_NEAR_BOUNDARY"
+msgstr "Replace affected volumes by polyedres"
+
 msgid "SMESHGUI_SewingDlg::MERGE_EQUAL_ELEMENTS"
 msgstr "Merge equal elements"
 
@@ -1722,6 +1728,12 @@ msgstr "Mesh faces"
 
 msgid "SMESHGUI_MeshPatternDlg::MESH_VOLUMES"
 msgstr "Mesh volumes"
+
+msgid "SMESHGUI_MeshPatternDlg::CREATE_POLYGONS_NEAR_BOUNDARY"
+msgstr "Replace neighbour faces by polygons"
+
+msgid "SMESHGUI_MeshPatternDlg::CREATE_POLYEDRS_NEAR_BOUNDARY"
+msgstr "Replace neighbour volumes by polyedres"
 
 #----------------------------------------------------
 
