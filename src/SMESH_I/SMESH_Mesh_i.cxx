@@ -1104,9 +1104,25 @@ void SMESH_Mesh_i::ExportMED(const char *file, CORBA::Boolean auto_groups) throw
 
   char* aMeshName = NULL;
   SALOMEDS::SObject_var aMeshSO = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( _this() ) ) ) );
-  if ( !aMeshSO->_is_nil() ) 
-    aMeshName = aMeshSO->GetName();
-
+  if ( !aMeshSO->_is_nil() )
+    {
+      aMeshName = aMeshSO->GetName();
+      //SCRUTE(file);
+      //SCRUTE(aMeshName);
+      //SCRUTE(aMeshSO->GetID());
+      SALOMEDS::GenericAttribute_var anAttr;
+      SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+      SALOMEDS::AttributeExternalFileDef_var aFileName;
+      anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeExternalFileDef");
+      aFileName = SALOMEDS::AttributeExternalFileDef::_narrow(anAttr);
+      ASSERT(!aFileName->_is_nil());
+      aFileName->SetValue(file);
+      SALOMEDS::AttributeFileType_var aFileType;
+      anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeFileType");
+      aFileType = SALOMEDS::AttributeFileType::_narrow(anAttr);
+      ASSERT(!aFileType->_is_nil());
+      aFileType->SetValue("FICHIERMED");
+    }
   _impl->ExportMED( file, aMeshName, auto_groups );
 }
 
