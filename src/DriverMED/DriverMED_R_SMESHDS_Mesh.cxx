@@ -257,16 +257,23 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		aNbNodes = 8;
 		break;
 	      }
-//	      if(anIsElemNum)
-//		cout<<aCellInfo->GetElemNum(iElem)<<": ";
-//	      else
-//		cout<<iElem<<": ";
 	      vector<med_int> aNodeIds(aNbNodes);
-	      for(int i = 0; i < aNbNodes; i++){
-		aNodeIds.at(i) = aCellInfo->GetConn(iElem,i);
-		//cout<<aNodeIds.at(i)<<", ";
+	      if(anIsNodeNum) {
+		for(int i = 0; i < aNbNodes; i++){
+		  aNodeIds.at(i) = aNodeInfo->GetElemNum(aCellInfo->GetConn(iElem,i)-1);
+		}
+	      }else{
+		for(int i = 0; i < aNbNodes; i++){
+		  aNodeIds.at(i) = aCellInfo->GetConn(iElem,i);
+		}
 	      }
-	      //cout<<endl;
+	      //if(anIsElemNum)
+	      //	cout<<aCellInfo->GetElemNum(iElem)<<": ";
+	      //else
+	      //	cout<<iElem<<": ";
+	      //for(int i = 0; i < aNbNodes; i++){
+	      //	cout<<aNodeIds.at(i)<<", ";
+	      //}
 
 	      bool isRenum = false;
 	      SMDS_MeshElement* anElement = NULL;

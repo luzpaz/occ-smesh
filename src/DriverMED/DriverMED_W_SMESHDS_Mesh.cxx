@@ -208,6 +208,9 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 
     // Storing SMDS nodes to the MED file for the MED mesh
     //----------------------------------------------------
+    typedef map<med_int,med_int> TNodeIdMap;
+    TNodeIdMap aNodeIdMap;
+
     med_int aNbElems = myMesh->NbNodes();
     MED::TIntVector anElemNums(aNbElems);
     MED::TIntVector aFamilyNums(aNbElems);
@@ -218,7 +221,9 @@ void DriverMED_W_SMESHDS_Mesh::Add()
       aCoordinates[iCoord] = aNode->X();
       aCoordinates[iCoord+1] = aNode->Y();
       aCoordinates[iCoord+2] = aNode->Z();
-      anElemNums[iNode] = aNode->GetID();
+      TNodeIdMap::key_type aNodeId = aNode->GetID();
+      anElemNums[iNode] = aNodeId;
+      aNodeIdMap[aNodeId] = iNode+1;
       //cout<<aNode->GetID()<<": "<<aNode->X()<<", "<<aNode->Y()<<", "<<aNode->Z()<<endl;
 
       if (anElemFamMap.find(aNode) != anElemFamMap.end())
@@ -264,13 +269,9 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
 	for(med_int iNode = 0; iNode < aNbConnectivity && aNodesIter->more(); iNode++){
 	  const SMDS_MeshElement* aNode = aNodesIter->next();
-	  aConnectivity[iConn+iNode] = aNode->GetID();
+	  aConnectivity[iConn+iNode] = aNodeIdMap[aNode->GetID()];
 	}
 	anElemNums[iElem] = anElem->GetID();
-	//cout<<anElem->GetID()<<": ";
-	//for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
-	//  cout<<(*aConnectivity)[iConn+iNode]<<", ";
-	//cout<<endl;
 
         if (anElemFamMap.find(anElem) != anElemFamMap.end())
           aFamilyNums[iElem] = anElemFamMap[anElem];
@@ -341,19 +342,15 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	// There is some differnce between SMDS and MED in cells mapping
 	switch(aNbNodes){
 	case 4:
-	  (*aConnectivity)[aSize+0] = aVector[0];
-	  (*aConnectivity)[aSize+1] = aVector[1];
-	  (*aConnectivity)[aSize+2] = aVector[3];  
-	  (*aConnectivity)[aSize+3] = aVector[2];  
+	  (*aConnectivity)[aSize+0] = aNodeIdMap[aVector[0]];
+	  (*aConnectivity)[aSize+1] = aNodeIdMap[aVector[1]];
+	  (*aConnectivity)[aSize+2] = aNodeIdMap[aVector[3]];  
+	  (*aConnectivity)[aSize+3] = aNodeIdMap[aVector[2]];  
 	default:
 	  for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
-	    (*aConnectivity)[aSize+iNode] = aVector[iNode];
+	    (*aConnectivity)[aSize+iNode] = aNodeIdMap[aVector[iNode]];
 	}
 	anElemNums->push_back(anElem->GetID());
-	//cout<<anElem->GetID()<<": ";
-	//for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
-	//  cout<<(*aConnectivity)[aSize+iNode]<<", ";
-	//cout<<endl;
 
         if (anElemFamMap.find(anElem) != anElemFamMap.end())
           aFamilyNums->push_back(anElemFamMap[anElem]);
@@ -464,14 +461,14 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	// There is some difference between SMDS and MED in cells mapping
 	switch(aNbNodes){
 	case 5:
-	  (*aConnectivity)[aSize+0] = aVector[0];
-	  (*aConnectivity)[aSize+1] = aVector[3];
-	  (*aConnectivity)[aSize+2] = aVector[2];  
-	  (*aConnectivity)[aSize+3] = aVector[1];  
-	  (*aConnectivity)[aSize+4] = aVector[4];  
+	  (*aConnectivity)[aSize+0] = aNodeIdMap[aVector[0]];
+	  (*aConnectivity)[aSize+1] = aNodeIdMap[aVector[3]];
+	  (*aConnectivity)[aSize+2] = aNodeIdMap[aVector[2]];  
+	  (*aConnectivity)[aSize+3] = aNodeIdMap[aVector[1]];  
+	  (*aConnectivity)[aSize+4] = aNodeIdMap[aVector[4]];  
 	default:
 	  for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
-	    (*aConnectivity)[aSize+iNode] = aVector[iNode];
+	    (*aConnectivity)[aSize+iNode] = aNodeIdMap[aVector[iNode]];
 	}
 	anElemNums->push_back(anElem->GetID());
 
