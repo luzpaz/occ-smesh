@@ -296,13 +296,14 @@ SMESH::point_array*
 //purpose  : 
 //=======================================================================
 
-CORBA::Boolean SMESH_Pattern_i::MakeMesh(SMESH::SMESH_Mesh_ptr theMesh)
+CORBA::Boolean SMESH_Pattern_i::MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
+                                          const CORBA::Boolean  CreatePoly)
 {
   ::SMESH_Mesh* aMesh = getMesh( theMesh );
   if ( !aMesh )
     return false;
 
-  return myPattern.MakeMesh( aMesh );
+  return myPattern.MakeMesh( aMesh, CreatePoly );
 }
 
 //=======================================================================

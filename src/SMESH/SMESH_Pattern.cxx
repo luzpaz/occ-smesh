@@ -2681,6 +2681,9 @@ void SMESH_Pattern::mergePoints (map<TNodeSet, list<list<int> > >&  indGroups,
       }
     }
   }
+
+  // save links to update adjacent faces in MakeMesh() method
+  myLinks = indGroups;
 }
 
 //=======================================================================
@@ -3135,7 +3138,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshVolume* theVolume,
 //           coordinates computed by either of Apply...() methods
 //=======================================================================
 
-bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
+bool SMESH_Pattern::MakeMesh (SMESH_Mesh* theMesh, bool toCreatePoly)
 {
   MESSAGE(" ::MakeMesh() " );
   if ( !myIsComputed )
@@ -3366,6 +3369,46 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
     }
     // remove refined elements
     editor.Remove( elemIDs, false );
+  }
+
+  if (toCreatePoly && myIs2D) {
+    // replace adjacent faces by polygons, inserting nodes in common link
+
+    map< TNodeSet, list< list<int> > >::iterator linksIt;
+    for (linksIt = myLinks.begin(); linksIt != myLinks.end(); linksIt++) {
+      // end nodes of link
+      set<const SMDS_MeshNode*> ends = linksIt->first;
+      set<const SMDS_MeshNode*>::iterator endsIt = ends.begin();
+      const SMDS_MeshNode* n1 = *endsIt;
+      endsIt++;
+      const SMDS_MeshNode* n2 = *endsIt;
+
+      // middle nodes of link (to be inserted in adjacent faces)
+      list<const SMDS_MeshNode*> link_nodes;
+
+      list< list<int> > coincident_links = linksIt->second;
+      list<int>& link = coincident_links.front();
+      list<int>::iterator linkIt = link.begin();
+      for (; linkIt != link.end(); linkIt++) {
+        if (onMeshElements)
+          link_nodes.push_back(nodesVector[ *linkIt ]);
+        else
+          link_nodes.push_back(pointNodeMap[ & myPoints[ *linkIt ]]);
+      }
+
+      // update all adjacent faces
+      set<const SMDS_MeshElement*> elemSet, avoidSet;
+      while (true) {
+        const SMDS_MeshElement* adjElem =
+          SMESH_MeshEditor::FindFaceInSet(n1, n2, elemSet, avoidSet);
+        if (adjElem) {
+          SMESH_MeshEditor editor (theMesh); 
+          editor.InsertNodesIntoLink(adjElem, n1, n2, link_nodes, toCreatePoly);
+        } else {
+          break;
+        }
+      }
+    }
   }
 
   return setErrorCode( ERR_OK );

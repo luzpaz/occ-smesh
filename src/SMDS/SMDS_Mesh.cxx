@@ -1386,6 +1386,55 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
 }
 
 //=======================================================================
+//function : FindFace
+//purpose  : find polygon
+//=======================================================================
+
+const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
+{
+  int nbnodes = nodes_ids.size();
+  std::vector<const SMDS_MeshNode *> poly_nodes (nbnodes);
+  for (int inode = 0; inode < nbnodes; inode++) {
+    const SMDS_MeshNode * node = FindNode(nodes_ids[inode]);
+    if (node == NULL) return NULL;
+  }
+  return FindFace(poly_nodes);
+}
+
+const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<const SMDS_MeshNode *> nodes)
+{
+  int nbNodes = nodes.size();
+  if (nbNodes < 1) return NULL;
+
+  bool isFound = true;
+  const SMDS_MeshFace * face;
+  set<const SMDS_MeshFace *> faces;
+
+  for (int inode = 0; inode < nbNodes && isFound; inode++) {
+    set<const SMDS_MeshFace *> new_faces;
+
+    SMDS_ElemIteratorPtr itF = nodes[inode]->facesIterator();
+    while (itF->more()) {
+      face = static_cast<const SMDS_MeshFace *>(itF->next());
+      if (face->NbNodes() == nbNodes) {
+        if (inode == 0 || faces.find(face) != faces.end()) {
+          new_faces.insert(face);
+        }
+      }
+    }
+    faces = new_faces;
+    if (new_faces.size() == 0) {
+      isFound = false;
+    }
+  }
+
+  if (isFound)
+    return face;
+
+  return NULL;
+}
+
+//=======================================================================
 //function : DumpNodes
 //purpose  : 
 //=======================================================================
@@ -2129,4 +2178,3 @@ void SMDS_Mesh::Renumber (const bool isNodes, const int  startID, const int  del
     ID += deltaID;
   }
 }
-

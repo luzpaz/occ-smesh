@@ -50,6 +50,8 @@
 #include <vtkCell3D.h>
 #include <vtkQuad.h>
 #include <vtkTriangle.h>
+#include <vtkPolygon.h>
+#include <vtkConvexPointSet.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkCellArray.h>
@@ -332,12 +334,15 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
           {
 	    vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
 	    vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
-	    vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
+            vtkPolygon*  aPG  = vtkPolygon::SafeDownCast(aCell);
+
+	    vtkCell3D*         a3d = vtkCell3D::SafeDownCast(aCell);
+            vtkConvexPointSet* aPH = vtkConvexPointSet::SafeDownCast(aCell);
 
 	    if ( aTri && myFilterType == SMESHGUI_TriaFilter || 
 		 aQua && myFilterType == SMESHGUI_QuadFilter ||
-		 ( aTri || aQua ) && myFilterType == SMESHGUI_FaceFilter ||
-		 a3d && myFilterType == SMESHGUI_VolumeFilter )
+		 ( aTri || aQua || aPG ) && myFilterType == SMESHGUI_FaceFilter ||
+		 ( a3d || aPH ) && myFilterType == SMESHGUI_VolumeFilter )
             {
               int anObjId = aVisualObj->GetElemObjId( i );
               myIds.Add( anObjId );

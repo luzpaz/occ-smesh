@@ -103,9 +103,12 @@ module SMESH
 
     /*!
      * Create nodes and elements in <theMesh> using nodes
-     * coordinates computed by either of Apply...() methods
+     * coordinates computed by either of Apply...() methods.
+     * If CreatePoly is TRUE, replace adjacent faces by polygons,
+     * inserting new nodes in common links.
      */
-    boolean MakeMesh(in SMESH_Mesh theMesh);
+    boolean MakeMesh (in SMESH_Mesh theMesh,
+		      in boolean    CreatePoly);
 
     /*!
      * Return the loaded pattern in the string form to be saved in file

@@ -1274,6 +1274,8 @@ void laplacianSmooth(SMESHDS_Mesh *                       theMesh,
     if ( theElems.find( elem ) == theElems.end() )
       continue;
 
+    if (elem->IsPoly())
+      continue;
     int i = 0, iNode = 0;
     const SMDS_MeshNode* aNodes [4];
     SMDS_ElemIteratorPtr itN = elem->nodesIterator();
@@ -1858,7 +1860,8 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
           for (int inode = 0; inode < nbPolygonNodes; inode++) {
             polygon_nodes[inode] = nodes[inode];
           }
-          aMesh->AddPolygonalFace(polygon_nodes);
+          if (!hasFreeLinks || !aMesh->FindFace(polygon_nodes))
+            aMesh->AddPolygonalFace(polygon_nodes);
         }
         break;
       }
@@ -2691,6 +2694,92 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
     int nbUniqueNodes = nodeSet.size();
     if ( nbNodes != nbUniqueNodes ) // some nodes stick
     {
+      // Polygons and Polyhedral volumes
+      if (elem->IsPoly()) {
+
+        if (elem->GetType() == SMDSAbs_Face) {
+          // Polygon
+          if (nbUniqueNodes < 3) {
+            isOk = false;
+          } else {
+            // get simple seq of nodes
+            const SMDS_MeshNode* simpleNodes[ nbNodes ];
+            int iSimple = 0;
+
+            simpleNodes[iSimple++] = curNodes[0];
+            for (iCur = 1; iCur < nbNodes; iCur++) {
+              if (curNodes[iCur] != simpleNodes[iSimple - 1]) {
+                simpleNodes[iSimple++] = curNodes[iCur];
+              }
+            }
+            int nbSimple = iSimple;
+            if (simpleNodes[nbSimple - 1] == simpleNodes[0]) {
+              nbSimple--;
+            }
+
+            // separate cycles
+            bool foundCycle = (nbSimple > nbUniqueNodes);
+            while (foundCycle) {
+              foundCycle = false;
+              set<const SMDS_MeshNode*> cycleSet;
+              for (iSimple = 0; iSimple < nbSimple && !foundCycle; iSimple++) {
+                const SMDS_MeshNode* n = simpleNodes[iSimple];
+                if (!cycleSet.insert( n ).second) {
+                  foundCycle = true;
+
+                  // separate cycle
+                  int iC = 0, curLast = iSimple;
+                  for (; iC < curLast; iC++) {
+                    if (simpleNodes[iC] == n) break;
+                  }
+                  int cycleLen = curLast - iC;
+                  if (cycleLen > 2) {
+                    // create sub-element
+                    vector<const SMDS_MeshNode *> poly_nodes (cycleLen);
+                    for (int ii = 0; iC < curLast; iC++) {
+                      poly_nodes[ii++] = simpleNodes[iC];
+                    }
+                    SMDS_MeshElement* newElem = aMesh->AddPolygonalFace(poly_nodes);
+                    if (aShapeId)
+                      aMesh->SetMeshElementOnShape(newElem, aShapeId);
+                  }
+                  // put the rest nodes from the first cycle position
+                  for (iC = curLast + 1; iC < nbSimple; iC++) {
+                    simpleNodes[iC - cycleLen] = simpleNodes[iC];
+                  }
+                  nbSimple -= cycleLen;
+                }
+              } // for (iSimple = 0; iSimple < nbSimple; iSimple++)
+            } // while (foundCycle)
+
+            if (iSimple > 2) {
+              aMesh->ChangeElementNodes(elem, simpleNodes, nbSimple);
+            } else {
+              isOk = false;
+            }
+          }
+
+        } else if (elem->GetType() == SMDSAbs_Volume) {
+          // Polyhedral volume
+          if (nbUniqueNodes < 4) {
+            isOk = false;
+          } else {
+            // each face has to be analized in order to check volume validity
+            //aMesh->ChangeElementNodes(elem, uniqueNodes, nbUniqueNodes);
+            isOk = false;
+          }
+
+        } else {
+          isOk = false;
+        }
+
+        if (!isOk)
+          rmElemIds.push_back(elem->GetID());
+
+        continue;
+      }
+
+      // Regular elements
       switch ( nbNodes ) {
       case 2: ///////////////////////////////////// EDGE
         isOk = false; break;
@@ -3930,17 +4019,31 @@ SMESH_MeshEditor::Sew_Error
           bool isNewFace = setOfFaceNodeSet.insert( faceNodeSet ).second;
           if ( isNewFace ) {
             // no such a face is given but it still can exist, check it
-            if ( nbNodes == 3 )
+            if ( nbNodes == 3 ) {
               aFreeFace = aMesh->FindFace( fNodes[0],fNodes[1],fNodes[2] );
-            else
+            } else if ( nbNodes == 4 ) {
               aFreeFace = aMesh->FindFace( fNodes[0],fNodes[1],fNodes[2],fNodes[3] );
+            } else {
+              vector<const SMDS_MeshNode *> poly_nodes (nbNodes);
+              for (int inode = 0; inode < nbNodes; inode++) {
+                poly_nodes[inode] = fNodes[inode];
+              }
+              aFreeFace = aMesh->FindFace(poly_nodes);
+            }
           }
           if ( !aFreeFace ) {
             // create a temporary face
-            if ( nbNodes == 3 )
+            if ( nbNodes == 3 ) {
               aFreeFace = aTmpFacesMesh.AddFace( fNodes[0],fNodes[1],fNodes[2] );
-            else
+            } else if ( nbNodes == 4 ) {
               aFreeFace = aTmpFacesMesh.AddFace( fNodes[0],fNodes[1],fNodes[2],fNodes[3] );
+            } else {
+              vector<const SMDS_MeshNode *> poly_nodes (nbNodes);
+              for (int inode = 0; inode < nbNodes; inode++) {
+                poly_nodes[inode] = fNodes[inode];
+              }
+              aFreeFace = aTmpFacesMesh.AddPolygonalFace(poly_nodes);
+            }
           }
           if ( aFreeFace )
             freeFaceList.push_back( aFreeFace );

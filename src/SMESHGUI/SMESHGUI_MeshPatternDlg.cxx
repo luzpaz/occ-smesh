@@ -206,6 +206,9 @@ QFrame* SMESHGUI_MeshPatternDlg::createMainFrame( QWidget* theParent )
   // reverse check box
   myReverseChk = new QCheckBox( tr( "REVERSE" ), aPatGrp );
 
+  // CreatePoly check box
+  myCreatePolyChk = new QCheckBox( tr( "CREATE_POLYGONS_NEAR_BOUNDARY" ), aPatGrp );
+
   // Pictures 2d and 3d
   for ( int i = 0; i < 2; i++ )
   {
@@ -389,7 +392,9 @@ bool SMESHGUI_MeshPatternDlg::onApply()
         myGeomObj[ Object ], myGeomObj[ Vertex1 ], myGeomObj[ Vertex2 ] );
     }
 
-    if ( myPattern->MakeMesh( myMesh ) )
+    bool toCreatePoly = (myCreatePolyChk->isChecked() && (myType == Type_2d));
+
+    if ( myPattern->MakeMesh( myMesh, toCreatePoly ) )
     {
       mySelection->ClearIObjects();
       SMESHGUI* aCompGUI = SMESHGUI::GetSMESHGUI();
@@ -1121,6 +1126,7 @@ void SMESHGUI_MeshPatternDlg::onTypeChanged( int theType )
     mySelBtn [ Vertex2 ]->hide();
     mySelEdit[ Vertex2 ]->hide();
     myReverseChk->show();
+    myCreatePolyChk->show();
     myPicture2d->show();
     myPicture3d->hide();
     mySelLbl[ Object  ]->setText( tr( "FACE" ) );
@@ -1137,6 +1143,7 @@ void SMESHGUI_MeshPatternDlg::onTypeChanged( int theType )
     mySelBtn [ Vertex2 ]->show();
     mySelEdit[ Vertex2 ]->show();
     myReverseChk->hide();
+    myCreatePolyChk->hide();
     myPicture2d->hide();
     myPicture3d->show();
     mySelLbl[ Object  ]->setText( tr( "3D_BLOCK" ) );
@@ -1386,4 +1393,3 @@ int SMESHGUI_MeshPatternDlg::getNode( bool second ) const
 {
   return second ? myNode2->value() - 1 : myNode1->value() - 1;
 }
-

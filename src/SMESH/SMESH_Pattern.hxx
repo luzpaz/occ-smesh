@@ -128,7 +128,7 @@ class SMESH_Pattern {
   bool GetMappedPoints ( std::list<const gp_XYZ *> & thePoints ) const;
   // Return nodes coordinates computed by Apply() method
 
-  bool MakeMesh(SMESH_Mesh* theMesh);
+  bool MakeMesh (SMESH_Mesh* theMesh, bool toCreatePoly = false);
   // Create nodes and elements in <theMesh> using nodes
   // coordinates computed by either of Apply...() methods
 
@@ -306,6 +306,8 @@ class SMESH_Pattern {
   std::map< int, const SMDS_MeshNode*> myXYZIdToNodeMap; // map id to node of a refined element
   std::vector<const SMDS_MeshElement*> myElements; // refined elements
   std::vector<const SMDS_MeshNode*> myOrderedNodes;
+
+  std::map< TNodeSet, std::list< std::list<int> > > myLinks;
 };
 
 

@@ -260,6 +260,10 @@ public:
                                        const SMDS_MeshNode *n2,
                                        const SMDS_MeshNode *n3,
                                        const SMDS_MeshNode *n4);
+
+  const SMDS_MeshFace *FindFace(std::vector<int> nodes_ids) const;
+  static const SMDS_MeshFace* FindFace(std::vector<const SMDS_MeshNode *> nodes);
+
   int MaxNodeID() const;
   int MinNodeID() const;
   int MaxElementID() const;
