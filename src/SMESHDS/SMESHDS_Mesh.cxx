@@ -182,6 +182,25 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
 }
 
 //=======================================================================
+//function : ChangePolygonNodes
+//purpose  : 
+//=======================================================================
+bool SMESHDS_Mesh::ChangePolygonNodes
+                   (const SMDS_MeshElement * elem,
+                    std::vector<const SMDS_MeshNode*> nodes)
+{
+  ASSERT(nodes.size() > 3);
+
+  int nb = nodes.size();
+  const SMDS_MeshNode* nodes_array [nb];
+  for (int inode = 0; inode < nb; inode++) {
+    nodes_array[inode] = nodes[inode];
+  }
+
+  return ChangeElementNodes(elem, nodes_array, nb);
+}
+
+//=======================================================================
 //function : ChangePolyhedronNodes
 //purpose  : 
 //=======================================================================

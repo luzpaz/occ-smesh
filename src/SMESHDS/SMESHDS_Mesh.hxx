@@ -186,6 +186,8 @@ public:
   bool ChangeElementNodes(const SMDS_MeshElement * elem,
                           const SMDS_MeshNode    * nodes[],
                           const int                nbnodes);
+  bool ChangePolygonNodes(const SMDS_MeshElement * elem,
+                          std::vector<const SMDS_MeshNode*> nodes);
   bool ChangePolyhedronNodes(const SMDS_MeshElement * elem,
                              std::vector<const SMDS_MeshNode*> nodes,
                              std::vector<int>                  quantities);

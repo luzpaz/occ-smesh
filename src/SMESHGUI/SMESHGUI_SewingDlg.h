@@ -111,6 +111,7 @@ private:
     QLineEdit* LineEdit5;
     QLineEdit* LineEdit6;
     QCheckBox* CheckBoxMerge;
+    QCheckBox* CheckBoxPoly;
    
 private slots:
 

@@ -189,7 +189,8 @@ class SMESH_MeshEditor {
                            const SMDS_MeshNode* theSide2FirstNode,
                            const SMDS_MeshNode* theSide2SecondNode,
                            const SMDS_MeshNode* theSide2ThirdNode = 0,
-                           bool                 theSide2IsFreeBorder = true);
+                           const bool           theSide2IsFreeBorder = true,
+                           const bool           toCreatePoly = false);
   // Sew the free border to the side2 by replacing nodes in
   // elements on the free border with nodes of the elements
   // of the side 2. If nb of links in the free border and
@@ -226,9 +227,10 @@ class SMESH_MeshEditor {
   void InsertNodesIntoLink(const SMDS_MeshElement*          theFace,
                            const SMDS_MeshNode*             theBetweenNode1,
                            const SMDS_MeshNode*             theBetweenNode2,
-                           std::list<const SMDS_MeshNode*>& theNodesToInsert);
-  // insert theNodesToInsert into theFace between theBetweenNode1
-  // and theBetweenNode2 and split theElement.
+                           std::list<const SMDS_MeshNode*>& theNodesToInsert,
+                           const bool                       toCreatePoly = false);
+  // insert theNodesToInsert into theFace between theBetweenNode1 and theBetweenNode2.
+  // If toCreatePoly is true, replace theFace by polygon, else split theFace.
 
   static int SortQuadNodes (const SMDS_Mesh * theMesh,
                             int               theNodeIds[] );

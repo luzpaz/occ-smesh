@@ -657,7 +657,8 @@ module SMESH
                               in long LastNodeID1,
                               in long FirstNodeID2,
                               in long SecondNodeID2,
-                              in long LastNodeID2);
+                              in long LastNodeID2,
+			      in boolean CreatePoly);
 
     Sew_Error SewConformFreeBorders (in long FirstNodeID1,
                                      in long SecondNodeID1,

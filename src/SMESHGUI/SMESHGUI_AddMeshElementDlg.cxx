@@ -593,10 +593,13 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   myBusy = true;
   myEditCurrentArgument->setText( aString );
   myBusy = false;
-  if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes>=3 ) {
-  } else if (myIsPoly && myElementType == SMDSAbs_Volume && nbNodes>=4){
-  } else if (myNbNodes != nbNodes)
+  if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes >= 3 ) {
+    myNbNodes = nbNodes;
+  } else if (myIsPoly && myElementType == SMDSAbs_Volume && nbNodes >= 4) {
+    myNbNodes = nbNodes;
+  } else if (myNbNodes != nbNodes) {
     return;
+  }
 
   // OK
 

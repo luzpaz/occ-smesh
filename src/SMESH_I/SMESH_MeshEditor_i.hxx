@@ -164,7 +164,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                    CORBA::Long LastNodeID1,
                    CORBA::Long FirstNodeID2,
                    CORBA::Long SecondNodeID2,
-                   CORBA::Long LastNodeID2);
+                   CORBA::Long LastNodeID2,
+                   CORBA::Boolean CreatePoly);
   SMESH::SMESH_MeshEditor::Sew_Error
     SewConformFreeBorders(CORBA::Long FirstNodeID1,
                           CORBA::Long SecondNodeID1,

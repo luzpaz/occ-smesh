@@ -28,12 +28,14 @@
 
 #include "SMESH_MeshEditor.hxx"
 
-#include "SMESH_ControlsDef.hxx"
-
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
+
 #include "SMESH_subMesh.hxx"
 #include "SMESH_ControlsDef.hxx"
 
@@ -51,13 +53,9 @@
 #include <gp.hxx>
 #include <gp_Pln.hxx>
 #include <BRep_Tool.hxx>
-#include <SMDS_EdgePosition.hxx>
 #include <Geom_Curve.hxx>
 
-
 #include <map>
-
-#include "utilities.h"
 
 using namespace std;
 using namespace SMESH::Controls;
@@ -2365,7 +2363,7 @@ void SMESH_MeshEditor::Transform (set<const SMDS_MeshElement*> & theElems,
     SMDS_ElemIteratorPtr itN = elem->nodesIterator();
     while ( itN->more() ) {
 
-      // check if a node has been already transormed
+      // check if a node has been already transformed
       const SMDS_MeshNode* node =
         static_cast<const SMDS_MeshNode*>( itN->next() );
       if (nodeMap.find( node ) != nodeMap.end() )
@@ -2431,6 +2429,82 @@ void SMESH_MeshEditor::Transform (set<const SMDS_MeshElement*> & theElems,
     int nbNodes = elem->NbNodes();
     int elemType = elem->GetType();
 
+    if (elem->IsPoly()) {
+      // Polygon or Polyhedral Volume
+      switch ( elemType ) {
+      case SMDSAbs_Face:
+        {
+          vector<const SMDS_MeshNode*> poly_nodes (nbNodes);
+          int iNode = 0;
+          SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+          while (itN->more()) {
+            const SMDS_MeshNode* node =
+              static_cast<const SMDS_MeshNode*>(itN->next());
+            TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
+            if (nodeMapIt == nodeMap.end())
+              break; // not all nodes transformed
+            if (needReverse) {
+              // reverse mirrored faces and volumes
+              poly_nodes[nbNodes - iNode - 1] = (*nodeMapIt).second;
+            } else {
+              poly_nodes[iNode] = (*nodeMapIt).second;
+            }
+            iNode++;
+          }
+          if ( iNode != nbNodes )
+            continue; // not all nodes transformed
+
+          if ( theCopy ) {
+            aMesh->AddPolygonalFace(poly_nodes);
+          } else {
+            aMesh->ChangePolygonNodes(elem, poly_nodes);
+          }
+        }
+        break;
+      case SMDSAbs_Volume:
+        {
+          // ATTENTION: Reversing is not yet done!!!
+          const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
+            (const SMDS_PolyhedralVolumeOfNodes*) elem;
+          if (!aPolyedre) {
+            MESSAGE("Warning: bad volumic element");
+            continue;
+          }
+
+          vector<const SMDS_MeshNode*> poly_nodes;
+          vector<int> quantities;
+
+          bool allTransformed = true;
+          int nbFaces = aPolyedre->NbFaces();
+          for (int iface = 1; iface <= nbFaces && allTransformed; iface++) {
+            int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
+            for (int inode = 1; inode <= nbFaceNodes && allTransformed; inode++) {
+              const SMDS_MeshNode* node = aPolyedre->GetFaceNode(iface, inode);
+              TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
+              if (nodeMapIt == nodeMap.end()) {
+                allTransformed = false; // not all nodes transformed
+              } else {
+                poly_nodes.push_back((*nodeMapIt).second);
+              }
+            }
+            quantities.push_back(nbFaceNodes);
+          }
+          if ( !allTransformed )
+            continue; // not all nodes transformed
+
+          if ( theCopy ) {
+            aMesh->AddPolyhedralVolume(poly_nodes, quantities);
+          } else {
+            aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
+          }
+        }
+        break;
+      default:;
+      }
+      continue;
+    }
+
+    // Regular elements
     int* i = index[ FORWARD ];
     if ( needReverse && nbNodes > 2) // reverse mirrored faces and volumes
       if ( elemType == SMDSAbs_Face )
@@ -3136,7 +3210,8 @@ SMESH_MeshEditor::Sew_Error
                                    const SMDS_MeshNode* theSideFirstNode,
                                    const SMDS_MeshNode* theSideSecondNode,
                                    const SMDS_MeshNode* theSideThirdNode,
-                                   bool                 theSideIsFreeBorder)
+                                   const bool           theSideIsFreeBorder,
+                                   const bool           toCreatePoly)
 {
   MESSAGE("::SewFreeBorder()");
   Sew_Error aResult = SEW_OK;
@@ -3482,12 +3557,12 @@ SMESH_MeshEditor::Sew_Error
           list<const SMDS_MeshNode*> & nodeList = (*insertMapIt).second;
           const SMDS_MeshNode* n12 = nodeList.front(); nodeList.pop_front();
           const SMDS_MeshNode* n22 = nodeList.front(); nodeList.pop_front();
-          InsertNodesIntoLink( elem, n12, n22, nodeList );
+          InsertNodesIntoLink( elem, n12, n22, nodeList, toCreatePoly );
           // 2. perform insertion into the link of adjacent faces
           while (true) {
             const SMDS_MeshElement* adjElem = findAdjacentFace( n12, n22, elem );
             if ( adjElem )
-              InsertNodesIntoLink( adjElem, n12, n22, nodeList );
+              InsertNodesIntoLink( adjElem, n12, n22, nodeList, toCreatePoly );
             else
               break;
           }
@@ -3530,14 +3605,14 @@ SMESH_MeshEditor::Sew_Error
       const SMDS_MeshNode* n1 = nodeList.front(); nodeList.pop_front();
       const SMDS_MeshNode* n2 = nodeList.front(); nodeList.pop_front();
 
-      InsertNodesIntoLink( elem, n1, n2, nodeList );
+      InsertNodesIntoLink( elem, n1, n2, nodeList, toCreatePoly );
 
       if ( !theSideIsFreeBorder ) {
         // look for and insert nodes into the faces adjacent to elem
         while (true) {
           const SMDS_MeshElement* adjElem = findAdjacentFace( n1, n2, elem );
           if ( adjElem )
-            InsertNodesIntoLink( adjElem, n1, n2, nodeList );
+            InsertNodesIntoLink( adjElem, n1, n2, nodeList, toCreatePoly );
           else
             break;
         }
@@ -3560,7 +3635,8 @@ SMESH_MeshEditor::Sew_Error
 void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
                                            const SMDS_MeshNode*        theBetweenNode1,
                                            const SMDS_MeshNode*        theBetweenNode2,
-                                           list<const SMDS_MeshNode*>& theNodesToInsert)
+                                           list<const SMDS_MeshNode*>& theNodesToInsert,
+                                           const bool                  toCreatePoly)
 {
   if ( theFace->GetType() != SMDSAbs_Face ) return;
 
@@ -3599,6 +3675,52 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
     i3 = i4;
     i4 = iNode;
   } 
+
+  if (toCreatePoly || theFace->IsPoly()) {
+
+    iNode = 0;
+    vector<const SMDS_MeshNode *> poly_nodes (nbFaceNodes + theNodesToInsert.size());
+
+    // add nodes of face up to first node of link
+    bool isFLN = false;
+    nodeIt = theFace->nodesIterator();
+    while ( nodeIt->more() && !isFLN ) {
+      const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+      poly_nodes[iNode++] = n;
+      if (n == nodes[il1]) {
+        isFLN = true;
+      }
+    }
+
+    // add nodes to insert
+    list<const SMDS_MeshNode*>::iterator nIt = theNodesToInsert.begin();
+    for (; nIt != theNodesToInsert.end(); nIt++) {
+      poly_nodes[iNode++] = *nIt;
+    }
+
+    // add nodes of face starting from last node of link
+    while ( nodeIt->more() ) {
+      const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+      poly_nodes[iNode++] = n;
+    }
+
+    // edit or replace the face
+    SMESHDS_Mesh *aMesh = GetMeshDS();
+
+    if (theFace->IsPoly()) {
+      aMesh->ChangePolygonNodes(theFace, poly_nodes);
+
+    } else {
+      int aShapeId = FindShape( theFace );
+
+      SMDS_MeshElement* newElem = aMesh->AddPolygonalFace(poly_nodes);
+      if ( aShapeId && newElem )
+        aMesh->SetMeshElementOnShape( newElem, aShapeId );
+
+      aMesh->RemoveElement(theFace);
+    }
+    return;
+  }
 
   // put theNodesToInsert between theBetweenNode1 and theBetweenNode2
   int nbLinkNodes = 2 + theNodesToInsert.size();

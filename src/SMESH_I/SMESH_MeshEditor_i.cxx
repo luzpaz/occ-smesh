@@ -916,7 +916,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                      CORBA::Long LastNodeID1,
                                      CORBA::Long FirstNodeID2,
                                      CORBA::Long SecondNodeID2,
-                                     CORBA::Long LastNodeID2)
+                                     CORBA::Long LastNodeID2,
+                                     CORBA::Boolean CreatePoly)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -943,7 +944,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2FirstNode,
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
-                                            true));
+                                            true,
+                                            CreatePoly) );
 }
 
 //=======================================================================
@@ -982,7 +984,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2FirstNode,
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
-                                            true ));
+                                            true,
+                                            false) );
 }
 
 //=======================================================================
@@ -1021,7 +1024,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2FirstNode,
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
-                                            false));
+                                            false,
+                                            false) );
 }
 
 //=======================================================================
