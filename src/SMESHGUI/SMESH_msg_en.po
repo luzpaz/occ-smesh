@@ -1,4 +1,4 @@
-OA# This is a Qt message file in .po format.  Each msgid starts with
+# This is a Qt message file in .po format.  Each msgid starts with
 # a scope.  This scope should *NOT* be translated - eg. "Foo::Bar"
 # would be translated to "Pub", not "Foo::Pub".
 msgid ""
@@ -455,6 +455,10 @@ msgstr "Add Polygone"
 #Add Polyedre
 msgid "SMESH_ADD_POLYEDRE"
 msgstr "Add Polyedre"
+
+#Preview polyhedre
+msgid "SMESH_POLYEDRE_PREVIEW"
+msgstr "Preview polyedre"
 
 #Add Hexahedron
 msgid "SMESH_ADD_HEXAS"
