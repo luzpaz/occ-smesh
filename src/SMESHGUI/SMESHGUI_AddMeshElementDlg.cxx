@@ -234,10 +234,6 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( QWidget* parent, const c
     elemName = "POLYGON";
     myIsPoly = true;
   }
-  else {
-    elemName = "POLYHEDRON";
-    myIsPoly = true;
-  }
 
   QString iconName      = tr( QString("ICON_DLG_%1").arg(elemName) );
   QString buttonGrTitle = tr( QString("SMESH_%1").arg(elemName) );
@@ -335,7 +331,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( QWidget* parent, const c
   GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
   LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
 //  LineEditC1A1->setReadOnly( TRUE );
-  if (elemName != "POLYGON" && elemName != "POLYHEDRON")
+  if (!myIsPoly)
     LineEditC1A1->setValidator( new SMESHGUI_IdValidator( this, "validator", myNbNodes));
   GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
 
@@ -525,11 +521,6 @@ void SMESHGUI_AddMeshElementDlg::onTextChange(const QString& theNewText)
     bool aNodesOK = false;
     if (myIsPoly && myElementType == SMDSAbs_Face && aListId.count() >=3 ){
       myNbNodes = aListId.count();
-      cout << __LINE__<<": ENK::DEBUG myNbNodes" << myNbNodes << endl;
-      aNodesOK = true;
-    } else if (myIsPoly && myElementType == SMDSAbs_Volume && aListId.count() >=4 ){
-      myNbNodes = aListId.count();
-      cout << __LINE__<<": ENK::DEBUG myNbNodes" << myNbNodes << endl;
       aNodesOK = true;
     } else if (!myIsPoly){
       aNodesOK = (myNbNodes == aListId.count());
@@ -595,8 +586,6 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   myBusy = false;
   if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes >= 3 ) {
     myNbNodes = nbNodes;
-  } else if (myIsPoly && myElementType == SMDSAbs_Volume && nbNodes >= 4) {
-    myNbNodes = nbNodes;
   } else if (myNbNodes != nbNodes) {
     return;
   }
@@ -632,7 +621,6 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
     if (myIsPoly)
       switch ( myElementType ) {
       case SMDSAbs_Face  : aType = VTK_POLYGON; break;
-      case SMDSAbs_Volume: aType = VTK_CONVEX_POINT_SET; break;
       default: return;
       }
     else {
