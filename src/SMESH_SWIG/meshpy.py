@@ -37,7 +37,7 @@ class MeshHexaImpl:
     #   - hypothesis "NumberOfSegments" with number of segments <n>
     # --------------------
 
-    def Mesh1D(self, shape, n):
+    def Mesh1D(self, shape, n, propagate=0):
         hyp1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
         smeshgui.SetName(salome.ObjectToID(hyp1D), self.name+"/WireDiscretisation/"+str(self.cpt))
         self.mesh.AddHypothesis(shape, hyp1D)
@@ -46,6 +46,11 @@ class MeshHexaImpl:
         hyp.SetNumberOfSegments(n)
         smeshgui.SetName(salome.ObjectToID(hyp), self.name+"/Segments_"+str(n)+"/"+str(self.cpt))
         self.mesh.AddHypothesis(shape, hyp)
+
+        if propagate:
+            hypPro=smesh.CreateHypothesis("Propagation", "libStdMeshersEngine.so")
+            smeshgui.SetName(salome.ObjectToID(hypPro), self.name+"/Propagation/"+str(self.cpt))
+            self.mesh.AddHypothesis(shape, hypPro)
 
         self.cpt=self.cpt+1
 
@@ -92,6 +97,20 @@ class MeshHexaImpl:
         geompy.addToStudyInFather(self.piece, edge, geompy.SubShapeName(edge, self.piece))
         submesh = self.mesh.GetSubMesh(edge, self.name+"/SubMeshEdge/"+str(self.cpt))
         self.Mesh1D(edge, n)
+
+    # Creates sub-mesh of the mesh, created by constructor.
+    # This sub-mesh will be created on edge <edge> and propagate the hypothesis on all correspondant edges.
+    # Set algorithm and hypothesis for 1D discretization of the <edge> and all other propagate edges:
+    #   - algorithm  "Regular_1D"
+    #   - hypothesis "NumberOfSegments" with number of segments <n>
+    #   - hypothesis "Propagation" with number of segments <n>
+    # Note: the <edge> will be automatically published in study under the shape, given in constructor.
+    # --------------------
+
+    def Propagate(self, edge, n):
+        geompy.addToStudyInFather(self.piece, edge, geompy.SubShapeName(edge, self.piece))
+        submesh = self.mesh.GetSubMesh(edge, self.name+"/SubMeshEdge/"+str(self.cpt))
+        self.Mesh1D(edge, n, 1)
 
     # Computes mesh, created by constructor.
     # --------------------
