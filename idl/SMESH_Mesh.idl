@@ -378,7 +378,7 @@ module SMESH
     long NbQuadrangles()
       raises (SALOME::SALOME_Exception);
 
-    long NbPolygones()
+    long NbPolygons()
       raises (SALOME::SALOME_Exception);
 
     long NbVolumes()
@@ -396,7 +396,7 @@ module SMESH
     long NbPrisms()
       raises (SALOME::SALOME_Exception);
 
-    long NbPolyhedrones()
+    long NbPolyhedrons()
       raises (SALOME::SALOME_Exception);
 
     long NbSubMesh()

@@ -405,13 +405,13 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  myMeshNbFaces->setNum( (int)aMesh->NbFaces() );
 	  myMeshNbTriangles->setNum( (int)aMesh->NbTriangles() );
 	  myMeshNbQuadrangles->setNum( (int)aMesh->NbQuadrangles() );
-	  myMeshNbPolygones->setNum( (int)aMesh->NbPolygones() );
+	  myMeshNbPolygones->setNum( (int)aMesh->NbPolygons() );
 	  myMeshNbVolumes->setNum( (int)aMesh->NbVolumes() );
 	  myMeshNbTetra->setNum( (int)aMesh->NbTetras() );
 	  myMeshNbHexa->setNum( (int)aMesh->NbHexas() );
 	  myMeshNbPrism->setNum( (int)aMesh->NbPrisms() );
 	  myMeshNbPyra->setNum( (int)aMesh->NbPyramids() );
-	  myMeshNbPolyhedrones->setNum( (int)aMesh->NbPolyhedrones() );
+	  myMeshNbPolyhedrones->setNum( (int)aMesh->NbPolyhedrons() );
 	  return;
 	}
 	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( anObject );

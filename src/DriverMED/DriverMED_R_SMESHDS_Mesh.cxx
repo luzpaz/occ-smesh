@@ -280,12 +280,13 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
               TElemNum aIndex = aPolygoneInfo->GetIndex();
 
               TInt nbPolygons = aPolygoneInfo->GetNbElem();
+
               for (TInt iPG = 0; iPG < nbPolygons; iPG++) {
                 // get nodes
                 TInt aCurrPG_FirstNodeIndex = aIndex[iPG] - 1;
-                int aNbNodes = aPolygoneInfo->GetNbConn(iPG);
-                std::vector<int> nodes_ids (aNbNodes);
-                for (TInt inode = 0; inode < aNbNodes; inode++) {
+                int nbNodes = aPolygoneInfo->GetNbConn(iPG);
+                std::vector<int> nodes_ids (nbNodes);
+                for (TInt inode = 0; inode < nbNodes; inode++) {
                   nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
                 }
 
@@ -299,20 +300,17 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                       (nodes_ids, aPolygoneInfo->GetElemNum(iPG));
                   }
                   if (!anElement) {
-                    std::vector<const SMDS_MeshNode*> nodes (aNbNodes);
-                    for (int inode = 0; inode < aNbNodes; inode++) {
+                    std::vector<const SMDS_MeshNode*> nodes (nbNodes);
+                    for (int inode = 0; inode < nbNodes; inode++) {
                       nodes[inode] = FindNode(myMesh, nodes_ids[inode]);
                     }
                     anElement = myMesh->AddPolygonalFace(nodes);
                     isRenum = anIsElemNum;
                   }
-		  
                 } catch (const std::exception& exc) {
                   aResult = DRS_FAIL;
-		  INFOS("Follow exception was cought:\n\t"<<exc.what());
                 } catch (...) {
                   aResult = DRS_FAIL;
-		  INFOS("Follow unknown exception was cought!");
                 }
 
                 if (!anElement) {
@@ -326,17 +324,11 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                   }
                   if (myFamilies.find(aFamNum) != myFamilies.end()) {
                     // Save reference to this element from its family
-		    if (MYDEBUG){ 
-		      cout<<"myFamilies["<<aFamNum
-			  <<"] IsPoly()="<<anElement->IsPoly()
-			  <<"; GetType="<<anElement->GetType()
-			  <<"; aNbNodes="<<aNbNodes<<endl;		      
-		    }
                     myFamilies[aFamNum]->AddElement(anElement);
                     myFamilies[aFamNum]->SetType(anElement->GetType());
                   }
                 }
-              }
+              } // for (TInt iPG = 0; iPG < nbPolygons; iPG++)
               continue;
 
             } else if (aGeom == ePOLYEDRE) {
@@ -348,7 +340,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
               TElemNum aIndex      = aPolyedreInfo->GetIndex();
 
               TInt nbPolyedres = aPolyedreInfo->GetNbElem();
-	      
+
               for (int iPE = 0; iPE < nbPolyedres; iPE++) {
                 // get faces
                 int aCurrPE_FirstFaceIndex = aIndex[iPE] - 1;
@@ -359,8 +351,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                   int aCurrFace_FirstNodeIndex = aFacesIndex[aCurrPE_FirstFaceIndex + iFa] - 1;
                   int aNextFace_FirstNodeIndex = aFacesIndex[aCurrPE_FirstFaceIndex + iFa + 1] - 1;
 
-                  int aNbNodes = aNextFace_FirstNodeIndex - aCurrFace_FirstNodeIndex;
-                  quantities[iFa] = aNbNodes;
+                  int nbNodes = aNextFace_FirstNodeIndex - aCurrFace_FirstNodeIndex;
+                  quantities[iFa] = nbNodes;
                 }
 
                 // get nodes
@@ -390,10 +382,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                   }
                 } catch (const std::exception& exc) {
                   aResult = DRS_FAIL;
-		  INFOS("Follow exception was cought:\n\t"<<exc.what());
                 } catch (...) {
                   aResult = DRS_FAIL;
-		  INFOS("Follow unknown exception was cought!");
                 }
 
                 if (!anElement) {
@@ -407,19 +397,14 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                   }
                   if (myFamilies.find(aFamNum) != myFamilies.end()) {
                     // Save reference to this element from its family
-		    if (MYDEBUG){
-		      cout<<"myFamilies["<<aFamNum
-			  <<"] IsPoly()="<<anElement->IsPoly()
-			  <<"; GetType="<<anElement->GetType()
-			  <<"; aNbNodes="<<nbPENodes<<endl;
-		    }
                     myFamilies[aFamNum]->AddElement(anElement);
                     myFamilies[aFamNum]->SetType(anElement->GetType());
                   }
                 }
-              }
+              } // for (int iPE = 0; iPE < nbPolyedres; iPE++)
               continue;
 
+            } else {
             }
 
 	    PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
@@ -496,6 +481,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	      SMDS_MeshElement* anElement = NULL;
 	      TInt aFamNum = aCellInfo->GetFamNum(iElem);
 	      try{
+                //MESSAGE("Try to create element # " << iElem << " with id = "
+                //        << aCellInfo->GetElemNum(iElem));
 		switch(aGeom){
 		case eSEG2:
 		case eSEG3:

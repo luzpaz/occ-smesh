@@ -833,7 +833,12 @@ int SMESH_Mesh::NbTriangles() throw(SALOME_Exception)
   int Nb = 0;
   
   SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while(itFaces->more()) if(itFaces->next()->NbNodes()==3) Nb++;
+  //while(itFaces->more()) if(itFaces->next()->NbNodes()==3) Nb++;
+  const SMDS_MeshFace * curFace;
+  while (itFaces->more()) {
+    curFace = itFaces->next();
+    if (!curFace->IsPoly() && curFace->NbNodes() == 3) Nb++;
+  }
   return Nb;
 }
 
@@ -846,20 +851,25 @@ int SMESH_Mesh::NbQuadrangles() throw(SALOME_Exception)
   int Nb = 0;
   
   SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while(itFaces->more()) if(itFaces->next()->NbNodes()==4) Nb++;
+  //while(itFaces->more()) if(itFaces->next()->NbNodes()==4) Nb++;
+  const SMDS_MeshFace * curFace;
+  while (itFaces->more()) {
+    curFace = itFaces->next();
+    if (!curFace->IsPoly() && curFace->NbNodes() == 4) Nb++;
+  }
   return Nb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Return the number of polygone faces in the mesh. This method run in O(n)
+/// Return the number of polygonal faces in the mesh. This method run in O(n)
 ///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbPolygones() throw(SALOME_Exception)
+int SMESH_Mesh::NbPolygons() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
-  
-  SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while(itFaces->more()) if(itFaces->next()->IsPoly()) Nb++;
+  SMDS_FaceIteratorPtr itFaces = _myMeshDS->facesIterator();
+  while (itFaces->more())
+    if (itFaces->next()->IsPoly()) Nb++;
   return Nb;
 }
 
@@ -879,7 +889,12 @@ int SMESH_Mesh::NbTetras() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==4) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==4) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 4) Nb++;
+  }
   return Nb;
 }
 
@@ -888,7 +903,12 @@ int SMESH_Mesh::NbHexas() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==8) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==8) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 8) Nb++;
+  }
   return Nb;
 }
 
@@ -897,7 +917,12 @@ int SMESH_Mesh::NbPyramids() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==5) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==5) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 5) Nb++;
+  }
   return Nb;
 }
 
@@ -906,16 +931,22 @@ int SMESH_Mesh::NbPrisms() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==6) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==6) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 6) Nb++;
+  }
   return Nb;
 }
 
-int SMESH_Mesh::NbPolyhedrones() throw(SALOME_Exception)
+int SMESH_Mesh::NbPolyhedrons() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->IsPoly()) Nb++;
+  SMDS_VolumeIteratorPtr itVolumes = _myMeshDS->volumesIterator();
+  while (itVolumes->more())
+    if (itVolumes->next()->IsPoly()) Nb++;
   return Nb;
 }
 

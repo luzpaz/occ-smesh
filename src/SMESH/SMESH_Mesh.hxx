@@ -166,7 +166,7 @@ public:
   
   int NbQuadrangles() throw(SALOME_Exception);
 
-  int NbPolygones() throw(SALOME_Exception);
+  int NbPolygons() throw(SALOME_Exception);
   
   int NbVolumes() throw(SALOME_Exception);
   
@@ -176,9 +176,9 @@ public:
   
   int NbPyramids() throw(SALOME_Exception);
 
-  int NbPolyhedrones() throw(SALOME_Exception);
-  
   int NbPrisms() throw(SALOME_Exception);
+  
+  int NbPolyhedrons() throw(SALOME_Exception);
   
   int NbSubMesh() throw(SALOME_Exception);
   

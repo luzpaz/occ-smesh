@@ -634,33 +634,32 @@ void SMESH_VisualObjDef::buildElemPrs()
 	  std::vector<int> aConnectivities;
 	  GetConnect(aNodesIter,aConnect);
 	  // Convertions connectivities from SMDS to VTK
-	  if (anElem->IsPoly() && aNbNodes>3){ // POLYEDRE
-	    if (MYDEBUG) cout << "SMESH:Polyedre IsPoly()="<<anElem->IsPoly()<<"; aType="<<aType<<"; aNbNodes="<<aNbNodes<<endl;
-	    for (int k=0; k<aNbNodes ; k++){
+	  if (anElem->IsPoly() && aNbNodes > 3) { // POLYEDRE
+	    for (int k = 0; k < aNbNodes; k++) {
 	      aConnectivities.push_back(k);
-	      if (MYDEBUG) cout << " "<<k;
 	    }
-	    if (MYDEBUG) cout << endl;
-	  }
-	  else if (aNbNodes == 4){
-	    static int anIds[] = {0,2,1,3};
-	    for (int k=0; k<aNbNodes; k++) aConnectivities.push_back(anIds[k]);
-	  } 
-	  else if (aNbNodes == 5){
-	    static int anIds[] = {0,3,2,1,4};
-	    for (int k=0; k<aNbNodes; k++) aConnectivities.push_back(anIds[k]);
-	  }
-	  else if (aNbNodes == 6){
-	    static int anIds[] = {0,1,2,3,4,5};
-	    for (int k=0; k<aNbNodes; k++) aConnectivities.push_back(anIds[k]);
-	  }
-	  else if (aNbNodes == 8){
-	    static int anIds[] = {0,3,2,1,4,7,6,5};
-	    for (int k=0; k<aNbNodes; k++) aConnectivities.push_back(anIds[k]);
-	  }
 
-	  if(aConnectivities.size()>0){
-	    for( vtkIdType aNodeId = 0; aNodeId < aNbNodes; aNodeId++ )
+	  } else if (aNbNodes == 4) {
+	    static int anIds[] = {0,2,1,3};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else if (aNbNodes == 5) {
+	    static int anIds[] = {0,3,2,1,4};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else if (aNbNodes == 6) {
+	    static int anIds[] = {0,1,2,3,4,5};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else if (aNbNodes == 8) {
+	    static int anIds[] = {0,3,2,1,4,7,6,5};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else {
+          }
+
+	  if (aConnectivities.size() > 0) {
+	    for (vtkIdType aNodeId = 0; aNodeId < aNbNodes; aNodeId++)
 	      SetId(anIdList,mySMDS2VTKNodes,aConnect,aNodeId,aConnectivities[aNodeId]);
 	  }
 	  break;
@@ -673,7 +672,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 	}
 
         aConnectivity->InsertNextCell( anIdList );
-        aCellTypesArray->InsertNextValue( getCellType( aType, anElem->IsPoly(),aNbNodes ) );
+        aCellTypesArray->InsertNextValue( getCellType( aType, anElem->IsPoly(), aNbNodes ) );
 
         iElem++;
       }

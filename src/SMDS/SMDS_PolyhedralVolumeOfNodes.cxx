@@ -83,9 +83,11 @@ bool SMDS_PolyhedralVolumeOfNodes::ChangeNodes (std::vector<const SMDS_MeshNode 
 
   //SMDS_VolumeOfNodes::ChangeNodes(aNodes, aNbNodes);
   delete [] myNodes;
+  //myNbNodes = nodes.size();
   myNbNodes = aNbNodes;
   myNodes = new const SMDS_MeshNode* [myNbNodes];
   for (int i = 0; i < myNbNodes; i++) {
+    //myNodes[i] = nodes[i];
     myNodes[i] = aNodes[i];
   }
 
