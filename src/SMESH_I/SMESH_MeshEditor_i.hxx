@@ -165,7 +165,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                    CORBA::Long FirstNodeID2,
                    CORBA::Long SecondNodeID2,
                    CORBA::Long LastNodeID2,
-                   CORBA::Boolean CreatePoly);
+                   CORBA::Boolean CreatePolygons,
+                   CORBA::Boolean CreatePolyedrs);
   SMESH::SMESH_MeshEditor::Sew_Error
     SewConformFreeBorders(CORBA::Long FirstNodeID1,
                           CORBA::Long SecondNodeID1,
@@ -178,7 +179,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                     CORBA::Long LastNodeIDOnFreeBorder,
                     CORBA::Long FirstNodeIDOnSide,
                     CORBA::Long LastNodeIDOnSide,
-                    CORBA::Boolean CreatePoly);
+                    CORBA::Boolean CreatePolygons,
+                    CORBA::Boolean CreatePolyedrs);
   SMESH::SMESH_MeshEditor::Sew_Error
     SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                     const SMESH::long_array& IDsOfSide2Elements,

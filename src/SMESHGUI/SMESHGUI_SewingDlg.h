@@ -111,8 +111,9 @@ private:
     QLineEdit* LineEdit5;
     QLineEdit* LineEdit6;
     QCheckBox* CheckBoxMerge;
-    QCheckBox* CheckBoxPoly;
-   
+    QCheckBox* CheckBoxPolygons;
+    QCheckBox* CheckBoxPolyedrs;
+
 private slots:
 
     void ConstructorsClicked(int constructorId);

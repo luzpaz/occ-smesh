@@ -190,13 +190,11 @@ CORBA::Boolean SMESH_MeshEditor_i::AddPolyhedralVolume
 {
   int NbNodes = IDsOfNodes.length();
   std::vector<const SMDS_MeshNode*> n (NbNodes);
-  //const SMDS_MeshNode* n [NbNodes];
   for (int i = 0; i < NbNodes; i++)
     n[i] = GetMeshDS()->FindNode(IDsOfNodes[i]);
 
   int NbFaces = Quantities.length();
   std::vector<int> q (NbFaces);
-  //int q [NbFaces];
   for (int j = 0; j < NbFaces; j++)
     q[j] = Quantities[j];
 
@@ -213,13 +211,22 @@ CORBA::Boolean SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces
                                    (const SMESH::long_array & IdsOfFaces)
 {
   int NbFaces = IdsOfFaces.length();
-  std::vector<const SMDS_MeshFace*> faces (NbFaces);
-  for (int i = 0; i < NbFaces; i++)
-    faces[i] = (SMDS_MeshFace *)GetMeshDS()->FindElement(IdsOfFaces[i]);
+  std::vector<const SMDS_MeshNode*> poly_nodes;
+  std::vector<int> quantities (NbFaces);
 
-  //GetMeshDS()->AddPolyhedralVolumeByFaces(faces);
-  //return true;
-  return false;
+  std::vector<const SMDS_MeshFace*> faces (NbFaces);
+  for (int i = 0; i < NbFaces; i++) {
+    const SMDS_MeshElement* aFace = GetMeshDS()->FindElement(IdsOfFaces[i]);
+    quantities[i] = aFace->NbNodes();
+
+    SMDS_ElemIteratorPtr It = aFace->nodesIterator();
+    while (It->more()) {
+      poly_nodes.push_back(static_cast<const SMDS_MeshNode *>(It->next()));
+    }
+  }
+
+  GetMeshDS()->AddPolyhedralVolume(poly_nodes, quantities);
+  return true;
 };
 
 //=============================================================================
@@ -917,7 +924,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                      CORBA::Long FirstNodeID2,
                                      CORBA::Long SecondNodeID2,
                                      CORBA::Long LastNodeID2,
-                                     CORBA::Boolean CreatePoly)
+                                     CORBA::Boolean CreatePolygons,
+                                     CORBA::Boolean CreatePolyedrs)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -945,7 +953,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
                                             true,
-                                            CreatePoly) );
+                                            CreatePolygons,
+                                            CreatePolyedrs) );
 }
 
 //=======================================================================
@@ -985,7 +994,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
                                             true,
-                                            false) );
+                                            false, false) );
 }
 
 //=======================================================================
@@ -999,7 +1008,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                       CORBA::Long LastNodeIDOnFreeBorder,
                                       CORBA::Long FirstNodeIDOnSide,
                                       CORBA::Long LastNodeIDOnSide,
-                                      CORBA::Boolean CreatePoly)
+                                      CORBA::Boolean CreatePolygons,
+                                      CORBA::Boolean CreatePolyedrs)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1026,7 +1036,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
                                             false,
-                                            CreatePoly) );
+                                            CreatePolygons,
+                                            CreatePolyedrs) );
 }
 
 //=======================================================================

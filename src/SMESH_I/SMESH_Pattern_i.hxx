@@ -76,7 +76,8 @@ class SMESH_Pattern_i:
                                          CORBA::Long              theNode001Index);
 
   CORBA::Boolean MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
-                           const CORBA::Boolean  CreatePoly);
+                           const CORBA::Boolean  CreatePolygons,
+                           const CORBA::Boolean  CreatePolyedrs);
 
   SMESH::SMESH_Pattern::ErrorCode GetErrorCode();
 

@@ -3138,7 +3138,9 @@ bool SMESH_Pattern::Apply (const SMDS_MeshVolume* theVolume,
 //           coordinates computed by either of Apply...() methods
 //=======================================================================
 
-bool SMESH_Pattern::MakeMesh (SMESH_Mesh* theMesh, bool toCreatePoly)
+bool SMESH_Pattern::MakeMesh (SMESH_Mesh* theMesh,
+                              const bool toCreatePolygons,
+                              const bool toCreatePolyedrs)
 {
   MESSAGE(" ::MakeMesh() " );
   if ( !myIsComputed )
@@ -3371,13 +3373,14 @@ bool SMESH_Pattern::MakeMesh (SMESH_Mesh* theMesh, bool toCreatePoly)
     editor.Remove( elemIDs, false );
   }
 
-  if (toCreatePoly && myIs2D) {
+  if (toCreatePolygons) {
     // replace adjacent faces by polygons, inserting nodes in common link
 
     map< TNodeSet, list< list<int> > >::iterator linksIt;
     for (linksIt = myLinks.begin(); linksIt != myLinks.end(); linksIt++) {
       // end nodes of link
       set<const SMDS_MeshNode*> ends = linksIt->first;
+      if (ends.size() < 2) continue;
       set<const SMDS_MeshNode*>::iterator endsIt = ends.begin();
       const SMDS_MeshNode* n1 = *endsIt;
       endsIt++;
@@ -3403,12 +3406,16 @@ bool SMESH_Pattern::MakeMesh (SMESH_Mesh* theMesh, bool toCreatePoly)
           SMESH_MeshEditor::FindFaceInSet(n1, n2, elemSet, avoidSet);
         if (adjElem) {
           SMESH_MeshEditor editor (theMesh); 
-          editor.InsertNodesIntoLink(adjElem, n1, n2, link_nodes, toCreatePoly);
+          editor.InsertNodesIntoLink(adjElem, n1, n2, link_nodes, toCreatePolygons);
         } else {
           break;
         }
       }
     }
+  }
+  if (toCreatePolyedrs) {
+    // replace adjacent volumes by polyedres, inserting nodes in common link
+
   }
 
   return setErrorCode( ERR_OK );

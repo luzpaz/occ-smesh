@@ -833,8 +833,8 @@ void SMESH_MeshObj::Update( int theIsClear )
             // nb nodes
             int nbNodes = anIndexes[i++];
             // nodes
-            ASSERT( nbNodes < 9 );
-            const SMDS_MeshNode* aNodes[ 8 ];
+            //ASSERT( nbNodes < 9 );
+            const SMDS_MeshNode* aNodes[ nbNodes ];
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
               aNodes[ iNode ] = FindNode( myMesh, anIndexes[i++] );
             // change

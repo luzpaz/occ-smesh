@@ -658,7 +658,8 @@ module SMESH
                               in long FirstNodeID2,
                               in long SecondNodeID2,
                               in long LastNodeID2,
-			      in boolean CreatePoly);
+			      in boolean CreatePolygons,
+			      in boolean CreatePolyedrs);
 
     Sew_Error SewConformFreeBorders (in long FirstNodeID1,
                                      in long SecondNodeID1,
@@ -671,7 +672,8 @@ module SMESH
                                in long LastNodeIDOnFreeBorder,
                                in long FirstNodeIDOnSide,
                                in long LastNodeIDOnSide,
-			       in boolean CreatePoly);
+			       in boolean CreatePolygons,
+			       in boolean CreatePolyedrs);
 
     Sew_Error SewSideElements (in long_array IDsOfSide1Elements,
                                in long_array IDsOfSide2Elements,

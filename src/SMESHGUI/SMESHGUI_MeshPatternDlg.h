@@ -145,7 +145,8 @@ private:
   QPushButton*                        myNewBtn;
 
   QCheckBox*                          myReverseChk;
-  QCheckBox*                          myCreatePolyChk;
+  QCheckBox*                          myCreatePolygonsChk;
+  QCheckBox*                          myCreatePolyedrsChk;
   SMESHGUI_PatternWidget*             myPicture2d;
   QFrame*                             myPicture3d;
   QLabel*                             myPreview3d;

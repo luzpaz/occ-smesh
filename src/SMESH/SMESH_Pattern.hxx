@@ -128,7 +128,9 @@ class SMESH_Pattern {
   bool GetMappedPoints ( std::list<const gp_XYZ *> & thePoints ) const;
   // Return nodes coordinates computed by Apply() method
 
-  bool MakeMesh (SMESH_Mesh* theMesh, bool toCreatePoly = false);
+  bool MakeMesh (SMESH_Mesh* theMesh,
+                 const bool toCreatePolygons = false,
+                 const bool toCreatePolyedrs = false);
   // Create nodes and elements in <theMesh> using nodes
   // coordinates computed by either of Apply...() methods
 

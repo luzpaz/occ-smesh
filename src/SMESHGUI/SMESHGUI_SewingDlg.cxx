@@ -246,9 +246,14 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( QWidget* parent, const char* name, SALOM
   GroupArgumentsLayout->addWidget( CheckBoxMerge, 2, 0 );
   
   // Control for the polygons creation instead of splitting
-  CheckBoxPoly = new QCheckBox( GroupArguments, "CheckBoxPoly" );
-  CheckBoxPoly->setText( tr( "CREATE_POLYGONS_INSTEAD_SPLITTING"  ) );
-  GroupArgumentsLayout->addWidget( CheckBoxPoly, 3, 0 );
+  CheckBoxPolygons = new QCheckBox( GroupArguments, "CheckBoxPolygons" );
+  CheckBoxPolygons->setText( tr( "CREATE_POLYGONS_INSTEAD_SPLITTING"  ) );
+  GroupArgumentsLayout->addWidget( CheckBoxPolygons, 3, 0 );
+  
+  // Control for the polyedres creation to obtain conform mesh
+  CheckBoxPolyedrs = new QCheckBox( GroupArguments, "CheckBoxPolyedrs" );
+  CheckBoxPolyedrs->setText( tr( "CREATE_POLYEDRS_NEAR_BOUNDARY"  ) );
+  GroupArgumentsLayout->addWidget( CheckBoxPolyedrs, 4, 0 );
   
 
   SMESHGUI_SewingDlgLayout->addWidget( GroupArguments, 1, 0 );
@@ -325,7 +330,8 @@ void SMESHGUI_SewingDlg::Init()
   myActor     = 0;
   myMesh = SMESH::SMESH_Mesh::_nil();
   CheckBoxMerge->setChecked(false);
-  CheckBoxPoly->setChecked(false);
+  CheckBoxPolygons->setChecked(false);
+  CheckBoxPolyedrs->setChecked(false);
   SelectionIntoArgument();
 }
 
@@ -361,8 +367,12 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
       LineEdit6->setEnabled(true);
     }
 
-  if (constructorId != 0 && CheckBoxPoly->isVisible())
-    CheckBoxPoly->hide();
+  if (constructorId == 1 || constructorId == 3) {
+    if (CheckBoxPolygons->isVisible())
+      CheckBoxPolygons->hide();
+    if (CheckBoxPolyedrs->isVisible())
+      CheckBoxPolyedrs->hide();
+  }
 
   switch(constructorId)
     {
@@ -372,8 +382,10 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 	SubGroup1->setTitle( tr( "BORDER_1" ) );
 	SubGroup2->setTitle( tr( "BORDER_2" ) );
 
-        if (!CheckBoxPoly->isVisible())
-          CheckBoxPoly->show();
+        if (!CheckBoxPolygons->isVisible())
+          CheckBoxPolygons->show();
+        if (!CheckBoxPolyedrs->isVisible())
+          CheckBoxPolyedrs->show();
 
 	break;
       }
@@ -401,8 +413,10 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 	SelectButton5->setEnabled(false);
 	LineEdit5->setEnabled(false);
 
-        if (!CheckBoxPoly->isVisible())
-          CheckBoxPoly->show();
+        if (!CheckBoxPolygons->isVisible())
+          CheckBoxPolygons->show();
+        if (!CheckBoxPolyedrs->isVisible())
+          CheckBoxPolyedrs->show();
 
 	myOk5 = true;
 
@@ -464,8 +478,9 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
   if ( IsValid() )
     {
       bool toMerge = CheckBoxMerge->isChecked();
-      bool toCreatePoly = CheckBoxPoly->isChecked();
-    
+      bool toCreatePolygons = CheckBoxPolygons->isChecked();
+      bool toCreatePolyedrs = CheckBoxPolyedrs->isChecked();
+
       try
 	{
 	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
@@ -481,7 +496,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 						  LineEdit4->text().toLong(),
 						  LineEdit5->text().toLong(),
 						  LineEdit6->text().toLong(),
-                                                  toCreatePoly);
+                                                  toCreatePolygons,
+                                                  toCreatePolyedrs);
 	  else if (aConstructorId == 1)
 	    anError = aMeshEditor->SewConformFreeBorders(LineEdit1->text().toLong(),
 							 LineEdit2->text().toLong(),
@@ -494,7 +510,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 						   LineEdit3->text().toLong(),
 						   LineEdit4->text().toLong(),
 						   LineEdit6->text().toLong(),
-                                                   toCreatePoly);
+                                                   toCreatePolygons,
+                                                   toCreatePolyedrs);
 	  else if (aConstructorId == 3)
 	    {
 	      QStringList aListElementsId1 = QStringList::split( " ", LineEdit1->text(), false);

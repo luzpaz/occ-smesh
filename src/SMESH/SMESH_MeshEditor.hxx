@@ -154,6 +154,12 @@ class SMESH_MeshEditor {
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
+  int SimplifyFace (const vector<const SMDS_MeshNode *> faceNodes,
+                    vector<const SMDS_MeshNode *>&      poly_nodes,
+                    vector<int>&                        quantities) const;
+  // Split face, defined by <faceNodes>, into several faces by repeating nodes.
+  // Is used by MergeNodes()
+
   void MergeNodes (TListOfListOfNodes & theNodeGroups);
   // In each group, the cdr of nodes are substituted by the first one
   // in all elements.
@@ -190,7 +196,8 @@ class SMESH_MeshEditor {
                            const SMDS_MeshNode* theSide2SecondNode,
                            const SMDS_MeshNode* theSide2ThirdNode = 0,
                            const bool           theSide2IsFreeBorder = true,
-                           const bool           toCreatePoly = false);
+                           const bool           toCreatePolygons = false,
+                           const bool           toCreatePolyedrs = false);
   // Sew the free border to the side2 by replacing nodes in
   // elements on the free border with nodes of the elements
   // of the side 2. If nb of links in the free border and
@@ -231,6 +238,12 @@ class SMESH_MeshEditor {
                            const bool                       toCreatePoly = false);
   // insert theNodesToInsert into theFace between theBetweenNode1 and theBetweenNode2.
   // If toCreatePoly is true, replace theFace by polygon, else split theFace.
+
+  void UpdateVolumes (const SMDS_MeshNode*             theBetweenNode1,
+                      const SMDS_MeshNode*             theBetweenNode2,
+                      std::list<const SMDS_MeshNode*>& theNodesToInsert);
+  // insert theNodesToInsert into all volumes, containing link
+  // theBetweenNode1 - theBetweenNode2, between theBetweenNode1 and theBetweenNode2.
 
 //  static int SortQuadNodes (const SMDS_Mesh * theMesh,
 //                            int               theNodeIds[] );
