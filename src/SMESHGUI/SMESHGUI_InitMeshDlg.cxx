@@ -33,6 +33,8 @@
 #include "SMESHGUI_SMESHGenUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
 
+#include "GEOMBase.h"
+
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_MessageBox.h"
@@ -214,7 +216,7 @@ void SMESHGUI_InitMeshDlg::Init( SALOME_Selection* Sel )
   this->move( x, y ) ;
   this->show() ; 
 
-  LineEdit_NameMesh->setText( tr( "SMESH_OBJECT_MESH" ) );
+  LineEdit_NameMesh->setText( GetDefaultMeshName() );
   LineEdit_NameMesh->setFocus() ;
   myEditCurrentArgument = LineEditC1A1 ;	
   mySelection->ClearFilters() ;   
@@ -302,6 +304,7 @@ bool SMESHGUI_InitMeshDlg::ClickOnApply()
   }
   // commit transaction
   op->finish();
+  LineEdit_NameMesh->setText( GetDefaultMeshName() );
   return true;
 }
 
@@ -324,20 +327,24 @@ void SMESHGUI_InitMeshDlg::SelectionIntoArgument()
 {
   QString aString = ""; 
 
-  int nbSel = SMESH::GetNameOfSelectedIObjects(mySelection, aString) ;
+  int nbSel = SMESH::GetNameOfSelectedIObjects( mySelection, aString );
 
-  if ( myEditCurrentArgument == LineEditC1A1 ) {
+  if ( myEditCurrentArgument == LineEditC1A1 )
+  {
     // geom shape
-    if ( nbSel != 1 ) {
+    if ( nbSel != 1 )
+    {
       myGeomShape = GEOM::GEOM_Object::_nil();
       aString = "";
     } 
-    else {
-      Standard_Boolean testResult ;
+    else
+    {
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-      myGeomShape = SMESH::IObjectToInterface<GEOM::GEOM_Object>(IO) ;
-      if( myGeomShape->_is_nil() )  {
-	aString = "";
+      myGeomShape = SMESH::IObjectToInterface<GEOM::GEOM_Object>( IO ) ;
+      if ( myGeomShape->_is_nil() || !GEOMBase::IsShape( myGeomShape ) )
+      {
+        myGeomShape = GEOM::GEOM_Object::_nil();
+        aString = "";
       }
     }
   }
@@ -466,7 +473,26 @@ void SMESHGUI_InitMeshDlg::UpdateControlState()
   buttonApply->setEnabled( isEnabled );
 }
 
+//=================================================================================
+// function : GetDefaultMeshName()
+// purpose  : Generates default mesh name(Mesh_1, Mesh_2, etc.)
+//=================================================================================
+QString SMESHGUI_InitMeshDlg::GetDefaultMeshName()
+{
+  SALOMEDS::Study_var aStudy = QAD_Application::getDesktop()->getActiveStudy()->getStudyDocument();
+  int aNumber = 0;
+  QString aMeshName;
+  SALOMEDS::SObject_var obj;
+  
+  do 
+    {
+      aMeshName = QString(tr("SMESH_OBJECT_MESH")) +"_"+QString::number(++aNumber);
+      obj = aStudy->FindObject(aMeshName);
+    } 
+  while (!obj->_is_nil());
 
+  return aMeshName;
+}
 
 
 

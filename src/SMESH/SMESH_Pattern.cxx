@@ -392,7 +392,7 @@ template<typename T> void sortBySize( list< list < T > > & theListOfList )
 {
   if ( theListOfList.size() > 2 ) {
     // keep the car
-    list < T > & aFront = theListOfList.front();
+    //list < T > & aFront = theListOfList.front();
     // sort the whole list
     TSizeCmp< T > SizeCmp;
     theListOfList.sort( SizeCmp );
@@ -761,7 +761,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         prevP->myInitU = totalDist;
         for ( pIt++; pIt != ePoints.end(); pIt++ ) {
           TPoint* p = *pIt;
-          totalDist += ( p->myInitUV - prevP->myInitUV ).SquareModulus();
+          totalDist += ( p->myInitUV - prevP->myInitUV ).Modulus();
           p->myInitU = totalDist;
           prevP = p;
         }
@@ -881,14 +881,16 @@ void SMESH_Pattern::computeUVOnEdge (const TopoDS_Edge&      theEdge,
 
 static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double r1,
                               const gp_XY& uv21, const gp_XY& uv22, const double r2,
-                              gp_XY& resUV)
+                              gp_XY& resUV,
+                              bool& isDeformed)
 {
   gp_XY loc1 = uv11 * ( 1 - r1 ) + uv12 * r1;
   gp_XY loc2 = uv21 * ( 1 - r2 ) + uv22 * r2;
-//  resUV = 0.5 * ( loc1 + loc2 );
-  double len1 = ( uv11 - uv12 ).SquareModulus();
-  double len2 = ( uv21 - uv22 ).SquareModulus();
-  resUV = loc1 * len2 / ( len1 + len2 ) + loc2 * len1 / ( len1 + len2 );
+  resUV = 0.5 * ( loc1 + loc2 );
+  isDeformed = ( loc1 - loc2 ).SquareModulus() > 1e-8;
+//   double len1 = ( uv11 - uv12 ).Modulus();
+//   double len2 = ( uv21 - uv22 ).Modulus();
+//   resUV = loc1 * len2 / ( len1 + len2 ) + loc2 * len1 / ( len1 + len2 );
 //  return true;
 
   
@@ -918,7 +920,8 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
 
 bool SMESH_Pattern::compUVByIsoIntersection (const list< list< TPoint* > >& theBndPoints,
                                              const gp_XY&                   theInitUV,
-                                             gp_XY&                         theUV )
+                                             gp_XY&                         theUV,
+                                             bool &                         theIsDeformed )
 {
   // compute UV by intersection of 2 iso lines
   //gp_Lin2d isoLine[2];
@@ -991,14 +994,14 @@ bool SMESH_Pattern::compUVByIsoIntersection (const list< list< TPoint* > >& theB
     //gp_Lin2d iso( UV[0], UV[0] - UV[1] );
     double r =
       (initUV[0]-theInitUV).Modulus() / (initUV[0]-initUV[1]).Modulus();
-    gp_Pnt2d isoLoc = UV[0] * ( 1 - r ) + UV[1] * r;
+    //gp_Pnt2d isoLoc = UV[0] * ( 1 - r ) + UV[1] * r;
     //isoLine[ iIso ] = iso.Normal( isoLoc );
     uv1[ iIso ] = UV[0];
     uv2[ iIso ] = UV[1];
     ratio[ iIso ] = r;
   }
   if ( !intersectIsolines( uv1[0], uv2[0], ratio[0],
-                          uv1[1], uv2[1], ratio[1], theUV )) {
+                          uv1[1], uv2[1], ratio[1], theUV, theIsDeformed )) {
     MESSAGE(" Cant intersect isolines for a point "<<theInitUV.X()<<", "<<theInitUV.Y());
     return setErrorCode( ERR_APPLF_BAD_TOPOLOGY );
   }
@@ -1006,48 +1009,327 @@ bool SMESH_Pattern::compUVByIsoIntersection (const list< list< TPoint* > >& theB
   return true;
 }
 
+
 // ==========================================================
 // structure representing a node of a grid of iso-poly-lines
 // ==========================================================
 
 struct TIsoNode {
+  bool   myIsMovable;
   gp_XY  myInitUV;
   gp_XY  myUV;
-  gp_XY* myPrevUV[2];
-  gp_XY* myNextUV[2];
   double myRatio[2];
-  TIsoNode(double initU, double initV): myInitUV( initU, initV ), myUV( 1e100, 1e100 )
-  { myPrevUV[0] = myPrevUV[1] = myNextUV[0] = myNextUV[1] = 0; }
+  gp_Dir2d  myDir[2]; // boundary tangent dir for boundary nodes, iso dir for internal ones
+  TIsoNode* myNext[4]; // order: (iDir=0,isForward=0), (1,0), (0,1), (1,1)
+  TIsoNode* myBndNodes[4];     // order: (iDir=0,i=0), (1,0), (0,1), (1,1)
+  TIsoNode(double initU, double initV):
+    myInitUV( initU, initV ), myUV( 1e100, 1e100 ), myIsMovable(true)
+  { myNext[0] = myNext[1] = myNext[2] = myNext[3] = 0; }
   bool IsUVComputed() const
   { return myUV.X() != 1e100; }
   bool IsMovable() const
-  { return myPrevUV[0] && myPrevUV[1] && myNextUV[0] && myNextUV[1]; }
+  { return myIsMovable && myNext[0] && myNext[1] && myNext[2] && myNext[3]; }
   void SetNotMovable()
-  { myPrevUV[0] = 0; }
+  { myIsMovable = false; }
+  void SetBoundaryNode(TIsoNode* node, int iDir, int i)
+  { myBndNodes[ iDir + i * 2 ] = node; }
+  TIsoNode* GetBoundaryNode(int iDir, int i)
+  { return myBndNodes[ iDir + i * 2 ]; }
+  void SetNext(TIsoNode* node, int iDir, int isForward)
+  { myNext[ iDir + isForward  * 2 ] = node; }
+  TIsoNode* GetNext(int iDir, int isForward)
+  { return myNext[ iDir + isForward * 2 ]; }
 };
+
+//=======================================================================
+//function : getNextNode
+//purpose  : 
+//=======================================================================
+
+static inline TIsoNode* getNextNode(const TIsoNode* node, int dir )
+{
+  TIsoNode* n = node->myNext[ dir ];
+  if ( n && !n->IsUVComputed()/* && node->IsMovable()*/ ) {
+    n = 0;//node->myBndNodes[ dir ];
+//     MESSAGE("getNextNode: use bnd for node "<<
+//             node->myInitUV.X()<<" "<<node->myInitUV.Y());
+  }
+  return n;
+}
+//=======================================================================
+//function : checkQuads
+//purpose  : check if newUV destortes quadrangles around node,
+//           and if ( crit == FIX_OLD ) fix newUV in this case
+//=======================================================================
+
+enum { CHECK_NEW_IN, CHECK_NEW_OK, FIX_OLD };
+
+static bool checkQuads (const TIsoNode* node,
+                        gp_XY&          newUV,
+                        const bool      reversed,
+                        const int       crit = FIX_OLD,
+                        double          fixSize = 0.)
+{
+  gp_XY oldUV = node->myUV, oldUVFixed[4], oldUVImpr[4];
+  int nbOldFix = 0, nbOldImpr = 0;
+  double newBadRate = 0, oldBadRate = 0;
+  bool newIsOk = true, newIsIn = true, oldIsIn = true, oldIsOk = true;
+  int i, dir1 = 0, dir2 = 3;
+  for ( ; dir1 < 4; dir1++, dir2++ )  // loop on 4 quadrangles around <node>
+  {
+    if ( dir2 > 3 ) dir2 = 0;
+    TIsoNode* n[3];
+    // walking counterclockwise around a quad,
+    // nodes are in the order: node, n[0], n[1], n[2]
+    n[0] = getNextNode( node, dir1 );
+    n[2] = getNextNode( node, dir2 );
+    if ( !n[0] || !n[2] ) continue;
+    n[1] = getNextNode( n[0], dir2 );
+    if ( !n[1] ) n[1] = getNextNode( n[2], dir1 );
+    bool isTriangle = ( !n[1] );
+    if ( reversed ) {
+      TIsoNode* tmp = n[0]; n[0] = n[2]; n[2] = tmp;
+    }
+//     if ( fixSize != 0 ) {
+// cout<<"NODE: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<" UV: "<<node->myUV.X()<<" "<<node->myUV.Y()<<endl;
+// cout<<"\t0: "<<n[0]->myInitUV.X()<<" "<<n[0]->myInitUV.Y()<<" UV: "<<n[0]->myUV.X()<<" "<<n[0]->myUV.Y()<<endl;
+// cout<<"\t1: "<<n[1]->myInitUV.X()<<" "<<n[1]->myInitUV.Y()<<" UV: "<<n[1]->myUV.X()<<" "<<n[1]->myUV.Y()<<endl;
+// cout<<"\t2: "<<n[2]->myInitUV.X()<<" "<<n[2]->myInitUV.Y()<<" UV: "<<n[2]->myUV.X()<<" "<<n[2]->myUV.Y()<<endl;
+// }
+    // check if a quadrangle is degenerated
+    if ( !isTriangle &&
+        ((( n[0]->myUV - n[1]->myUV ).SquareModulus() <= DBL_MIN ) ||
+         (( n[2]->myUV - n[1]->myUV ).SquareModulus() <= DBL_MIN )))
+      isTriangle = true;
+    if ( isTriangle &&
+        ( n[0]->myUV - n[2]->myUV ).SquareModulus() <= DBL_MIN )
+      continue;
+
+    // find min size of the diagonal node-n[1]
+    double minDiag = fixSize;
+    if ( minDiag == 0. ) {
+      double maxLen2 = ( node->myUV - n[0]->myUV ).SquareModulus();
+      if ( !isTriangle ) {
+        maxLen2 = Max( maxLen2, ( n[0]->myUV - n[1]->myUV ).SquareModulus() );
+        maxLen2 = Max( maxLen2, ( n[1]->myUV - n[2]->myUV ).SquareModulus() );
+      }
+      maxLen2 = Max( maxLen2, ( n[2]->myUV - node->myUV ).SquareModulus() );
+      minDiag = sqrt( maxLen2 ) * PI / 60.; // ~ maxLen * Sin( 3 deg )
+    }
+
+    // check if newUV is behind 3 dirs: n[0]-n[1], n[1]-n[2] and n[0]-n[2]
+    // ( behind means "to the right of")
+    // it is OK if
+    // 1. newUV is not behind 01 and 12 dirs
+    // 2. or newUV is not behind 02 dir and n[2] is convex
+    bool newIn[3] = { true, true, true }, newOk[3] = { true, true, true };
+    bool wasIn[3] = { true, true, true }, wasOk[3] = { true, true, true };
+    gp_Vec2d moveVec[3], outVec[3];
+    for ( i = isTriangle ? 2 : 0; i < 3; i++ )
+    {
+      bool isDiag = ( i == 2 );
+      if ( isDiag && newOk[0] && newOk[1] && !isTriangle )
+        break;
+      gp_Vec2d sideDir;
+      if ( isDiag )
+        sideDir = gp_Vec2d( n[0]->myUV, n[2]->myUV );
+      else
+        sideDir = gp_Vec2d( n[i]->myUV, n[i+1]->myUV );
+
+      gp_Vec2d outDir( sideDir.Y(), -sideDir.X() ); // to the right
+      outDir.Normalize();
+      gp_Vec2d newDir( n[i]->myUV, newUV );
+      gp_Vec2d oldDir( n[i]->myUV, oldUV );
+      outVec[i] = outDir;
+      if ( newIsOk ) newOk[i] = ( outDir * newDir < -minDiag );
+      if ( newIsIn ) newIn[i] = ( outDir * newDir < 0 );
+      if ( crit == FIX_OLD ) {
+        wasIn[i] = ( outDir * oldDir < 0 );
+        wasOk[i] = ( outDir * oldDir < -minDiag );
+        if ( !newOk[i] )
+          newBadRate += outDir * newDir;
+        if ( !wasOk[i] )
+          oldBadRate += outDir * oldDir;
+        // push node inside
+        if ( !wasOk[i] ) {
+          double oldDist = - outDir * oldDir;//, l2 = outDir * newDir;
+          //               double r = ( l1 - minDiag ) / ( l1 + l2 );
+          //               moveVec[i] = r * gp_Vec2d( node->myUV, newUV );
+          moveVec[i] = ( oldDist - minDiag ) * outDir;
+        }
+      }
+    }
+
+    // check if n[2] is convex
+    bool convex = true;
+    if ( !isTriangle )
+      convex = ( outVec[0] * gp_Vec2d( n[1]->myUV, n[2]->myUV ) < 0 );
+
+    bool isNewOk = ( newOk[0] && newOk[1] ) || ( newOk[2] && convex );
+    bool isNewIn = ( newIn[0] && newIn[1] ) || ( newIn[2] && convex );
+    newIsOk = ( newIsOk && isNewOk );
+    newIsIn = ( newIsIn && isNewIn );
+
+    if ( crit != FIX_OLD ) {
+      if ( crit == CHECK_NEW_OK && !newIsOk ) break;
+      if ( crit == CHECK_NEW_IN && !newIsIn ) break;
+      continue;
+    }
+
+    bool isOldIn = ( wasIn[0] && wasIn[1] ) || ( wasIn[2] && convex );
+    bool isOldOk = ( wasOk[0] && wasOk[1] ) || ( wasOk[2] && convex );
+    oldIsIn = ( oldIsIn && isOldIn );
+    oldIsOk = ( oldIsOk && isOldIn );
+
+
+    if ( !isOldIn ) { // node is outside a quadrangle
+      // move newUV inside a quadrangle
+//MESSAGE("Quad "<< dir1 << "  WAS IN " << wasIn[0]<<" "<<wasIn[1]<<" "<<wasIn[2]);
+      // node and newUV are outside: push newUV inside
+      gp_XY uv;
+      if ( convex || isTriangle ) {
+        uv = 0.5 * ( n[0]->myUV + n[2]->myUV ) - minDiag * outVec[2].XY();
+      }
+      else {
+        gp_Vec2d out = outVec[0].Normalized() + outVec[1].Normalized();
+        double outSize = out.Magnitude();
+        if ( outSize > DBL_MIN )
+          out /= outSize;
+        else
+          out.SetCoord( -outVec[1].Y(), outVec[1].X() );
+        uv = n[1]->myUV - minDiag * out.XY();
+      }
+      oldUVFixed[ nbOldFix++ ] = uv;
+      //node->myUV = newUV;
+    }
+    else if ( !isOldOk )  {
+      // try to fix old UV: move node inside as less as possible
+//MESSAGE("Quad "<< dir1 << "  old is BAD, try to fix old, minDiag: "<< minDiag);
+      gp_XY uv1, uv2 = node->myUV;
+      for ( i = isTriangle ? 2 : 0; i < 3; i++ ) // mark not computed vectors
+        if ( wasOk[i] )
+          moveVec[ i ].SetCoord( 1, 2e100); // not use this vector 
+      while ( !isOldOk ) {
+        // find the least moveVec
+        int i, iMin = 4;
+        double minMove2 = 1e100;
+        for ( i = isTriangle ? 2 : 0; i < 3; i++ )
+        {
+          if ( moveVec[i].Coord(1) < 1e100 ) {
+            double move2 = moveVec[i].SquareMagnitude();
+            if ( move2 < minMove2 ) {
+              minMove2 = move2;
+              iMin = i;
+            }
+          }
+        }
+        if ( iMin == 4 ) {
+          break;
+        }
+        // move node to newUV
+        uv1 = node->myUV + moveVec[ iMin ].XY();
+        uv2 += moveVec[ iMin ].XY();
+        moveVec[ iMin ].SetCoord( 1, 2e100); // not use this vector more
+        // check if uv1 is ok
+        for ( i = isTriangle ? 2 : 0; i < 3; i++ )
+          wasOk[i] = ( outVec[i] * gp_Vec2d( n[i]->myUV, uv1 ) < -minDiag );
+        isOldOk = ( wasOk[0] && wasOk[1] ) || ( wasOk[2] && convex );
+        if ( isOldOk )
+          oldUVImpr[ nbOldImpr++ ] = uv1;
+        else {
+          // check if uv2 is ok
+          for ( i = isTriangle ? 2 : 0; i < 3; i++ )
+            wasOk[i] = ( outVec[i] * gp_Vec2d( n[i]->myUV, uv2 ) < -minDiag );
+          isOldOk = ( wasOk[0] && wasOk[1] ) || ( wasOk[2] && convex );
+          if ( isOldOk )
+            oldUVImpr[ nbOldImpr++ ] = uv2;
+        }
+      }
+    }
+
+  } // loop on 4 quadrangles around <node>
+
+  if ( crit == CHECK_NEW_OK  )
+    return newIsOk;
+  if ( crit == CHECK_NEW_IN  )
+    return newIsIn;
+
+  if ( newIsOk )
+    return true;
+
+  if ( oldIsOk )
+    newUV = oldUV;
+  else {
+    if ( oldIsIn && nbOldImpr ) {
+//       MESSAGE(" Try to improve UV, init: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<
+//               " uv: "<<oldUV.X()<<" "<<oldUV.Y() );
+      gp_XY uv = oldUVImpr[ 0 ];
+      for ( int i = 1; i < nbOldImpr; i++ )
+        uv += oldUVImpr[ i ];
+      uv /= nbOldImpr;
+      if ( checkQuads( node, uv, reversed, CHECK_NEW_OK )) {
+        newUV = uv;
+        return false;
+      }
+      else {
+        //MESSAGE(" Cant improve UV, uv: "<<uv.X()<<" "<<uv.Y());
+      }
+    }
+    if ( !oldIsIn && nbOldFix ) {
+//       MESSAGE(" Try to fix UV, init: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<
+//               " uv: "<<oldUV.X()<<" "<<oldUV.Y() );
+      gp_XY uv = oldUVFixed[ 0 ];
+      for ( int i = 1; i < nbOldFix; i++ )
+        uv += oldUVFixed[ i ];
+      uv /= nbOldFix;
+      if ( checkQuads( node, uv, reversed, CHECK_NEW_IN )) {
+        newUV = uv;
+        return false;
+      }
+      else {
+        //MESSAGE(" Cant fix UV, uv: "<<uv.X()<<" "<<uv.Y());
+      }
+    }
+    if ( newIsIn && oldIsIn )
+      newUV = ( newBadRate < oldBadRate ) ? newUV : oldUV;
+    else if ( !newIsIn )
+      newUV = oldUV;
+  }
+
+  return false;
+}
 
 //=======================================================================
 //function : compUVByElasticIsolines
 //purpose  : compute UV as nodes of iso-poly-lines consisting of
 //           segments keeping relative size as in the pattern
 //=======================================================================
-
+//#define DEB_COMPUVBYELASTICISOLINES
 bool SMESH_Pattern::
   compUVByElasticIsolines(const list< list< TPoint* > >& theBndPoints,
                           const list< TPoint* >&         thePntToCompute)
 {
+//cout << "============================== KEY POINTS =============================="<<endl;
+//   list< int >::iterator kpIt = myKeyPointIDs.begin();
+//   for ( ; kpIt != myKeyPointIDs.end(); kpIt++ ) {
+//     TPoint& p = myPoints[ *kpIt ];
+//     cout << "INIT: " << p.myInitUV.X() << " " << p.myInitUV.Y() <<
+//       " UV: " << p.myUV.X() << " " << p.myUV.Y() << endl;
+//  }
+//cout << "=============================="<<endl;
+
   // Define parameters of iso-grid nodes in U and V dir
 
   set< double > paramSet[ 2 ];
   list< list< TPoint* > >::const_iterator pListIt;
   list< TPoint* >::const_iterator pIt;
-//   for ( pListIt = theBndPoints.begin(); pListIt != theBndPoints.end(); pListIt++ ) {
-//     const list< TPoint* > & pList = * pListIt;
-//     for ( pIt = pList.begin(); pIt != pList.end(); pIt++ ) {
-//       paramSet[0].insert( (*pIt)->myInitUV.X() );
-//       paramSet[1].insert( (*pIt)->myInitUV.Y() );
-//     }
-//   }
+  for ( pListIt = theBndPoints.begin(); pListIt != theBndPoints.end(); pListIt++ ) {
+    const list< TPoint* > & pList = * pListIt;
+    for ( pIt = pList.begin(); pIt != pList.end(); pIt++ ) {
+      paramSet[0].insert( (*pIt)->myInitUV.X() );
+      paramSet[1].insert( (*pIt)->myInitUV.Y() );
+    }
+  }
   for ( pIt = thePntToCompute.begin(); pIt != thePntToCompute.end(); pIt++ ) {
     paramSet[0].insert( (*pIt)->myInitUV.X() );
     paramSet[1].insert( (*pIt)->myInitUV.Y() );
@@ -1060,16 +1342,16 @@ bool SMESH_Pattern::
     set< double > & params = paramSet[ iDir ];
     double range = ( *params.rbegin() - *params.begin() );
     double toler = range / 1e6;
-    double maxSegment = range / params.size() / 2.;
     tol[ iDir ] = toler;
-
+//    double maxSegment = range / params.size() / 2.;
+//
 //     set< double >::iterator parIt = params.begin();
 //     double prevPar = *parIt;
 //     for ( parIt++; parIt != params.end(); parIt++ )
 //     {
 //       double segLen = (*parIt) - prevPar;
 //       if ( segLen < toler )
-//         params.erase( prevPar ); // unite
+//         ;//params.erase( prevPar ); // unite
 //       else if ( segLen > maxSegment )
 //         params.insert( prevPar + 0.5 * segLen ); // split
 //       prevPar = (*parIt);
@@ -1086,7 +1368,7 @@ bool SMESH_Pattern::
   set< double >::iterator par0It = params0.begin();
   for ( ; par0It != params0.end(); par0It++ )
   {
-    TIsoLine & isoLine0 = isoMap[0][ *par0It ]; // isoline with const U
+    TIsoLine & isoLine0 = isoMap[0][ *par0It ]; // vertical isoline with const U
     set< double > & params1 = paramSet[ 1 ];
     set< double >::iterator par1It = params1.begin();
     for ( ; par1It != params1.end(); par1It++ )
@@ -1097,10 +1379,12 @@ bool SMESH_Pattern::
     }
   }
 
-  // Compute intersections of boundaries with iso-lines
+  // Compute intersections of boundaries with iso-lines:
+  // only boundary nodes will have computed UV so far
 
-  Bnd_Box2d uvBox;
+  Bnd_Box2d uvBnd;
   list< list< TPoint* > >::const_iterator bndIt = theBndPoints.begin();
+  list< TIsoNode* > bndNodes; // nodes corresponding to outer theBndPoints
   for ( ; bndIt != theBndPoints.end(); bndIt++ )
   {
     const list< TPoint* > & bndPoints = * bndIt;
@@ -1110,7 +1394,6 @@ bool SMESH_Pattern::
     for ( ; pIt != bndPoints.end(); pIt++ )
     {
       TPoint* point = *pIt;
-      uvBox.Add( gp_Pnt2d( point->myUV ));
       for ( iDir = 0; iDir < 2; iDir++ )
       {
         const int iCoord = iDir + 1;
@@ -1146,70 +1429,132 @@ bool SMESH_Pattern::
           }
           TIsoNode * node;
           if ( Abs( nodePar - otherPar ) <= toler )
-            node = (*nIt);
+            node = ( nIt == isoLine.end() ) ? isoLine.back() : (*nIt);
           else {
             nodes.push_back( TIsoNode( initUV.X(), initUV.Y() ) );
             node = & nodes.back();
             isoLine.insert( nIt, node );
           }
+          node->SetNotMovable();
           node->myUV = uv;
-        }
-      }
+          uvBnd.Add( gp_Pnt2d( uv ));
+//  cout << "bnd: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<" UV: "<<node->myUV.X()<<" "<<node->myUV.Y()<<endl;
+          // tangent dir
+          gp_XY tgt( point->myUV - prevP->myUV );
+          if ( ::IsEqual( r, 1. ))
+            node->myDir[ 0 ] = tgt;
+          else if ( ::IsEqual( r, 0. ))
+            node->myDir[ 1 ] = tgt;
+          else
+            node->myDir[ 1 ] = node->myDir[ 0 ] = tgt;
+          // keep boundary nodes corresponding to boundary points
+          if ( bndIt == theBndPoints.begin() && ::IsEqual( r, 1. ))
+            if ( bndNodes.empty() || bndNodes.back() != node )
+              bndNodes.push_back( node );
+        } // loop on isolines
+      } // loop on 2 directions
       prevP = point;
     } // loop on boundary points
   } // loop on boundaries
 
-  // Connect XY of nodes and mark not movable nodes out of the boundary
+  // Define orientation
 
+  // find the point with the least X
+  double leastX = DBL_MAX;
+  TIsoNode * leftNode;
+  list < TIsoNode >::iterator nodeIt = nodes.begin();
+  for ( ; nodeIt != nodes.end(); nodeIt++  ) {
+    TIsoNode & node = *nodeIt;
+    if ( node.IsUVComputed() && node.myUV.X() < leastX ) {
+      leastX = node.myUV.X();
+      leftNode = &node;
+    }
+// if ( node.IsUVComputed() ) {
+// cout << "bndNode INIT: " << node.myInitUV.X()<<" "<<node.myInitUV.Y()<<" UV: "<<
+//   node.myUV.X()<<" "<<node.myUV.Y()<<endl<<
+//    " dir0: "<<node.myDir[0].X()<<" "<<node.myDir[0].Y() <<
+//      " dir1: "<<node.myDir[1].X()<<" "<<node.myDir[1].Y() << endl;
+// }
+  }
+  bool reversed = ( leftNode->myDir[0].Y() + leftNode->myDir[1].Y() > 0 );
+  //SCRUTE( reversed );
+
+  // Prepare internal nodes:
+  // 1. connect nodes
+  // 2. compute ratios
+  // 3. find boundary nodes for each node
+  // 4. remove nodes out of the boundary
   for ( iDir = 0; iDir < 2; iDir++ )
   {
-    const int iCoord = 2 - iDir;
+    const int iCoord = 2 - iDir; // coord changing along an isoline
     map < double, TIsoLine >& isos = isoMap[ iDir ];
     map < double, TIsoLine >::iterator isoIt = isos.begin();
     for ( ; isoIt != isos.end(); isoIt++ )
     {
       TIsoLine & isoLine = (*isoIt).second;
       bool firstCompNodeFound = false;
-      TIsoLine::iterator lastCompNodePos, nPrevIt, nIt, nNextIt;
+      TIsoLine::iterator lastCompNodePos, nPrevIt, nIt, nNextIt, nIt2;
       nPrevIt = nIt = nNextIt = isoLine.begin();
       nIt++;
       nNextIt++; nNextIt++;
       while ( nIt != isoLine.end() )
       {
-        // connect prev - cur for internal nodes
+        // 1. connect prev - cur
         TIsoNode* node = *nIt, * prevNode = *nPrevIt;
-        if ( !node->IsUVComputed() )
-          node->myPrevUV[ iDir ] = & prevNode->myUV;
-        if ( !prevNode->IsUVComputed() )
-          prevNode->myNextUV[ iDir ] = & node->myUV;
-        // compute ratio
+        if ( !firstCompNodeFound && prevNode->IsUVComputed() ) {
+          firstCompNodeFound = true;
+          lastCompNodePos = nPrevIt;
+        }
+        if ( firstCompNodeFound ) {
+          node->SetNext( prevNode, iDir, 0 );
+          prevNode->SetNext( node, iDir, 1 );
+        }
+        // 2. compute ratio
         if ( nNextIt != isoLine.end() ) {
           double par1 = prevNode->myInitUV.Coord( iCoord );
           double par2 = node->myInitUV.Coord( iCoord );
           double par3 = (*nNextIt)->myInitUV.Coord( iCoord );
           node->myRatio[ iDir ] = ( par2 - par1 ) / ( par3 - par1 );
-          nNextIt++;
         }
-        // mark not movable before the boundary
-        if ( !firstCompNodeFound ) {
-          if ( !prevNode->IsUVComputed() )
-            prevNode->SetNotMovable();
-          else
-            firstCompNodeFound = true;
-        }
+        // 3. find boundary nodes
         if ( node->IsUVComputed() )
           lastCompNodePos = nIt;
+        else if ( firstCompNodeFound && nNextIt != isoLine.end() ) {
+          TIsoNode* bndNode1 = *lastCompNodePos, *bndNode2 = 0;
+          for ( nIt2 = nNextIt; nIt2 != isoLine.end(); nIt2++ )
+            if ( (*nIt2)->IsUVComputed() )
+              break;
+          if ( nIt2 != isoLine.end() ) {
+            bndNode2 = *nIt2;
+            node->SetBoundaryNode( bndNode1, iDir, 0 );
+            node->SetBoundaryNode( bndNode2, iDir, 1 );
+// cout << "--------------------------------------------------"<<endl;
+//  cout << "bndNode1: " << bndNode1->myUV.X()<<" "<<bndNode1->myUV.Y()<<endl<<
+//   " dir0: "<<bndNode1->myDir[0].X()<<" "<<bndNode1->myDir[0].Y() <<
+//     " dir1: "<<bndNode1->myDir[1].X()<<" "<<bndNode1->myDir[1].Y() << endl;
+//  cout << "bndNode2: " << bndNode2->myUV.X()<<" "<<bndNode2->myUV.Y()<<endl<<
+//   " dir0: "<<bndNode2->myDir[0].X()<<" "<<bndNode2->myDir[0].Y() <<
+//     " dir1: "<<bndNode2->myDir[1].X()<<" "<<bndNode2->myDir[1].Y() << endl;
+          }
+        }
         nIt++; nPrevIt++;
-      }
-      // mark not movable after the boundary
-      for ( nIt = ++lastCompNodePos; nIt != isoLine.end(); nIt++ )
-        (*nIt)->SetNotMovable();
-    }
-  }
+        if ( nNextIt != isoLine.end() ) nNextIt++;
+        // 4. remove nodes out of the boundary
+        if ( !firstCompNodeFound )
+          isoLine.pop_front();
+      } // loop on isoLine nodes
 
-  // Compute starting UV of internal nodes by iso intersection
+      // remove nodes after the boundary
+//       for ( nIt = ++lastCompNodePos; nIt != isoLine.end(); nIt++ )
+//         (*nIt)->SetNotMovable();
+      isoLine.erase( ++lastCompNodePos, isoLine.end() );
+    } // loop on isolines
+  } // loop on 2 directions
 
-  map < double, TIsoLine >& isos = isoMap[ 0 ];
+  // Compute local isoline direction for internal nodes
+
+  /*
+  map < double, TIsoLine >& isos = isoMap[ 0 ]; // vertical isolines with const U
   map < double, TIsoLine >::iterator isoIt = isos.begin();
   for ( ; isoIt != isos.end(); isoIt++ )
   {
@@ -1218,68 +1563,367 @@ bool SMESH_Pattern::
     for ( ; nIt != isoLine.end(); nIt++ )
     {
       TIsoNode* node = *nIt;
-      if ( !node->IsUVComputed() && node->IsMovable() )
-        if ( !compUVByIsoIntersection( theBndPoints, node->myInitUV, node->myUV ))
-          node->myUV = node->myInitUV;
-    }
-  }
-
-  // Move nodes
-
-  static int maxNbIter = 100; // -1
-  //maxNbIter++;
-  maxNbIter = ( maxNbIter < 0 ) ? 100 : -1;
-    
-  double maxMove;
-  int nbIter = 0;
-  do {
-    if ( nbIter >= maxNbIter ) break;
-    maxMove = 0.0;
-    list < TIsoNode >::iterator nIt = nodes.begin();
-    for ( ; nIt != nodes.end(); nIt++  ) {
-      TIsoNode & node = *nIt;
-      if ( node.IsMovable() )
+      if ( node->IsUVComputed() || !node->IsMovable() )
+        continue;
+      gp_Vec2d aTgt[2], aNorm[2];
+      double ratio[2];
+      bool OK = true;
+      for ( iDir = 0; iDir < 2; iDir++ )
       {
-        gp_Lin2d line[2];
-        gp_XY location[2];
-        bool lineFound = true;
+        TIsoNode* bndNode1 = node->GetBoundaryNode( iDir, 0 );
+        TIsoNode* bndNode2 = node->GetBoundaryNode( iDir, 1 );
+        if ( !bndNode1 || !bndNode2 ) {
+          OK = false;
+          break;
+        }
+        const int iCoord = 2 - iDir; // coord changing along an isoline
+        double par1 = bndNode1->myInitUV.Coord( iCoord );
+        double par2 = node->myInitUV.Coord( iCoord );
+        double par3 = bndNode2->myInitUV.Coord( iCoord );
+        ratio[ iDir ] = ( par2 - par1 ) / ( par3 - par1 );
+
+        gp_Vec2d tgt1( bndNode1->myDir[0].XY() + bndNode1->myDir[1].XY() );
+        gp_Vec2d tgt2( bndNode2->myDir[0].XY() + bndNode2->myDir[1].XY() );
+        if ( bool( iDir ) == reversed ) tgt2.Reverse(); // along perpend. isoline
+        else                            tgt1.Reverse();
+//cout<<" tgt: " << tgt1.X()<<" "<<tgt1.Y()<<" | "<< tgt2.X()<<" "<<tgt2.Y()<<endl;
+
+        if ( ratio[ iDir ] < 0.5 )
+          aNorm[ iDir ] = gp_Vec2d( -tgt1.Y(), tgt1.X() ); // rotate tgt to the left
+        else
+          aNorm[ iDir ] = gp_Vec2d( -tgt2.Y(), tgt2.X() );
+        if ( iDir == 1 )
+          aNorm[ iDir ].Reverse();  // along iDir isoline
+
+        double angle = tgt1.Angle( tgt2 ); //  [-PI, PI]
+        // maybe angle is more than |PI|
+        if ( Abs( angle ) > PI / 2. ) {
+          // check direction of the last but one perpendicular isoline
+          TIsoNode* prevNode = bndNode2->GetNext( iDir, 0 );
+          bndNode1 = prevNode->GetBoundaryNode( 1 - iDir, 0 );
+          bndNode2 = prevNode->GetBoundaryNode( 1 - iDir, 1 );
+          gp_Vec2d isoDir( bndNode1->myUV, bndNode2->myUV );
+          if ( isoDir * tgt2 < 0 )
+            isoDir.Reverse();
+          double angle2 = tgt1.Angle( isoDir );
+          //cout << " isoDir: "<< isoDir.X() <<" "<<isoDir.Y() << " ANGLE: "<< angle << " "<<angle2<<endl;
+          if (angle2 * angle < 0 && // check the sign of an angle close to PI
+              Abs ( Abs ( angle ) - PI ) <= PI / 180. ) {
+            //MESSAGE("REVERSE ANGLE");
+            angle = -angle;
+          }
+          if ( Abs( angle2 ) > Abs( angle ) ||
+              ( angle2 * angle < 0 && Abs( angle2 ) > Abs( angle - angle2 ))) {
+            //MESSAGE("Add PI");
+            // cout << "NODE: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<endl;
+            // cout <<"ISO: " << isoParam << " " << (*iso2It).first << endl;
+            // cout << "bndNode1: " << bndNode1->myUV.X()<<" "<<bndNode1->myUV.Y()<< endl;
+            // cout << "bndNode2: " << bndNode2->myUV.X()<<" "<<bndNode2->myUV.Y()<<endl;
+            // cout <<" tgt: " << tgt1.X()<<" "<<tgt1.Y()<<"  "<< tgt2.X()<<" "<<tgt2.Y()<<endl;
+            angle += ( angle < 0 ) ? 2. * PI : -2. * PI;
+          }
+        }
+        aTgt[ iDir ] = tgt1.Rotated( angle * ratio[ iDir ] ).XY();
+      } // loop on 2 dir
+
+      if ( OK ) {
         for ( iDir = 0; iDir < 2; iDir++ )
         {
-          // make a line
-          gp_XY uv1( *node.myPrevUV[ iDir ] ), uv2( *node.myNextUV[ iDir ] );
-          gp_XY dUV( uv2 - uv1 );
-          if ( dUV.SquareModulus() <= DBL_MIN * DBL_MIN ) {
-            lineFound = false;
-            break;
-          }
-          double r = node.myRatio[ iDir ];
-          gp_Lin2d l( uv1, dUV );
-          gp_XY loc = uv1 * ( 1 - r ) + uv2 * r;
-          location[ iDir ] = loc;
-          line[ iDir ] = l/*.Normal( loc )*/;
+          aTgt[iDir].Normalize();
+          aNorm[1-iDir].Normalize();
+          double r = Abs ( ratio[iDir] - 0.5 ) * 2.0; // [0,1] - distance from the middle
+          r *= r;
+          
+          node->myDir[iDir] = //aTgt[iDir];
+            aNorm[1-iDir] * r + aTgt[iDir] * ( 1. - r );
         }
-        // intersect the 2 lines and move a node
-        gp_XY newUV;
-        if (lineFound &&
-            intersectIsolines (*node.myPrevUV[0], *node.myNextUV[0], node.myRatio[0],
-                               *node.myPrevUV[0], *node.myNextUV[0], node.myRatio[0],
-                               newUV ) &&
-            !uvBox.IsOut( newUV ) )
+// cout << "NODE: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<endl;
+// cout <<" tgt: " << tgt1.X()<<" "<<tgt1.Y()<<" - "<< tgt2.X()<<" "<<tgt2.Y()<<endl;
+//  cout << " isoDir: "<< node->myDir[0].X() <<" "<<node->myDir[0].Y()<<"  |  "
+//    << node->myDir[1].X() <<" "<<node->myDir[1].Y()<<endl;
+      }
+    } // loop on iso nodes
+  } // loop on isolines
+*/
+  // Find nodes to start computing UV from
+
+  list< TIsoNode* > startNodes;
+  list< TIsoNode* >::iterator nIt = bndNodes.end();
+  TIsoNode* node = *(--nIt);
+  TIsoNode* prevNode = *(--nIt);
+  for ( nIt = bndNodes.begin(); nIt != bndNodes.end(); nIt++ )
+  {
+    TIsoNode* nextNode = *nIt;
+    gp_Vec2d initTgt1( prevNode->myInitUV, node->myInitUV );
+    gp_Vec2d initTgt2( node->myInitUV, nextNode->myInitUV );
+    double initAngle = initTgt1.Angle( initTgt2 );
+    double angle = node->myDir[0].Angle( node->myDir[1] );
+    if ( reversed ) angle = -angle;
+    if ( initAngle > angle && initAngle - angle > PI / 2.1 ) {
+      // find a close internal node
+      TIsoNode* nClose = 0;
+      list< TIsoNode* > testNodes;
+      testNodes.push_back( node );
+      list< TIsoNode* >::iterator it = testNodes.begin();
+      for ( ; !nClose && it != testNodes.end(); it++ )
+      {
+        for (int i = 0; i < 4; i++ )
         {
-          maxMove = Max( maxMove, ( newUV - node.myUV ).SquareModulus());
-          node.myUV = newUV;
+          nClose = (*it)->myNext[ i ];
+          if ( nClose ) {
+            if ( !nClose->IsUVComputed() )
+              break;
+            else {
+              testNodes.push_back( nClose );
+              nClose = 0;
+            }
+          }
+        }
+      }
+      startNodes.push_back( nClose );
+// cout << "START: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<" UV: "<<
+//   node->myUV.X()<<" "<<node->myUV.Y()<<endl<<
+//   "initAngle: " << initAngle << " angle: " << angle << endl;
+// cout <<" init tgt: " << initTgt1.X()<<" "<<initTgt1.Y()<<" | "<< initTgt2.X()<<" "<<initTgt2.Y()<<endl;
+// cout << " tgt: "<< node->myDir[ 0 ].X() <<" "<<node->myDir[ 0 ].Y()<<" | "<<
+//    node->myDir[ 1 ].X() <<" "<<node->myDir[ 1 ].Y()<<endl;
+// cout << "CLOSE: "<<nClose->myInitUV.X()<<" "<<nClose->myInitUV.Y()<<endl;
+    }
+    prevNode = node;
+    node = nextNode;
+  }
+
+  // Compute starting UV of internal nodes
+
+  list < TIsoNode* > internNodes;
+  bool needIteration = true;
+  if ( startNodes.empty() ) {
+    MESSAGE( " Starting UV by compUVByIsoIntersection()");
+    needIteration = false;
+    map < double, TIsoLine >& isos = isoMap[ 0 ];
+    map < double, TIsoLine >::iterator isoIt = isos.begin();
+    for ( ; isoIt != isos.end(); isoIt++ )
+    {
+      TIsoLine & isoLine = (*isoIt).second;
+      TIsoLine::iterator nIt = isoLine.begin();
+      for ( ; !needIteration && nIt != isoLine.end(); nIt++ )
+      {
+        TIsoNode* node = *nIt;
+        if ( !node->IsUVComputed() && node->IsMovable() ) {
+          internNodes.push_back( node );
+          //bool isDeformed;
+          if ( !compUVByIsoIntersection(theBndPoints, node->myInitUV,
+                                        node->myUV, needIteration ))
+            node->myUV = node->myInitUV;
         }
       }
     }
+    if ( needIteration )
+      for ( nIt = bndNodes.begin(); nIt != bndNodes.end(); nIt++ )
+      {
+        TIsoNode* node = *nIt, *nClose = 0;
+        list< TIsoNode* > testNodes;
+        testNodes.push_back( node );
+        list< TIsoNode* >::iterator it = testNodes.begin();
+        for ( ; !nClose && it != testNodes.end(); it++ )
+        {
+          for (int i = 0; i < 4; i++ )
+          {
+            nClose = (*it)->myNext[ i ];
+            if ( nClose ) {
+              if ( !nClose->IsUVComputed() && nClose->IsMovable() )
+                break;
+              else {
+                testNodes.push_back( nClose );
+                nClose = 0;
+              }
+            }
+          }
+        }
+        startNodes.push_back( nClose );
+      }
+  }
+
+  double aMin[2], aMax[2], step[2];
+  uvBnd.Get( aMin[0], aMin[1], aMax[0], aMax[1] );
+  double minUvSize = Min ( aMax[0]-aMin[0], aMax[1]-aMin[1] );
+  step[0] = minUvSize / paramSet[ 0 ].size() / 10;
+  step[1] = minUvSize / paramSet[ 1 ].size() / 10;
+//cout << "STEPS: " << step[0] << " " << step[1]<< endl;
+
+  for ( nIt = startNodes.begin(); nIt != startNodes.end(); nIt++ )
+  {
+    TIsoNode* prevN[2], *node = *nIt;
+    if ( node->IsUVComputed() || !node->IsMovable() )
+      continue;
+    gp_XY newUV( 0, 0 ), sumDir( 0, 0 );
+    int nbComp = 0, nbPrev = 0;
+    for ( iDir = 0; iDir < 2; iDir++ )
+    {
+      TIsoNode* prevNode1 = 0, *prevNode2 = 0;
+      TIsoNode* n = node->GetNext( iDir, 0 );
+      if ( n->IsUVComputed() )
+        prevNode1 = n;
+      else
+        startNodes.push_back( n );
+      n = node->GetNext( iDir, 1 );
+      if ( n->IsUVComputed() )
+        prevNode2 = n;
+      else
+        startNodes.push_back( n );
+      if ( !prevNode1 ) {
+        prevNode1 = prevNode2;
+        prevNode2 = 0;
+      }
+      if ( prevNode1 ) nbPrev++;
+      if ( prevNode2 ) nbPrev++;
+      if ( prevNode1 ) {
+        gp_XY dir;
+          double prevPar = prevNode1->myInitUV.Coord( 2 - iDir );
+          double par = node->myInitUV.Coord( 2 - iDir );
+          bool isEnd = ( prevPar > par );
+//          dir = node->myDir[ 1 - iDir ].XY() * ( isEnd ? -1. : 1. );
+        //cout << "__________"<<endl<< "NODE: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<endl;
+          TIsoNode* bndNode = node->GetBoundaryNode( iDir, isEnd );
+          gp_XY tgt( bndNode->myDir[0].XY() + bndNode->myDir[1].XY() );
+          dir.SetCoord( 1, tgt.Y() * ( reversed ? 1 : -1 ));
+          dir.SetCoord( 2, tgt.X() * ( reversed ? -1 : 1 ));
+        //cout << "bndNode UV: " << bndNode->myUV.X()<<" "<<bndNode->myUV.Y()<< endl;
+          //  cout << " tgt: "<< bndNode->myDir[ 0 ].X() <<" "<<bndNode->myDir[ 0 ].Y()<<" | "<<
+          //     bndNode->myDir[ 1 ].X() <<" "<<bndNode->myDir[ 1 ].Y()<<endl;
+          //cout << "prevNode UV: " << prevNode1->myUV.X()<<" "<<prevNode1->myUV.Y()<<
+            //" par: " << prevPar << endl;
+          //           cout <<" tgt: " << tgt.X()<<" "<<tgt.Y()<<endl;
+        //cout << " DIR: "<< dir.X() <<" "<<dir.Y()<<endl;
+        if ( prevNode2 ) {
+          //cout << "____2next______"<<endl<< "NODE: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<endl;
+          gp_XY & uv1 = prevNode1->myUV;
+          gp_XY & uv2 = prevNode2->myUV;
+//           dir = ( uv2 - uv1 );
+//           double len = dir.Modulus();
+//           if ( len > DBL_MIN )
+//             dir /= len * 0.5;
+          double r = node->myRatio[ iDir ];
+          newUV += uv1 * ( 1 - r ) + uv2 * r;
+        }
+        else {
+          newUV += prevNode1->myUV + dir * step[ iDir ];
+        }
+        sumDir += dir;
+        prevN[ iDir ] = prevNode1;
+        nbComp++;
+      }
+    }
+    newUV /= nbComp;
+    node->myUV = newUV;
+    //cout << "NODE: "<<node->myInitUV.X()<<" "<<node->myInitUV.Y()<<endl;
+
+    // check if a quadrangle is not distorted
+    if ( nbPrev > 1 ) {
+      //int crit = ( nbPrev == 4 ) ? FIX_OLD : CHECK_NEW_IN;
+      if ( !checkQuads( node, newUV, reversed, FIX_OLD, step[0] + step[1] )) {
+      //cout <<" newUV: " << node->myUV.X() << " "<<node->myUV.Y() << " nbPrev: "<<nbPrev<< endl;
+      //  cout << "_FIX_INIT_ fixedUV: " << newUV.X() << " "<<newUV.Y() << endl;
+        node->myUV = newUV;
+      }
+    }
+    internNodes.push_back( node );
+  }
+  
+  // Move nodes
+
+  static int maxNbIter = 100;
+#ifdef DEB_COMPUVBYELASTICISOLINES
+//   maxNbIter++;
+  bool useNbMoveNode = 0;
+  static int maxNbNodeMove = 100;
+  maxNbNodeMove++;
+  int nbNodeMove = 0;
+  if ( !useNbMoveNode )
+    maxNbIter = ( maxNbIter < 0 ) ? 100 : -1;
+#endif    
+  double maxMove;
+  int nbIter = 0;
+  do {
+    if ( !needIteration) break;
+#ifdef DEB_COMPUVBYELASTICISOLINES
+    if ( nbIter >= maxNbIter ) break;
+#endif
+    maxMove = 0.0;
+    list < TIsoNode* >::iterator nIt = internNodes.begin();
+    for ( ; nIt != internNodes.end(); nIt++  ) {
+#ifdef DEB_COMPUVBYELASTICISOLINES
+      if (useNbMoveNode )
+        cout << nbNodeMove <<" =================================================="<<endl;
+#endif
+      TIsoNode * node = *nIt;
+      // make lines
+      //gp_Lin2d line[2];
+      gp_XY loc[2];
+      for ( iDir = 0; iDir < 2; iDir++ )
+      {
+        gp_XY & uv1 = node->GetNext( iDir, 0 )->myUV;
+        gp_XY & uv2 = node->GetNext( iDir, 1 )->myUV;
+        double r = node->myRatio[ iDir ];
+        loc[ iDir ] = uv1 * ( 1 - r ) + uv2 * r;
+//         line[ iDir ].SetLocation( loc[ iDir ] );
+//         line[ iDir ].SetDirection( node->myDir[ iDir ] );
+      }
+      // define ratio
+      double locR[2] = { 0, 0 };
+      for ( iDir = 0; iDir < 2; iDir++ )
+      {
+        const int iCoord = 2 - iDir; // coord changing along an isoline
+        TIsoNode* bndNode1 = node->GetBoundaryNode( iDir, 0 );
+        TIsoNode* bndNode2 = node->GetBoundaryNode( iDir, 1 );
+        double par1 = bndNode1->myInitUV.Coord( iCoord );
+        double par2 = node->myInitUV.Coord( iCoord );
+        double par3 = bndNode2->myInitUV.Coord( iCoord );
+        double r = ( par2 - par1 ) / ( par3 - par1 );
+        r = Abs ( r - 0.5 ) * 2.0;  // [0,1] - distance from the middle
+        locR[ iDir ] = ( 1 - r * r ) * 0.25;
+      }
+      //locR[0] = locR[1] = 0.25;
+      // intersect the 2 lines and move a node
+      //IntAna2d_AnaIntersection inter( line[0], line[1] );
+      if ( /*inter.IsDone() && inter.NbPoints() ==*/ 1 )
+      {
+//         double intR = 1 - locR[0] - locR[1];
+//         gp_XY newUV = inter.Point(1).Value().XY();
+//         if ( !checkQuads( node, newUV, reversed, CHECK_NEW_IN ))
+//           newUV = ( locR[0] * loc[0] + locR[1] * loc[1] ) / ( 1 - intR );
+//         else
+//           newUV = intR * newUV + locR[0] * loc[0] + locR[1] * loc[1];
+        gp_XY newUV = 0.5 * ( loc[0] +  loc[1] );
+        // avoid parallel isolines intersection
+        checkQuads( node, newUV, reversed );
+
+        maxMove = Max( maxMove, ( newUV - node->myUV ).SquareModulus());
+        node->myUV = newUV;
+      } // intersection found
+#ifdef DEB_COMPUVBYELASTICISOLINES
+      if (useNbMoveNode && ++nbNodeMove >= maxNbNodeMove ) break;
+#endif
+    } // loop on internal nodes
+#ifdef DEB_COMPUVBYELASTICISOLINES
+    if (useNbMoveNode && nbNodeMove >= maxNbNodeMove ) break;
+#endif
   } while ( maxMove > 1e-8 && nbIter++ < maxNbIter );
 
   MESSAGE( "compUVByElasticIsolines(): Nb iterations " << nbIter << " dist: " << sqrt( maxMove ));
 
+  if ( nbIter >= maxNbIter && sqrt(maxMove) > minUvSize * 0.05 ) {
+    MESSAGE( "compUVByElasticIsolines() failed: "<<sqrt(maxMove)<<">"<<minUvSize * 0.05);
+#ifndef DEB_COMPUVBYELASTICISOLINES
+    return false;
+#endif
+  }
+
   // Set computed UV to points
-  
+
   for ( pIt = thePntToCompute.begin(); pIt != thePntToCompute.end(); pIt++ ) {
     TPoint* point = *pIt;
-    gp_XY oldUV = point->myUV;
+    //gp_XY oldUV = point->myUV;
     double minDist = DBL_MAX;
     list < TIsoNode >::iterator nIt = nodes.begin();
     for ( ; nIt != nodes.end(); nIt++ ) {
@@ -1426,7 +2070,6 @@ bool SMESH_Pattern::sortSameSizeWires (TListOfEdgesList &                theWire
                                        list< list< TPoint* > >&          theEdgesPointsList )
 {
   TopoDS_Face F = TopoDS::Face( myShape );
-  int iE, nbEdgeInWire = (*theFromWire).size();
   int iW, nbWires = 0;
   TListOfEdgesList::iterator wlIt = theFromWire;
   while ( wlIt++ != theToWire )
@@ -1435,6 +2078,7 @@ bool SMESH_Pattern::sortSameSizeWires (TListOfEdgesList &                theWire
   // Recompute key-point UVs by isolines intersection,
   // compute CG of key-points for each wire and bnd boxes of GCs
 
+  bool aBool;
   gp_XY orig( gp::Origin2d().XY() );
   vector< gp_XY > vGcVec( nbWires, orig ), gcVec( nbWires, orig );
   Bnd_Box2d bndBox, vBndBox;
@@ -1447,7 +2091,7 @@ bool SMESH_Pattern::sortSameSizeWires (TListOfEdgesList &                theWire
     {
       list< TPoint* > & ePoints = getShapePoints( eID++ );
       TPoint* p = ePoints.front();
-      if ( !compUVByIsoIntersection( theEdgesPointsList, p->myInitUV, p->myUV )) {
+      if ( !compUVByIsoIntersection( theEdgesPointsList, p->myInitUV, p->myUV, aBool )) {
         MESSAGE("cant sortSameSizeWires()");
         return false;
       }
@@ -1531,6 +2175,7 @@ bool SMESH_Pattern::sortSameSizeWires (TListOfEdgesList &                theWire
     {
       list< TPoint* > & ePoints = getShapePoints( eID++ );
       computeUVOnEdge( *eIt, ePoints );
+      edgesPoints.insert( edgesPoints.end(), ePoints.begin(), (--ePoints.end()));
     }
     // put wire back to theWireList
     wlIt = wirePos++;
@@ -1627,6 +2272,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
   {
     // compute UV of inner edge-points using the method for in-face points
     // and devide eList into a list of separate wires
+    bool aBool;
     list< list< TopoDS_Edge > > wireList;
     list<TopoDS_Edge>::iterator eIt = elIt;
     list<int>::iterator nbEIt = nbVertexInWires.begin();
@@ -1641,7 +2287,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
         pIt = ePoints.begin();
         for (  pIt++; pIt != ePoints.end(); pIt++ ) {
           TPoint* p = (*pIt);
-          if ( !compUVByIsoIntersection( edgesPointsList, p->myInitUV, p->myUV )) {
+          if ( !compUVByIsoIntersection( edgesPointsList, p->myInitUV, p->myUV, aBool )) {
             MESSAGE("cant Apply(face)");
             return false;
           }
@@ -1746,21 +2392,29 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
       if ( !loc.IsIdentity() )
         aTrsf.Transforms( point->myXYZ.ChangeCoord() );
     }
-  }  
-  
-  // Compute UV and XYZ of in-face points by intersection of 2 iso lines
+  }
 
+  // Compute UV and XYZ of in-face points
+
+  // try to use a simple algo
   list< TPoint* > & fPoints = getShapePoints( face );
-  for ( pIt = fPoints.begin(); pIt != fPoints.end(); pIt++ )
-  {
-    TPoint * point = *pIt;
-    if ( !compUVByIsoIntersection( edgesPointsList, point->myInitUV, point->myUV )) {
+  bool isDeformed = false;
+  for ( pIt = fPoints.begin(); !isDeformed && pIt != fPoints.end(); pIt++ )
+    if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
+                                  (*pIt)->myUV, isDeformed )) {
       MESSAGE("cant Apply(face)");
       return false;
     }
+  // try to use a complex algo if it is a difficult case
+  if ( isDeformed && !compUVByElasticIsolines( edgesPointsList, fPoints ))
+  {
+    for ( ; pIt != fPoints.end(); pIt++ ) // continue with the simple algo
+      if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
+                                    (*pIt)->myUV, isDeformed )) {
+        MESSAGE("cant Apply(face)");
+        return false;
+      }
   }
-
-//  compUVByElasticIsolines( edgesPointsList, fPoints );
 
   Handle(Geom_Surface) aSurface = BRep_Tool::Surface( face, loc );
   const gp_Trsf & aTrsf = loc.Transformation();
@@ -2254,59 +2908,60 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
 
 void SMESH_Pattern::arrangeBoundaries (list< list< TPoint* > >& boundaryList)
 {
-  int nbBoundaries = boundaryList.size();
-  if ( nbBoundaries < 2 ) return;
-
   typedef list< list< TPoint* > >::iterator TListOfListIt;
   TListOfListIt bndIt;
-
-  // sort boundaries by nb of key-points
-  if ( nbBoundaries > 2 )
-  {
-    // move boundaries in tmp list
-    list< list< TPoint* > > tmpList; 
-    tmpList.splice( tmpList.begin(), boundaryList, boundaryList.begin(), boundaryList.end());
-    // make a map nb-key-points to boundary-position-in-tmpList,
-    // boundary-positions get ordered in it
-    typedef map< int, TListOfListIt > TNbKpBndPosMap;
-    TNbKpBndPosMap nbKpBndPosMap;
-    bndIt = tmpList.begin();
-    list< int >::iterator nbKpIt = myNbKeyPntInBoundary.begin();
-    for ( ; nbKpIt != myNbKeyPntInBoundary.end(); nbKpIt++, bndIt++ ) {
-      int nb = *nbKpIt * nbBoundaries;
-      while ( nbKpBndPosMap.find ( nb ) != nbKpBndPosMap.end() )
-        nb++;
-      nbKpBndPosMap.insert( TNbKpBndPosMap::value_type( nb, bndIt ));
-    }
-    // move boundaries back to boundaryList
-    TNbKpBndPosMap::iterator nbKpBndPosIt = nbKpBndPosMap.begin();
-    for ( ; nbKpBndPosIt != nbKpBndPosMap.end(); nbKpBndPosIt++ ) {
-      TListOfListIt & bndPos2 = (*nbKpBndPosIt).second;
-      TListOfListIt bndPos1 = bndPos2++;
-      boundaryList.splice( boundaryList.end(), tmpList, bndPos1, bndPos2 );
-    }
-  }
-
-  // Look for the outer boundary: the one with the point with the least X
-  double leastX = DBL_MAX;
   list< TPoint* >::iterator pIt;
-  TListOfListIt outerBndPos;
-  for ( bndIt = boundaryList.begin(); bndIt != boundaryList.end(); bndIt++ )
+
+  int nbBoundaries = boundaryList.size();
+  if ( nbBoundaries > 1 )
   {
-    list< TPoint* >& boundary = (*bndIt);
-    for ( pIt = boundary.begin(); pIt != boundary.end(); pIt++)
+    // sort boundaries by nb of key-points
+    if ( nbBoundaries > 2 )
     {
-      TPoint* point = *pIt;
-      if ( point->myInitXYZ.X() < leastX ) {
-        leastX = point->myInitXYZ.X();
-        outerBndPos = bndIt;
+      // move boundaries in tmp list
+      list< list< TPoint* > > tmpList; 
+      tmpList.splice( tmpList.begin(), boundaryList, boundaryList.begin(), boundaryList.end());
+      // make a map nb-key-points to boundary-position-in-tmpList,
+      // boundary-positions get ordered in it
+      typedef map< int, TListOfListIt > TNbKpBndPosMap;
+      TNbKpBndPosMap nbKpBndPosMap;
+      bndIt = tmpList.begin();
+      list< int >::iterator nbKpIt = myNbKeyPntInBoundary.begin();
+      for ( ; nbKpIt != myNbKeyPntInBoundary.end(); nbKpIt++, bndIt++ ) {
+        int nb = *nbKpIt * nbBoundaries;
+        while ( nbKpBndPosMap.find ( nb ) != nbKpBndPosMap.end() )
+          nb++;
+        nbKpBndPosMap.insert( TNbKpBndPosMap::value_type( nb, bndIt ));
+      }
+      // move boundaries back to boundaryList
+      TNbKpBndPosMap::iterator nbKpBndPosIt = nbKpBndPosMap.begin();
+      for ( ; nbKpBndPosIt != nbKpBndPosMap.end(); nbKpBndPosIt++ ) {
+        TListOfListIt & bndPos2 = (*nbKpBndPosIt).second;
+        TListOfListIt bndPos1 = bndPos2++;
+        boundaryList.splice( boundaryList.end(), tmpList, bndPos1, bndPos2 );
       }
     }
-  }
 
-  if ( outerBndPos != boundaryList.begin() )
-    boundaryList.splice( boundaryList.begin(), boundaryList, outerBndPos, ++outerBndPos );
+    // Look for the outer boundary: the one with the point with the least X
+    double leastX = DBL_MAX;
+    TListOfListIt outerBndPos;
+    for ( bndIt = boundaryList.begin(); bndIt != boundaryList.end(); bndIt++ )
+    {
+      list< TPoint* >& boundary = (*bndIt);
+      for ( pIt = boundary.begin(); pIt != boundary.end(); pIt++)
+      {
+        TPoint* point = *pIt;
+        if ( point->myInitXYZ.X() < leastX ) {
+          leastX = point->myInitXYZ.X();
+          outerBndPos = bndIt;
+        }
+      }
+    }
 
+    if ( outerBndPos != boundaryList.begin() )
+      boundaryList.splice( boundaryList.begin(), boundaryList, outerBndPos, ++outerBndPos );
+
+  } // if nbBoundaries > 1
                  
   // Check boundaries orientation and re-fill myKeyPointIDs
 
@@ -2336,14 +2991,14 @@ void SMESH_Pattern::arrangeBoundaries (list< list< TPoint* > >& boundaryList)
     // find points next to the point with the least X
     TPoint* p = *xpIt, *pPrev, *pNext;
     if ( p == boundary.front() )
-      pPrev = boundary.back();
+      pPrev = *(++boundary.rbegin());
     else {
       xpIt--;
       pPrev = *xpIt;
       xpIt++;
     }
     if ( p == boundary.back() )
-      pNext = boundary.front();
+      pNext = *(++boundary.begin());
     else {
       xpIt++;
       pNext = *xpIt;
@@ -2529,7 +3184,7 @@ bool SMESH_Pattern::findBoundaryPoints()
         if ( keyPointSet.find( point ) == keyPointSet.end() ) // inside-edge point
         {
           edgePoints.push_back( point );
-          edgeLength += ( point->myInitUV - prevP->myInitUV ).SquareModulus();
+          edgeLength += ( point->myInitUV - prevP->myInitUV ).Modulus();
           point->myInitU = edgeLength;
         }
         else // a key-point
@@ -2537,7 +3192,7 @@ bool SMESH_Pattern::findBoundaryPoints()
           // treat points on the edge which ends up: compute U [0,1]
           edgePoints.push_back( point );
           if ( edgePoints.size() > 2 ) {
-            edgeLength += ( point->myInitUV - prevP->myInitUV ).SquareModulus();
+            edgeLength += ( point->myInitUV - prevP->myInitUV ).Modulus();
             list< TPoint* >::iterator epIt = edgePoints.begin();
             for ( ; epIt != edgePoints.end(); epIt++ )
               (*epIt)->myInitU /= edgeLength;

@@ -205,7 +205,8 @@ class SMESH_Pattern {
 
   bool compUVByIsoIntersection (const list< list< TPoint* > >& boundaryPoints,
                                 const gp_XY&                   theInitUV,
-                                gp_XY&                         theUV );
+                                gp_XY&                         theUV,
+                                bool &                         theIsDeformed);
   // compute UV by intersection of iso-lines found by points on edges
 
   bool compUVByElasticIsolines(const list< list< TPoint* > >& boundaryPoints,

@@ -92,9 +92,9 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 SMESH_Mesh_i::~SMESH_Mesh_i()
 {
   INFOS("~SMESH_Mesh_i");
-  map<int, SMESH::SMESH_Group_ptr>::iterator it;
+  map<int, SMESH::SMESH_GroupBase_ptr>::iterator it;
   for ( it = _mapGroups.begin(); it != _mapGroups.end(); it++ ) {
-    SMESH_Group_i* aGroup = dynamic_cast<SMESH_Group_i*>( SMESH_Gen_i::GetServant( it->second ).in() );
+    SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( it->second ).in() );
     if ( aGroup ) {
 
       // this method is colled from destructor of group (PAL6331)
@@ -121,56 +121,32 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
 {
   Unexpect aCatch(SALOME_SalomeException);
   try {
-    setShape( theShapeObject );
+    _impl->ShapeToMesh( _gen_i->GeomObjectToShape( theShapeObject ));
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
-  }  
-
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( aStudy->_is_nil() ) 
-    return;
-
-  // Create a reference to <theShape> 
-  SALOMEDS::SObject_var aMeshSO  = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( _this() ) ) ) );
-  SALOMEDS::SObject_var aShapeSO = aStudy->FindObjectIOR( SMESH_Gen_i::GetORB()->object_to_string( theShapeObject ) );
-  
-  SALOMEDS::SObject_var          anObj, aRef;
-  SALOMEDS::GenericAttribute_var anAttr;
-  SALOMEDS::AttributeIOR_var     anIOR;
-  SALOMEDS::StudyBuilder_var     aBuilder = aStudy->NewBuilder();
-  long                           aTag = SMESH_Gen_i::GetRefOnShapeTag();      
-  
-  if ( aMeshSO->FindSubObject( aTag, anObj ) ) {
-    if ( anObj->ReferencedObject( aRef ) ) {
-      if ( strcmp( aRef->GetID(), aShapeSO->GetID() ) == 0 ) {
-	// Setting the same shape twice forbidden
-	return;
-      }
-    }
   }
-  else {
-    anObj = aBuilder->NewObjectToTag( aMeshSO, aTag );
-  }
-  aBuilder->Addreference( anObj, aShapeSO );
 }
 
-//=============================================================================
-/*!
- *  setShape
- *
- *  Sets shape to the mesh implementation
- */
-//=============================================================================
+//=======================================================================
+//function : GetShapeToMesh
+//purpose  : 
+//=======================================================================
 
-bool SMESH_Mesh_i::setShape( GEOM::GEOM_Object_ptr theShapeObject )
+GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
+    throw (SALOME::SALOME_Exception)
 {
-  if ( theShapeObject->_is_nil() )
-    return false;
-
-  TopoDS_Shape aLocShape  = _gen_i->GetShapeReader()->GetShape( SMESH_Gen_i::GetGeomEngine(), theShapeObject );
-  _impl->ShapeToMesh( aLocShape );
-  return true;
+  Unexpect aCatch(SALOME_SalomeException);
+  GEOM::GEOM_Object_var aShapeObj;
+  try {
+    TopoDS_Shape S = _impl->GetMeshDS()->ShapeToMesh();
+    if ( !S.IsNull() )
+      aShapeObj = _gen_i->ShapeToGeomObject( S );
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  return aShapeObj._retn();
 }
 
 //=============================================================================
@@ -224,18 +200,14 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   }
 
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( aStudy->_is_nil() ) 
-    return ConvertDriverMEDReadStatus(status);
-  
-  // publishing of the groups in the study (sub-meshes are out of scope of MED import)
-  map<int, SMESH::SMESH_Group_ptr>::iterator it = _mapGroups.begin();
-  for (; it != _mapGroups.end(); it++ ) {
-    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_duplicate( it->second );
-    if ( _gen_i->CanPublishInStudy( aGroup ) )
-      _gen_i->PublishInStudy( aStudy, 
-			      SALOMEDS::SObject::_nil(),
-			      aGroup,
-			      aGroup->GetName() );
+  if ( !aStudy->_is_nil() ) {
+    // publishing of the groups in the study (sub-meshes are out of scope of MED import)
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
+    for (; it != _mapGroups.end(); it++ ) {
+      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
+      _gen_i->PublishGroup( aStudy, _this(), aGroup,
+                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
+    }
   }
   return ConvertDriverMEDReadStatus(status);
 }
@@ -294,10 +266,8 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
     _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
 
     // register CORBA object for persistence
-    StudyContext* myStudyContext = _gen_i->GetCurrentStudyContext();
-    string iorString = SMESH_Gen_i::GetORB()->object_to_string( aGroup );
-    int nextId = myStudyContext->addObject( iorString );
-    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+    int nextId = _gen_i->RegisterObject( aGroup );
+    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
   }
 
   return status;
@@ -354,65 +324,10 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr aSubS
   Unexpect aCatch(SALOME_SalomeException);
   SMESH_Hypothesis::Hypothesis_Status status = addHypothesis( aSubShapeObject, anHyp );
 
-  if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
-    SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( !SMESH_Hypothesis::IsStatusFatal(status) )
+    _gen_i->AddHypothesisToShape(_gen_i->GetCurrentStudy(), _this(),
+                                 aSubShapeObject, anHyp );
 
-    if ( !aStudy->_is_nil() ) {
-      // Detect whether <aSubShape> refers to this mesh or its sub-mesh
-      SALOMEDS::GenericAttribute_var anAttr;
-      SALOMEDS::AttributeIOR_var     anIOR;
-      SALOMEDS::SObject_var aMeshSO  = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( _this() ) ) ) );
-      if ( aMeshSO->_is_nil() ) {
-        SCRUTE( SMESH_Gen_i::GetORB()->object_to_string( _this() ));
-        removeHypothesis( aSubShapeObject, anHyp );
-	return SMESH::HYP_UNKNOWN_FATAL;
-      }
-      SALOMEDS::SObject_var aMorSM, aRef;
-      CORBA::String_var aShapeIOR    = CORBA::string_dup( SMESH_Gen_i::GetORB()->object_to_string( aSubShapeObject ) );
-      SALOMEDS::ChildIterator_var it = aStudy->NewChildIterator( aMeshSO );
-
-      for ( it->InitEx( true ); it->More(); it->Next() ) {
-	SALOMEDS::SObject_var anObj = it->Value();
-	if ( anObj->ReferencedObject( aRef ) ) {
-	  if ( aRef->FindAttribute( anAttr, "AttributeIOR" ) ) {
-	    anIOR = SALOMEDS::AttributeIOR::_narrow( anAttr );
-	    if ( strcmp( anIOR->Value(), aShapeIOR ) == 0 ) {
-	      aMorSM = anObj->GetFather();
-	      break;
-	    }
-	  }
-	}
-      }
-
-      bool aIsAlgo = !SMESH::SMESH_Algo::_narrow( anHyp )->_is_nil();
-      SALOMEDS::SObject_var aHypSO  = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( anHyp   ) ) ) );
-      if ( !aMorSM->_is_nil() && !aHypSO->_is_nil() ) {
-	//Find or Create Applied Hypothesis root
-	SALOMEDS::SObject_var             AHR;
-	SALOMEDS::AttributeName_var       aName;
-	SALOMEDS::AttributeSelectable_var aSelAttr;
-	SALOMEDS::AttributePixMap_var     aPixmap;
-	SALOMEDS::StudyBuilder_var        aBuilder = aStudy->NewBuilder();
-	long                              aTag = aIsAlgo ? SMESH_Gen_i::GetRefOnAppliedAlgorithmsTag() : SMESH_Gen_i::GetRefOnAppliedHypothesisTag();
-
-	if ( !aMorSM->FindSubObject( aTag, AHR ) ) {
-	  AHR      = aBuilder->NewObjectToTag( aMorSM, aTag );
-	  anAttr   = aBuilder->FindOrCreateAttribute( AHR, "AttributeName" );
-	  aName    = SALOMEDS::AttributeName::_narrow( anAttr );
-	  aName    ->SetValue( aIsAlgo ? "Applied algorithms" : "Applied hypotheses" );
-	  anAttr   = aBuilder->FindOrCreateAttribute( AHR, "AttributeSelectable" );
-	  aSelAttr = SALOMEDS::AttributeSelectable::_narrow( anAttr );
-	  aSelAttr ->SetSelectable( false );
-	  anAttr   = aBuilder->FindOrCreateAttribute( AHR, "AttributePixMap" );
-	  aPixmap  = SALOMEDS::AttributePixMap::_narrow( anAttr );
-	  aPixmap  ->SetPixMap( aIsAlgo ? "ICON_SMESH_TREE_ALGO" : "ICON_SMESH_TREE_HYPO" );
-	}
-
-	SALOMEDS::SObject_var SO = aBuilder->NewObject( AHR );
-	aBuilder->Addreference( SO, aHypSO );
-      }
-    }
-  }
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
   return ConvertHypothesisStatus(status);
@@ -425,36 +340,41 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr aSubS
 //=============================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-  SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
+  SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
                               SMESH::SMESH_Hypothesis_ptr anHyp)
 {
-	if(MYDEBUG) MESSAGE("addHypothesis");
-	// **** proposer liste de subShape (selection multiple)
+  if(MYDEBUG) MESSAGE("addHypothesis");
 
-	if (CORBA::is_nil(aSubShapeObject))
-		THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
-			SALOME::BAD_PARAM);
+  if (CORBA::is_nil(aSubShapeObject))
+    THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
+                                 SALOME::BAD_PARAM);
 
-	SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow(anHyp);
-	if (CORBA::is_nil(myHyp))
-		THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference",
-			SALOME::BAD_PARAM);
+  SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow(anHyp);
+  if (CORBA::is_nil(myHyp))
+    THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference",
+                                 SALOME::BAD_PARAM);
 
-	SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
-	try
-	{
-		TopoDS_Shape myLocSubShape =
-			_gen_i->GetShapeReader()->GetShape(SMESH_Gen_i::GetGeomEngine(), aSubShapeObject);
-		int hypId = myHyp->GetId();
-		status = _impl->AddHypothesis(myLocSubShape, hypId);
-                if ( !SMESH_Hypothesis::IsStatusFatal(status) )
-                  _mapHypo[hypId] = myHyp;
-	}
-	catch(SALOME_Exception & S_ex)
-	{
-		THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
-	}
-	return status;
+  SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
+  try
+  {
+    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+    int hypId = myHyp->GetId();
+    status = _impl->AddHypothesis(myLocSubShape, hypId);
+    if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
+      _mapHypo[hypId] = myHyp;
+      // assure there is a corresponding submesh
+      if ( !_impl->IsMainShape( myLocSubShape )) {
+        int shapeId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
+        if ( _mapSubMesh_i.find( shapeId ) == _mapSubMesh_i.end() )
+          createSubMesh( aSubShapeObject );
+      }
+    }
+  }
+  catch(SALOME_Exception & S_ex)
+  {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  return status;
 }
 
 //=============================================================================
@@ -470,70 +390,12 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
   Unexpect aCatch(SALOME_SalomeException);
   SMESH_Hypothesis::Hypothesis_Status status = removeHypothesis( aSubShapeObject, anHyp );
 
-  if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
-    SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-
-    if ( !aStudy->_is_nil() ) {
-      // Detect whether <aSubShape> refers to this mesh or its sub-mesh
-      SALOMEDS::GenericAttribute_var anAttr;
-      SALOMEDS::AttributeIOR_var     anIOR;
-      SALOMEDS::SObject_var aMeshSO  = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( _this() ) ) ) );
-      if ( aMeshSO->_is_nil() ) {
-        SCRUTE( SMESH_Gen_i::GetORB()->object_to_string( _this() ));
-        addHypothesis( aSubShapeObject, anHyp );
-	return SMESH::HYP_UNKNOWN_FATAL;
-      }
-      SALOMEDS::SObject_var aMorSM, aRef;
-      CORBA::String_var aShapeIOR    = CORBA::string_dup( SMESH_Gen_i::GetORB()->object_to_string( aSubShapeObject ) );
-      SALOMEDS::ChildIterator_var it = aStudy->NewChildIterator( aMeshSO );
-
-      for ( it->InitEx( true ); it->More(); it->Next() ) {
-	SALOMEDS::SObject_var anObj = it->Value();
-	if ( anObj->ReferencedObject( aRef ) ) {
-	  if ( aRef->FindAttribute( anAttr, "AttributeIOR" ) ) {
-	    anIOR = SALOMEDS::AttributeIOR::_narrow( anAttr );
-	    if ( strcmp( anIOR->Value(), aShapeIOR ) == 0 ) {
-	      aMorSM = anObj->GetFather();
-	      break;
-	    }
-	  }
-	}
-      }
-
-      bool aIsAlgo = !SMESH::SMESH_Algo::_narrow( anHyp )->_is_nil();
-      SALOMEDS::SObject_var aHypSO  = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( anHyp ) ) ) );
-      if ( !aMorSM->_is_nil() && !aHypSO->_is_nil() ) {
-	// Remove a refernce to hypothesis or algorithm
-	SALOMEDS::SObject_var             AHR;
-	SALOMEDS::AttributeName_var       aName;
-	SALOMEDS::AttributeSelectable_var aSelAttr;
-	SALOMEDS::AttributePixMap_var     aPixmap;
-	SALOMEDS::StudyBuilder_var        aBuilder = aStudy->NewBuilder();
-	CORBA::String_var                 aHypIOR  = CORBA::string_dup( SMESH_Gen_i::GetORB()->object_to_string( anHyp ) );
-	long                              aTag     = aIsAlgo ? SMESH_Gen_i::GetRefOnAppliedAlgorithmsTag() : SMESH_Gen_i::GetRefOnAppliedHypothesisTag();
-
-	if ( aMorSM->FindSubObject( aTag, AHR ) ) {
-	  SALOMEDS::ChildIterator_var it = aStudy->NewChildIterator( AHR );
-	  for ( ; it->More(); it->Next() ) {
-	    SALOMEDS::SObject_var anObj = it->Value();
-	    if ( anObj->ReferencedObject( aRef ) ) {
-	      if ( aRef->FindAttribute( anAttr, "AttributeIOR" ) ) {
-		anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-		if ( strcmp( anIOR->Value(), aHypIOR ) == 0 ) {
-		  aBuilder->RemoveObject( anObj );
-		  break;
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-  }
+  if ( !SMESH_Hypothesis::IsStatusFatal(status) )
+    _gen_i->RemoveHypothesisFromShape(_gen_i->GetCurrentStudy(), _this(),
+                                      aSubShapeObject, anHyp );
 
   return ConvertHypothesisStatus(status);
 }
-
 
 //=============================================================================
 /*!
@@ -559,8 +421,7 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
 	SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
 	try
 	{
-		TopoDS_Shape myLocSubShape =
-			_gen_i->GetShapeReader()->GetShape(SMESH_Gen_i::GetGeomEngine(), aSubShapeObject);
+		TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
 		int hypId = myHyp->GetId();
 		status = _impl->RemoveHypothesis(myLocSubShape, hypId);
                 if ( !SMESH_Hypothesis::IsStatusFatal(status) )
@@ -584,7 +445,7 @@ SMESH::ListOfHypothesis *
 throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("GetHypothesisList");
+  if (MYDEBUG) MESSAGE("GetHypothesisList");
   if (CORBA::is_nil(aSubShapeObject))
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
 				 SALOME::BAD_PARAM);
@@ -592,9 +453,7 @@ throw(SALOME::SALOME_Exception)
   SMESH::ListOfHypothesis_var aList = new SMESH::ListOfHypothesis();
 
   try {
-    TopoDS_Shape myLocSubShape
-      = _gen_i->GetShapeReader()->GetShape(SMESH_Gen_i::GetGeomEngine(), aSubShapeObject);
-    
+    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
     const list<const SMESHDS_Hypothesis*>& aLocalList = _impl->GetHypothesisList( myLocSubShape );
     int i = 0, n = aLocalList.size();
     aList->length( n );
@@ -620,7 +479,7 @@ throw(SALOME::SALOME_Exception)
  */
 //=============================================================================
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShapeObject,
-						  const char*          theName ) 
+						  const char*           theName ) 
      throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -629,47 +488,29 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
 				 SALOME::BAD_PARAM);
   
-  int subMeshId = 0;
+  SMESH::SMESH_subMesh_var subMesh;
+  SMESH::SMESH_Mesh_var    aMesh = SMESH::SMESH_Mesh::_narrow(_this());
   try {
-    TopoDS_Shape myLocSubShape
-      = _gen_i->GetShapeReader()->GetShape(SMESH_Gen_i::GetGeomEngine(), aSubShapeObject);
+    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
     
     //Get or Create the SMESH_subMesh object implementation
     
-    ::SMESH_subMesh * mySubMesh = _impl->GetSubMesh(myLocSubShape);
-    subMeshId = mySubMesh->GetId();
-    
+    int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
+    subMesh = getSubMesh( subMeshId );
+
     // create a new subMesh object servant if there is none for the shape
-    
-    if (_mapSubMesh.find(subMeshId) == _mapSubMesh.end()) {
-      SMESH::SMESH_subMesh_var subMesh = createSubMesh( aSubShapeObject );
-      if ( _gen_i->CanPublishInStudy( subMesh ) ) {
-	SALOMEDS::SObject_var aSubmeshSO = _gen_i->PublishInStudy( _gen_i->GetCurrentStudy(), 
-								   SALOMEDS::SObject::_nil(),
-								   subMesh,
-								   theName );
-	  
-	// Add reference to <aSubShape> to the study
-	SALOMEDS::Study_var aStudy = _gen_i->GetCurrentStudy();
-	SALOMEDS::SObject_var aShapeSO = aStudy->FindObjectIOR( SMESH_Gen_i::GetORB()->object_to_string( aSubShapeObject ) );
-	if ( !aSubmeshSO->_is_nil() && !aShapeSO->_is_nil() ) {
-	  if(MYDEBUG) MESSAGE( "********** SMESH_Mesh_i::GetSubMesh(): adding shape reference..." )
-	  SALOMEDS::StudyBuilder_var aBuilder = aStudy->NewBuilder();
-	  SALOMEDS::SObject_var SO = aBuilder->NewObjectToTag( aSubmeshSO, SMESH_Gen_i::GetRefOnShapeTag() );
-	  aBuilder->Addreference( SO, aShapeSO );
-	  if(MYDEBUG) MESSAGE( "********** SMESH_Mesh_i::GetSubMesh(): shape reference added" )
-	}
-      }
-    }
+    if ( subMesh->_is_nil() )
+      subMesh = createSubMesh( aSubShapeObject );
+
+    if ( _gen_i->CanPublishInStudy( subMesh ))
+      _gen_i->PublishSubMesh (_gen_i->GetCurrentStudy(), aMesh,
+                              subMesh, aSubShapeObject, theName );
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
-    
-  ASSERT(_mapSubMeshIor.find(subMeshId) != _mapSubMeshIor.end());
-  return SMESH::SMESH_subMesh::_duplicate(_mapSubMeshIor[subMeshId]);
+  return subMesh;
 }
-
 
 //=============================================================================
 /*!
@@ -688,7 +529,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() )  {
     // Remove submesh's SObject
-    SALOMEDS::SObject_var anSO = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( theSubMesh ) ) ) );
+    SALOMEDS::SObject_var anSO = _gen_i->ObjectToSObject( aStudy, theSubMesh );
     if ( !anSO->_is_nil() ) {
       long aTag = SMESH_Gen_i::GetRefOnShapeTag(); 
       SALOMEDS::SObject_var anObj, aRef;
@@ -710,19 +551,15 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
 //=============================================================================
 
 SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType,
-					      const char* theName )
+                                                 const char*         theName )
      throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  SMESH::SMESH_Group_var aNewGroup = createGroup( theElemType, theName );
+  SMESH::SMESH_Group_var aNewGroup =
+    SMESH::SMESH_Group::_narrow( createGroup( theElemType, theName ));
 
-  // Groups should be put under separate roots according to their type (nodes, edges, faces, volumes)
-  if ( _gen_i->CanPublishInStudy( aNewGroup ) ) {
-    SALOMEDS::SObject_var aGroupSO = _gen_i->PublishInStudy( _gen_i->GetCurrentStudy(), 
-							     SALOMEDS::SObject::_nil(),
-							     aNewGroup,
-							     theName );
-  }
+  _gen_i->PublishGroup( _gen_i->GetCurrentStudy(), _this(),
+                       aNewGroup, GEOM::GEOM_Object::_nil(), theName);
 
   return aNewGroup._retn();
 }
@@ -733,100 +570,23 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType
  *  
  */
 //=============================================================================
-SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroupFromGEOM( SMESH::ElementType theElemType,
-							  const char* theName,
-							  GEOM::GEOM_Object_ptr theGEOMGroup)
+SMESH::SMESH_GroupOnGeom_ptr SMESH_Mesh_i::CreateGroupFromGEOM( SMESH::ElementType    theElemType,
+                                                               const char*           theName,
+                                                               GEOM::GEOM_Object_ptr theGeomObj)
      throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  
-  SMESH::SMESH_Group_var aNewGroup = createGroup( theElemType, theName );
-  
-  if ( CORBA::is_nil(theGEOMGroup) || theGEOMGroup->GetType() != 37 || CORBA::is_nil(aNewGroup))
-    return aNewGroup._retn();
-  
-  GEOM::GEOM_IGroupOperations_var aGroupOp = SMESH_Gen_i::GetGeomEngine()->GetIGroupOperations(_studyId);
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  
-  // Check if group constructed on the same shape as a mesh or on its child:
-  GEOM::GEOM_Object_var aGroupMainShape = aGroupOp->GetMainShape( theGEOMGroup );
-  SALOMEDS::SObject_var aGroupMainShapeSO =
-    SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( SMESH_Gen_i::GetORB()->object_to_string(aGroupMainShape) ) );
-  SALOMEDS::SObject_var aMeshSO  = 
-    SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( _this() ) ) ) );
-  
-  SALOMEDS::SObject_var anObj, aRef;
-  bool isRefOrSubShape = false;
-  
-  if ( aMeshSO->FindSubObject( 1, anObj ) &&  anObj->ReferencedObject( aRef )) {
-    if ( strcmp( aRef->GetID(), aGroupMainShapeSO->GetID() ) == 0 )
-      isRefOrSubShape = true;
-    else
-      {
-	SALOMEDS::SObject_var aFather = aGroupMainShapeSO->GetFather();
-	SALOMEDS::SComponent_var aComponent = aGroupMainShapeSO->GetFatherComponent();
-	while ( !isRefOrSubShape && strcmp( aFather->GetID(), aComponent->GetID() ) != 0 )
-	  {
-	    if (strcmp( aRef->GetID(), aFather->GetID() ) == 0)
-	      isRefOrSubShape = true;
-	    else
-	      aFather = aFather->GetFather();
-	  }
-      }
-    if ( !isRefOrSubShape ) 
-      return aNewGroup._retn();
+  SMESH::SMESH_GroupOnGeom_var aNewGroup;
+
+  TopoDS_Shape aShape = _gen_i->GeomObjectToShape( theGeomObj );
+  if ( !aShape.IsNull() ) {
+    aNewGroup = SMESH::SMESH_GroupOnGeom::_narrow
+      ( createGroup( theElemType, theName, aShape ));
+    if ( _gen_i->CanPublishInStudy( aNewGroup ) )
+      _gen_i->PublishGroup( _gen_i->GetCurrentStudy(), _this(), 
+                           aNewGroup, theGeomObj, theName );
   }
-  
-  // Detect type of the geometry group
-  SMESH::ElementType aGEOMGroupType;
-  
-  SMESH::ElementType aGroupType = SMESH::ALL;
-  switch(aGroupOp->GetType(theGEOMGroup)) 
-    {
-    case 7: aGEOMGroupType = SMESH::NODE; break;
-    case 6: aGEOMGroupType = SMESH::EDGE; break;
-    case 4: aGEOMGroupType = SMESH::FACE; break;
-    case 2: aGEOMGroupType = SMESH::VOLUME; break;
-    }
-    
-  if ( aGEOMGroupType == theElemType )
-    {
-      if ( !aStudy->_is_nil() ) 
-	{
-	  SALOMEDS::SObject_var aGEOMGroupSO =
-	    SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( SMESH_Gen_i::GetORB()->object_to_string(theGEOMGroup) ) );
-	  
-	  if ( !aGEOMGroupSO->_is_nil() ) {
-	    // Construct filter
-	    SMESH::FilterManager_var aFilterMgr = _gen_i->CreateFilterManager();
-	    SMESH::Filter_var aFilter = aFilterMgr->CreateFilter();
-	    SMESH::BelongToGeom_var aBelongToGeom = aFilterMgr->CreateBelongToGeom();
-	    aBelongToGeom->SetGeom( theGEOMGroup );
-	    aBelongToGeom->SetShapeName( aGEOMGroupSO->GetName() );
-	    aBelongToGeom->SetElementType( theElemType );
-	    aFilter->SetPredicate( aBelongToGeom );
-	    SMESH::long_array_var anElements = aFilter->GetElementsId( _this() );
-	    aNewGroup->Add( anElements );
-	    
-	    // Groups should be put under separate roots according to their type (nodes, edges, faces, volumes)
-	    if ( _gen_i->CanPublishInStudy( aNewGroup ) )
-	      {
-		SALOMEDS::SObject_var aGroupSO = _gen_i->PublishInStudy( _gen_i->GetCurrentStudy(), 
-									 SALOMEDS::SObject::_nil(),
-									 aNewGroup,
-									 theName );
-		if ( !aGroupSO->_is_nil() )
-		  {
-		    //Add reference to geometry group
-		    SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-		    SALOMEDS::SObject_var aReference = aStudyBuilder->NewObject(aGroupSO);
-		    aStudyBuilder->Addreference(aReference, aGEOMGroupSO);
-		  }
-	      }
-	  }
-	}
-    }
-  
+
   return aNewGroup._retn();
 }
 //=============================================================================
@@ -835,20 +595,21 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroupFromGEOM( SMESH::ElementType the
  */
 //=============================================================================
 
-void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_Group_ptr theGroup )
-    throw (SALOME::SALOME_Exception)
+void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
+     throw (SALOME::SALOME_Exception)
 {
   if ( theGroup->_is_nil() )
     return;
 
-  SMESH_Group_i* aGroup = dynamic_cast<SMESH_Group_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
+  SMESH_GroupBase_i* aGroup =
+    dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
   if ( !aGroup )
     return;
 
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() )  {
     // Remove group's SObject
-    SALOMEDS::SObject_var aGroupSO = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( theGroup ) ) ) );
+    SALOMEDS::SObject_var aGroupSO = _gen_i->ObjectToSObject( aStudy, theGroup );
     if ( !aGroupSO->_is_nil() )
       aStudy->NewBuilder()->RemoveObject( aGroupSO );
   }
@@ -862,13 +623,14 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_Group_ptr theGroup )
  *  Remove group with its contents
  */ 
 //=============================================================================
-void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_Group_ptr theGroup )
+void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup )
   throw (SALOME::SALOME_Exception)
 {
   if ( theGroup->_is_nil() )
     return;
 
-  SMESH_Group_i* aGroup = dynamic_cast<SMESH_Group_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
+  SMESH_GroupBase_i* aGroup =
+    dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
   if ( !aGroup )
     return;
   
@@ -889,8 +651,8 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_Group_ptr theGroup )
  *  present in initial groups are added to the new one
  */
 //=============================================================================
-SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_Group_ptr theGroup1, 
-                                                  SMESH::SMESH_Group_ptr theGroup2, 
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
+                                                  SMESH::SMESH_GroupBase_ptr theGroup2, 
                                                   const char* theName )
   throw (SALOME::SALOME_Exception)
 {
@@ -941,8 +703,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_Group_ptr theGrou
  *  present in both initial groups are added to the new one.
  */
 //=============================================================================
-SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_Group_ptr theGroup1, 
-                                                      SMESH::SMESH_Group_ptr theGroup2, 
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
+                                                      SMESH::SMESH_GroupBase_ptr theGroup2, 
                                                       const char* theName )
   throw (SALOME::SALOME_Exception)
 {
@@ -987,8 +749,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_Group_ptr the
  *  main group but do not present in tool group are added to the new one 
  */
 //=============================================================================
-SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_Group_ptr theGroup1, 
-                                                SMESH::SMESH_Group_ptr theGroup2, 
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
+                                                SMESH::SMESH_GroupBase_ptr theGroup2, 
                                                 const char* theName )
   throw (SALOME::SALOME_Exception)
 {
@@ -1035,26 +797,38 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_Group_ptr theGroup1
 
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject )
 {
-  TopoDS_Shape myLocSubShape = _gen_i->GetShapeReader()->GetShape(SMESH_Gen_i::GetGeomEngine(), theSubShapeObject);
+  if(MYDEBUG) MESSAGE( "createSubMesh" );
+  TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(theSubShapeObject);
 
   ::SMESH_subMesh * mySubMesh = _impl->GetSubMesh(myLocSubShape);
-  int subMeshId = mySubMesh->GetId();
+  int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
   SMESH_subMesh_i *subMeshServant = new SMESH_subMesh_i(myPOA, _gen_i, this, subMeshId);
   SMESH::SMESH_subMesh_var subMesh
     = SMESH::SMESH_subMesh::_narrow(subMeshServant->_this());
 
   _mapSubMesh[subMeshId] = mySubMesh;
   _mapSubMesh_i[subMeshId] = subMeshServant;
-  _mapSubMeshIor[subMeshId]
-    = SMESH::SMESH_subMesh::_duplicate(subMesh);
+  _mapSubMeshIor[subMeshId] = SMESH::SMESH_subMesh::_duplicate(subMesh);
 
   // register CORBA object for persistence
-  StudyContext* myStudyContext = _gen_i->GetCurrentStudyContext();
-  string iorString = SMESH_Gen_i::GetORB()->object_to_string( subMesh );
-  int nextId = myStudyContext->addObject( iorString );
-  if(MYDEBUG) MESSAGE( "Add submesh to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+  int nextId = _gen_i->RegisterObject( subMesh );
+  if(MYDEBUG) MESSAGE( "Add submesh to map with id = "<< nextId);
 
   return subMesh._retn(); 
+}
+
+//=======================================================================
+//function : getSubMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::getSubMesh(int shapeID)
+{
+  map<int, SMESH::SMESH_subMesh_ptr>::iterator it = _mapSubMeshIor.find( shapeID );
+  if ( it == _mapSubMeshIor.end() )
+    return SMESH::SMESH_subMesh::_nil();
+
+  return SMESH::SMESH_subMesh::_duplicate( (*it).second );
 }
 
 
@@ -1064,7 +838,8 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
  */
 //=============================================================================
 
-void SMESH_Mesh_i::removeSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh, GEOM::GEOM_Object_ptr theSubShapeObject )
+void SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
+                                  GEOM::GEOM_Object_ptr    theSubShapeObject )
 {
   MESSAGE("SMESH_Mesh_i::removeSubMesh()");
   if ( theSubMesh->_is_nil() || theSubShapeObject->_is_nil() )
@@ -1094,24 +869,27 @@ void SMESH_Mesh_i::removeSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh, GEOM::GEO
  */
 //=============================================================================
 
-SMESH::SMESH_Group_ptr SMESH_Mesh_i::createGroup( SMESH::ElementType theElemType, const char* theName )
+SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType theElemType,
+                                                      const char*         theName,
+                                                      const TopoDS_Shape& theShape )
 {
   int anId;
-  SMESH::SMESH_Group_var aGroup;
-  if ( _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName, anId ) ) {
-    SMESH_Group_i* aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
-    aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
-    _mapGroups[anId] = SMESH::SMESH_Group::_duplicate( aGroup );
+  SMESH::SMESH_GroupBase_var aGroup;
+  if ( _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName, anId, theShape )) {
+    SMESH_GroupBase_i* aGroupImpl;
+    if ( !theShape.IsNull() )
+      aGroupImpl = new SMESH_GroupOnGeom_i( SMESH_Gen_i::GetPOA(), this, anId );
+    else
+      aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
+    aGroup = SMESH::SMESH_GroupBase::_narrow( aGroupImpl->_this() );
+    _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( aGroup );
 
     // register CORBA object for persistence
-    StudyContext* myStudyContext = _gen_i->GetCurrentStudyContext();
-    string iorString = SMESH_Gen_i::GetORB()->object_to_string( aGroup );
-    int nextId = myStudyContext->addObject( iorString );
-    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+    int nextId = _gen_i->RegisterObject( aGroup );
+    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
   }
   return aGroup._retn();
 }
-
 
 //=============================================================================
 /*!
@@ -1274,31 +1052,35 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 void SMESH_Mesh_i::ExportMED(const char *file, CORBA::Boolean auto_groups) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( aStudy->_is_nil() ) 
-    return;
 
-  char* aMeshName = NULL;
-  SALOMEDS::SObject_var aMeshSO = SALOMEDS::SObject::_narrow( aStudy->FindObjectIOR( ( SMESH_Gen_i::GetORB()->object_to_string( _this() ) ) ) );
-  if ( !aMeshSO->_is_nil() )
-    {
+  char* aMeshName = "Mesh";
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( !aStudy->_is_nil() ) {
+    SALOMEDS::SObject_var aMeshSO = _gen_i->ObjectToSObject( aStudy, _this() );
+    if ( !aMeshSO->_is_nil() ) {
       aMeshName = aMeshSO->GetName();
       //SCRUTE(file);
       //SCRUTE(aMeshName);
       //SCRUTE(aMeshSO->GetID());
-      SALOMEDS::GenericAttribute_var anAttr;
-      SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-      SALOMEDS::AttributeExternalFileDef_var aFileName;
-      anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeExternalFileDef");
-      aFileName = SALOMEDS::AttributeExternalFileDef::_narrow(anAttr);
-      ASSERT(!aFileName->_is_nil());
-      aFileName->SetValue(file);
-      SALOMEDS::AttributeFileType_var aFileType;
-      anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeFileType");
-      aFileType = SALOMEDS::AttributeFileType::_narrow(anAttr);
-      ASSERT(!aFileType->_is_nil());
-      aFileType->SetValue("FICHIERMED");
+
+      // asv : 27.10.04 : fix of 6903: check for StudyLocked before adding attributes 
+      if ( !aStudy->GetProperties()->IsLocked() ) 
+      {
+	SALOMEDS::GenericAttribute_var anAttr;
+	SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+	SALOMEDS::AttributeExternalFileDef_var aFileName;
+	anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeExternalFileDef");
+	aFileName = SALOMEDS::AttributeExternalFileDef::_narrow(anAttr);
+	ASSERT(!aFileName->_is_nil());
+        aFileName->SetValue(file);
+        SALOMEDS::AttributeFileType_var aFileType;
+        anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeFileType");
+        aFileType = SALOMEDS::AttributeFileType::_narrow(anAttr);
+        ASSERT(!aFileType->_is_nil());
+        aFileType->SetValue("FICHIERMED");
+      }
     }
+  }
   _impl->ExportMED( file, aMeshName, auto_groups );
 }
 
@@ -1434,4 +1216,24 @@ char* SMESH_Mesh_i::Dump()
   std::ostringstream os;
   _impl->Dump( os );
   return CORBA::string_dup( os.str().c_str() );
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+SMESH::long_array* SMESH_Mesh_i::GetIDs()
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  int aMinId = aSMESHDS_Mesh->MinElementID();
+  int aMaxId =  aSMESHDS_Mesh->MaxElementID();
+
+  aResult->length(aMaxId - aMinId + 1);
+  
+  for (int i = 0, id = aMinId; id <= aMaxId; id++  )
+    aResult[i++] = id;
+  
+  return aResult._retn();
 }

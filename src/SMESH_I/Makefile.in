@@ -54,6 +54,7 @@ LIB= libSMESHEngine.la
 
 LIB_SRC = \
 	SMESH_Gen_i.cxx \
+	SMESH_Gen_i_1.cxx \
 	SMESH_Mesh_i.cxx \
 	SMESH_MEDMesh_i.cxx \
         SMESH_MEDFamily_i.cxx \
@@ -73,7 +74,7 @@ LIB_SERVER_IDL = SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Mesh.idl \
                  SALOME_Component.idl SALOME_Exception.idl \
                  SMESH_Filter.idl SMESH_Group.idl SMESH_Pattern.idl
 
-LIB_CLIENT_IDL = SALOMEDS.idl GEOM_Gen.idl MED.idl SALOMEDS_Attributes.idl SALOME_GenericObj.idl
+LIB_CLIENT_IDL = SALOMEDS.idl GEOM_Gen.idl MED.idl SALOMEDS_Attributes.idl SALOME_GenericObj.idl SALOME_Comm.idl
 
 # Executables targets
 BIN = SMESHEngine

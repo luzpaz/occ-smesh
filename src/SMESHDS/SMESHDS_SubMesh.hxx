@@ -33,21 +33,26 @@
 class SMESHDS_SubMesh
 {
  public:
+
+  bool IsComplexSubmesh() const { return !mySubMeshes.empty(); }
+
+  // if !IsComplexSubmesh()
   void AddElement(const SMDS_MeshElement * ME);
   bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
   void AddNode(const SMDS_MeshNode * ME);
   bool RemoveNode(const SMDS_MeshNode * ME);       // ret true if ME was in
-  bool Contains(const SMDS_MeshElement * ME);      // check if elem or node is in
 
+  // if IsComplexSubmesh()
+  void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
+  bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
+  bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
+
+  // for both types
   int NbElements() const;
   SMDS_ElemIteratorPtr GetElements() const;
   int NbNodes() const;
   SMDS_NodeIteratorPtr GetNodes() const;
-
-  // child sub-meshes
-  void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
-  bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
-  bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
+  bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
 
  private:
   //const SMDS_Mesh * myMesh;

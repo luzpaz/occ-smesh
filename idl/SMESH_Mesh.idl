@@ -134,10 +134,21 @@ module SMESH
 
   typedef sequence<log_block> log_array;
 
+
+  interface SMESH_IDSource
+  {
+    /*!
+     * Returns a sequence of all element IDs
+     */
+    long_array GetIDs();
+  };
+  
+  interface SMESH_GroupBase;
   interface SMESH_Group;
+  interface SMESH_GroupOnGeom;
   interface SMESH_subMesh;
   interface SMESH_MeshEditor;
-  interface SMESH_Mesh : SALOME::GenericObj
+  interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
   {
     /*!
      * Associate a Shape to a Mesh created with NewEmpty
@@ -162,6 +173,12 @@ module SMESH
 //       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Get geom shape to mesh. A result may be nil
+     */
+    GEOM::GEOM_Object GetShapeToMesh()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Remove a submesh
      */
     void RemoveSubMesh(in SMESH_subMesh aSubMesh)
@@ -177,21 +194,21 @@ module SMESH
     /*!
      * Create a group from geometry group
      */
-    SMESH_Group CreateGroupFromGEOM( in ElementType elem_type,
- 	                             in string name,
- 	                             in GEOM::GEOM_Object theGEOMGroup )
+    SMESH_GroupOnGeom CreateGroupFromGEOM( in ElementType elem_type,
+                                          in string name,
+                                          in GEOM::GEOM_Object theGeomObject )
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Remove a group
      */
-    void RemoveGroup(in SMESH_Group aGroup)
+    void RemoveGroup(in SMESH_GroupBase aGroup)
       raises (SALOME::SALOME_Exception);
 
      /*!
      *  Remove group with its contents
      */
-    void RemoveGroupWithContents( in SMESH_Group aGroup )
+    void RemoveGroupWithContents( in SMESH_GroupBase aGroup )
         raises (SALOME::SALOME_Exception);
 
     /*!
@@ -199,7 +216,9 @@ module SMESH
      *    New group is created. All mesh elements that are 
      *    present in initial groups are added to the new one
      */
-    SMESH_Group UnionGroups( in SMESH_Group aGroup1, in SMESH_Group aGroup2, in string name )
+    SMESH_Group UnionGroups (in SMESH_GroupBase aGroup1,
+                             in SMESH_GroupBase aGroup2,
+                             in string          name )
         raises (SALOME::SALOME_Exception);
 
     /*!
@@ -207,7 +226,9 @@ module SMESH
      *  New group is created. All mesh elements that are 
      *  present in both initial groups are added to the new one.
      */
-    SMESH_Group IntersectGroups( in SMESH_Group aGroup1, in SMESH_Group aGroup2, in string name )
+    SMESH_Group IntersectGroups (in SMESH_GroupBase aGroup1,
+                                 in SMESH_GroupBase aGroup2,
+                                 in string          name )
         raises (SALOME::SALOME_Exception);
 
       /*!
@@ -215,7 +236,9 @@ module SMESH
        *  New group is created. All mesh elements that are present in 
        *  main group but do not present in tool group are added to the new one
        */
-      SMESH_Group CutGroups( in SMESH_Group aMainGroup, in SMESH_Group aToolGroup, in string name )
+      SMESH_Group CutGroups (in SMESH_GroupBase aMainGroup,
+                             in SMESH_GroupBase aToolGroup,
+                             in string          name )
           raises (SALOME::SALOME_Exception);
 
     /*!
@@ -345,7 +368,7 @@ module SMESH
     string Dump();
   };
 
-  interface SMESH_subMesh : SALOME::GenericObj
+  interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource
   {
     /*!
      * 
@@ -375,6 +398,12 @@ module SMESH
      * 
      */
     long_array GetNodesId()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get geom shape the submesh is dedicated to
+     */
+    GEOM::GEOM_Object GetSubShape()
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -421,16 +450,25 @@ module SMESH
     boolean DeleteDiag(in long NodeID1, in long NodeID2);
 
     boolean Reorient(in long_array IDsOfElements);
+    
+    boolean ReorientObject(in SMESH_IDSource  theObject);
 
     boolean TriToQuad(in long_array       IDsOfElements,
                       in NumericalFunctor Criterion,
                       in double           MaxAngle);
-
+    
+    boolean TriToQuadObject(in SMESH_IDSource   theObject,
+			    in NumericalFunctor Criterion,
+			    in double           MaxAngle);
+    
     boolean QuadToTri(in long_array       IDsOfElements,
                       in NumericalFunctor Criterion);
 
     boolean SplitQuad(in long_array IDsOfElements,
                       in boolean    Diag13);
+
+    boolean SplitQuadObject(in SMESH_IDSource   theObject,
+			    in boolean    Diag13);
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
 
@@ -439,6 +477,12 @@ module SMESH
                    in long          MaxNbOfIterations,
                    in double        MaxAspectRatio,
                    in Smooth_Method Method);
+
+    boolean SmoothObject(in SMESH_IDSource  theObject,
+			 in long_array      IDsOfFixedNodes,
+			 in long            MaxNbOfIterations,
+			 in double          MaxAspectRatio,
+			 in Smooth_Method   Method);
 
     void RenumberNodes();
 
@@ -449,10 +493,20 @@ module SMESH
                        in double           AngleInRadians,
                        in long             NbOfSteps,
                        in double           Tolerance);
+
+    void RotationSweepObject(in SMESH_IDSource  theObject,
+			     in AxisStruct      Axix,
+			     in double          AngleInRadians,
+			     in long            NbOfSteps,
+			     in double          Tolerance);
                        
     void ExtrusionSweep(in long_array      IDsOfElements,
                         in DirStruct       StepVector,
                         in long            NbOfSteps);
+
+    void ExtrusionSweepObject(in SMESH_IDSource  theObject,
+			      in DirStruct       StepVector,
+			      in long            NbOfSteps);
 
     enum MirrorType { POINT, AXIS, PLANE };
 
@@ -461,15 +515,29 @@ module SMESH
                  in MirrorType       theMirrorType,
                  in boolean          Copy);
 
+    void MirrorObject (in SMESH_IDSource  theObject,
+		       in AxisStruct      Mirror,
+		       in MirrorType      theMirrorType,
+		       in boolean         Copy);
+
     void Translate (in long_array      IDsOfElements,
                     in DirStruct       Vector,
                     in boolean         Copy);
 
+    void TranslateObject (in SMESH_IDSource  theObject,
+			  in DirStruct       Vector,
+			  in boolean         Copy);
+    
     void Rotate (in long_array       IDsOfElements,
                  in AxisStruct       Axis,
                  in double           AngleInRadians,
                  in boolean          Copy);
 
+    void RotateObject (in SMESH_IDSource  theObject,
+		       in AxisStruct      Axis,
+		       in double          AngleInRadians,
+		       in boolean         Copy);
+    
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes);
 
@@ -477,31 +545,45 @@ module SMESH
 
     void MergeEqualElements();
 
-    boolean SewFreeBorders (in long FirstNodeID1,
-                            in long SecondNodeID1,
-                            in long LastNodeID1,
-                            in long FirstNodeID2,
-                            in long SecondNodeID2,
-                            in long LastNodeID2);
-    
-    boolean SewConformFreeBorders (in long FirstNodeID1,
-                                   in long SecondNodeID1,
-                                   in long LastNodeID1,
-                                   in long FirstNodeID2,
-                                   in long SecondNodeID2);
+    enum Sew_Error {
+      SEW_OK,
+      SEW_BORDER1_NOT_FOUND,
+      SEW_BORDER2_NOT_FOUND,
+      SEW_BOTH_BORDERS_NOT_FOUND,
+      SEW_BAD_SIDE_NODES,
+      SEW_VOLUMES_TO_SPLIT,
+      // for SewSideElements() only:
+      SEW_DIFF_NB_OF_ELEMENTS,
+      SEW_TOPO_DIFF_SETS_OF_ELEMENTS,
+      SEW_BAD_SIDE1_NODES,
+      SEW_BAD_SIDE2_NODES
+      };
 
-    boolean SewBorderToSide (in long FirstNodeIDOnFreeBorder,
-                             in long SecondNodeIDOnFreeBorder,
-                             in long LastNodeIDOnFreeBorder,
-                             in long FirstNodeIDOnSide,
-                             in long LastNodeIDOnSide);
-    
-    boolean SewSideElements (in long_array IDsOfSide1Elements,
-                             in long_array IDsOfSide2Elements,
-                             in long       NodeID1OfSide1ToMerge,
-                             in long       NodeID1OfSide2ToMerge,
-                             in long       NodeID2OfSide1ToMerge,
-                             in long       NodeID2OfSide2ToMerge);
+    Sew_Error SewFreeBorders (in long FirstNodeID1,
+                              in long SecondNodeID1,
+                              in long LastNodeID1,
+                              in long FirstNodeID2,
+                              in long SecondNodeID2,
+                              in long LastNodeID2);
+
+    Sew_Error SewConformFreeBorders (in long FirstNodeID1,
+                                     in long SecondNodeID1,
+                                     in long LastNodeID1,
+                                     in long FirstNodeID2,
+                                     in long SecondNodeID2);
+
+    Sew_Error SewBorderToSide (in long FirstNodeIDOnFreeBorder,
+                               in long SecondNodeIDOnFreeBorder,
+                               in long LastNodeIDOnFreeBorder,
+                               in long FirstNodeIDOnSide,
+                               in long LastNodeIDOnSide);
+
+    Sew_Error SewSideElements (in long_array IDsOfSide1Elements,
+                               in long_array IDsOfSide2Elements,
+                               in long       NodeID1OfSide1ToMerge,
+                               in long       NodeID1OfSide2ToMerge,
+                               in long       NodeID2OfSide1ToMerge,
+                               in long       NodeID2OfSide2ToMerge);
 
   };
 };

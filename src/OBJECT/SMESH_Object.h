@@ -172,7 +172,7 @@ protected:
 class SMESH_GroupObj: public SMESH_SubMeshObj
 {
 public:
-                            SMESH_GroupObj( SMESH::SMESH_Group_ptr, SMESH_MeshObj* );
+                            SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr, SMESH_MeshObj* );
   virtual                   ~SMESH_GroupObj();
 
   virtual int               GetNbEntities( const SMESH::ElementType) const;
@@ -181,7 +181,7 @@ public:
 
 private:
 
-  SMESH::SMESH_Group_var    myGroupServer;
+  SMESH::SMESH_GroupBase_var    myGroupServer;
 };
 
 

@@ -163,8 +163,8 @@ void SMESHGUI_GroupOpDlg::Init( SALOME_Selection* theSelection )
   aSMESHGUI->SetActiveDialogBox( ( QDialog* )this ) ;
   myFocusWg = myEdit1;
   
-  myGroup1 = SMESH::SMESH_Group::_nil();
-  myGroup2 = SMESH::SMESH_Group::_nil();
+  myGroup1 = SMESH::SMESH_GroupBase::_nil();
+  myGroup2 = SMESH::SMESH_GroupBase::_nil();
   
   // selection and SMESHGUI
   connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
@@ -296,16 +296,16 @@ void SMESHGUI_GroupOpDlg::onClose()
 void SMESHGUI_GroupOpDlg::onSelectionDone()
 {
   if ( myFocusWg == myEdit1 )
-    myGroup1 = SMESH::SMESH_Group::_nil();
+    myGroup1 = SMESH::SMESH_GroupBase::_nil();
   else
-    myGroup2 = SMESH::SMESH_Group::_nil();
+    myGroup2 = SMESH::SMESH_GroupBase::_nil();
   
   myFocusWg->setText( "" );
   
   if ( mySelection->IObjectCount() == 1 )
   {
-    SMESH::SMESH_Group_var aGroup = 
-      SMESH::IObjectToInterface<SMESH::SMESH_Group>( mySelection->firstIObject() );
+    SMESH::SMESH_GroupBase_var aGroup = 
+      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( mySelection->firstIObject() );
     
     if ( !aGroup->_is_nil() )
     {

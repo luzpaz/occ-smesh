@@ -85,7 +85,7 @@ namespace SMESH{
 		return aVisualObj;
 	      }
 	      //Try narrow to SMESH_Group interafce
-	      SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow(anObj);
+	      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObj);
 	      if(!aGroup->_is_nil()){
 		SALOMEDS::SObject_var aFatherSObj = aSObj->GetFather();
 		if(aFatherSObj->_is_nil()) return aVisualObj;

@@ -408,7 +408,7 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  mySubMeshNbVolumes->setNum( (int)( aSubMesh->GetElementsByType( SMESH::VOLUME )->length() ) );
 	  return;
 	}
-	SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( anObject );
+	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( anObject );
 	if ( !aGroup->_is_nil() ) {
 	  myWGStack->raiseWidget( myGroupWidget );
 	  setCaption( tr( "SMESH_MESHINFO_TITLE" ) + " [" + tr("SMESH_GROUP") +"]" );

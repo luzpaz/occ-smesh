@@ -56,7 +56,7 @@ void DriverMED_W_SMESHDS_Mesh::SetMeshName(const std::string& theMeshName)
   myMeshName = theMeshName;
 }
 
-void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_Group* theGroup)
+void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_GroupBase* theGroup)
 {
   myGroups.push_back(theGroup);
 }

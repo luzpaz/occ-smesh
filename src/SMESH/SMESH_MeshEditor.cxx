@@ -31,6 +31,8 @@
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Group.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 
@@ -574,11 +576,12 @@ static void addToSameGroups (const SMDS_MeshElement* elemToAdd,
                              const SMDS_MeshElement* elemInGroups,
                              SMESHDS_Mesh *          aMesh)
 {
-  const set<SMESHDS_Group*>& groups = aMesh->GetGroups();
-  set<SMESHDS_Group*>::const_iterator grIt = groups.begin();
+  const set<SMESHDS_GroupBase*>& groups = aMesh->GetGroups();
+  set<SMESHDS_GroupBase*>::const_iterator grIt = groups.begin();
   for ( ; grIt != groups.end(); grIt++ ) {
-    if ( (*grIt)->SMDS_MeshGroup::Contains( elemInGroups ))
-      (*grIt)->SMDS_MeshGroup::Add( elemToAdd );
+    SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( *grIt );
+    if ( group && group->SMDSGroup().Contains( elemInGroups ))
+      group->SMDSGroup().Add( elemToAdd );
   }
 }
 
@@ -1043,7 +1046,7 @@ bool SMESH_MeshEditor::SortHexaNodes (const SMDS_Mesh * theMesh,
   set<int> checkedId1; // ids of tried 2-nd nodes
   Standard_Real leastDist = DBL_MAX; // dist of the 4-th node from 123 plane
   const Standard_Real tol = 1.e-6;   // tolerance to find nodes in plane
-  int iMin, iMax, iLoop1 = 0;
+  int iMin, iLoop1 = 0;
 
   // Loop to try the 2-nd nodes
 
@@ -1965,16 +1968,6 @@ void SMESH_MeshEditor::FindCoincidentNodes (const double         theTolerance,
 }
 
 //=======================================================================
-//function : isOppFaceInd
-//purpose  : 
-//=======================================================================
-
-static bool isOppFaceInd(int iMin, int iMax)
-{
-  return ( iMax - iMin == 1 && iMax % 2 );
-}
-
-//=======================================================================
 //function : MergeNodes
 //purpose  : In each group, the cdr of nodes are substituted by the first one
 //           in all elements.
@@ -2520,19 +2513,35 @@ static bool findFreeBorder (const SMDS_MeshNode*                theFirstNode,
 }
 
 //=======================================================================
+//function : CheckFreeBorderNodes
+//purpose  : Return true if the tree nodes are on a free border
+//=======================================================================
+
+bool SMESH_MeshEditor::CheckFreeBorderNodes(const SMDS_MeshNode* theNode1,
+                                            const SMDS_MeshNode* theNode2,
+                                            const SMDS_MeshNode* theNode3)
+{
+  list< const SMDS_MeshNode* > nodes;
+  list< const SMDS_MeshElement* > faces;
+  return findFreeBorder( theNode1, theNode2, theNode3, nodes, faces);
+}
+
+//=======================================================================
 //function : SewFreeBorder
 //purpose  : 
 //=======================================================================
 
-bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
-                                      const SMDS_MeshNode* theBordSecondNode,
-                                      const SMDS_MeshNode* theBordLastNode,
-                                      const SMDS_MeshNode* theSideFirstNode,
-                                      const SMDS_MeshNode* theSideSecondNode,
-                                      const SMDS_MeshNode* theSideThirdNode,
-                                      bool                 theSideIsFreeBorder)
+SMESH_MeshEditor::Sew_Error
+  SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
+                                   const SMDS_MeshNode* theBordSecondNode,
+                                   const SMDS_MeshNode* theBordLastNode,
+                                   const SMDS_MeshNode* theSideFirstNode,
+                                   const SMDS_MeshNode* theSideSecondNode,
+                                   const SMDS_MeshNode* theSideThirdNode,
+                                   bool                 theSideIsFreeBorder)
 {
   MESSAGE("::SewFreeBorder()");
+  Sew_Error aResult = SEW_OK;
 
   // ====================================
   //    find side nodes and elements
@@ -2542,14 +2551,13 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
   list< const SMDS_MeshElement* > eSide[ 2 ];
   list< const SMDS_MeshNode* >::iterator nIt[ 2 ];
   list< const SMDS_MeshElement* >::iterator eIt[ 2 ];
-  SMDS_ElemIteratorPtr invElemIt;
 
   // Free border 1
   // --------------
   if (!findFreeBorder(theBordFirstNode,theBordSecondNode,theBordLastNode,
                       nSide[0], eSide[0])) {
     MESSAGE(" Free Border 1 not found " );
-    return false;
+    aResult = SEW_BORDER1_NOT_FOUND;
   }
   if (theSideIsFreeBorder)
   { 
@@ -2558,10 +2566,13 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
     if (!findFreeBorder(theSideFirstNode, theSideSecondNode, theSideThirdNode,
                         nSide[1], eSide[1])) {
       MESSAGE(" Free Border 2 not found " );
-      return false;
+      aResult = ( aResult != SEW_OK ? SEW_BOTH_BORDERS_NOT_FOUND : SEW_BORDER2_NOT_FOUND );
     }
   }
-  else
+  if ( aResult != SEW_OK )
+    return aResult;
+
+  if (!theSideIsFreeBorder)
   {
     // Side 2
     // --------------
@@ -2660,7 +2671,8 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
       checkedLinkIDs.clear();
       gp_XYZ prevXYZ( prevSideNode->X(), prevSideNode->Y(), prevSideNode->Z() );
 
-      invElemIt = prevSideNode->GetInverseElementIterator();
+      SMDS_ElemIteratorPtr invElemIt
+        = prevSideNode->GetInverseElementIterator();
       while ( invElemIt->more() ) { // loop on inverse elements on the Side 2
         const SMDS_MeshElement* elem = invElemIt->next();
         // prepare data for a loop on links, of a face or a volume
@@ -2724,7 +2736,7 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
 
       if ( !sideNode ) {
         MESSAGE(" Cant find path by links of the Side 2 ");
-        return false;
+        return SEW_BAD_SIDE_NODES;
       }
       sideNodes.push_back( sideNode );
       sideElems.push_back( sideElem );
@@ -2750,7 +2762,7 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
 
     if ( hasVolumes && sideNodes.size () != bordNodes.size() ) {
       MESSAGE("VOLUME SPLITTING IS FORBIDDEN");
-      return false; // volume splitting is forbidden
+      return SEW_VOLUMES_TO_SPLIT; // volume splitting is forbidden
     }
   } // end nodes search on the side 2
 
@@ -2793,7 +2805,7 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
         gp_XYZ segment (nCur->X() - nPrev->X(),
                         nCur->Y() - nPrev->Y(),
                         nCur->Z() - nPrev->Z());
-        double segmentLen = segment.SquareModulus();
+        double segmentLen = segment.Modulus();
         bordLength += segmentLen;
         param[ iBord ][ iNode ] = bordLength;
         nPrev = nCur;
@@ -2938,7 +2950,7 @@ bool SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
 
   MergeNodes ( nodeGroupsToMerge );
 
-  return true;
+  return aResult;
 }
 
 //=======================================================================
@@ -3072,14 +3084,19 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
 //purpose  : 
 //=======================================================================
 
-bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
-                                        set<const SMDS_MeshElement*>& theSide2,
-                                        const SMDS_MeshNode*          theFirstNode1,
-                                        const SMDS_MeshNode*          theFirstNode2,
-                                        const SMDS_MeshNode*          theSecondNode1,
-                                        const SMDS_MeshNode*          theSecondNode2)
+SMESH_MeshEditor::Sew_Error
+  SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
+                                     set<const SMDS_MeshElement*>& theSide2,
+                                     const SMDS_MeshNode*          theFirstNode1,
+                                     const SMDS_MeshNode*          theFirstNode2,
+                                     const SMDS_MeshNode*          theSecondNode1,
+                                     const SMDS_MeshNode*          theSecondNode2)
 {
   MESSAGE ("::::SewSideElements()");
+  if ( theSide1.size() != theSide2.size() )
+    return SEW_DIFF_NB_OF_ELEMENTS;
+
+  Sew_Error aResult = SEW_OK;
   // Algo:
   // 1. Build set of faces representing each side
   // 2. Find which nodes of the side 1 to merge with ones on the side 2
@@ -3324,7 +3341,7 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
     while ( tmpFaceIt->more() )
       aTmpFacesMesh.RemoveElement( tmpFaceIt->next() );
     MESSAGE("Diff nb of faces");
-    return false;
+    return SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
   }
 
   // ============================================================
@@ -3378,6 +3395,11 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
           if (faceSet->find( f ) != faceSet->end() && // f is in face set
               ! fMap.insert( f ).second ) // f encounters twice
           {
+            if ( face[ iSide ] ) {
+              MESSAGE( "2 faces per link " );
+              aResult = iSide ? SEW_BAD_SIDE2_NODES : SEW_BAD_SIDE1_NODES;
+              break;
+            }
             face[ iSide ] = f;
             faceSet->erase( f );
             // get face nodes and find ones of a link
@@ -3397,14 +3419,17 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
               faceNodes[ iSide ][ iNode++ ] = n;
             }
             faceNodes[ iSide ][ iNode ] = faceNodes[ iSide ][ 0 ];
-            break;
           }
         }
       }
     }
     // check similarity of elements of the sides
-    if (( face[0] && !face[1] ) || ( !face[0] && face[1] )) {
+    if (aResult == SEW_OK && ( face[0] && !face[1] ) || ( !face[0] && face[1] )) {
       MESSAGE("Correspondent face not found on side " << ( face[0] ? 1 : 0 ));
+      if ( nReplaceMap.size() == 2 ) // faces on input nodes not found
+        aResult = ( face[0] ? SEW_BAD_SIDE2_NODES : SEW_BAD_SIDE1_NODES );
+      else
+        aResult = SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
       break; // do not return because it s necessary to remove tmp faces
     }
 
@@ -3416,6 +3441,7 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
       int nbNodes = face[0]->NbNodes();
       if ( nbNodes != face[1]->NbNodes() ) {
         MESSAGE("Diff nb of face nodes");
+        aResult = SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
         break; // do not return because it s necessary to remove tmp faces
       }
       bool reverse[] = { false, false }; // order of notLinkNodes of quadrangle
@@ -3470,7 +3496,13 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
     } // 2 faces found
   } // loop on link lists
 
-  bool Ok = ( linkIt[0] == linkList[0].end() ); // all links preocessed
+  if ( aResult == SEW_OK &&
+      ( linkIt[0] != linkList[0].end() ||
+       !faceSetPtr[0]->empty() || !faceSetPtr[1]->empty() )) {
+    MESSAGE( (linkIt[0] != linkList[0].end()) <<" "<< (faceSetPtr[0]->empty()) <<
+            " " << (faceSetPtr[1]->empty()));
+    aResult = SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
+  }
 
   // ====================================================================
   // 3. Replace nodes in elements of the side 1 and remove replaced nodes
@@ -3481,10 +3513,9 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
   while ( tmpFaceIt->more() )
     aTmpFacesMesh.RemoveElement( tmpFaceIt->next() );
 
-  if ( !Ok || nReplaceMap.size() == 2 ) {
-    MESSAGE(( Ok ? "No similar faces found" : " " ));
-    return false;
-  }
+  if ( aResult != SEW_OK)
+    return aResult;
+
   list< int > nodeIDsToRemove/*, elemIDsToRemove*/;
   // loop on nodes replacement map
   TNodeNodeMap::iterator nReplaceMapIt = nReplaceMap.begin(), nnIt;
@@ -3521,5 +3552,5 @@ bool SMESH_MeshEditor::SewSideElements (set<const SMDS_MeshElement*>& theSide1,
 
   Remove( nodeIDsToRemove, true );
 
-  return true;
+  return aResult;
 }

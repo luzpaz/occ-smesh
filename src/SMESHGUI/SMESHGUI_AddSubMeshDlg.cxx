@@ -33,6 +33,8 @@
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
 
+#include "GEOMBase.h"
+
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_MessageBox.h"
@@ -368,8 +370,10 @@ void SMESHGUI_AddSubMeshDlg::SelectionIntoArgument()
     else {
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
       myGeomShape = SMESH::IObjectToInterface<GEOM::GEOM_Object>(IO) ;
-      if( myGeomShape->_is_nil() ) {
-	aString = "";
+      if( myGeomShape->_is_nil() || !GEOMBase::IsShape( myGeomShape ) )
+      {
+        myGeomShape = GEOM::GEOM_Object::_nil();
+        aString = "";
       }
       if ( !myMesh->_is_nil() ) {
 	SALOMEDS::SObject_var aMeshSO = SMESH::FindSObject( myMesh );

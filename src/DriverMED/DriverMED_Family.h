@@ -29,7 +29,7 @@
 #define _INCLUDE_DRIVERMED_FAMILY
 
 #include "SMDS_Mesh.hxx"
-#include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "MEDA_Wrapper.hxx"
 
@@ -53,7 +53,7 @@ class DriverMED_Family
   // Methods for groups storing to MED
 
   static std::list<DriverMED_FamilyPtr> MakeFamilies (const std::map <int, SMESHDS_SubMesh*>& theSubMeshes,
-						      const std::list<SMESHDS_Group*>& theGroups,
+						      const std::list<SMESHDS_GroupBase*>& theGroups,
 						      const bool doGroupOfNodes,
 						      const bool doGroupOfEdges,
 						      const bool doGroupOfFaces,
@@ -89,8 +89,8 @@ class DriverMED_Family
   const MED::TStringSet& GetGroupNames () const { return myGroupNames; }
 
  private:
-  void Init (SMESHDS_Group* group);
-  // Initialize the tool by SMESHDS_Group
+  void Init (SMESHDS_GroupBase* group);
+  // Initialize the tool by SMESHDS_GroupBase
 
   static std::list<DriverMED_FamilyPtr> SplitByType (SMESHDS_SubMesh* theSubMesh,
 						     const int        theId);

@@ -31,8 +31,10 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESH_Actor.h"
+#include "SMESH_TypeFilter.hxx"
 #include "SMDS_Mesh.hxx"
 
 #include "QAD_Application.h"
@@ -48,6 +50,7 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qradiobutton.h>
+#include <qcheckbox.h>
 #include <qlayout.h>
 #include <qspinbox.h> 
 #include <qvalidator.h>
@@ -140,6 +143,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( QWidget* parent, const char* nam
   // Controls for elements selection
   TextLabelElements  = new QLabel( GroupArguments, "TextLabelElements" );
   TextLabelElements->setText( tr( "SMESH_ID_ELEMENTS"  ) );
+  TextLabelElements->setFixedWidth(74);
   GroupArgumentsLayout->addWidget( TextLabelElements, 0, 0 );
 
   SelectElementsButton  = new QPushButton( GroupArguments, "SelectElementsButton" );
@@ -151,6 +155,11 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( QWidget* parent, const char* nam
   LineEditElements  = new QLineEdit( GroupArguments, "LineEditElements" );
   LineEditElements->setValidator( new SMESHGUI_IdValidator( this, "validator" ));
   GroupArgumentsLayout->addWidget( LineEditElements, 0, 2 );
+
+  // Control for the whole mesh selection
+  CheckBoxMesh = new QCheckBox( GroupArguments, "CheckBoxMesh" );
+  CheckBoxMesh->setText( tr( "SMESH_SELECT_WHOLE_MESH"  ) );
+  GroupArgumentsLayout->addMultiCellWidget( CheckBoxMesh, 1, 1, 0, 3 );
 
   // Controls for axis defining
   GroupAxis = new QGroupBox( GroupArguments, "GroupAxis" );
@@ -221,31 +230,31 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( QWidget* parent, const char* nam
   SpinBox_DZ = new SMESHGUI_SpinBox( GroupAxis, "SpinBox_DZ");
   GroupAxisLayout->addWidget( SpinBox_DZ, 1, 7 );
 
-  GroupArgumentsLayout->addMultiCellWidget( GroupAxis, 1, 1, 0, 3 );
+  GroupArgumentsLayout->addMultiCellWidget( GroupAxis, 2, 2, 0, 3 );
     
   // Controls for angle defining
   TextLabelAngle = new QLabel( GroupArguments, "TextLabelAngle" );
   TextLabelAngle->setText( tr( "SMESH_ANGLE"  ) );
-  GroupArgumentsLayout->addMultiCellWidget( TextLabelAngle, 2, 2, 0, 1 );
+  GroupArgumentsLayout->addMultiCellWidget( TextLabelAngle, 3, 3, 0, 1 );
 
   SpinBox_Angle = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Angle");
-  GroupArgumentsLayout->addWidget( SpinBox_Angle, 2, 2 );
+  GroupArgumentsLayout->addWidget( SpinBox_Angle, 3, 2 );
   
   // Controls for nb. steps defining
   TextLabelNbSteps = new QLabel( GroupArguments, "TextLabelNbSteps" );
   TextLabelNbSteps->setText( tr( "SMESH_NUMBEROFSTEPS"  ) );
-  GroupArgumentsLayout->addMultiCellWidget( TextLabelNbSteps, 3, 3, 0, 1 );
+  GroupArgumentsLayout->addMultiCellWidget( TextLabelNbSteps, 4, 4, 0, 1 );
 
   SpinBox_NbSteps = new QSpinBox(GroupArguments, "SpinBox_NbSteps");
-  GroupArgumentsLayout->addWidget( SpinBox_NbSteps, 3, 2 );
+  GroupArgumentsLayout->addWidget( SpinBox_NbSteps, 4, 2 );
   
   // Controls for tolerance defining
   TextLabelTolerance = new QLabel( GroupArguments, "TextLabelTolerance" );
   TextLabelTolerance->setText( tr( "SMESH_TOLERANCE" ) );
-  GroupArgumentsLayout->addMultiCellWidget( TextLabelTolerance, 4, 4, 0, 1 );
+  GroupArgumentsLayout->addMultiCellWidget( TextLabelTolerance, 5, 5, 0, 1 );
 
   SpinBox_Tolerance = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Tolerance");
-  GroupArgumentsLayout->addWidget( SpinBox_Tolerance, 4, 2 );
+  GroupArgumentsLayout->addWidget( SpinBox_Tolerance, 5, 2 );
 
   SMESHGUI_RevolutionDlgLayout->addWidget( GroupArguments, 1, 0 );
   
@@ -271,7 +280,18 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( QWidget* parent, const char* nam
 
   mySMESHGUI  = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
-    
+  
+  // Costruction of the logical filter
+  SMESH_ListOfFilter aListOfFilters;
+  Handle(SMESH_TypeFilter) aMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
+  if ( !aMeshOrSubMeshFilter.IsNull() )
+    aListOfFilters.Append( aMeshOrSubMeshFilter );
+  Handle(SMESH_TypeFilter) aSmeshGroupFilter = new SMESH_TypeFilter( GROUP );
+  if ( !aSmeshGroupFilter.IsNull() )
+    aListOfFilters.Append( aSmeshGroupFilter );
+  
+  myMeshOrSubMeshOrGroupFilter = new SMESH_LogicalFilter( aListOfFilters, SMESH_LogicalFilter::LO_OR );
+  
   Init();
   /* signals and slots connections */
   connect( buttonOk, SIGNAL( clicked() ),     this, SLOT( ClickOnOk() ) );
@@ -293,6 +313,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( QWidget* parent, const char* nam
   connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
   connect( LineEditElements, SIGNAL( textChanged( const QString& )),
            SLOT( onTextChange( const QString& )));
+  connect( CheckBoxMesh, SIGNAL( toggled( bool )),
+           SLOT( onSelectMesh( bool )));
   
   /* Move widget on the botton right corner of main widget */
   int x, y ;
@@ -317,28 +339,34 @@ SMESHGUI_RevolutionDlg::~SMESHGUI_RevolutionDlg()
 // function : Init()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RevolutionDlg::Init()
+void SMESHGUI_RevolutionDlg::Init( bool ResetControls )
 {
-  myBusy = false;    
-
-  SpinBox_X->SetValue(0.0);
-  SpinBox_Y->SetValue(0.0);
-  SpinBox_Z->SetValue(0.0);
-  SpinBox_DX->SetValue(0.0);
-  SpinBox_DY->SetValue(0.0);
-  SpinBox_DZ->SetValue(0.0);
-
-  SpinBox_Angle->SetValue(45);
-  SpinBox_NbSteps->setValue(1);
-  SpinBox_Tolerance->SetValue(1e-05);
+  myBusy = false;
   
-  myEditCurrentArgument = (QWidget*)LineEditElements;
-  LineEditElements->setFocus();
+  myEditCurrentArgument = 0;
+  LineEditElements->clear();
+  myElementsId = "";
   myNbOkElements = 0 ;
+  
   myActor     = 0;
   myMesh = SMESH::SMESH_Mesh::_nil();
-    
-  SelectionIntoArgument();
+  
+  if( ResetControls )
+    {
+      SpinBox_X->SetValue(0.0);
+      SpinBox_Y->SetValue(0.0);
+      SpinBox_Z->SetValue(0.0);
+      SpinBox_DX->SetValue(0.0);
+      SpinBox_DY->SetValue(0.0);
+      SpinBox_DZ->SetValue(0.0);
+      
+      SpinBox_Angle->SetValue(45);
+      SpinBox_NbSteps->setValue(1);
+      SpinBox_Tolerance->SetValue(1e-05);
+      
+      CheckBoxMesh->setChecked(false);
+      onSelectMesh( false );
+    }
 }
 
 
@@ -349,28 +377,37 @@ void SMESHGUI_RevolutionDlg::Init()
 void SMESHGUI_RevolutionDlg::ConstructorsClicked(int constructorId)
 {
   disconnect(mySelection, 0, this, 0);
-  mySelection->ClearIObjects();
-  mySelection->ClearFilters();
-  myNbOkElements = 0 ;
-  myEditCurrentArgument = (QWidget*)LineEditElements;
-  LineEditElements->setText("");
-  LineEditElements->setFocus();
   
+  Selection_Mode aSelMode = ActorSelection;
+
   switch(constructorId)
     { 
     case 0 :
       {
 	GroupArguments->setTitle( tr( "REVOLUTION_1D" ) );
-	QAD_Application::getDesktop()->SetSelectionMode( EdgeSelection, true );
+	aSelMode = EdgeSelection;
 	break;
       }
     case 1 :
       { 
 	GroupArguments->setTitle( tr( "REVOLUTION_2D" ) );
-	QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+	aSelMode = FaceSelection;
 	break;
       }
     }
+  
+  if (myEditCurrentArgument != (QWidget*)LineEditElements)
+    SMESH::SetPointRepresentation(false);
+    
+  if (!CheckBoxMesh->isChecked())
+    QAD_Application::getDesktop()->SetSelectionMode( aSelMode, true );
+  
+  myEditCurrentArgument = (QWidget*)LineEditElements;
+  LineEditElements->setFocus();
+  
+  if (CheckBoxMesh->isChecked())
+    onSelectMesh(true);
+  
   connect(mySelection, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 }
 
@@ -386,7 +423,7 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
   
   if ( myNbOkElements  && IsAxisOk())
     {
-      QStringList aListElementsId = QStringList::split( " ", LineEditElements->text(), false);
+      QStringList aListElementsId = QStringList::split( " ", myElementsId, false);
       
       SMESH::long_array_var anElementsId = new SMESH::long_array;
       
@@ -420,7 +457,8 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
       
       mySelection->ClearIObjects();
       SMESH::UpdateView();
-      Init();
+      Init( false);
+      ConstructorsClicked( GetConstructorId() );
     }
 }
 
@@ -430,8 +468,8 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_RevolutionDlg::ClickOnOk()
 {
-  this->ClickOnApply() ;
-  this->ClickOnCancel() ;
+  ClickOnApply() ;
+  ClickOnCancel() ;
 }
 
 	
@@ -474,7 +512,6 @@ void SMESHGUI_RevolutionDlg::onTextChange(const QString& theNewText)
     aMesh = myActor->GetObject()->GetMesh();
   
   if ( aMesh ) {
-    
     mySelection->ClearIObjects();
     mySelection->AddIObject( myActor->getIO() );
     
@@ -489,6 +526,7 @@ void SMESHGUI_RevolutionDlg::onTextChange(const QString& theNewText)
 	  myNbOkElements++;
 	}
       }
+      myElementsId = theNewText;
     }
   }
   
@@ -509,13 +547,17 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
   if ( myBusy ) return;
   
   // clear
-  
   myActor = 0;
   QString aString = "";
 
   myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements)
-    LineEditElements->setText( aString );
+    {
+      LineEditElements->setText( aString );
+      myNbOkElements = 0;
+      buttonOk->setEnabled( false );
+      buttonApply->setEnabled( false );
+    }
   myBusy = false;
   
   if ( !GroupButtons->isEnabled() ) // inactive
@@ -527,24 +569,104 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
     return;
   
   Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject();
-  myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO) ;
-  myActor = SMESH::FindActorByEntry( mySelection->firstIObject()->getEntry() );
-  
-  if (myMesh->_is_nil() || !myActor)
+  myMesh = SMESH::GetMeshByIO(IO);
+  if(myMesh->_is_nil())
+    return;
+  myActor = SMESH::FindActorByObject(myMesh);
+  if (!myActor)
     return;
   
   int aNbUnits = 0;
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements)
     {
-      buttonOk->setEnabled( false );
-      buttonApply->setEnabled( false );
+      myElementsId = "";
+      
+      if (CheckBoxMesh->isChecked())
+	{
+	  SMESH::GetNameOfSelectedIObjects(mySelection, aString);
+	
+	  int aConstructorId = GetConstructorId();
 
-      // get selected elements
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelection, aString);
-      if(aNbUnits < 1) 
+	  if(!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) //MESH
+	    {
+	      // get IDs from mesh
+	      SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
+	      if (!aSMDSMesh)
+		return;
+	      
+	      if (aConstructorId == 0)
+		{
+		  SMDS_EdgeIteratorPtr anIter = aSMDSMesh->edgesIterator();
+		  
+		  while ( anIter->more() )
+		    {
+		      const SMDS_MeshEdge * edge = anIter->next();
+		      if ( edge ) {
+			myElementsId += QString(" %1").arg(edge->GetID());
+			aNbUnits++;
+		      }
+		    }
+		}
+	      else if (aConstructorId == 1)
+		{
+		  SMDS_FaceIteratorPtr anIter = aSMDSMesh->facesIterator();		  
+		  while ( anIter->more() )
+		    {
+		      const SMDS_MeshFace * face = anIter->next();
+		      if ( face ) {
+			myElementsId += QString(" %1").arg(face->GetID());
+			aNbUnits++;
+		      }
+		    }
+		}
+	    }
+	  else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) //SUBMESH
+	    {
+	      // get submesh
+	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO) ;
+	      
+	      // get IDs from submesh
+	      SMESH::long_array_var anElementsIds = new SMESH::long_array;
+	      if (aConstructorId == 0)
+		anElementsIds = aSubMesh->GetElementsByType(SMESH::EDGE);
+	      else if (aConstructorId == 1)
+		anElementsIds = aSubMesh->GetElementsByType(SMESH::FACE);
+	      
+	      for ( int i = 0; i < anElementsIds->length(); i++ )
+		myElementsId += QString(" %1").arg(anElementsIds[i]);
+	      aNbUnits = anElementsIds->length();
+	    }
+	  else // GROUP
+	    {
+	      // get smesh group
+	      SMESH::SMESH_GroupBase_var aGroup =
+                SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
+	      if (aGroup->_is_nil())
+		return;
+	      
+	      if ( (aConstructorId == 0 && aGroup->GetType()!= SMESH::EDGE) ||
+		   (aConstructorId == 1 && aGroup->GetType()!= SMESH::FACE) )
+		return;
+	      
+	      // get IDs from smesh group
+	      SMESH::long_array_var anElementsIds = new SMESH::long_array;
+	      anElementsIds = aGroup->GetListOfID();
+	      for ( int i = 0; i < anElementsIds->length(); i++ )
+		myElementsId += QString(" %1").arg(anElementsIds[i]);
+	      aNbUnits = anElementsIds->length();
+	    }
+	}
+      else
+	{
+	  aNbUnits = SMESH::GetNameOfSelectedElements(mySelection, aString) ;
+	  myElementsId = aString;
+	}
+      
+      if(aNbUnits < 1)
 	return ;
-      LineEditElements->setText( aString );
+      
+      myNbOkElements = true;
     }
   else 
     {
@@ -578,10 +700,12 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
 	}
     }
   
-  // OK
+  myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements)
-    myNbOkElements = true;
+    LineEditElements->setText( aString );
+  myBusy = false;
   
+  // OK
   if(myNbOkElements && IsAxisOk())
     {
       buttonOk->setEnabled( true );
@@ -597,6 +721,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
 void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
 {
   QPushButton* send = (QPushButton*)sender();
+  
   disconnect( mySelection, 0, this, 0 );
   mySelection->ClearIObjects();
   mySelection->ClearFilters();
@@ -604,11 +729,19 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
   if(send == SelectElementsButton) {
     myEditCurrentArgument = (QWidget*)LineEditElements;
     SMESH::SetPointRepresentation(false);
-    int aConstructorId = GetConstructorId();
-    if (aConstructorId == 0)
-      QAD_Application::getDesktop()->SetSelectionMode( EdgeSelection, true );
-    else if (aConstructorId == 1)
-      QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+    if (CheckBoxMesh->isChecked())
+      {
+	QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
+	mySelection->AddFilter(myMeshOrSubMeshOrGroupFilter);
+      }
+    else
+      {
+	int aConstructorId = GetConstructorId();
+	if (aConstructorId == 0)
+	  QAD_Application::getDesktop()->SetSelectionMode( EdgeSelection, true );
+	else if (aConstructorId == 1)
+	  QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+      }
   }
   else if (send == SelectPointButton)
     {
@@ -641,7 +774,6 @@ void SMESHGUI_RevolutionDlg::DeactivateActiveDialog()
     mySMESHGUI->ResetState() ;    
     mySMESHGUI->SetActiveDialogBox(0) ;
   }
-  return ;
 }
 
 
@@ -673,7 +805,6 @@ void SMESHGUI_RevolutionDlg::enterEvent(QEvent* e)
   if ( GroupConstructors->isEnabled() )
     return ;  
   ActivateThisDialog() ;
-  return ;
 }
 
 
@@ -743,3 +874,44 @@ void SMESHGUI_RevolutionDlg::onVectorChanged()
     }
 }
 
+
+//=======================================================================
+//function : onSelectMesh
+//purpose  :
+//=======================================================================
+void SMESHGUI_RevolutionDlg::onSelectMesh ( bool toSelectMesh )
+{
+  if (toSelectMesh)
+    TextLabelElements->setText( tr( "SMESH_NAME" ) );
+  else
+    TextLabelElements->setText( tr( "SMESH_ID_ELEMENTS" ) );
+  
+  if (myEditCurrentArgument != LineEditElements)
+    {
+      LineEditElements->clear();
+      return;
+    }
+  
+  mySelection->ClearFilters() ;
+  SMESH::SetPointRepresentation(false);
+  
+  if (toSelectMesh)
+    {
+      QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
+      mySelection->AddFilter(myMeshOrSubMeshOrGroupFilter);
+      LineEditElements->setReadOnly(true);
+    }
+  else
+    {
+      int aConstructorId = GetConstructorId();
+      if (aConstructorId == 0)
+	QAD_Application::getDesktop()->SetSelectionMode( EdgeSelection, true );
+      else if (aConstructorId == 0)
+	QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+      
+      LineEditElements->setReadOnly(false);
+      onTextChange(LineEditElements->text());
+    }
+  
+  SelectionIntoArgument();
+}

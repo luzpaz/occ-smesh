@@ -34,6 +34,8 @@
 #include "SMESH_Mesh.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
+class SMDS_MeshNode;
+
 typedef struct uvPtStruct
 {
   double param;
@@ -42,7 +44,7 @@ typedef struct uvPtStruct
   double v;
   double x; // 2d parameter, normalized [0,1]
   double y; 
-	const SMDS_MeshNode * node;
+  const SMDS_MeshNode * node;
 } UVPtStruct;
 
 typedef struct faceQuadStruct

@@ -46,6 +46,7 @@ class QGroupBox;
 class QListBox;
 class QPushButton;
 class QCheckBox;
+class QWidgetStack;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
@@ -75,6 +76,7 @@ public slots:
 private slots:
 
     void onTypeChanged(int id);
+    void onGrpTypeChanged(int id);
 
     void onOK();
     void onClose();
@@ -108,13 +110,22 @@ private:
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
     SALOME_Selection*             mySelection ;             /* User shape selection */
     SMESH_Actor*                  myActor;                  /* Current mesh actor */
+    int                           myGrpTypeId ;             /* Current group type id : standalone or group on geometry */
     int                           myTypeId ;                /* Current type id = radio button id */
     QLineEdit*                    myCurrentLineEdit;        /* Current  LineEdit */
 
+    QPushButton*                  myMeshGroupBtn;
+    QLineEdit*                    myMeshGroupLine;
+    
     QButtonGroup*                 myTypeGroup;
     QLineEdit*                    myName;
+
+    QButtonGroup*                 myGrpTypeGroup;
+
+    QWidgetStack*                 myWGStack;
     QListBox*                     myElements;
     QPushButton*                  myFilter;
+
     QCheckBox*                    mySelectSubMesh;
     QPushButton*                  mySubMeshBtn;
     QLineEdit*                    mySubMeshLine;
@@ -133,10 +144,13 @@ private:
     GEOM::GEOM_Object_var         myGeomGroup;
 
     int                           mySelectionMode;
+    Handle(SMESH_TypeFilter)      myMeshFilter;
     Handle(SMESH_TypeFilter)      mySubMeshFilter;
     Handle(SMESH_TypeFilter)      myGroupFilter;
 
     SMESHGUI_FilterDlg*           myFilterDlg;
+
+    bool                          myCreate;
 };
 
 #endif // DIALOGBOX_GROUP_H

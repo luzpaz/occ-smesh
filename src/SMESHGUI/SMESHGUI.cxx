@@ -676,8 +676,8 @@ namespace{
 	// Remove object(s) from data structures
 	SALOMEDS::SObject_var obj = aStudy->FindObjectID(IObject->getEntry());
 	if(!obj->_is_nil()){
-	  SMESH::SMESH_Group_var     aGroup = SMESH::SMESH_Group  ::_narrow(obj->GetObject());
-	  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(obj->GetObject());
+	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(obj->GetObject());
+	  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow(obj->GetObject());
 	  
 	  if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
 	    SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
@@ -1378,16 +1378,15 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
     {
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
+      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
       SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
       int nbSel = Sel->IObjectCount();
       if (nbSel == 1) {
 	// check if mesh is selected
-        SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(Sel->firstIObject());
-        if (!aMesh->_is_nil()) {
-          SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg(parent, "", Sel, aMesh);
-          aDlg->show();
-        }
+        aMesh = SMESH::GetMeshByIO(Sel->firstIObject());
       }
+      SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg(parent, "", Sel, aMesh);
+      aDlg->show();
       break;
     }
 
@@ -1448,15 +1447,22 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
       SALOME_ListIO IOs; IOs = Sel->StoredIObjects(); // list copy
       SALOME_ListIteratorOfListIO It (IOs);
+      int nbSelectedGroups = 0;
       for ( ; It.More(); It.Next() )
       {
         SMESH::SMESH_Group_var aGroup =
           SMESH::IObjectToInterface<SMESH::SMESH_Group>(It.Value());
         if (!aGroup->_is_nil()) {
+	  nbSelectedGroups++;
           SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg(parent, "", Sel, aGroup);
           aDlg->show();
 	}
       }
+      if (nbSelectedGroups == 0)
+	{
+	  SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg(parent, "", Sel, SMESH::SMESH_Group::_nil());
+	  aDlg->show();
+	}
       break;
     }
 
@@ -1733,7 +1739,8 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
               myActiveStudy->renameIObject( IObject, newName );
 
               // if current object is group update group's name
-	      SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(IObject);
+	      SMESH::SMESH_GroupBase_var aGroup =
+                SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
               if (!aGroup->_is_nil() )
                 aGroup->SetName( newName.latin1() );
             }
@@ -1979,9 +1986,9 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
 	SALOMEDS::SObject_var SO = aStudy->FindObjectID( Sel->firstIObject()->getEntry() );
 	if ( !SO->_is_nil() ) {
 	  CORBA::Object_var aObject = SO->GetObject();
-	  SMESH::SMESH_Mesh_var    aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
-	  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
-	  SMESH::SMESH_Group_var   aGroup   = SMESH::SMESH_Group::_narrow( aObject );
+	  SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
+	  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
+	  SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
 	  if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
 	    ::Control( theCommandID );
 	    break;
@@ -2267,6 +2274,11 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 	  popup->removeItem( 705 ); // Edit hypothesis
 	  popup->removeItem( 706 ); // ...
 	}
+        SMESH::SMESH_GroupOnGeom_var aGeomGroup =
+          SMESH::SMESH_GroupOnGeom::_narrow( SO->GetObject() );
+        if ( !aGeomGroup->_is_nil()  ) // group linked on geometry
+	  popup->removeItem( 803 ); // EDIT GROUP
+          
 	SMESH_Actor* ac = SMESH::FindActorByEntry(IObject->getEntry());
 	// if object has actor
 	if ( ac && studyFrame->getTypeView() == VIEW_VTK ) {
@@ -2377,7 +2389,7 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 	    SMESH::SMESH_subMesh_var aSubMeshObj = SMESH::SMESH_subMesh::_narrow( anObject );
 	    if ( !aSubMeshObj->_is_nil() && ( aSubMeshObj->GetNumberOfNodes(false) > 0 || aSubMeshObj->GetNumberOfElements() > 0 ) )
 	      bDisplay = true;
-	    SMESH::SMESH_Group_var aGroupObj = SMESH::SMESH_Group::_narrow( anObject );
+	    SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( anObject );
 	    if ( !aGroupObj->_is_nil() && aGroupObj->Size() > 0 )
 	      bDisplay = true;
 	  }
@@ -2441,7 +2453,8 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
  *  Purpose: ensures that the actor for the given <theIO> exists in the active VTK view
  */
 //=============================================================================
-void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
+void SMESHGUI::BuildPresentation( const Handle(SALOME_InteractiveObject) & theIO,
+                                  QAD_ViewFrame* )
 {
   if(theIO->hasEntry()){
     QAD_Study* aStudy = SMESHGUI::GetSMESHGUI()->GetActiveStudy();

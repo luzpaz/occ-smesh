@@ -39,8 +39,22 @@ LIB_SRC =
 
 SWIG_DEF = libSMESH_Swig.i
 EXPORT_PYSCRIPTS = libSMESH_Swig.py \
+		   meshpy.py \
 		   batchmode_smesh.py \
 		   batchmode_mefisto.py \
+		   cube2pyGibi.py \
+		   cube2geometry.py \
+		   cube2partition.py \
+		   grid4pyGibi.py \
+		   grid4partition.py \
+		   grid3partition.py \
+		   grid17partition.py \
+		   hole1geometry.py \
+		   hole1partition.py \
+		   hole1pyGibi.py \
+		   hole2pyGibi.py \
+		   cyl2geometry.py \
+		   cyl2complementary.py \
                    SMESH_test0.py\
 		   SMESH_test1.py \
 		   SMESH_test2.py \
@@ -48,6 +62,7 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 	           SMESH_test4.py \
 		   SMESH_mechanic.py \
 		   SMESH_mechanic_tetra.py \
+		   SMESH_mechanic_editor.py \
 		   SMESH_fixation.py \
 		   SMESH_fixation_hexa.py \
 		   SMESH_fixation_tetra.py \
@@ -72,7 +87,8 @@ LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_ModuleCatalog.idl \
 		 SALOME_Component.idl \
 		 SALOME_GenericObj.idl \
-		 MED.idl
+		 MED.idl \
+		 SALOME_Comm.idl
 
 EXPORT_SHAREDPYSCRIPTS=SMESH_shared_modules.py
 

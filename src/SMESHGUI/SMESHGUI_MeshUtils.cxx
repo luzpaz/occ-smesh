@@ -34,7 +34,7 @@ namespace SMESH
       SMESH_Mesh_var aMesh = SMESH_Mesh::_narrow(anObj);
       if(!CORBA::is_nil(aMesh))
 	return aMesh;
-      SMESH_Group_var aGroup = SMESH_Group::_narrow(anObj);
+      SMESH_GroupBase_var aGroup = SMESH_GroupBase::_narrow(anObj);
       if(!CORBA::is_nil(aGroup))
 	return aGroup->GetMesh();
       SMESH_subMesh_var aSubMesh = SMESH_subMesh::_narrow(anObj);

@@ -80,7 +80,8 @@ public :
   virtual void DefinePopup       ( QString & theContext, QString & theParent, QString & theObject );
   virtual bool CustomPopup       ( QAD_Desktop* parent, QPopupMenu* popup, const QString & theContext,
                                    const QString & theParent, const QString & theObject );
-  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)& theIO );
+  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)& theIO,
+                                   QAD_ViewFrame* = 0 );
   virtual void SupportedViewType (int* buffer, int bufferSize);
   virtual void Deactivate        ();
 

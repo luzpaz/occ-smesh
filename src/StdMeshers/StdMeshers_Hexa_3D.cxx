@@ -32,6 +32,7 @@ using namespace std;
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"

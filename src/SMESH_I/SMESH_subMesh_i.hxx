@@ -70,10 +70,15 @@ public:
   SMESH::SMESH_Mesh_ptr GetFather()
     throw (SALOME::SALOME_Exception);
   
+  GEOM::GEOM_Object_ptr GetSubShape()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long GetId();   
 
   SALOME_MED::FAMILY_ptr GetFamily()
     throw (SALOME::SALOME_Exception);
+
+  virtual SMESH::long_array* GetIDs();
 
   SMESH_Mesh_i* _mesh_i; //NRI
 

@@ -448,7 +448,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
 //=======================================================================
 
 static void removeFromContainers (map<int,SMESHDS_SubMesh*> &      theSubMeshes,
-                                  set<SMESHDS_Group*>&             theGroups,
+                                  set<SMESHDS_GroupBase*>&             theGroups,
                                   list<const SMDS_MeshElement *> & theElems,
                                   const bool                       isNode)
 {
@@ -459,16 +459,16 @@ static void removeFromContainers (map<int,SMESHDS_SubMesh*> &      theSubMeshes,
   // Element can belong to several groups
   if ( !theGroups.empty() )
   {
-    set<SMESHDS_Group*>::iterator GrIt = theGroups.begin();
+    set<SMESHDS_GroupBase*>::iterator GrIt = theGroups.begin();
     for ( ; GrIt != theGroups.end(); GrIt++ )
     {
-      SMESHDS_Group* group = *GrIt;
-      if ( group->IsEmpty() ) continue;
+      SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( *GrIt );
+      if ( !group || group->IsEmpty() ) continue;
 
       list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
       for ( ; elIt != theElems.end(); elIt++ )
       {
-        (*GrIt)->SMDS_MeshGroup::Remove( *elIt );
+        group->SMDSGroup().Remove( *elIt );
         if ( group->IsEmpty() ) break;
       }
     }
@@ -686,19 +686,22 @@ TopoDS_Shape SMESHDS_Mesh::ShapeToMesh() const
 
 //=======================================================================
 //function : IsGroupOfSubShapes
-//purpose  : 
+//purpose  : return true if at least one subshape of theShape is a subshape
+//           of myShape or theShape == myShape
 //=======================================================================
 
-bool SMESHDS_Mesh::IsGroupOfSubShapes (const TopoDS_Shape& aSubShape) const
+bool SMESHDS_Mesh::IsGroupOfSubShapes (const TopoDS_Shape& theShape) const
 {
-  if ( aSubShape.ShapeType() != TopAbs_COMPOUND || myShape.IsSame( aSubShape ))
-    return false;
+  if ( myShape.IsSame( theShape ))
+    return true;
 
-  for ( TopoDS_Iterator it( aSubShape ); it.More(); it.Next() )
-    if ( !myIndexToShape.Contains( it.Value() ))
-      return false;
-
-  return true;
+  for ( TopoDS_Iterator it( theShape ); it.More(); it.Next() ) {
+    if (myIndexToShape.Contains( it.Value() ) ||
+        IsGroupOfSubShapes( it.Value() ))
+      return true;
+  }
+  
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -800,13 +803,53 @@ bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 //function : NewSubMesh 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::NewSubMesh(int Index)
+SMESHDS_SubMesh * SMESHDS_Mesh::NewSubMesh(int Index)
 {
-	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-	{
-		SMESHDS_SubMesh* SM = new SMESHDS_SubMesh();
-		myShapeIndexToSubMesh[Index]=SM;
-	}
+  SMESHDS_SubMesh* SM = 0;
+  if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+  {
+    SM = new SMESHDS_SubMesh();
+    myShapeIndexToSubMesh[Index]=SM;
+  }
+  else
+    SM = myShapeIndexToSubMesh[Index];
+  return SM;
+}
+
+//=======================================================================
+//function : AddCompoundSubmesh
+//purpose  : 
+//=======================================================================
+
+int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
+                                     TopAbs_ShapeEnum    type)
+{
+  int aMainIndex = 0;
+  if ( IsGroupOfSubShapes( S ))
+  {
+    aMainIndex = myIndexToShape.Add( S );
+    bool all = ( type == TopAbs_SHAPE );
+    if ( all ) // corresponding simple submesh may exist
+      aMainIndex = -aMainIndex;
+    //MESSAGE("AddCompoundSubmesh index = " << aMainIndex );
+    SMESHDS_SubMesh * aNewSub = NewSubMesh( aMainIndex );
+    if ( !aNewSub->IsComplexSubmesh() ) // is empty
+    {
+      int shapeType = all ? myShape.ShapeType() : type;
+      int typeLimit = all ? TopAbs_VERTEX : type;
+      for ( ; shapeType <= typeLimit; shapeType++ )
+      {
+        TopExp_Explorer exp( S, TopAbs_ShapeEnum( shapeType ));
+        for ( ; exp.More(); exp.Next() )
+        {
+          int index = myIndexToShape.FindIndex( exp.Current() );
+          if ( index )
+            aNewSub->AddSubMesh( NewSubMesh( index ));
+        }
+      }
+    }
+  }
+  return aMainIndex;
 }
 
 //=======================================================================
@@ -828,19 +871,6 @@ int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S)
     MESSAGE("myShape is NULL");
 
   int index = myIndexToShape.FindIndex(S);
-  if ( index == 0 && IsGroupOfSubShapes( S ))
-  {
-    index = myIndexToShape.Add( S );
-    SMESHDS_SubMesh* aSubMesh = new SMESHDS_SubMesh;
-    myShapeIndexToSubMesh[index] = aSubMesh;
-
-    for ( TopoDS_Iterator it( S ); it.More(); it.Next() )
-    {
-      int subIndex = myIndexToShape.FindIndex( it.Value() );
-      NewSubMesh( subIndex );
-      aSubMesh->AddSubMesh( MeshElements( subIndex ));
-    }
-  }
   
   return index;
 }

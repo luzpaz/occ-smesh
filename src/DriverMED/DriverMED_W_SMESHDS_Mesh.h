@@ -34,7 +34,7 @@
 #include <map>
 
 class SMESHDS_Mesh;
-class SMESHDS_Group;
+class SMESHDS_GroupBase;
 class SMESHDS_SubMesh;
 
 class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
@@ -53,7 +53,7 @@ class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   /*! functions to prepare adding one mesh
    */
   void SetMeshName(const std::string& theMeshName);
-  void AddGroup(SMESHDS_Group* theGroup);
+  void AddGroup(SMESHDS_GroupBase * theGroup);
   void AddAllSubMeshes();
   void AddSubMesh(SMESHDS_SubMesh* theSubMesh, int theID);
 
@@ -64,7 +64,7 @@ class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
  private:
 
   std::string myMeshName;
-  std::list<SMESHDS_Group*> myGroups;
+  std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;
   std::map<int,SMESHDS_SubMesh*> mySubMeshes;
   bool myDoGroupOfNodes;

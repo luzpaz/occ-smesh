@@ -83,8 +83,8 @@ private:
   QListBox*                          myListBox;
   SALOME_Selection*                  mySelection;
   
-  QValueList<SMESH::SMESH_Group_var> myListGrp;
-  bool                               myBlockSelection;
+  QValueList<SMESH::SMESH_GroupBase_var> myListGrp;
+  bool                                   myBlockSelection;
   
 };
 

@@ -32,8 +32,10 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESH_Actor.h"
+#include "SMESH_TypeFilter.hxx"
 #include "SMDS_Mesh.hxx"
 
 #include "QAD_Application.h"
@@ -264,7 +266,16 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( QWidget* parent, const char* name, S
   mySMESHGUI  = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 
-  myMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
+  // Costruction of the logical filter
+  SMESH_ListOfFilter aListOfFilters;
+  Handle(SMESH_TypeFilter) aMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
+  if ( !aMeshOrSubMeshFilter.IsNull() )
+    aListOfFilters.Append( aMeshOrSubMeshFilter );
+  Handle(SMESH_TypeFilter) aSmeshGroupFilter = new SMESH_TypeFilter( GROUP );
+  if ( !aSmeshGroupFilter.IsNull() )
+    aListOfFilters.Append( aSmeshGroupFilter );
+  
+  myMeshOrSubMeshOrGroupFilter = new SMESH_LogicalFilter( aListOfFilters, SMESH_LogicalFilter::LO_OR );
   
   Init();
   /* signals and slots connections */
@@ -515,8 +526,12 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
     return;
   
   Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject();
-  myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO) ;
-  myActor = SMESH::FindActorByEntry( mySelection->firstIObject()->getEntry() );
+  myMesh = SMESH::GetMeshByIO( mySelection->firstIObject() );
+  if(myMesh->_is_nil())
+    return;
+  myActor = SMESH::FindActorByObject(myMesh);
+  if (!myActor)
+    return;
   
   int aNbUnits = 0;
   
@@ -524,19 +539,17 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
     {
       myElementsId = "";
       
-      // get selected elements
       if (CheckBoxMesh->isChecked())
 	{
 	  SMESH::GetNameOfSelectedIObjects(mySelection, aString);
-	  if(!myMesh->_is_nil())
+	  
+	  if(!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) //MESH
 	    {
-	      if (!myActor)
-		return;
-
 	      // get IDs from mesh
 	      SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
 	      if (!aSMDSMesh)
 		return;
+	      
 	      for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++  )
 		{
 		  const SMDS_MeshElement * e = aSMDSMesh->FindElement( i );
@@ -546,54 +559,36 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
 		  }
 		}
 	    }
-	  else
+	  else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) //SUBMESH
 	    {
-	      // get IDs from submesh
+	      // get submesh
 	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO) ;
-	      if(aSubMesh->_is_nil())
-		return;
 	      
-	      myMesh = aSubMesh->GetFather();
-	      if(myMesh->_is_nil())
-		return;
-	      
-	      myActor = SMESH::FindActorByObject(myMesh);
-	      if (!myActor)
-		return;
-	      
+	      // get IDs from submesh
 	      SMESH::long_array_var anElementsIds = new SMESH::long_array;
 	      anElementsIds = aSubMesh->GetElementsId();
 	      for ( int i = 0; i < anElementsIds->length(); i++ )
 		myElementsId += QString(" %1").arg(anElementsIds[i]);
 	      aNbUnits = anElementsIds->length();
-      	    }
+	    }
+	  else // GROUP
+	    {
+	      // get smesh group
+	      SMESH::SMESH_GroupBase_var aGroup =
+                SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
+	      if (aGroup->_is_nil())
+		return;
+	      
+	      // get IDs from smesh group
+	      SMESH::long_array_var anElementsIds = new SMESH::long_array;
+	      anElementsIds = aGroup->GetListOfID();
+	      for ( int i = 0; i < anElementsIds->length(); i++ )
+		myElementsId += QString(" %1").arg(anElementsIds[i]);
+	      aNbUnits = anElementsIds->length();
+	    }
 	}
       else
 	{
-	  if(myMesh->_is_nil())
-	    {
-	      // get submesh
-	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO) ;
-	      if(!aSubMesh->_is_nil())
-		myMesh = aSubMesh->GetFather();  // get mesh from submesh
-	      else
-		{
-		  // get group
-		  SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(IO);
-		  if ( !aGroup->_is_nil() )
-		    myMesh = aGroup->GetMesh(); // get mesh from group
-		}
-	      
-	      if(myMesh->_is_nil())
-		return;
-	      
-	      // get mesh actor
-	      myActor = SMESH::FindActorByObject(myMesh);
-	    }
-	  
-	  if (!myActor)
-	    return;
-
 	  aNbUnits = SMESH::GetNameOfSelectedElements(mySelection, aString) ;
 	  myElementsId = aString;
 	}
@@ -672,7 +667,7 @@ void SMESHGUI_RotationDlg::SetEditCurrentArgument()
 	  if (CheckBoxMesh->isChecked())
 	    {
 	      QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
-	      mySelection->AddFilter(myMeshOrSubMeshFilter) ;
+	      mySelection->AddFilter(myMeshOrSubMeshOrGroupFilter);
 	    }
 	  else
 	    QAD_Application::getDesktop()->SetSelectionMode( CellSelection, true );
@@ -791,7 +786,7 @@ void SMESHGUI_RotationDlg::onSelectMesh ( bool toSelectMesh )
   if (toSelectMesh)
     {
       QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
-      mySelection->AddFilter(myMeshOrSubMeshFilter);
+      mySelection->AddFilter(myMeshOrSubMeshOrGroupFilter);
       LineEditElements->setReadOnly(true);
     }
   else

@@ -96,8 +96,8 @@ private:
   
   QLineEdit*                myFocusWg;
   
-  SMESH::SMESH_Group_var    myGroup1;
-  SMESH::SMESH_Group_var    myGroup2;
+  SMESH::SMESH_GroupBase_var    myGroup1;
+  SMESH::SMESH_GroupBase_var    myGroup2;
   
 };
 

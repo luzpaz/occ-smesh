@@ -173,9 +173,11 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
     SMESH_Group* aGroup = AddGroup( SMDSAbs_All, it->c_str(), anId );
     if ( aGroup ) {
       if(MYDEBUG) MESSAGE("MEDToMesh - group added: "<<it->c_str());      
-      SMESHDS_Group* aGroupDS = aGroup->GetGroupDS();
-      aGroupDS->SetStoreName( it->c_str() );
-      myReader.GetGroup( aGroupDS );
+      SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aGroup->GetGroupDS() );
+      if ( aGroupDS ) {
+        aGroupDS->SetStoreName( it->c_str() );
+        myReader.GetGroup( aGroupDS );
+      }
     }
   }
   return (int) status;
@@ -219,7 +221,9 @@ SMESH_Hypothesis::Hypothesis_Status
   Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::AddHypothesis");
 
-  if ( _myMeshDS->IsGroupOfSubShapes( aSubShape ))
+  SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
+  SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
+  if ( subMeshDS && subMeshDS->IsComplexSubmesh() )
   {
     // return the worst but not fatal state of all group memebers
     SMESH_Hypothesis::Hypothesis_Status aBestRet, aWorstNotFatal, ret;
@@ -249,7 +253,6 @@ SMESH_Hypothesis::Hypothesis_Status
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
   }
 
-  SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   if(MYDEBUG) SCRUTE( anHyp->GetName() );
   int event;
@@ -307,7 +310,9 @@ SMESH_Hypothesis::Hypothesis_Status
   Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::RemoveHypothesis");
   
-  if ( _myMeshDS->IsGroupOfSubShapes( aSubShape ))
+  SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
+  SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
+  if ( subMeshDS && subMeshDS->IsComplexSubmesh() )
   {
     // return the worst but not fatal state of all group memebers
     SMESH_Hypothesis::Hypothesis_Status aBestRet, aWorstNotFatal, ret;
@@ -330,7 +335,6 @@ SMESH_Hypothesis::Hypothesis_Status
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
   
-  SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   int hypType = anHyp->GetType();
   if(MYDEBUG) SCRUTE(hypType);
@@ -449,6 +453,13 @@ throw(SALOME_Exception)
   SMESH_subMesh *aSubMesh;
   int index = _myMeshDS->ShapeToIndex(aSubShape);
   
+  // for submeshes on GEOM Group
+  if ( !index && aSubShape.ShapeType() == TopAbs_COMPOUND ) {
+    TopoDS_Iterator it( aSubShape );
+    if ( it.More() )
+      index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
+  }
+
   if (_mapSubMesh.find(index) != _mapSubMesh.end())
     {
       aSubMesh = _mapSubMesh[index];
@@ -596,10 +607,12 @@ void SMESH_Mesh::ExportMED(const char *file, const char* theMeshName, bool theAu
   }
 
   for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
-    SMESH_Group*     aGroup = it->second;
-    SMESHDS_Group* aGroupDS = aGroup->GetGroupDS();
-    aGroupDS->SetStoreName( aGroup->GetName() );
-    myWriter.AddGroup( aGroupDS );
+    SMESH_Group*       aGroup   = it->second;
+    SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+    if ( aGroupDS ) {
+      aGroupDS->SetStoreName( aGroup->GetName() );
+      myWriter.AddGroup( aGroupDS );
+    }
   }
 
   myWriter.Perform();
@@ -794,12 +807,13 @@ bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
 
 SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
                                    const char*               theName,
-				   int&                      theId)
+				   int&                      theId,
+                                   const TopoDS_Shape&       theShape)
 {
   if (_mapGroup.find(_groupId) != _mapGroup.end())
     return NULL;
   theId = _groupId;
-  SMESH_Group* aGroup = new SMESH_Group (theId, this, theType, theName);
+  SMESH_Group* aGroup = new SMESH_Group (theId, this, theType, theName, theShape);
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
   _mapGroup[_groupId++] = aGroup;
   return aGroup;

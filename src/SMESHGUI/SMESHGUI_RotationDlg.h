@@ -30,7 +30,7 @@
 #define DIALOGBOX_ROTATION_H
 
 #include "SALOME_Selection.h"
-#include "SMESH_TypeFilter.hxx"
+#include "SMESH_LogicalFilter.hxx"
 
 // QT Includes
 #include <qdialog.h>
@@ -83,7 +83,7 @@ private:
     bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
-    Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
+    Handle(SMESH_LogicalFilter)   myMeshOrSubMeshOrGroupFilter;
     
     QButtonGroup* GroupConstructors;
     QRadioButton* RadioButton1;

@@ -44,7 +44,7 @@
 #include "SALOME_GenericObj_i.hh"
 
 class SMESH_Gen_i;
-class SMESH_Group_i;
+class SMESH_GroupBase_i;
 
 #include <map>
 
@@ -63,6 +63,9 @@ public:
 
   // --- CORBA
   void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
+    throw (SALOME::SALOME_Exception);
+
+  GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
   SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
@@ -85,29 +88,30 @@ public:
   SMESH::SMESH_Group_ptr CreateGroup( SMESH::ElementType theElemType, const char* theName )
     throw (SALOME::SALOME_Exception);
   
-  SMESH::SMESH_Group_ptr CreateGroupFromGEOM( SMESH::ElementType theElemType,  const char* theName,                     
-					      GEOM::GEOM_Object_ptr theGEOMGroup )
-    throw (SALOME::SALOME_Exception); 
+  SMESH::SMESH_GroupOnGeom_ptr CreateGroupFromGEOM(SMESH::ElementType    theElemType,
+                                                   const char*           theName,
+                                                   GEOM::GEOM_Object_ptr theGeomObj )
+    throw (SALOME::SALOME_Exception);
 
-  void RemoveGroup( SMESH::SMESH_Group_ptr theGroup )
+  void RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
     throw (SALOME::SALOME_Exception);
   
-  void RemoveGroupWithContents( SMESH::SMESH_Group_ptr theGroup )
+  void RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup )
     throw (SALOME::SALOME_Exception);
   
-  SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_Group_ptr theGroup1, 
-                                      SMESH::SMESH_Group_ptr theGroup2, 
+  SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
+                                      SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
     throw (SALOME::SALOME_Exception);
   
-  SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_Group_ptr theGroup1, 
-                                          SMESH::SMESH_Group_ptr theGroup2, 
+  SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
+                                          SMESH::SMESH_GroupBase_ptr theGroup2, 
                                           const char* theName )
     throw (SALOME::SALOME_Exception);
   
-  SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_Group_ptr theGroup1, 
-                                    SMESH::SMESH_Group_ptr theGroup2, 
-                                    const char* theName )
+  SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
+                                    SMESH::SMESH_GroupBase_ptr theGroup2, 
+                                   const char* theName )
     throw (SALOME::SALOME_Exception);
 
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
@@ -201,17 +205,26 @@ public:
   SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
   
-  bool setShape( GEOM::GEOM_Object_ptr theShapeObject );
-
   int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
 
-  void removeSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh, GEOM::GEOM_Object_ptr theSubShapeObject );
+  void removeSubMesh(SMESH::SMESH_subMesh_ptr theSubMesh,
+                     GEOM::GEOM_Object_ptr theSubShapeObject );
 
-  SMESH::SMESH_Group_ptr createGroup( SMESH::ElementType theElemType, const char* theName );
+  SMESH::SMESH_GroupBase_ptr createGroup(SMESH::ElementType  theElemType,
+                                         const char*         theName,
+                                         const TopoDS_Shape& theShape = TopoDS_Shape());
 
   void removeGroup( const int theId );
+
+  SMESH::SMESH_subMesh_ptr getSubMesh(int shapeID);
+  // return an existing subMesh object for the shapeID. shapeID == submeshID.
+
+  const map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
+  // return an existing group object.
+
+  virtual SMESH::long_array* GetIDs();
 
   map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
@@ -223,7 +236,7 @@ private:
   int _id;          // id given by creator (unique within the creator instance)
   int _studyId;
   map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
-  map<int, SMESH::SMESH_Group_ptr>      _mapGroups;
+  map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
 };
 

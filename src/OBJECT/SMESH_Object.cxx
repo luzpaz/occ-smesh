@@ -904,10 +904,10 @@ void SMESH_SubMeshObj::Update( int theIsClear )
 // function : SMESH_GroupObj
 // purpose  : Constructor
 //=================================================================================
-SMESH_GroupObj::SMESH_GroupObj( SMESH::SMESH_Group_ptr theGroup, 
-                                SMESH_MeshObj*         theMeshObj )
+SMESH_GroupObj::SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr theGroup, 
+                                SMESH_MeshObj*             theMeshObj )
 : SMESH_SubMeshObj( theMeshObj ),
-  myGroupServer( SMESH::SMESH_Group::_duplicate(theGroup) )
+  myGroupServer( SMESH::SMESH_GroupBase::_duplicate(theGroup) )
 {
   if ( MYDEBUG ) MESSAGE("SMESH_GroupObj - theGroup->_is_nil() = "<<theGroup->_is_nil());
   myGroupServer->Register();

@@ -159,7 +159,8 @@ public:
   
   SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
 			 const char*               theName,
-			 int&                      theId);
+			 int&                      theId,
+                         const TopoDS_Shape&       theShape=TopoDS_Shape());
   
   SMESH_Group* GetGroup (const int theGroupID);
   

@@ -1,21 +1,21 @@
 #  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-# 
-#  This library is free software; you can redistribute it and/or 
-#  modify it under the terms of the GNU Lesser General Public 
-#  License as published by the Free Software Foundation; either 
-#  version 2.1 of the License. 
-# 
-#  This library is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-#  Lesser General Public License for more details. 
-# 
-#  You should have received a copy of the GNU Lesser General Public 
-#  License along with this library; if not, write to the Free Software 
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-# 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 #
 #
 #
@@ -189,7 +189,7 @@ vcccf = geompy.MakeVector(pcc, pcf)
 hcccf = y2p - y1m
 decf = []
 for face in facef:
-    decf.append(geompy.MakePrism(face,vcccf,hcccf))
+    decf.append(geompy.MakePrismVecH(face,vcccf,hcccf))
 
 pc  = geompy.MakeVertex(xc, 0., zc)
 py2 = geompy.MakeVertex(xc, y2, zc)
@@ -252,7 +252,7 @@ vf3 = geompy.MakeEdge(pf3, pf4)
 
 faceFlanc = MakeFace([vf1,vf2,vf3,aShape])
 
-flanc1 = geompy.MakePrism(faceFlanc, vx, epaisseurFlanc)
+flanc1 = geompy.MakePrismVecH(faceFlanc, vx, epaisseurFlanc)
 flanc2 = geompy.MakeCopy(flanc1)
 flanc1 = geompy.MakeTranslation(flanc1, rayonConge, 0., 0.)
 flanc2 = geompy.MakeTranslation(flanc2, longueurPlq - rayonConge - epaisseurFlanc, 0., 0.)
@@ -284,7 +284,7 @@ blocs.append(geompy.MakeBox(x0h,y1, z3, x1, y2, z4))
 blocs.append(geompy.MakeBox(x2, y1, z3, x3h,y2, z4))
 blocs.append(flanc1)
 blocs.append(flanc2)
- 
+
 compbloc = geompy.MakeCompound(blocs)
 idcomp = geompy.addToStudy(compbloc, "compbloc")
 

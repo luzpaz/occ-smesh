@@ -68,6 +68,7 @@ private:
     void Init( SALOME_Selection* Sel ) ;
 
     void UpdateControlState();
+    QString SMESHGUI_InitMeshDlg::GetDefaultMeshName();
 
 private:
     SMESHGUI*                     mySMESHGUI ;

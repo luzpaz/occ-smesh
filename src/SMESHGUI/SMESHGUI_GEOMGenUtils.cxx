@@ -22,6 +22,7 @@
 
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_Utils.h"
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
 
 namespace SMESH{
 
@@ -38,20 +39,22 @@ namespace SMESH{
   }
 
 
-  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(SALOMEDS::SObject_ptr theSObject)
+  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(SALOMEDS::SObject_ptr theMeshOrSubmesh)
   {
-    if(!theSObject->_is_nil()) {
-      using namespace SALOMEDS;
-      SObject_var aSubSObject;
-      static int Tag_RefOnShape = 1;
-      if(theSObject->FindSubObject(Tag_RefOnShape,aSubSObject)){
-	SObject_var aGeomSObject;
-	if(aSubSObject->ReferencedObject(aGeomSObject)){
-	  return SObjectToInterface<GEOM::GEOM_Object>(aGeomSObject);
-	}
+    if(!theMeshOrSubmesh->_is_nil()) {
+      CORBA::Object_var Obj = theMeshOrSubmesh->GetObject();
+      if ( !CORBA::is_nil( Obj ) ) {
+        SMESH::SMESH_Mesh_var aMesh =
+          SObjectToInterface<SMESH::SMESH_Mesh>( theMeshOrSubmesh );
+        if ( !aMesh->_is_nil() )
+          return aMesh->GetShapeToMesh();
+        SMESH::SMESH_subMesh_var aSubmesh =
+          SObjectToInterface<SMESH::SMESH_subMesh>( theMeshOrSubmesh );
+        if ( !aSubmesh->_is_nil() )
+	  return aSubmesh->GetSubShape();
       }
     }
     return GEOM::GEOM_Object::_nil();
   }
-    
+
 }

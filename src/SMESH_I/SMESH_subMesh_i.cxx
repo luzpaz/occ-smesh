@@ -284,6 +284,29 @@ CORBA::Long SMESH_subMesh_i::GetId()
   return _localId;
 }
 
+//=======================================================================
+//function : GetSubShape
+//purpose  : 
+//=======================================================================
+
+GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
+     throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  GEOM::GEOM_Object_var aShapeObj;
+  try {
+    if ( _mesh_i->_mapSubMesh.find( _localId ) != _mesh_i->_mapSubMesh.end()) {
+      TopoDS_Shape S = _mesh_i->_mapSubMesh[ _localId ]->GetSubShape();
+      if ( !S.IsNull() )
+        aShapeObj = _gen_i->ShapeToGeomObject( S );
+    }
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  return aShapeObj._retn();
+}
+
 //=============================================================================
 /*!
  *  
@@ -304,4 +327,15 @@ SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
   }
   
   return SALOME_MED::FAMILY::_nil();
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+SMESH::long_array* SMESH_subMesh_i::GetIDs()
+{
+  SMESH::long_array_var aResult = GetElementsId();
+  return aResult._retn();
 }

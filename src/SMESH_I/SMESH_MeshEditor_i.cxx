@@ -242,6 +242,19 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfEleme
   return true;
 }
 
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theObject)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  Reorient(anElementsId);
+}
+
 //=============================================================================
 /*!
  *  
@@ -271,6 +284,21 @@ CORBA::Boolean
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   return anEditor.TriToQuad( faces, aCrit, MaxAngle );
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+CORBA::Boolean
+  SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   theObject,
+				       SMESH::NumericalFunctor_ptr Criterion,
+				       CORBA::Double               MaxAngle)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  TriToQuad(anElementsId, Criterion, MaxAngle);
 }
 
 //=============================================================================
@@ -333,6 +361,20 @@ CORBA::Boolean
 //=============================================================================
 
 CORBA::Boolean
+  SMESH_MeshEditor_i::SplitQuadObject(SMESH::SMESH_IDSource_ptr theObject,
+				      CORBA::Boolean            Diag13)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  SplitQuad(anElementsId, Diag13);
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+CORBA::Boolean
   SMESH_MeshEditor_i::Smooth(const SMESH::long_array &              IDsOfElements,
                              const SMESH::long_array &              IDsOfFixedNodes,
                              CORBA::Long                            MaxNbOfIterations,
@@ -366,6 +408,23 @@ CORBA::Boolean
   anEditor.Smooth( elements, fixedNodes, method, MaxNbOfIterations, MaxAspectRatio );
 
   return true;
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+CORBA::Boolean
+  SMESH_MeshEditor_i::SmoothObject(SMESH::SMESH_IDSource_ptr              theObject,
+				   const SMESH::long_array &              IDsOfFixedNodes,
+				   CORBA::Long                            MaxNbOfIterations,
+				   CORBA::Double                          MaxAspectRatio,
+				   SMESH::SMESH_MeshEditor::Smooth_Method Method)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  return Smooth(anElementsId, IDsOfFixedNodes, MaxNbOfIterations, MaxAspectRatio, Method);
 }
 
 //=============================================================================
@@ -420,6 +479,21 @@ void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElement
 }
 
 //=======================================================================
+//function : RotationSweepObject
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject,
+					     const SMESH::AxisStruct & theAxis,
+					     CORBA::Double             theAngleInRadians,
+					     CORBA::Long               theNbOfSteps,
+					     CORBA::Double             theTolerance)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  RotationSweep(anElementsId, theAxis, theAngleInRadians, theNbOfSteps, theTolerance);
+}
+
+//=======================================================================
 //function : ExtrusionSweep
 //purpose  : 
 //=======================================================================
@@ -443,6 +517,20 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+}
+
+
+//=======================================================================
+//function : ExtrusionSweepObject
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
+					      const SMESH::DirStruct &  theStepVector,
+					      CORBA::Long               theNbOfSteps)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  ExtrusionSweep(anElementsId, theStepVector, theNbOfSteps);
 }
 
 //=======================================================================
@@ -485,6 +573,20 @@ void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElem
 }
 
 //=======================================================================
+//function : MirrorObject
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::MirrorObject(SMESH::SMESH_IDSource_ptr           theObject,
+				      const SMESH::AxisStruct &           theAxis,
+				      SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
+				      CORBA::Boolean                      theCopy)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  Mirror(anElementsId, theAxis, theMirrorType, theCopy);
+}
+
+//=======================================================================
 //function : Translate
 //purpose  : 
 //=======================================================================
@@ -509,6 +611,19 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   anEditor.Transform (elements, aTrsf, theCopy);
+}
+
+//=======================================================================
+//function : TranslateObject
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
+					 const SMESH::DirStruct &  theVector,
+					 CORBA::Boolean            theCopy)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  Translate(anElementsId, theVector, theCopy);
 }
 
 //=======================================================================
@@ -540,6 +655,20 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   anEditor.Transform (elements, aTrsf, theCopy);
+}
+
+//=======================================================================
+//function : RotateObject
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
+				      const SMESH::AxisStruct & theAxis,
+				      CORBA::Double             theAngle,
+				      CORBA::Boolean            theCopy)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  Rotate(anElementsId, theAxis, theAngle, theCopy);
 }
 
 //=======================================================================
@@ -610,16 +739,41 @@ void SMESH_MeshEditor_i::MergeEqualElements()
 }
 
 //=======================================================================
+//function : operator
+//purpose  : 
+//=======================================================================
+
+#define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
+
+SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Sew_Error e )
+{
+  switch ( e ) {
+  RETCASE( SEW_OK );
+  RETCASE( SEW_BORDER1_NOT_FOUND );
+  RETCASE( SEW_BORDER2_NOT_FOUND );
+  RETCASE( SEW_BOTH_BORDERS_NOT_FOUND );
+  RETCASE( SEW_BAD_SIDE_NODES );
+  RETCASE( SEW_VOLUMES_TO_SPLIT );
+  RETCASE( SEW_DIFF_NB_OF_ELEMENTS );
+  RETCASE( SEW_TOPO_DIFF_SETS_OF_ELEMENTS );
+  RETCASE( SEW_BAD_SIDE1_NODES );
+  RETCASE( SEW_BAD_SIDE2_NODES );
+  }
+  return SMESH::SMESH_MeshEditor::SEW_OK;
+}
+
+//=======================================================================
 //function : SewFreeBorders
 //purpose  : 
 //=======================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
-                                                  CORBA::Long SecondNodeID1,
-                                                  CORBA::Long LastNodeID1,
-                                                  CORBA::Long FirstNodeID2,
-                                                  CORBA::Long SecondNodeID2,
-                                                  CORBA::Long LastNodeID2)
+SMESH::SMESH_MeshEditor::Sew_Error
+  SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
+                                     CORBA::Long SecondNodeID1,
+                                     CORBA::Long LastNodeID1,
+                                     CORBA::Long FirstNodeID2,
+                                     CORBA::Long SecondNodeID2,
+                                     CORBA::Long LastNodeID2)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -632,20 +786,21 @@ CORBA::Boolean SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
 
   if (!aBorderFirstNode ||
       !aBorderSecondNode||
-      !aBorderLastNode  ||
-      !aSide2FirstNode  ||
+      !aBorderLastNode)
+    return SMESH::SMESH_MeshEditor::SEW_BORDER1_NOT_FOUND;
+  if (!aSide2FirstNode  ||
       !aSide2SecondNode ||
       !aSide2ThirdNode)
-    return false;
+    return SMESH::SMESH_MeshEditor::SEW_BORDER2_NOT_FOUND;
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  return anEditor.SewFreeBorder (aBorderFirstNode,
-                                 aBorderSecondNode,
-                                 aBorderLastNode,
-                                 aSide2FirstNode,
-                                 aSide2SecondNode,
-                                 aSide2ThirdNode,
-                                 true);
+  return convError( anEditor.SewFreeBorder (aBorderFirstNode,
+                                            aBorderSecondNode,
+                                            aBorderLastNode,
+                                            aSide2FirstNode,
+                                            aSide2SecondNode,
+                                            aSide2ThirdNode,
+                                            true));
 }
 
 //=======================================================================
@@ -653,11 +808,12 @@ CORBA::Boolean SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
 //purpose  : 
 //=======================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
-                                                         CORBA::Long SecondNodeID1,
-                                                         CORBA::Long LastNodeID1,
-                                                         CORBA::Long FirstNodeID2,
-                                                         CORBA::Long SecondNodeID2)
+SMESH::SMESH_MeshEditor::Sew_Error
+  SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
+                                            CORBA::Long SecondNodeID1,
+                                            CORBA::Long LastNodeID1,
+                                            CORBA::Long FirstNodeID2,
+                                            CORBA::Long SecondNodeID2)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -670,19 +826,20 @@ CORBA::Boolean SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID
 
   if (!aBorderFirstNode ||
       !aBorderSecondNode||
-      !aBorderLastNode  ||
-      !aSide2FirstNode  ||
+      !aBorderLastNode )
+    return SMESH::SMESH_MeshEditor::SEW_BORDER1_NOT_FOUND;
+  if (!aSide2FirstNode  ||
       !aSide2SecondNode)
-    return false;
+    return SMESH::SMESH_MeshEditor::SEW_BORDER2_NOT_FOUND;
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  return anEditor.SewFreeBorder (aBorderFirstNode,
-                                 aBorderSecondNode,
-                                 aBorderLastNode,
-                                 aSide2FirstNode,
-                                 aSide2SecondNode,
-                                 aSide2ThirdNode,
-                                 true);
+  return convError( anEditor.SewFreeBorder (aBorderFirstNode,
+                                            aBorderSecondNode,
+                                            aBorderLastNode,
+                                            aSide2FirstNode,
+                                            aSide2SecondNode,
+                                            aSide2ThirdNode,
+                                            true ));
 }
 
 //=======================================================================
@@ -690,11 +847,12 @@ CORBA::Boolean SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID
 //purpose  : 
 //=======================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
-                                                   CORBA::Long SecondNodeIDOnFreeBorder,
-                                                   CORBA::Long LastNodeIDOnFreeBorder,
-                                                   CORBA::Long FirstNodeIDOnSide,
-                                                   CORBA::Long LastNodeIDOnSide)
+SMESH::SMESH_MeshEditor::Sew_Error
+  SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
+                                      CORBA::Long SecondNodeIDOnFreeBorder,
+                                      CORBA::Long LastNodeIDOnFreeBorder,
+                                      CORBA::Long FirstNodeIDOnSide,
+                                      CORBA::Long LastNodeIDOnSide)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -707,19 +865,20 @@ CORBA::Boolean SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFree
 
   if (!aBorderFirstNode ||
       !aBorderSecondNode||
-      !aBorderLastNode  ||
-      !aSide2FirstNode  ||
+      !aBorderLastNode  )
+    return SMESH::SMESH_MeshEditor::SEW_BORDER1_NOT_FOUND;
+  if (!aSide2FirstNode  ||
       !aSide2SecondNode)
-    return false;
+    return SMESH::SMESH_MeshEditor::SEW_BAD_SIDE_NODES;
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  return anEditor.SewFreeBorder (aBorderFirstNode,
-                                 aBorderSecondNode,
-                                 aBorderLastNode,
-                                 aSide2FirstNode,
-                                 aSide2SecondNode,
-                                 aSide2ThirdNode,
-                                 false);
+  return convError( anEditor.SewFreeBorder (aBorderFirstNode,
+                                            aBorderSecondNode,
+                                            aBorderLastNode,
+                                            aSide2FirstNode,
+                                            aSide2SecondNode,
+                                            aSide2ThirdNode,
+                                            false));
 }
 
 //=======================================================================
@@ -727,12 +886,13 @@ CORBA::Boolean SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFree
 //purpose  : 
 //=======================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
-                                                   const SMESH::long_array& IDsOfSide2Elements,
-                                                   CORBA::Long NodeID1OfSide1ToMerge,
-                                                   CORBA::Long NodeID1OfSide2ToMerge,
-                                                   CORBA::Long NodeID2OfSide1ToMerge,
-                                                   CORBA::Long NodeID2OfSide2ToMerge)
+SMESH::SMESH_MeshEditor::Sew_Error
+  SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
+                                      const SMESH::long_array& IDsOfSide2Elements,
+                                      CORBA::Long NodeID1OfSide1ToMerge,
+                                      CORBA::Long NodeID1OfSide2ToMerge,
+                                      CORBA::Long NodeID2OfSide1ToMerge,
+                                      CORBA::Long NodeID2OfSide2ToMerge)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -742,33 +902,31 @@ CORBA::Boolean SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsO
   const SMDS_MeshNode* aSecondNode2ToMerge = aMesh->FindNode( NodeID2OfSide2ToMerge );
 
   if (!aFirstNode1ToMerge ||
-      !aFirstNode2ToMerge ||
-      !aSecondNode1ToMerge||
+      !aFirstNode2ToMerge )
+    return SMESH::SMESH_MeshEditor::SEW_BAD_SIDE1_NODES;
+  if (!aSecondNode1ToMerge||
       !aSecondNode2ToMerge)
-    return false;
+    return SMESH::SMESH_MeshEditor::SEW_BAD_SIDE2_NODES;
 
   set<const SMDS_MeshElement*> aSide1Elems, aSide2Elems;
   for (int i = 0; i < IDsOfSide1Elements.length(); i++)
   {
     CORBA::Long index = IDsOfSide1Elements[i];
     const SMDS_MeshElement * elem = aMesh->FindElement(index);
-    if ( !elem )
-      return false;
-    aSide1Elems.insert( elem );
+    if ( elem )
+      aSide1Elems.insert( elem );
   }
   for (int i = 0; i < IDsOfSide2Elements.length(); i++)
   {
     CORBA::Long index = IDsOfSide2Elements[i];
     const SMDS_MeshElement * elem = aMesh->FindElement(index);
-    if ( !elem )
-      return false;
-    aSide2Elems.insert( elem );
+    if ( elem )
+      aSide2Elems.insert( elem );
   }
   ::SMESH_MeshEditor anEditor( _myMesh );
-  return anEditor.SewSideElements (aSide1Elems, aSide2Elems,
-                                   aFirstNode1ToMerge,
-                                   aFirstNode2ToMerge,
-                                   aSecondNode1ToMerge,
-                                   aSecondNode2ToMerge);
+  return convError( anEditor.SewSideElements (aSide1Elems, aSide2Elems,
+                                              aFirstNode1ToMerge,
+                                              aFirstNode2ToMerge,
+                                              aSecondNode1ToMerge,
+                                              aSecondNode2ToMerge));
 }
-

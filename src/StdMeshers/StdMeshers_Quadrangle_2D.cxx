@@ -31,6 +31,7 @@ using namespace std;
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -114,7 +115,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   Unexpect aCatch(SalomeException);
   //MESSAGE("StdMeshers_Quadrangle_2D::Compute");
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
+  aMesh.GetSubMesh(aShape);
 
   FaceQuadStruct *quad = CheckAnd2Dcompute(aMesh, aShape);
   if (!quad)

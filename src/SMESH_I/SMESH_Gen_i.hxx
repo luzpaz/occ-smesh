@@ -138,7 +138,14 @@ public:
   static PortableServer::ServantBase_var GetServant( CORBA::Object_ptr theObject );
   // Get CORBA object corresponding to the SALOMEDS::SObject
   static CORBA::Object_var SObjectToObject( SALOMEDS::SObject_ptr theSObject );
-
+  // Get the SALOMEDS::SObject corresponding to a CORBA object
+  static SALOMEDS::SObject_ptr ObjectToSObject(SALOMEDS::Study_ptr theStudy,
+                                               CORBA::Object_ptr   theObject);
+  // Get GEOM Object correspoding to TopoDS_Shape
+  GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
+  // Get TopoDS_Shape correspoding to GEOM_Object
+  TopoDS_Shape GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject);
+  
   // Default constructor
   SMESH_Gen_i();
   // Standard constructor
@@ -291,9 +298,49 @@ public:
   static long GetFaceGroupsTag();
   static long GetVolumeGroupsTag();
 
+  // publishing methods
+  SALOMEDS::SComponent_ptr PublishComponent(SALOMEDS::Study_ptr theStudy);
+  SALOMEDS::SObject_ptr PublishMesh (SALOMEDS::Study_ptr   theStudy,
+                                     SMESH::SMESH_Mesh_ptr theMesh,
+                                     const char*           theName = 0);
+  SALOMEDS::SObject_ptr PublishHypothesis (SALOMEDS::Study_ptr         theStudy,
+                                           SMESH::SMESH_Hypothesis_ptr theHyp,
+                                           const char*                 theName = 0);
+  SALOMEDS::SObject_ptr PublishSubMesh (SALOMEDS::Study_ptr      theStudy,
+                                        SMESH::SMESH_Mesh_ptr    theMesh,
+                                        SMESH::SMESH_subMesh_ptr theSubMesh,
+                                        GEOM::GEOM_Object_ptr    theShapeObject,
+		                        const char*              theName = 0);
+  SALOMEDS::SObject_ptr PublishGroup (SALOMEDS::Study_ptr    theStudy,
+                                      SMESH::SMESH_Mesh_ptr  theMesh,
+                                      SMESH::SMESH_GroupBase_ptr theGroup,
+                                      GEOM::GEOM_Object_ptr  theShapeObject,
+                                      const char*            theName = 0);
+  bool AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
+                            SMESH::SMESH_Mesh_ptr       theMesh,
+                            GEOM::GEOM_Object_ptr       theShapeObject,
+                            SMESH::SMESH_Hypothesis_ptr theHyp);
+  bool RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy,
+                                 SMESH::SMESH_Mesh_ptr       theMesh,
+                                 GEOM::GEOM_Object_ptr       theShapeObject,
+                                 SMESH::SMESH_Hypothesis_ptr theHyp);
+  SALOMEDS::SObject_ptr GetMeshOrSubmeshByShape (SALOMEDS::Study_ptr   theStudy,
+                                                 SMESH::SMESH_Mesh_ptr theMesh,
+                                                 GEOM::GEOM_Object_ptr theShape);
+  static void SetName(SALOMEDS::SObject_ptr theSObject,
+                      const char*           theName,
+                      const char*           theDefaultName = 0);
+
   //  Get study context
   StudyContext* GetCurrentStudyContext();
-  
+
+  // Register an object in a StudyContext; return object id
+  int RegisterObject(CORBA::Object_ptr theObject);
+
+  // Get current study ID
+  int GetCurrentStudyID()
+  { return myCurrentStudy->_is_nil() ? -1 : myCurrentStudy->StudyId(); }
+ 
 private:
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,

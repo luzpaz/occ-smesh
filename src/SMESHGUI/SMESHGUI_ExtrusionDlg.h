@@ -30,7 +30,8 @@
 #define DIALOGBOX_EXTRUSION_H
 
 #include "SALOME_Selection.h"
-#include "SMESH_TypeFilter.hxx"
+#include "SMESH_LogicalFilter.hxx"
+
 // QT Includes
 #include <qdialog.h>
 
@@ -41,6 +42,7 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+class QCheckBox;
 class QSpinBox;
 class SMESHGUI_SpinBox;
 class SMESHGUI;
@@ -65,7 +67,7 @@ public:
 
 private:
 
-    void Init() ;
+    void Init( bool ResetControls = true ) ;
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
@@ -73,13 +75,16 @@ private:
 
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
     SALOME_Selection*             mySelection ;             /* User shape selection */
+    QString                       myElementsId;
     int                           myNbOkElements ;          /* to check when elements are defined */
+    
     QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
 
     bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
-    
+    Handle(SMESH_LogicalFilter)   myMeshOrSubMeshOrGroupFilter;
+
     QButtonGroup* GroupConstructors;
     QRadioButton* RadioButton1;
     QRadioButton* RadioButton2;
@@ -91,6 +96,7 @@ private:
     QLabel* TextLabelElements;
     QPushButton* SelectElementsButton;
     QLineEdit* LineEditElements;
+    QCheckBox* CheckBoxMesh;
     QLabel* TextLabelVector;
     QLabel* TextLabelDx;
     SMESHGUI_SpinBox* SpinBox_Dx;
@@ -112,6 +118,7 @@ private:
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
     void onTextChange(const QString&);
+    void onSelectMesh(bool toSelectMesh);
     
 protected:
     QGridLayout* SMESHGUI_ExtrusionDlgLayout;

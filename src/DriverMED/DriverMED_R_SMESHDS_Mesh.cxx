@@ -561,10 +561,14 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
     {
       const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
       set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+      const SMDS_MeshElement * element = 0;
       for (; anElemsIter != anElements.end(); anElemsIter++)
       {
-        theGroup->SMDS_MeshGroup::Add(*anElemsIter);
+        element = *anElemsIter;
+        theGroup->SMDSGroup().Add(element);
       }
+      if ( element )
+        theGroup->SetType( element->GetType() );
     }
   }
 }

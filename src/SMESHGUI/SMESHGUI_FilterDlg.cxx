@@ -2292,7 +2292,8 @@ void SMESHGUI_FilterDlg::filterSelectionSource( const int theType,
     }
 
     // process group
-    SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>( anIter.Key() );
+    SMESH::SMESH_GroupBase_var aGroup =
+      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIter.Key() );
     if ( !aGroup->_is_nil() )
     {
       if ( aGroup->GetType() == theType && aGroup->GetMesh()->GetId() == myMesh->GetId() )

@@ -30,9 +30,10 @@
 
 #include <SMDSAbs_ElementType.hxx>
 #include <string>
+#include <TopoDS_Shape.hxx>
 
 
-class SMESHDS_Group;
+class SMESHDS_GroupBase;
 class SMESH_Mesh;
 
 class SMESH_Group
@@ -42,14 +43,15 @@ class SMESH_Group
   SMESH_Group (int                       theID,
                const SMESH_Mesh*         theMesh,
                const SMDSAbs_ElementType theType,
-               const char*               theName);
+               const char*               theName,
+               const TopoDS_Shape&       theShape = TopoDS_Shape());
   ~SMESH_Group ();
 
   void SetName (const char* theName) { myName = theName; }
 
   const char* GetName () const { return myName.c_str(); }
 
-  SMESHDS_Group * GetGroupDS () { return myGroupDS; }
+  SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
  private:
   SMESH_Group (const SMESH_Group& theOther);
@@ -57,8 +59,8 @@ class SMESH_Group
   SMESH_Group& operator = (const SMESH_Group& theOther);
   // prohibited assign operator
 
-  SMESHDS_Group * myGroupDS;
-  std::string     myName;
+  SMESHDS_GroupBase * myGroupDS;
+  std::string         myName;
 
 };
 

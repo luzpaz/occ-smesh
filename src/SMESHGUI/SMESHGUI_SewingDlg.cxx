@@ -456,22 +456,23 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 	  QApplication::setOverrideCursor(Qt::waitCursor);
 	
 	  int aConstructorId = GetConstructorId();
+          SMESH::SMESH_MeshEditor::Sew_Error anError;
   
 	  if (aConstructorId == 0)
-	    aResult = aMeshEditor->SewFreeBorders(LineEdit1->text().toLong(),
+	    anError = aMeshEditor->SewFreeBorders(LineEdit1->text().toLong(),
 						  LineEdit2->text().toLong(),
 						  LineEdit3->text().toLong(),
 						  LineEdit4->text().toLong(),
 						  LineEdit5->text().toLong(),
 						  LineEdit6->text().toLong());
 	  else if (aConstructorId == 1)
-	    aResult = aMeshEditor->SewConformFreeBorders(LineEdit1->text().toLong(),
+	    anError = aMeshEditor->SewConformFreeBorders(LineEdit1->text().toLong(),
 							 LineEdit2->text().toLong(),
 							 LineEdit3->text().toLong(),
 							 LineEdit4->text().toLong(),
 							 LineEdit5->text().toLong());
 	  else if (aConstructorId == 2)
-	    aResult = aMeshEditor->SewBorderToSide(LineEdit1->text().toLong(),
+	    anError = aMeshEditor->SewBorderToSide(LineEdit1->text().toLong(),
 						   LineEdit2->text().toLong(),
 						   LineEdit3->text().toLong(),
 						   LineEdit4->text().toLong(),
@@ -492,19 +493,26 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 	      for ( int i = 0; i < aListElementsId2.count(); i++ )
 		anElementsId2[i] = aListElementsId2[i].toInt();
 
-	      aResult = aMeshEditor->SewSideElements(anElementsId1.inout(),
+	      anError = aMeshEditor->SewSideElements(anElementsId1.inout(),
 						     anElementsId2.inout(),
 						     LineEdit2->text().toLong(),
 						     LineEdit5->text().toLong(),
 						     LineEdit3->text().toLong(),
 						     LineEdit6->text().toLong());
 	    }
-	  
+	  aResult = ( anError == SMESH::SMESH_MeshEditor::SEW_OK );
+
 	  if (toMerge && aResult)
 	    aMeshEditor->MergeEqualElements();
 	  
 	  QApplication::restoreOverrideCursor();
-	}
+
+          if ( !aResult ) {
+            QString msg = tr(QString("ERROR_%1").arg(anError));
+            QAD_MessageBox::warn1(QAD_Application::getDesktop(),
+                                  tr("SMESH_WRN_WARNING"),msg,tr("SMESH_BUT_OK"));
+          }
+        }
       catch( ... )
 	{
 	}

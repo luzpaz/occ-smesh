@@ -62,6 +62,7 @@
 
 #include "SMESHDS_Document.hxx"
 #include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_Group.hxx"
 
 #include "SMDS_EdgePosition.hxx"
@@ -97,147 +98,12 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
-// Tags definition ===========================================================
-// Top level
-long Tag_HypothesisRoot         = 1; // hypotheses root
-long Tag_AlgorithmsRoot         = 2; // algorithms root
-// Mesh/Submesh
-long Tag_RefOnShape             = 1; // references to shape
-long Tag_RefOnAppliedHypothesis = 2; // applied hypotheses root
-long Tag_RefOnAppliedAlgorithms = 3; // applied algorithms root
-// Mesh only
-long Tag_SubMeshOnVertex        = 4; // sub-meshes roots by type
-long Tag_SubMeshOnEdge          = 5; // ...
-long Tag_SubMeshOnWire          = 6; // ...
-long Tag_SubMeshOnFace          = 7; // ...
-long Tag_SubMeshOnShell         = 8; // ...
-long Tag_SubMeshOnSolid         = 9; // ...
-long Tag_SubMeshOnCompound      = 10; // ...
-long Tag_NodeGroups             = 11; // Group roots by type
-long Tag_EdgeGroups             = 12; // ...
-long Tag_FaceGroups             = 13; // ...
-long Tag_VolumeGroups           = 14; // ...
-// ===========================================================================
-
 // Static variables definition
 CORBA::ORB_var          SMESH_Gen_i::myOrb;
 PortableServer::POA_var SMESH_Gen_i::myPoa;
 SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
 SALOME_LifeCycleCORBA*  SMESH_Gen_i::myLCC = NULL;
 SMESH_Gen_i*            SMESH_Gen_i::mySMESHGen = NULL;
-
-//=============================================================================
-/*!
- *  FindMaxChildTag [ static internal ]
- *
- *  Finds maximum child tag for the given object
- */
-//=============================================================================
-
-static long FindMaxChildTag( SALOMEDS::SObject_ptr theSObject )
-{
-  long aTag = 0;
-  if ( !theSObject->_is_nil() ) {
-    SALOMEDS::Study_var aStudy = theSObject->GetStudy();
-    if ( !aStudy->_is_nil() ) {
-      SALOMEDS::ChildIterator_var anIter = aStudy->NewChildIterator( theSObject );
-      for ( ; anIter->More(); anIter->Next() ) {
-	long nTag = anIter->Value()->Tag();
-	if ( nTag > aTag )
-	  aTag = nTag;
-      }
-    }
-  }
-  return aTag;
-}
-
-//=============================================================================
-/*!
- *  Get...Tag [ static ]
- *
- *  Methods which determine SMESH data model structure
- */
-//=============================================================================
-
-long SMESH_Gen_i::GetHypothesisRootTag()
-{
-  return Tag_HypothesisRoot;
-}
-
-long SMESH_Gen_i::GetAlgorithmsRootTag()
-{
-  return Tag_AlgorithmsRoot;
-}
-
-long SMESH_Gen_i::GetRefOnShapeTag()
-{
-  return Tag_RefOnShape;
-}
-
-long SMESH_Gen_i::GetRefOnAppliedHypothesisTag()
-{
-  return Tag_RefOnAppliedHypothesis;
-}
-
-long SMESH_Gen_i::GetRefOnAppliedAlgorithmsTag()
-{
-  return Tag_RefOnAppliedAlgorithms;
-}
-
-long SMESH_Gen_i::GetSubMeshOnVertexTag()
-{
-  return Tag_SubMeshOnVertex;
-}
-
-long SMESH_Gen_i::GetSubMeshOnEdgeTag()
-{
-  return Tag_SubMeshOnEdge;
-}
-
-long SMESH_Gen_i::GetSubMeshOnFaceTag()
-{
-  return Tag_SubMeshOnFace;
-}
-
-long SMESH_Gen_i::GetSubMeshOnSolidTag()
-{
-  return Tag_SubMeshOnSolid;
-}
-
-long SMESH_Gen_i::GetSubMeshOnCompoundTag()
-{
-  return Tag_SubMeshOnCompound;
-}
-
-long SMESH_Gen_i::GetSubMeshOnWireTag()
-{
-  return Tag_SubMeshOnWire;
-}
-
-long SMESH_Gen_i::GetSubMeshOnShellTag()
-{
-  return Tag_SubMeshOnShell;
-}
-
-long SMESH_Gen_i::GetNodeGroupsTag()
-{
-  return Tag_NodeGroups;
-}
-
-long SMESH_Gen_i::GetEdgeGroupsTag()
-{
-  return Tag_EdgeGroups;
-}
-
-long SMESH_Gen_i::GetFaceGroupsTag()
-{
-  return Tag_FaceGroups;
-}
-
-long SMESH_Gen_i::GetVolumeGroupsTag()
-{
-  return Tag_VolumeGroups;
-}
 
 //=============================================================================
 /*!
@@ -420,9 +286,6 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << theLibName);
 
-  // get study context
-  StudyContext* myStudyContext = GetCurrentStudyContext();
-  
   // create a new hypothesis object servant
   SMESH_Hypothesis_i* myHypothesis_i = 0;
   SMESH::SMESH_Hypothesis_var hypothesis_i;
@@ -468,8 +331,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     // create a new hypothesis object, store its ref. in studyContext
     if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
     myHypothesis_i =
-      myHypCreatorMap[string(theHypName)]->Create
-        (myPoa, myCurrentStudy->StudyId(), &myGen);
+      myHypCreatorMap[string(theHypName)]->Create (myPoa, GetCurrentStudyID(), &myGen);
     // _CS_gbo Explicit activation (no longer made in the constructor).
     myHypothesis_i->Activate();
     myHypothesis_i->SetLibName(theLibName); // for persistency assurance
@@ -484,9 +346,8 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
 
   // activate the CORBA servant of hypothesis
   hypothesis_i = SMESH::SMESH_Hypothesis::_narrow( myHypothesis_i->_this() );
-  string iorString = GetORB()->object_to_string( hypothesis_i );
-  int nextId = myStudyContext->addObject( iorString );
-  if(MYDEBUG) MESSAGE( "Add hypo to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+  int nextId = RegisterObject( hypothesis_i );
+  if(MYDEBUG) MESSAGE( "Add hypo to map with id = "<< nextId );
 
   return hypothesis_i._retn();
 }
@@ -504,23 +365,17 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::createMesh" );
 
-  // get current study
-  StudyContext* myStudyContext = GetCurrentStudyContext();
-
   // Get or create the GEOM_Client instance
   try {
     // create a new mesh object servant, store it in a map in study context
-    SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(),
-						  this,
-						  myCurrentStudy->StudyId() );
+    SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID() );
     // create a new mesh object
-    meshServant->SetImpl( myGen.CreateMesh( myCurrentStudy->StudyId() ) );
+    meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID() ));
 
     // activate the CORBA servant of Mesh
-    SMESH::SMESH_Mesh_var mesh = meshServant->_this();
-    string iorString = GetORB()->object_to_string( mesh );
-    int nextId = myStudyContext->addObject( iorString );
-    if(MYDEBUG) MESSAGE( "Add mesh to map with id = "<< nextId << " and IOR = " << iorString.c_str() );
+    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( meshServant->_this() );
+    int nextId = RegisterObject( mesh );
+    if(MYDEBUG) MESSAGE( "Add mesh to map with id = "<< nextId);
     return mesh._retn();
   }
   catch (SALOME_Exception& S_ex) {
@@ -558,7 +413,7 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
-  int studyId = myCurrentStudy->StudyId();
+  int studyId = GetCurrentStudyID();
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SetCurrentStudy: study Id = " << studyId );
   if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() ) {
     myStudyContextMap[ studyId ] = new StudyContext;      
@@ -580,7 +435,7 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 
 SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 {
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetCurrentStudy: study Id = " << myCurrentStudy->StudyId() );
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetCurrentStudy: study Id = " << GetCurrentStudyID() );
   return SALOMEDS::Study::_duplicate( myCurrentStudy );
 }
 
@@ -593,9 +448,11 @@ SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 //=============================================================================
 StudyContext* SMESH_Gen_i::GetCurrentStudyContext()
 {
-  ASSERT( !CORBA::is_nil( myCurrentStudy ) )
-  ASSERT( myStudyContextMap.find( myCurrentStudy->StudyId() ) != myStudyContextMap.end() );
-  return myStudyContextMap[ myCurrentStudy->StudyId() ];
+  if ( !CORBA::is_nil( myCurrentStudy ) &&
+      myStudyContextMap.find( GetCurrentStudyID() ) != myStudyContextMap.end() )
+    return myStudyContextMap[ myCurrentStudy->StudyId() ];
+  else
+    return 0;
 }
 
 //=============================================================================
@@ -611,14 +468,13 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
   // Create hypothesis/algorithm
   SMESH::SMESH_Hypothesis_var hyp = this->createHypothesis( theHypName, theLibName );
 
   // Publish hypothesis/algorithm in the study
-  if ( this->CanPublishInStudy( hyp ) ) {
-    this->PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), hyp, "" );
-  }
+  if ( CanPublishInStudy( hyp ) )
+    PublishHypothesis( myCurrentStudy, hyp );
+
   return hyp._retn();
 }
   
@@ -635,20 +491,18 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
 {
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMesh" );
-  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
   // create mesh
   SMESH::SMESH_Mesh_var mesh = this->createMesh();
-  // publish mesh in the study
-  if ( this->CanPublishInStudy( mesh ) ) {
-    this->PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), mesh.in(), "" );
-  }
   // set shape
   SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
   ASSERT( meshServant );
   meshServant->SetShape( theShapeObject );
+  // publish mesh in the study
+  if ( CanPublishInStudy( mesh ) )
+    PublishMesh( myCurrentStudy, mesh.in() );
   return mesh._retn();
 }
-  
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMeshFromUNV
@@ -662,14 +516,13 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
 {
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromUNV" );
-  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
   string aFileName; // = boost::filesystem::path(theFileName).leaf();
   // publish mesh in the study
-  if ( CanPublishInStudy( aMesh ) ) {
-    PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
-  }
+  if ( CanPublishInStudy( aMesh ) )
+    PublishMesh( myCurrentStudy, aMesh.in(), aFileName.c_str() );
+
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
   aServant->ImportUNVFile( theFileName );
@@ -690,7 +543,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
 {
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
-  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
 
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
@@ -710,9 +562,8 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
       SMESH::SMESH_Mesh_var mesh = createMesh();
       
       // publish mesh in the study
-      if ( CanPublishInStudy( mesh ) ) {
-	PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), mesh.in(), (*it).c_str() );
-      }
+      if ( CanPublishInStudy( mesh ) )
+        PublishMesh( myCurrentStudy, mesh.in(), (*it).c_str() );
       
       // Read mesh data (groups are published automatically by ImportMEDFile())
       SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
@@ -721,7 +572,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
 	meshServant->ImportMEDFile( theFileName, (*it).c_str() );
       if (status1 > theStatus)
 	theStatus = status1;
-      
+
       aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
     }
   }
@@ -741,14 +592,13 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
 {
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
-  ASSERT( !CORBA::is_nil( myCurrentStudy ) );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
   string aFileName; // = boost::filesystem::path(theFileName).leaf();
   // publish mesh in the study
-  if ( CanPublishInStudy( aMesh ) ) {
+  if ( CanPublishInStudy( aMesh ) )
     PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
-  }
+
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
   aServant->ImportSTLFile( theFileName );
@@ -784,7 +634,7 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       // get local TopoDS_Shape
-      TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), theShapeObject );
+      TopoDS_Shape myLocShape = GeomObjectToShape( theShapeObject );
       // call implementation
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       return myGen.CheckAlgoState( myLocMesh, myLocShape );
@@ -820,10 +670,7 @@ SMESH::long_array* SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Object_ptr theMainSha
 
   try
     {
-      if ( !myShapeReader )
-	myShapeReader = new GEOM_Client( GetContainerRef() );
-      ASSERT(myShapeReader);
-      TopoDS_Shape myMainShape  = GetShapeReader()->GetShape(GetGeomEngine(),theMainShapeObject);
+      TopoDS_Shape myMainShape = GeomObjectToShape(theMainShapeObject);
       TopTools_IndexedMapOfShape myIndexToShape;      
       TopExp::MapShapes(myMainShape,myIndexToShape);
 
@@ -835,7 +682,7 @@ SMESH::long_array* SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Object_ptr theMainSha
 	    THROW_SALOME_CORBA_EXCEPTION ("bad shape object reference", \
 				        SALOME::BAD_PARAM );
 
-	  TopoDS_Shape locShape  = GetShapeReader()->GetShape(GetGeomEngine(),aShapeObject);
+	  TopoDS_Shape locShape  = GeomObjectToShape(aShapeObject);
 	  for (TopExp_Explorer exp(locShape,TopAbs_FACE); exp.More(); exp.Next())
 	    {
 	      const TopoDS_Face& F = TopoDS::Face(exp.Current());
@@ -903,8 +750,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       // get local TopoDS_Shape
-      TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), theShapeObject );
-      // call implementarion compute
+      TopoDS_Shape myLocShape = GeomObjectToShape( theShapeObject );
+      // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       return myGen.Compute( myLocMesh, myLocShape);
     }
@@ -1385,12 +1232,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		aGroup->CreateOnDisk();
 
 		SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myGroupsBranch );
-		int grpNb = 0;
 		for ( ; it->More(); it->Next() ) {
 		  SALOMEDS::SObject_var mySObject = it->Value();
 		  CORBA::Object_var aSubObject = SObjectToObject( mySObject );
 		  if ( !CORBA::is_nil( aSubObject ) ) {
-		    SMESH_Group_i* myGroupImpl = dynamic_cast<SMESH_Group_i*>( GetServant( aSubObject ).in() );
+		    SMESH_GroupBase_i* myGroupImpl =
+                      dynamic_cast<SMESH_GroupBase_i*>( GetServant( aSubObject ).in() );
 		    if ( !myGroupImpl )
 		      continue;
 
@@ -1412,11 +1259,35 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		    if ( myLocMesh.GetGroup( myGroupImpl->GetLocalID() ) ) {
 		      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
                               << grpName << " to MED file" );
-		      SMESHDS_Group* aGrpDS = myLocMesh.GetGroup( myGroupImpl->GetLocalID() )->GetGroupDS();
-		      aGrpDS->SetStoreName( grpName );
+		      SMESHDS_GroupBase* aGrpBaseDS =
+                        myLocMesh.GetGroup( myGroupImpl->GetLocalID() )->GetGroupDS();
+		      aGrpBaseDS->SetStoreName( grpName );
 
 		      // Pass SMESHDS_Group to MED writer 
-		      myWriter.AddGroup( aGrpDS );
+		      SMESHDS_Group* aGrpDS = dynamic_cast<SMESHDS_Group*>( aGrpBaseDS );
+                      if ( aGrpDS )
+                        myWriter.AddGroup( aGrpDS );
+
+                      // write reference on a shape if exists
+                      SMESHDS_GroupOnGeom* aGeomGrp =
+                        dynamic_cast<SMESHDS_GroupOnGeom*>( aGrpBaseDS );
+                      if ( aGeomGrp ) {
+                        SALOMEDS::SObject_var mySubRef, myShape;
+                        if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ) &&
+                            mySubRef->ReferencedObject( myShape ))
+                        {
+                          string myRefOnObject = myShape->GetID();
+                          if ( myRefOnObject.length() > 0 ) {
+                            char aRefName[ 30 ];
+                            sprintf( aRefName, "Ref on shape %d", anId);
+                            aSize[ 0 ] = myRefOnObject.length() + 1;
+                            aDataset = new HDFdataset(aRefName, aGroup, HDF_STRING, aSize, 1);
+                            aDataset->CreateOnDisk();
+                            aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                            aDataset->CloseOnDisk();
+                          }
+                        }
+                      }
 		    }
 		  }
 		}
@@ -1452,6 +1323,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               for ( ; itSubM != aSubMeshes.end() ; itSubM++ )
               {
                 SMESHDS_SubMesh* aSubMesh = (*itSubM).second;
+                if ( aSubMesh->IsComplexSubmesh() )
+                  continue; // submesh containing other submeshs
                 int nbNodes = aSubMesh->NbNodes();
                 if ( nbNodes == 0 ) continue;
                 
@@ -1488,6 +1361,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 for ( ; itSM != pListSM->end(); itSM++ )
                 {
                   SMESHDS_SubMesh* aSubMesh = (*itSM);
+                  if ( aSubMesh->IsComplexSubmesh() )
+                    continue; // submesh containing other submeshs
 
                   SMDS_NodeIteratorPtr itNode = aSubMesh->GetNodes();
                   // loop on nodes in aSubMesh
@@ -1948,7 +1823,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      if ( !CORBA::is_nil( shapeObject ) ) {
 		aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
 		if ( !aShapeObject->_is_nil() )
-		  myNewMeshImpl->setShape( aShapeObject );
+		  myNewMeshImpl->SetShape( aShapeObject );
 	      }
 	    }
 	  }
@@ -2310,8 +2185,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           // Recompute State (as computed sub-meshes are restored from MED)
 	  if ( !aShapeObject->_is_nil() ) {
 	    MESSAGE("JFA - Compute State Engine ...");
-	    TopoDS_Shape myLocShape = GetShapeReader()->GetShape( GetGeomEngine(), aShapeObject );
-	    myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine(SMESH_subMesh::SUBMESH_RESTORED);
+	    TopoDS_Shape myLocShape = GeomObjectToShape( aShapeObject );
+	    myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine
+              (SMESH_subMesh::SUBMESH_RESTORED);
 	    MESSAGE("JFA - Compute State Engine finished");
 	  }
 
@@ -2349,11 +2225,33 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  char* nameFromFile = new char[ size ];
 		  aDataset->ReadFromDisk( nameFromFile );
 		  aDataset->CloseOnDisk();
-		  
+
+		  // Try to find a shape reference
+                  TopoDS_Shape aShape;
+                  char aRefName[ 30 ];
+                  sprintf( aRefName, "Ref on shape %d", subid);
+                  if ( aGroup->ExistInternalObject( aRefName ) ) {
+                    // load mesh "Ref on shape" - it's an entry to SObject
+                    aDataset = new HDFdataset( aRefName, aGroup );
+                    aDataset->OpenOnDisk();
+                    size = aDataset->GetSize();
+                    char* refFromFile = new char[ size ];
+                    aDataset->ReadFromDisk( refFromFile );
+                    aDataset->CloseOnDisk();
+                    if ( strlen( refFromFile ) > 0 ) {
+                      SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
+                      CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
+                      if ( !CORBA::is_nil( shapeObject ) ) {
+                        aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
+                        if ( !aShapeObject->_is_nil() )
+                          aShape = GeomObjectToShape( aShapeObject );
+                      }
+                    }
+                  }
 		  // Create group servant
-		  SMESH::SMESH_Group_var aNewGroup = SMESH::SMESH_Group::_duplicate
-                    ( myNewMeshImpl->createGroup( (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1),
-                                                 nameFromFile ) );
+                  SMESH::ElementType type = (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1);
+		  SMESH::SMESH_GroupBase_var aNewGroup = SMESH::SMESH_GroupBase::_duplicate
+                    ( myNewMeshImpl->createGroup( type, nameFromFile, aShape ) );
 		  // Obtain a SMESHDS_Group object 
 		  if ( aNewGroup->_is_nil() )
 		    continue;
@@ -2362,7 +2260,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  int newSubId = myStudyContext->findId( iorSubString );
 		  myStudyContext->mapOldToNew( subid, newSubId );
 
-		  SMESH_Group_i* aGroupImpl = dynamic_cast<SMESH_Group_i*>( GetServant( aNewGroup ).in() );
+		  SMESH_GroupBase_i* aGroupImpl =
+                    dynamic_cast<SMESH_GroupBase_i*>( GetServant( aNewGroup ).in() );
 		  if ( !aGroupImpl )
 		    continue;
 
@@ -2370,11 +2269,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		  if ( !aLocalGroup )
 		    continue;
 
-		  SMESHDS_Group* aGroupDS = aLocalGroup->GetGroupDS();
-		  aGroupDS->SetStoreName( name_dataset );
+		  SMESHDS_GroupBase* aGroupBaseDS = aLocalGroup->GetGroupDS();
+		  aGroupBaseDS->SetStoreName( name_dataset );
 
 		  // Fill group with contents from MED file
-		  myReader.GetGroup( aGroupDS );
+                  SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );
+                  if ( aGrp )
+                    myReader.GetGroup( aGrp );
 		}
 	      }
 	      aGroup->CloseOnDisk();
@@ -2427,7 +2328,7 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Close" );
 
   // Clear study contexts data
-  int studyId = myCurrentStudy->StudyId();
+  int studyId = GetCurrentStudyID();
   if ( myStudyContextMap.find( studyId ) != myStudyContextMap.end() ) {
     delete myStudyContextMap[ studyId ];
     myStudyContextMap.erase( studyId );
@@ -2458,15 +2359,15 @@ char* SMESH_Gen_i::ComponentDataType()
  */
 //=============================================================================
 
-char* SMESH_Gen_i::IORToLocalPersistentID( SALOMEDS::SObject_ptr theSObject,
+char* SMESH_Gen_i::IORToLocalPersistentID( SALOMEDS::SObject_ptr /*theSObject*/,
 					   const char*           IORString,
-					   CORBA::Boolean        isMultiFile,
-					   CORBA::Boolean        isASCII )
+					   CORBA::Boolean        /*isMultiFile*/,
+					   CORBA::Boolean        /*isASCII*/ )
 {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::IORToLocalPersistentID" );
   StudyContext* myStudyContext = GetCurrentStudyContext();
   
-  if ( strcmp( IORString, "" ) != 0 ) {
+  if ( myStudyContext && strcmp( IORString, "" ) != 0 ) {
     int anId = myStudyContext->findId( IORString );
     if ( anId ) {
       if(MYDEBUG) MESSAGE( "VSR " << anId )
@@ -2486,320 +2387,34 @@ char* SMESH_Gen_i::IORToLocalPersistentID( SALOMEDS::SObject_ptr theSObject,
  */
 //=============================================================================
 
-char* SMESH_Gen_i::LocalPersistentIDToIOR( SALOMEDS::SObject_ptr theSObject,
+char* SMESH_Gen_i::LocalPersistentIDToIOR( SALOMEDS::SObject_ptr /*theSObject*/,
 					   const char*           aLocalPersistentID,
-					   CORBA::Boolean        isMultiFile,
-					   CORBA::Boolean        isASCII )
+					   CORBA::Boolean        /*isMultiFile*/,
+					   CORBA::Boolean        /*isASCII*/ )
 {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::LocalPersistentIDToIOR(): id = " << aLocalPersistentID );
   StudyContext* myStudyContext = GetCurrentStudyContext();
 
-  if ( strcmp( aLocalPersistentID, "" ) != 0 ) {
+  if ( myStudyContext && strcmp( aLocalPersistentID, "" ) != 0 ) {
     int anId = atoi( aLocalPersistentID );
     return CORBA::string_dup( myStudyContext->getIORbyOldId( anId ).c_str() );
   }
   return CORBA::string_dup( "" );
 }
 
-//=============================================================================
-/*!
- *  SMESH_Gen_i::CanPublishInStudy
- *
- *  Returns true if object can be published in the study
- */
-//=============================================================================
+//=======================================================================
+//function : RegisterObject
+//purpose  : 
+//=======================================================================
 
-bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
+int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
 {
-  SMESH::SMESH_Mesh_var aMesh       = SMESH::SMESH_Mesh::_narrow(theIOR);
-  if( !aMesh->_is_nil() )
-    return true;
-
-  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(theIOR);
-  if( !aSubMesh->_is_nil() )
-    return true;
-
-  SMESH::SMESH_Hypothesis_var aHyp  = SMESH::SMESH_Hypothesis::_narrow(theIOR);
-  if( !aHyp->_is_nil() )
-    return true;
-
-  SMESH::SMESH_Group_var aGroup     = SMESH::SMESH_Group::_narrow(theIOR);
-  if( !aGroup->_is_nil() )
-    return true;
-
-  return false;
-}
-
-//=============================================================================
-/*!
- *  SMESH_Gen_i::PublishInStudy
- *
- *  Publish object in the study
- */
-//=============================================================================
-
-SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr theStudy,
-						  SALOMEDS::SObject_ptr theSObject,
-						  CORBA::Object_ptr theIOR,
-						  const char* theName) 
-throw (SALOME::SALOME_Exception)
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy()" );
-  SALOMEDS::SObject_var aSO;
-
-  SALOMEDS::SComponent_var father =
-    SALOMEDS::SComponent::_narrow( theStudy->FindComponent( ComponentDataType() ) );
-  SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder(); 
-
-  SALOMEDS::GenericAttribute_var anAttr;
-  SALOMEDS::AttributeName_var    aName;
-  SALOMEDS::AttributePixMap_var  aPixmap;
-  
-  if ( father->_is_nil() ) {
-    SALOME_ModuleCatalog::ModuleCatalog_var aCat =
-      SALOME_ModuleCatalog::ModuleCatalog::_narrow( GetNS()->Resolve("/Kernel/ModulCatalog") );
-    if ( CORBA::is_nil( aCat ) )
-      return aSO._retn();
-
-    SALOME_ModuleCatalog::Acomponent_var   aComp = aCat->GetComponent( ComponentDataType() );
-    if ( CORBA::is_nil( aComp ) )
-      return aSO._retn();
-
-    father  = aStudyBuilder->NewComponent( ComponentDataType() );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( father, "AttributeName" );
-    aName   = SALOMEDS::AttributeName::_narrow( anAttr );
-    aName   ->SetValue( aComp->componentusername() );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( father, "AttributePixMap" );
-    aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
-    aPixmap ->SetPixMap( "ICON_OBJBROWSER_SMESH" );
-    aStudyBuilder->DefineComponentInstance( father, SMESH_Gen::_this() );
+  StudyContext* myStudyContext = GetCurrentStudyContext();
+  if ( myStudyContext && !CORBA::is_nil( theObject )) {
+    string iorString = GetORB()->object_to_string( theObject );
+    return myStudyContext->addObject( iorString );
   }
-
-  if ( father->_is_nil() )  
-    return aSO._retn();
-
-  SALOMEDS::AttributeIOR_var        anIOR;
-  SALOMEDS::AttributeSelectable_var aSelAttr;
-  TCollection_AsciiString anObjName("obj");
-
-  // Publishing a mesh
-  SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( theIOR );
-  if( !aMesh->_is_nil() ) {
-    // Find correct free tag
-    long aTag = FindMaxChildTag( father.in() );
-    if ( aTag <= GetAlgorithmsRootTag() )
-      aTag = GetAlgorithmsRootTag() + 1;
-    else
-      aTag++;
-    // Add New Mesh
-    SALOMEDS::SObject_var newMesh = aStudyBuilder->NewObjectToTag( father, aTag );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( newMesh, "AttributePixMap" );
-    aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
-    aPixmap ->SetPixMap( "ICON_SMESH_TREE_MESH" );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( newMesh, "AttributeIOR" );
-    anIOR   = SALOMEDS::AttributeIOR::_narrow(anAttr);
-    anIOR   ->SetValue( GetORB()->object_to_string( aMesh ) );
-    aSO     = SALOMEDS::SObject::_narrow( newMesh );
-    anObjName = TCollection_AsciiString( "Mesh" );
-  }
-
-  // Publishing a sub-mesh
-  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( theIOR );
-  if( aSO->_is_nil() && !aSubMesh->_is_nil() ) {
-    // try to obtain a parent mesh's SObject
-    if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing submesh..." );
-    SALOMEDS::SObject_var aParentSO;
-    SMESH::SMESH_Mesh_var aParentMesh;
-    SMESH_subMesh_i* aServant = dynamic_cast<SMESH_subMesh_i*>( GetServant( aSubMesh ).in() );
-    if ( aServant != NULL ) {
-      aParentMesh = aServant->_mesh_i->_this();
-      if ( !aParentMesh->_is_nil() ) {
-	aParentSO = theStudy->FindObjectIOR( GetORB()->object_to_string( aParentMesh ) );
-      }
-    }
-
-    // Find submesh sub-tree tag
-    if ( !aParentSO->_is_nil() ) {
-      long aRootTag = GetSubMeshOnVertexTag();
-      char* aRootName = "";
-
-      SMESH_Mesh_i* aMeshServant = aServant->_mesh_i;
-      if ( aMeshServant->_mapSubMesh.find( aServant->GetId() ) != aMeshServant->_mapSubMesh.end() ) {
-	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): local submesh found" )
-	SMESH_subMesh* aLocalSubMesh = aMeshServant->_mapSubMesh[aServant->GetId()];
-	switch ( aLocalSubMesh->GetSubShape().ShapeType() ) {
-	case TopAbs_VERTEX:
-	  aRootTag  = GetSubMeshOnVertexTag();
-	  aRootName = "SubMeshes on Vertex";
-	  break;
-	case TopAbs_EDGE:
-	  aRootTag  = GetSubMeshOnEdgeTag();
-	  aRootName = "SubMeshes on Edge";
-	  break;
-	case TopAbs_WIRE:
-	  aRootTag  = GetSubMeshOnWireTag();
-	  aRootName = "SubMeshes on Wire";
-	  break;
-	case TopAbs_FACE:
-	  aRootTag  = GetSubMeshOnFaceTag();
-	  aRootName = "SubMeshes on Face";	  
-	  break;
-	case TopAbs_SHELL:
-	  aRootTag  = GetSubMeshOnShellTag();
-	  aRootName = "SubMeshes on Shell";	  
-	  break;
-	case TopAbs_SOLID:
-	  aRootTag  = GetSubMeshOnSolidTag();
-	  aRootName = "SubMeshes on Solid";
-	  break;
-	default:
-	  aRootTag  = GetSubMeshOnCompoundTag();
-	  aRootName = "SubMeshes on Compound";
-	  break;
-	}
-      }
-      else {
-        if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): local submesh NOT found" );
-      }
-
-      // Find or create submesh root
-      SALOMEDS::SObject_var aRootSO;
-      if ( !aParentSO->FindSubObject ( aRootTag, aRootSO ) ) {
-	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): creating submesh root..." );
-	aRootSO  = aStudyBuilder->NewObjectToTag( aParentSO, aRootTag );
-	anAttr   = aStudyBuilder->FindOrCreateAttribute( aRootSO, "AttributeName" );
-	aName    = SALOMEDS::AttributeName::_narrow( anAttr );
-	aName    ->SetValue( aRootName );
-	anAttr   = aStudyBuilder->FindOrCreateAttribute( aRootSO, "AttributeSelectable" );
-	aSelAttr = SALOMEDS::AttributeSelectable::_narrow( anAttr );
-	aSelAttr ->SetSelectable( false );
-      }
-
-      // Add new submesh to corresponding sub-tree
-      if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): adding submesh to study..." );
-      SALOMEDS::SObject_var newMesh = aStudyBuilder->NewObject( aRootSO );
-      anAttr  = aStudyBuilder->FindOrCreateAttribute( newMesh, "AttributePixMap" );
-      aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
-      aPixmap ->SetPixMap( "ICON_SMESH_TREE_MESH" );
-      anAttr  = aStudyBuilder->FindOrCreateAttribute( newMesh, "AttributeIOR" );
-      anIOR   = SALOMEDS::AttributeIOR::_narrow(anAttr);
-      anIOR   ->SetValue( GetORB()->object_to_string( aSubMesh ) );
-      aSO     = SALOMEDS::SObject::_narrow( newMesh );
-      anObjName = TCollection_AsciiString( "SubMesh" );
-    }
-    else {
-      if(MYDEBUG) SCRUTE( aParentSO->_is_nil() );
-    }
-  }
-
-  // Publishing a hypothesis or algorithm
-  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( theIOR );
-  if( aSO->_is_nil() && !aHyp->_is_nil() ) {
-    //Find or Create Hypothesis root
-    SALOMEDS::SObject_var  HypothesisRoot;
-    Standard_Integer aRootTag =
-      SMESH::SMESH_Algo::_narrow( theIOR )->_is_nil() ? GetHypothesisRootTag() : GetAlgorithmsRootTag();
-
-    if ( !father->FindSubObject ( aRootTag, HypothesisRoot ) ) {
-      HypothesisRoot = aStudyBuilder->NewObjectToTag( father, aRootTag );
-      anAttr   = aStudyBuilder->FindOrCreateAttribute( HypothesisRoot, "AttributeName" );
-      aName    = SALOMEDS::AttributeName::_narrow( anAttr );
-      aName    ->SetValue( aRootTag ==  GetHypothesisRootTag()  ? "Hypotheses" : "Algorithms" );
-      anAttr   = aStudyBuilder->FindOrCreateAttribute( HypothesisRoot, "AttributeSelectable" );
-      aSelAttr = SALOMEDS::AttributeSelectable::_narrow( anAttr );
-      aSelAttr ->SetSelectable( false );
-      anAttr   = aStudyBuilder->FindOrCreateAttribute( HypothesisRoot, "AttributePixMap" );
-      aPixmap  = SALOMEDS::AttributePixMap::_narrow( anAttr );
-      aPixmap  ->SetPixMap( aRootTag == GetHypothesisRootTag()  ? "ICON_SMESH_TREE_HYPO" : "ICON_SMESH_TREE_ALGO" );
-    }
-
-    // Add New Hypothesis
-    string aPmName;
-    SALOMEDS::SObject_var newHypo = aStudyBuilder->NewObject( HypothesisRoot );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( newHypo, "AttributePixMap" );
-    aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
-    aPmName = ( aRootTag == GetHypothesisRootTag()  ? "ICON_SMESH_TREE_HYPO_" : "ICON_SMESH_TREE_ALGO_" );
-    aPmName += aHyp->GetName();
-    aPixmap ->SetPixMap( aPmName.c_str() );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( newHypo, "AttributeIOR" );
-    anIOR   = SALOMEDS::AttributeIOR::_narrow(anAttr);
-    anIOR   ->SetValue( GetORB()->object_to_string( aHyp ) );
-    aSO     = SALOMEDS::SObject::_narrow( newHypo );
-    anObjName = TCollection_AsciiString( aHyp->GetName() );
-  }
-
-  // Publishing a group
-  SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow(theIOR);
-  if( aSO->_is_nil() && !aGroup->_is_nil() ) {
-    // try to obtain a parent mesh's SObject
-    if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group..." );
-    SALOMEDS::SObject_var aParentSO;
-    SMESH::SMESH_Mesh_var aParentMesh;
-    SMESH_Group_i* aServant = dynamic_cast<SMESH_Group_i*>( GetServant( aGroup ).in() );
-    if ( aServant != NULL ) {
-      aParentMesh = SMESH::SMESH_Mesh::_narrow( GetPOA()->servant_to_reference( aServant->GetMeshServant() ) );
-      if ( !aParentMesh->_is_nil() ) {
-	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: refernce to mesh is OK" );
-	string anIOR = GetORB()->object_to_string( aParentMesh );
-	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: mesh IOR = "<<anIOR.c_str() );
-	aParentSO = theStudy->FindObjectIOR( anIOR.c_str() );
-      }
-    }
-
-    // Find proper group sub-tree tag
-    if ( !aParentSO->_is_nil() ) {
-      if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: parent mesh found" );
-      int aType = (int)aGroup->GetType();
-      const char* aRootNames[] = { "Compound Groups", "Groups of Nodes", "Groups of Edges", "Groups of Faces", "Groups of Volumes" };
-
-      // Currently, groups with heterogenous content are not supported
-      if ( aType != SMESH::ALL ) {
-	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): publishing group: group type OK" );
-	long aRootTag = GetNodeGroupsTag() + aType - 1;
-
-	// Find or create groups root
-	SALOMEDS::SObject_var aRootSO;
-	if ( !aParentSO->FindSubObject ( aRootTag, aRootSO ) ) {
-	  if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): creating groups root..." )
-	  aRootSO  = aStudyBuilder->NewObjectToTag( aParentSO, aRootTag );
-	  anAttr   = aStudyBuilder->FindOrCreateAttribute( aRootSO, "AttributeName" );
-	  aName    = SALOMEDS::AttributeName::_narrow( anAttr );
-	  aName    ->SetValue( aRootNames[aType] );
-	  anAttr   = aStudyBuilder->FindOrCreateAttribute( aRootSO, "AttributeSelectable" );
-	  aSelAttr = SALOMEDS::AttributeSelectable::_narrow( anAttr );
-	  aSelAttr ->SetSelectable( false );
-	}
-
-	// Add new group to corresponding sub-tree
-	if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): adding group to study..." )
-	SALOMEDS::SObject_var aGroupSO = aStudyBuilder->NewObject( aRootSO );
-	anAttr  = aStudyBuilder->FindOrCreateAttribute( aGroupSO, "AttributePixMap" );
-	aPixmap = SALOMEDS::AttributePixMap::_narrow( anAttr );
-	aPixmap ->SetPixMap( "ICON_SMESH_TREE_GROUP" );
-	anAttr  = aStudyBuilder->FindOrCreateAttribute( aGroupSO, "AttributeIOR" );
-	anIOR   = SALOMEDS::AttributeIOR::_narrow( anAttr );
-	anIOR   ->SetValue( GetORB()->object_to_string( aGroup ) );
-	aSO     = SALOMEDS::SObject::_narrow( aGroupSO );
-	anObjName = TCollection_AsciiString( "Group" );
-      }
-    }
-  }
-
-  // Setting SObject's name
-  if ( !aSO->_is_nil() ) {
-    if ( strlen( theName ) == 0 ) 
-      anObjName += TCollection_AsciiString( "_" ) + TCollection_AsciiString( aSO->Tag() );
-    else 
-      anObjName = TCollection_AsciiString( (char*)theName );
-    anAttr  = aStudyBuilder->FindOrCreateAttribute( aSO, "AttributeName" );
-    aName   = SALOMEDS::AttributeName::_narrow( anAttr );
-    aName   ->SetValue( anObjName.ToCString() );
-    if(MYDEBUG) MESSAGE ("********** SMESH_Gen_i: \"" << anObjName.ToCString() << "\" PUBLISHED");
-  }
-
-  if(MYDEBUG) MESSAGE( "********** SMESH_Gen_i::PublishInStudy(): COMPLETED" )
-  return aSO._retn();
+  return 0;
 }
       
 //=============================================================================

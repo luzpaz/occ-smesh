@@ -190,7 +190,7 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
 
   myBlockSelection = true;
   
-  QValueList<SMESH::SMESH_Group_var>::iterator anIter;
+  QValueList<SMESH::SMESH_GroupBase_var>::iterator anIter;
   for ( anIter = myListGrp.begin(); anIter != myListGrp.end(); ++anIter )
   {
     SMESH::SMESH_Mesh_ptr aMesh = (*anIter)->GetMesh();
@@ -248,8 +248,8 @@ void SMESHGUI_DeleteGroupDlg::onSelectionDone()
   SALOME_ListIteratorOfListIO anIter( aListIO );
   for( ; anIter.More(); anIter.Next() )
   {
-    SMESH::SMESH_Group_var aGroup = 
-      SMESH::IObjectToInterface<SMESH::SMESH_Group>( anIter.Value() );
+    SMESH::SMESH_GroupBase_var aGroup = 
+      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIter.Value() );
     if ( !aGroup->_is_nil() )
     {
       aNames.append( aGroup->GetName() );

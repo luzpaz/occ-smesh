@@ -363,8 +363,8 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
       }
       else
       {
-        SMESH::SMESH_Group_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_Group>( anIO );
+        SMESH::SMESH_GroupBase_var aGroup =
+          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIO );
         if ( !aGroup->_is_nil() )
           myMesh = aGroup->GetMesh();
       }
@@ -398,7 +398,8 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
 
   if ( nbSel == 1 ) {
     myActor = SMESH::FindActorByEntry(mySelection->firstIObject()->getEntry());
-    //myActor = SMESH::FindActorByObject( myMesh );
+    if (!myActor)
+      myActor = SMESH::FindActorByObject( myMesh );
     VTKViewer_InteractorStyleSALOME* aStyle = SMESH::GetInteractorStyle();
     Handle(VTKViewer_Filter) aFilter1 = aStyle->GetFilter( myFilterType );
     Handle(VTKViewer_Filter) aFilter2 = aStyle->GetFilter( SMESHGUI_FaceFilter );
@@ -561,7 +562,8 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
     SALOME_ListIteratorOfListIO anIter( mySelection->StoredIObjects() );
     for ( ; anIter.More(); anIter.Next() )
     {
-      SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>( anIter.Value() );
+      SMESH::SMESH_GroupBase_var aGroup =
+        SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIter.Value() );
       if ( !aGroup->_is_nil() && aGroup->GetType() == SMESH::FACE )
       {
         if ( aGroup->GetMesh()->GetId() == myMesh->GetId() )
@@ -617,7 +619,7 @@ void SMESHGUI_MultiEditDlg::updateButtons()
        myMesh->_is_nil() ||
        mySelection->IObjectCount() != 1 ||
        (SMESH::IObjectToInterface<SMESH::SMESH_subMesh>( mySelection->firstIObject() )->_is_nil() &&
-	SMESH::IObjectToInterface<SMESH::SMESH_Group>( mySelection->firstIObject() )->_is_nil() &&
+	SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( mySelection->firstIObject() )->_is_nil() &&
 	SMESH::IObjectToInterface<SMESH::SMESH_Mesh>( mySelection->firstIObject() )->_is_nil()) )
     myAddBtn->setEnabled( false );
   else

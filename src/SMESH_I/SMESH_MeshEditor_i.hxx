@@ -57,72 +57,108 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean InverseDiag(CORBA::Long NodeID1, CORBA::Long NodeID2);
   CORBA::Boolean DeleteDiag(CORBA::Long NodeID1, CORBA::Long NodeID2);
   CORBA::Boolean Reorient(const SMESH::long_array & IDsOfElements);
+  CORBA::Boolean ReorientObject(SMESH::SMESH_IDSource_ptr theObject);
 
   CORBA::Boolean TriToQuad(const SMESH::long_array &   IDsOfElements,
                            SMESH::NumericalFunctor_ptr Criterion,
                            CORBA::Double               MaxAngle);
+  CORBA::Boolean TriToQuadObject(SMESH::SMESH_IDSource_ptr theObject,
+				 SMESH::NumericalFunctor_ptr Criterion,
+				 CORBA::Double               MaxAngle);
   CORBA::Boolean QuadToTri(const SMESH::long_array &   IDsOfElements,
                            SMESH::NumericalFunctor_ptr Criterion);
   CORBA::Boolean SplitQuad(const SMESH::long_array & IDsOfElements,
                            CORBA::Boolean            Diag13);
+  CORBA::Boolean SplitQuadObject(SMESH::SMESH_IDSource_ptr theObject,
+				 CORBA::Boolean            Diag13);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
                         const SMESH::long_array &              IDsOfFixedNodes,
                         CORBA::Long                            MaxNbOfIterations,
                         CORBA::Double                          MaxAspectRatio,
                         SMESH::SMESH_MeshEditor::Smooth_Method Method);
+  CORBA::Boolean SmoothObject(SMESH::SMESH_IDSource_ptr              theObject,
+			      const SMESH::long_array &              IDsOfFixedNodes,
+			      CORBA::Long                            MaxNbOfIterations,
+			      CORBA::Double                          MaxAspectRatio,
+			      SMESH::SMESH_MeshEditor::Smooth_Method Method);
+
 
   void RenumberNodes();
   void RenumberElements();
 
   void RotationSweep(const SMESH::long_array & IDsOfElements,
-                     const SMESH::AxisStruct &  Axis,
+                     const SMESH::AxisStruct & Axis,
                      CORBA::Double             AngleInRadians,
                      CORBA::Long               NbOfSteps,
                      CORBA::Double             Tolerance);
-  void ExtrusionSweep(const SMESH::long_array & IDsOfElements,
-                      const SMESH::DirStruct &   StepVector,
-                      CORBA::Long               NbOfSteps);
+  void RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject,
+			   const SMESH::AxisStruct & Axis,
+			   CORBA::Double             AngleInRadians,
+			   CORBA::Long               NbOfSteps,
+			   CORBA::Double             Tolerance);
 
+  void ExtrusionSweep(const SMESH::long_array & IDsOfElements,
+                      const SMESH::DirStruct &  StepVector,
+                      CORBA::Long               NbOfSteps);
+  void ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
+			    const SMESH::DirStruct &  StepVector,
+			    CORBA::Long               NbOfSteps);
+  
   void Mirror(const SMESH::long_array &           IDsOfElements,
-              const SMESH::AxisStruct &            Axis,
+              const SMESH::AxisStruct &           Axis,
               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
               CORBA::Boolean                      Copy);
+  void MirrorObject(SMESH::SMESH_IDSource_ptr           theObject,
+		    const SMESH::AxisStruct &           Axis,
+		    SMESH::SMESH_MeshEditor::MirrorType MirrorType,
+		    CORBA::Boolean                      Copy);
   void Translate(const SMESH::long_array & IDsOfElements,
                  const SMESH::DirStruct &   Vector,
                  CORBA::Boolean            Copy);
+  void TranslateObject(SMESH::SMESH_IDSource_ptr  theObject,
+		       const SMESH::DirStruct &   Vector,
+		       CORBA::Boolean             Copy);
   void Rotate(const SMESH::long_array & IDsOfElements,
               const SMESH::AxisStruct &  Axis,
               CORBA::Double             Angle,
               CORBA::Boolean            Copy);
+  void RotateObject(SMESH::SMESH_IDSource_ptr  theObject,
+		    const SMESH::AxisStruct &  Axis,
+		    CORBA::Double              Angle,
+		    CORBA::Boolean             Copy);
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
                             SMESH::array_of_long_array_out GroupsOfNodes);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void MergeEqualElements();
 
-  CORBA::Boolean SewFreeBorders(CORBA::Long FirstNodeID1,
-                                CORBA::Long SecondNodeID1,
-                                CORBA::Long LastNodeID1,
-                                CORBA::Long FirstNodeID2,
-                                CORBA::Long SecondNodeID2,
-                                CORBA::Long LastNodeID2);
-  CORBA::Boolean SewConformFreeBorders(CORBA::Long FirstNodeID1,
-                                       CORBA::Long SecondNodeID1,
-                                       CORBA::Long LastNodeID1,
-                                       CORBA::Long FirstNodeID2,
-                                       CORBA::Long SecondNodeID2);
-  CORBA::Boolean SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
-                                 CORBA::Long SecondNodeIDOnFreeBorder,
-                                 CORBA::Long LastNodeIDOnFreeBorder,
-                                 CORBA::Long FirstNodeIDOnSide,
-                                 CORBA::Long LastNodeIDOnSide);
-  CORBA::Boolean SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
-                                 const SMESH::long_array& IDsOfSide2Elements,
-                                 CORBA::Long NodeID1OfSide1ToMerge,
-                                 CORBA::Long NodeID1OfSide2ToMerge,
-                                 CORBA::Long NodeID2OfSide1ToMerge,
-                                 CORBA::Long NodeID2OfSide2ToMerge);
+  SMESH::SMESH_MeshEditor::Sew_Error
+    SewFreeBorders(CORBA::Long FirstNodeID1,
+                   CORBA::Long SecondNodeID1,
+                   CORBA::Long LastNodeID1,
+                   CORBA::Long FirstNodeID2,
+                   CORBA::Long SecondNodeID2,
+                   CORBA::Long LastNodeID2);
+  SMESH::SMESH_MeshEditor::Sew_Error
+    SewConformFreeBorders(CORBA::Long FirstNodeID1,
+                          CORBA::Long SecondNodeID1,
+                          CORBA::Long LastNodeID1,
+                          CORBA::Long FirstNodeID2,
+                          CORBA::Long SecondNodeID2);
+  SMESH::SMESH_MeshEditor::Sew_Error
+    SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
+                    CORBA::Long SecondNodeIDOnFreeBorder,
+                    CORBA::Long LastNodeIDOnFreeBorder,
+                    CORBA::Long FirstNodeIDOnSide,
+                    CORBA::Long LastNodeIDOnSide);
+  SMESH::SMESH_MeshEditor::Sew_Error
+    SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
+                    const SMESH::long_array& IDsOfSide2Elements,
+                    CORBA::Long NodeID1OfSide1ToMerge,
+                    CORBA::Long NodeID1OfSide2ToMerge,
+                    CORBA::Long NodeID2OfSide1ToMerge,
+                    CORBA::Long NodeID2OfSide2ToMerge);
 
  private:
   SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }

@@ -55,7 +55,7 @@ cc    = geompy.MakeCylinder(p0, vz,    cc_radius, barier_height)
 colis_cc = geompy.MakeCompound([colis, cc])
 colis_cc = geompy.MakeTranslation(colis_cc, colis_center, 0.0, 0.0)
 
-colis_cc_multi = geompy.MakeMultiRotation1D(colis_cc, vz, 4)
+colis_cc_multi = geompy.MultiRotate1D(colis_cc, vz, 4)
 
 # --
 
@@ -88,7 +88,7 @@ compGOs.append( comp4 )
 comp = geompy.MakeCompound( compGOs )
 
 alveole = geompy.MakeCompound( [ comp, subshapes[8] ])
-	
+
 idalveole = geompy.addToStudy(alveole, "alveole")
 
 print "Analysis of the geometry to mesh (right after the MakeCompound) :"
@@ -193,8 +193,8 @@ if ret != 0:
     print "Number of faces       : ", mesh.NbFaces()
     print "Number of triangles   : ", mesh.NbTriangles()
     print "Number of volumes     : ", mesh.NbVolumes()
-    print "Number of tetrahedrons: ", mesh.NbTetras() 
+    print "Number of tetrahedrons: ", mesh.NbTetras()
 else:
     print "problem when computing the mesh"
-    
+
 salome.sg.updateObjBrowser(1)

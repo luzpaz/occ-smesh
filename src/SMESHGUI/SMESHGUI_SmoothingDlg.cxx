@@ -32,8 +32,10 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESH_Actor.h"
+#include "SMESH_TypeFilter.hxx"
 #include "SMDS_Mesh.hxx"
 
 #include "QAD_Application.h"
@@ -219,7 +221,16 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( QWidget* parent, const char* name,
   mySMESHGUI  = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
   
-  myMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
+  // Costruction of the logical filter
+  SMESH_ListOfFilter aListOfFilters;
+  Handle(SMESH_TypeFilter) aMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
+  if ( !aMeshOrSubMeshFilter.IsNull() )
+    aListOfFilters.Append( aMeshOrSubMeshFilter );
+  Handle(SMESH_TypeFilter) aSmeshGroupFilter = new SMESH_TypeFilter( GROUP );
+  if ( !aSmeshGroupFilter.IsNull() )
+    aListOfFilters.Append( aSmeshGroupFilter );
+  
+  myMeshOrSubMeshOrGroupFilter = new SMESH_LogicalFilter( aListOfFilters, SMESH_LogicalFilter::LO_OR );
 
   Init();
   /* signals and slots connections */
@@ -407,7 +418,6 @@ void SMESHGUI_SmoothingDlg::onTextChange(const QString& theNewText)
     aMesh = myActor->GetObject()->GetMesh();
   
   if ( aMesh ) {
-    
     mySelection->ClearIObjects();
     mySelection->AddIObject( myActor->getIO() );
     
@@ -454,31 +464,35 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
 
   // clear
   myActor = 0;
-    
+  QString aString = "";
+
   myBusy = true;
-  myEditCurrentArgument->setText( "" );
+  if (myEditCurrentArgument == (QWidget*)LineEditElements)
+    {
+      LineEditElements->setText( aString );
+      myNbOkElements = 0;
+      buttonOk->setEnabled( false );
+      buttonApply->setEnabled( false );
+    }
   myBusy = false;
 
   if ( !GroupButtons->isEnabled() ) // inactive
     return;
   
-  buttonOk->setEnabled( false );
-  buttonApply->setEnabled( false );
-  
   // get selected mesh
-  QString aString = "";
-
+  
   int nbSel = mySelection->IObjectCount();
   if(nbSel != 1)
     return;
   
   Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject();
-  myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO) ;
-
-  myActor = SMESH::FindActorByEntry( mySelection->firstIObject()->getEntry() );
+  myMesh = SMESH::GetMeshByIO(IO);
+  if(myMesh->_is_nil())
+    return;
+  myActor = SMESH::FindActorByObject(myMesh);
+  if (!myActor)
+    return;
   
-  // get selected elements/nodes
-
   int aNbUnits = 0;
  
   if (myEditCurrentArgument == LineEditElements)
@@ -488,15 +502,14 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
       if (CheckBoxMesh->isChecked())
 	{
 	  SMESH::GetNameOfSelectedIObjects(mySelection, aString);
-	  if(!myMesh->_is_nil())
+	  
+	  if(!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) //MESH
 	    {
-	      if (!myActor)
-		return;
-	      
 	      // get IDs from mesh
 	      SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
 	      if (!aSMDSMesh)
 		return;
+	      
 	      for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++  )
 		{
 		  const SMDS_MeshElement * e = aSMDSMesh->FindElement( i );
@@ -506,29 +519,35 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
 		  }
 		}
 	    }
-	  else
+	  else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) //SUBMESH
 	    {
 	      // get submesh
 	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO) ;
-	      if(aSubMesh->_is_nil())
-		return;
 	      
-	      myMesh = aSubMesh->GetFather();
-	      if(myMesh->_is_nil())
-		return;
-	      
-	      myActor = SMESH::FindActorByObject(myMesh);
-	      if (!myActor)
-		return;
-
+	      // get IDs from submesh
 	      SMESH::long_array_var anElementsIds = new SMESH::long_array;
 	      anElementsIds = aSubMesh->GetElementsId();
 	      for ( int i = 0; i < anElementsIds->length(); i++ )
 		myElementsId += QString(" %1").arg(anElementsIds[i]);
 	      aNbUnits = anElementsIds->length();
 	    }
+	  else // GROUP
+	    {
+	      // get smesh group
+	      SMESH::SMESH_GroupBase_var aGroup
+                = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
+	      if (aGroup->_is_nil())
+		return;
+	      
+	      // get IDs from smesh group
+	      SMESH::long_array_var anElementsIds = new SMESH::long_array;
+	      anElementsIds = aGroup->GetListOfID();
+	      for ( int i = 0; i < anElementsIds->length(); i++ )
+		myElementsId += QString(" %1").arg(anElementsIds[i]);
+	      aNbUnits = anElementsIds->length();
+	    }
 	}
-      else if(!myMesh->_is_nil() && myActor)
+      else
 	{
 	  aNbUnits = SMESH::GetNameOfSelectedElements(mySelection, aString) ;
 	  myElementsId = aString;
@@ -539,7 +558,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
       myNbOkNodes = 0;
       aNbUnits = SMESH::GetNameOfSelectedNodes(mySelection, aString) ;
     }
-
+  
   if(aNbUnits < 1)
     return ;
 
@@ -548,7 +567,6 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   myBusy = false;
   
   // OK
-  
   if (myEditCurrentArgument == LineEditElements)
     myNbOkElements = true;
   else if (myEditCurrentArgument == LineEditNodes)
@@ -584,7 +602,7 @@ void SMESHGUI_SmoothingDlg::SetEditCurrentArgument()
 	  if (CheckBoxMesh->isChecked())
 	    {
 	      QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
-	      mySelection->AddFilter(myMeshOrSubMeshFilter) ;
+	      mySelection->AddFilter(myMeshOrSubMeshOrGroupFilter);
 	    }
 	  else
 	    QAD_Application::getDesktop()->SetSelectionMode( CellSelection, true );
@@ -680,20 +698,28 @@ void SMESHGUI_SmoothingDlg::hideEvent ( QHideEvent * e )
 //=======================================================================
 void SMESHGUI_SmoothingDlg::onSelectMesh ( bool toSelectMesh )
 {
+  if (toSelectMesh)
+    TextLabelElements->setText( tr( "SMESH_NAME" ) );
+  else
+    TextLabelElements->setText( tr( "SMESH_ID_ELEMENTS" ) );
+  
+  if (myEditCurrentArgument != LineEditElements)
+    {
+      LineEditElements->clear();
+      return;
+    }
+  
   mySelection->ClearFilters() ;
+  SMESH::SetPointRepresentation(false);
   
   if (toSelectMesh)
     {
-      TextLabelElements->setText( tr( "SMESH_NAME" ) );
-      
       QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
-      mySelection->AddFilter(myMeshOrSubMeshFilter);
+      mySelection->AddFilter(myMeshOrSubMeshOrGroupFilter);
       LineEditElements->setReadOnly(true);
     }
   else
     {
-      TextLabelElements->setText( tr( "SMESH_ID_ELEMENTS" ) );
-      
       QAD_Application::getDesktop()->SetSelectionMode( CellSelection, true );
       LineEditElements->setReadOnly(false);
       onTextChange(LineEditElements->text());

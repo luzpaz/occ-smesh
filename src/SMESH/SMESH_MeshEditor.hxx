@@ -142,13 +142,34 @@ class SMESH_MeshEditor {
   // Remove all but one of elements built on the same nodes.
   // Return nb of successfully merged groups.
 
-  bool SewFreeBorder (const SMDS_MeshNode* theBorderFirstNode,
-                      const SMDS_MeshNode* theBorderSecondNode,
-                      const SMDS_MeshNode* theBorderLastNode,
-                      const SMDS_MeshNode* theSide2FirstNode,
-                      const SMDS_MeshNode* theSide2SecondNode,
-                      const SMDS_MeshNode* theSide2ThirdNode = 0,
-                      bool                 theSide2IsFreeBorder = true);
+  static bool CheckFreeBorderNodes(const SMDS_MeshNode* theNode1,
+                                   const SMDS_MeshNode* theNode2,
+                                   const SMDS_MeshNode* theNode3 = 0);
+  // Return true if the three nodes are on a free border
+
+  enum Sew_Error {
+    SEW_OK,
+    // for SewFreeBorder()
+    SEW_BORDER1_NOT_FOUND,
+    SEW_BORDER2_NOT_FOUND,
+    SEW_BOTH_BORDERS_NOT_FOUND,
+    SEW_BAD_SIDE_NODES,
+    SEW_VOLUMES_TO_SPLIT,
+    // for SewSideElements()
+    SEW_DIFF_NB_OF_ELEMENTS,
+    SEW_TOPO_DIFF_SETS_OF_ELEMENTS,
+    SEW_BAD_SIDE1_NODES,
+    SEW_BAD_SIDE2_NODES
+    };
+    
+
+  Sew_Error SewFreeBorder (const SMDS_MeshNode* theBorderFirstNode,
+                           const SMDS_MeshNode* theBorderSecondNode,
+                           const SMDS_MeshNode* theBorderLastNode,
+                           const SMDS_MeshNode* theSide2FirstNode,
+                           const SMDS_MeshNode* theSide2SecondNode,
+                           const SMDS_MeshNode* theSide2ThirdNode = 0,
+                           bool                 theSide2IsFreeBorder = true);
   // Sew the free border to the side2 by replacing nodes in
   // elements on the free border with nodes of the elements
   // of the side 2. If nb of links in the free border and
@@ -168,13 +189,13 @@ class SMESH_MeshEditor {
   // the 2 free borders are sewn link by link and no additional
   // nodes are inserted.
   // Return false, if sewing failed.
-                     
-  bool SewSideElements (std::set<const SMDS_MeshElement*>& theSide1,
-                        std::set<const SMDS_MeshElement*>& theSide2,
-                        const SMDS_MeshNode*               theFirstNode1ToMerge,
-                        const SMDS_MeshNode*               theFirstNode2ToMerge,
-                        const SMDS_MeshNode*               theSecondNode1ToMerge,
-                        const SMDS_MeshNode*               theSecondNode2ToMerge);
+
+  Sew_Error SewSideElements (std::set<const SMDS_MeshElement*>& theSide1,
+                             std::set<const SMDS_MeshElement*>& theSide2,
+                             const SMDS_MeshNode*               theFirstNode1ToMerge,
+                             const SMDS_MeshNode*               theFirstNode2ToMerge,
+                             const SMDS_MeshNode*               theSecondNode1ToMerge,
+                             const SMDS_MeshNode*               theSecondNode2ToMerge);
   // Sew two sides of a mesh. Nodes belonging to theSide1 are
   // merged with nodes of elements of theSide2.
   // Number of elements in theSide1 and in theSide2 must be

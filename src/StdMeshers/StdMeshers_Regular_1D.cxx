@@ -43,6 +43,7 @@ using namespace std;
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_EdgePosition.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 
@@ -224,7 +225,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
           length / (1 - pow( alpha,_value[ NB_SEGMENTS_IND ]));
 
         int i, NbPoints = (int) _value[ NB_SEGMENTS_IND ];
-        for ( int i = 2; i < NbPoints; i++ )
+        for ( i = 2; i < NbPoints; i++ )
         {
           double param = factor * (1 - pow(alpha, i - 1));
           theParams.push_back( param );
@@ -374,7 +375,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     return false;
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
+  aMesh.GetSubMesh(aShape);
 
   const TopoDS_Edge & EE = TopoDS::Edge(aShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));

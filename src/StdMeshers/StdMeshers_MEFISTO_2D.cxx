@@ -31,6 +31,7 @@ using namespace std;
 #include "StdMeshers_MEFISTO_2D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "StdMeshers_MaxElementArea.hxx"
 #include "StdMeshers_LengthFromEdges.hxx"

@@ -60,7 +60,7 @@
   namespace gstd = std;
 #endif
 
-class SMESHDS_Group;
+class SMESHDS_GroupBase;
 
 class SMESHDS_Mesh:public SMDS_Mesh{
 public:
@@ -189,17 +189,18 @@ public:
   int ShapeToIndex(const TopoDS_Shape & aShape);
   TopoDS_Shape IndexToShape(int ShapeIndex);
 
-  void NewSubMesh(int Index);
+  SMESHDS_SubMesh * NewSubMesh(int Index);
+  int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
   void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
   void SetNodeOnFace(SMDS_MeshNode * aNode, int Index);
   void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index);
   void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
   void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
 
-  void AddGroup (SMESHDS_Group* theGroup)      { myGroups.insert(theGroup); }
-  void RemoveGroup (SMESHDS_Group* theGroup)   { myGroups.erase(theGroup); }
+  void AddGroup (SMESHDS_GroupBase* theGroup)      { myGroups.insert(theGroup); }
+  void RemoveGroup (SMESHDS_GroupBase* theGroup)   { myGroups.erase(theGroup); }
   int GetNbGroups() const                      { return myGroups.size(); }
-  const set<SMESHDS_Group*>& GetGroups() const { return myGroups; }
+  const set<SMESHDS_GroupBase*>& GetGroups() const { return myGroups; }
 
   bool IsGroupOfSubShapes (const TopoDS_Shape& aSubShape) const;
 
@@ -219,7 +220,7 @@ private:
   TopoDS_Shape               myShape;
   TopTools_IndexedMapOfShape myIndexToShape;
   map<int,SMESHDS_SubMesh*>  myShapeIndexToSubMesh;
-  set<SMESHDS_Group*>        myGroups;
+  set<SMESHDS_GroupBase*>        myGroups;
   SMESHDS_Script*            myScript;
 };
 
