@@ -1915,8 +1915,10 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
   case 401:					// GEOM::EDGE
   case 4021:					// TRIANGLE
   case 4022:					// QUAD
+  case 4023:					// POLYGON
   case 4031:					// TETRA
   case 4032:					// HEXA
+  case 4033:					// POLYHEDRON
     {
       if(checkLock(aStudy)) break;
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
@@ -1929,10 +1931,14 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
           type = SMDSAbs_Face; nbNodes = 3; break;
         case 4022:                                      // QUAD
           type = SMDSAbs_Face; nbNodes = 4; break;
+ 	case 4023:                                      // POLYGON
+	  type = SMDSAbs_Face; nbNodes = 5; break;     // 5 - identificator for POLYGON
         case 4031:                                      // TETRA
           type = SMDSAbs_Volume; nbNodes = 4; break;
         case 4032:                                      // HEXA
           type = SMDSAbs_Volume; nbNodes = 8; break;
+ 	case 4033:                                      // POLYHEDRE
+	  type = SMDSAbs_Volume; nbNodes = 9; break; // 9 - identificator for POLYHEDRE
         default:;
         }
 	new SMESHGUI_AddMeshElementDlg(parent, "", Sel, type, nbNodes);

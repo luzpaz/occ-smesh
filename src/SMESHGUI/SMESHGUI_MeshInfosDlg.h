@@ -75,12 +75,14 @@ private:
     QLabel*       myMeshNbFaces;
     QLabel*       myMeshNbTriangles;
     QLabel*       myMeshNbQuadrangles;
+    QLabel*       myMeshNbPolygones;
     QGroupBox*    myMeshVolumesGroup;
     QLabel*       myMeshNbVolumes;
     QLabel*       myMeshNbTetra;
     QLabel*       myMeshNbHexa;
     QLabel*       myMeshNbPyra;
     QLabel*       myMeshNbPrism;
+    QLabel*       myMeshNbPolyhedrones;
     
     QWidget*      mySubMeshWidget;
     QLabel*       mySubMeshName;

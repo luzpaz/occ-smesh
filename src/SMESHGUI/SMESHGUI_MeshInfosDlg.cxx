@@ -150,6 +150,11 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name
   QLabel* myMeshNbQuadranglesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_QUADRANGLES" ) ), myMeshFacesGroup, "myMeshNbQuadranglesLab" );
   myMeshNbQuadrangles    = new QLabel( myMeshFacesGroup, "myMeshNbQuadrangles" );
   myMeshNbQuadrangles->setMinimumWidth( 100 );
+
+  // --> faces --> quadrangles
+  QLabel* myMeshNbPolygonesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_POLYGONES" ) ), myMeshFacesGroup, "myMeshNbPolygonesLab" );
+  myMeshNbPolygones      = new QLabel( myMeshFacesGroup, "myMeshNbPolygones" );
+  myMeshNbPolygones->setMinimumWidth( 100 );
   
   myMeshFacesGroupLayout->addWidget( myMeshNbFacesLab,       0, 0 );
   myMeshFacesGroupLayout->addWidget( myMeshNbFaces,          0, 1 );
@@ -157,6 +162,8 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name
   myMeshFacesGroupLayout->addWidget( myMeshNbTriangles,      1, 1 );
   myMeshFacesGroupLayout->addWidget( myMeshNbQuadranglesLab, 2, 0 );
   myMeshFacesGroupLayout->addWidget( myMeshNbQuadrangles,    2, 1 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbPolygonesLab,   3, 0 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbPolygones,      3, 1 );
   
   // --> volumes
   myMeshVolumesGroup = new QGroupBox( tr( "SMESH_MESHINFO_VOLUMES" ), myMeshWidget, "myMeshVolumesGroup" );
@@ -192,6 +199,11 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name
   QLabel* myMeshNbPyraLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_PYRAS" ) ), myMeshVolumesGroup, "myMeshNbPyraLab" );
   myMeshNbPyra    = new QLabel( myMeshVolumesGroup, "myMeshNbPyra" );
   myMeshNbPyra->setMinimumWidth( 100 );
+
+  // --> volumes --> polyherones
+  QLabel* myMeshNbPolyhedronesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_POLYEDRES" ) ), myMeshVolumesGroup, "myMeshNbPolyhedronLab" );
+  myMeshNbPolyhedrones = new QLabel( myMeshVolumesGroup, "myMeshNbPolyhedrones" );
+  myMeshNbPolyhedrones->setMinimumWidth( 100 );
   
   myMeshVolumesGroupLayout->addWidget( myMeshNbVolumesLab, 0, 0 );
   myMeshVolumesGroupLayout->addWidget( myMeshNbVolumes,    0, 1 );
@@ -203,6 +215,8 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name
   myMeshVolumesGroupLayout->addWidget( myMeshNbPrism,      3, 1 );
   myMeshVolumesGroupLayout->addWidget( myMeshNbPyraLab,    4, 0 );
   myMeshVolumesGroupLayout->addWidget( myMeshNbPyra,       4, 1 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbPolyhedronesLab,    5, 0 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbPolyhedrones,       5, 1 );
   
   aMeshLayout->addWidget( myMeshNameLab,          0, 0 );
   aMeshLayout->addWidget( myMeshName,             0, 1 );
@@ -391,11 +405,13 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  myMeshNbFaces->setNum( (int)aMesh->NbFaces() );
 	  myMeshNbTriangles->setNum( (int)aMesh->NbTriangles() );
 	  myMeshNbQuadrangles->setNum( (int)aMesh->NbQuadrangles() );
+	  myMeshNbPolygones->setNum( (int)aMesh->NbPolygones() );
 	  myMeshNbVolumes->setNum( (int)aMesh->NbVolumes() );
 	  myMeshNbTetra->setNum( (int)aMesh->NbTetras() );
 	  myMeshNbHexa->setNum( (int)aMesh->NbHexas() );
 	  myMeshNbPrism->setNum( (int)aMesh->NbPrisms() );
 	  myMeshNbPyra->setNum( (int)aMesh->NbPyramids() );
+	  myMeshNbPolyhedrones->setNum( (int)aMesh->NbPolyhedrones() );
 	  return;
 	}
 	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( anObject );

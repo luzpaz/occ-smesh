@@ -92,6 +92,7 @@ private:
 
     int                             myElementType ;
     int                             myNbNodes;
+    bool                            myIsPoly;
 
     SMESH::SMESH_Mesh_var           myMesh;
     SMESH_Actor*                    myActor;

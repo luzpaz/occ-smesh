@@ -203,19 +203,15 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( QWidget* parent, const c
     : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu |
 	       Qt::WDestructiveClose)
 {
+  myIsPoly = false;
   mySimulation = new SMESH::TElementSimulation(SMESH::GetActiveStudy());
-
+  
   // verify nb nodes and type
   myNbNodes = nbNodes;
   myElementType = ElementType;
   switch ( ElementType ) {
   case SMDSAbs_Face:
-    if ( myNbNodes != 3 && myNbNodes != 4 )
-      myNbNodes = 3;
-    break;
   case SMDSAbs_Volume:
-    if ( myNbNodes != 4 && myNbNodes != 8 ) //(nbNodes < 4 || nbNodes > 8 || nbNodes == 7)
-      myNbNodes = 4;
     break;
   default:
     myElementType = SMDSAbs_Edge;
@@ -223,16 +219,26 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( QWidget* parent, const c
   }
 
   QString elemName;
-  switch ( myNbNodes ) {
-  case 2: elemName = "EDGE"; break;
-  case 3: elemName = "TRIANGLE"; break;
-  case 4: elemName =
-    myElementType == SMDSAbs_Face ? elemName = "QUADRANGLE" : elemName = "TETRAS"; break;
-//   case 5:
-//   case 6:
-  default: // 8
+  if (myNbNodes == 2)
+    elemName = "EDGE";
+  else if (myNbNodes == 3)
+    elemName = "TRIANGLE";
+  else if (myNbNodes == 4)
+    if (myElementType == SMDSAbs_Face)
+      elemName = "QUADRANGLE";
+    else
+      elemName = "TETRAS";
+  else if (myNbNodes == 8)
     elemName = "HEXAS";
+  else if (myElementType == SMDSAbs_Face){
+    elemName = "POLYGON";
+    myIsPoly = true;
   }
+  else {
+    elemName = "POLYHEDRON";
+    myIsPoly = true;
+  }
+
   QString iconName      = tr( QString("ICON_DLG_%1").arg(elemName) );
   QString buttonGrTitle = tr( QString("SMESH_%1").arg(elemName) );
   QString caption       = tr( QString("SMESH_ADD_%1_TITLE").arg(elemName) );
@@ -329,7 +335,8 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( QWidget* parent, const c
   GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
   LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
 //  LineEditC1A1->setReadOnly( TRUE );
-  LineEditC1A1->setValidator( new SMESHGUI_IdValidator( this, "validator", myNbNodes ));
+  if (elemName != "POLYGON" && elemName != "POLYHEDRON")
+    LineEditC1A1->setValidator( new SMESHGUI_IdValidator( this, "validator", myNbNodes));
   GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
 
   if ( myElementType == SMDSAbs_Face ) {
@@ -514,7 +521,20 @@ void SMESHGUI_AddMeshElementDlg::onTextChange(const QString& theNewText)
       else
         allOk = false;
     }
-    myOkNodes = (allOk && myNbNodes == aListId.count() );
+
+    bool aNodesOK = false;
+    if (myIsPoly && myElementType == SMDSAbs_Face && aListId.count() >=3 ){
+      myNbNodes = aListId.count();
+      cout << __LINE__<<": ENK::DEBUG myNbNodes" << myNbNodes << endl;
+      aNodesOK = true;
+    } else if (myIsPoly && myElementType == SMDSAbs_Volume && aListId.count() >=4 ){
+      myNbNodes = aListId.count();
+      cout << __LINE__<<": ENK::DEBUG myNbNodes" << myNbNodes << endl;
+      aNodesOK = true;
+    } else if (!myIsPoly){
+      aNodesOK = (myNbNodes == aListId.count());
+    }
+    myOkNodes = (allOk && aNodesOK);//myNbNodes == aListId.count() );
 
     if ( myOkNodes ) {
       buttonOk->setEnabled( true );
@@ -573,7 +593,9 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   myBusy = true;
   myEditCurrentArgument->setText( aString );
   myBusy = false;
-  if ( myNbNodes != nbNodes )
+  if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes>=3 ) {
+  } else if (myIsPoly && myElementType == SMDSAbs_Volume && nbNodes>=4){
+  } else if (myNbNodes != nbNodes)
     return;
 
   // OK
@@ -604,12 +626,20 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
       reverse(anIds.begin(),anIds.end());
 
     vtkIdType aType = 0;
-    switch ( myNbNodes ) {
-    case 2: aType = VTK_LINE; break;
-    case 3: aType = VTK_TRIANGLE; break;
-    case 4: aType = myElementType == SMDSAbs_Face ? VTK_QUAD : VTK_TETRA; break;
-    case 8: aType = VTK_HEXAHEDRON; break;
-    default: return;
+    if (myIsPoly)
+      switch ( myElementType ) {
+      case SMDSAbs_Face  : aType = VTK_POLYGON; break;
+      case SMDSAbs_Volume: aType = VTK_CONVEX_POINT_SET; break;
+      default: return;
+      }
+    else {
+      switch ( myNbNodes ) {
+      case 2: aType = VTK_LINE; break;
+      case 3: aType = VTK_TRIANGLE; break;
+      case 4: aType = myElementType == SMDSAbs_Face ? VTK_QUAD : VTK_TETRA; break;
+      case 8: aType = VTK_HEXAHEDRON; break;
+      default: return;
+      }
     }
       
     mySimulation->SetPosition(myActor,aType,anIds);

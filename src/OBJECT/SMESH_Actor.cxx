@@ -160,6 +160,7 @@ SMESH_ActorDef::SMESH_ActorDef(){
   aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_WEDGE);
   aFilter->RegisterCellsWithType(VTK_PYRAMID);
+  aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 
 
   //Definition 1D divice of the actor

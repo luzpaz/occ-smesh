@@ -444,6 +444,14 @@ msgstr "Add Edge"
 msgid "SMESH_ADD_TETRAS"
 msgstr "Add Tetrahedron"
 
+#Add Polygone
+msgid "SMESH_ADD_POLYGONE"
+msgstr "Add Polygone"
+
+#Add Polyedre
+msgid "SMESH_ADD_POLYEDRE"
+msgstr "Add Polyedre"
+
 #Add Hexahedron
 msgid "SMESH_ADD_HEXAS"
 msgstr "Add Hexahedron"
@@ -773,6 +781,14 @@ msgstr "Hexahedrons"
 #Pyramids :
 msgid "SMESH_MESHINFO_PYRAS"
 msgstr "Pyramids"
+
+#Polygones :
+msgid "SMESH_MESHINFO_POLYGONES"
+msgstr "Polygones"
+
+#Polyedres :
+msgid "SMESH_MESHINFO_POLYEDRES"
+msgstr "Polyedres"
 
 #Prisms :
 msgid "SMESH_MESHINFO_PRISMS"

@@ -147,6 +147,10 @@ msgstr "mesh_triangle.png"
 msgid "ICON_DLG_QUADRANGLE"
 msgstr "mesh_quad.png"
 
+#Polygone
+msgid "ICON_DLG_POLYGON"
+msgstr "mesh_polygon.png"
+
 #triangle
 msgid "ICON_DLG_TETRAS"
 msgstr "mesh_tetra.png"
@@ -154,6 +158,10 @@ msgstr "mesh_tetra.png"
 #Quadrangle
 msgid "ICON_DLG_HEXAS"
 msgstr "mesh_hexa.png"
+
+#Polyhedre
+msgid "ICON_DLG_POLYHEDRON"
+msgstr "mesh_polyhedron.png"
 
 
 #-----------------------------------------------------------

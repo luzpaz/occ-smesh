@@ -223,9 +223,12 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
 
   aValue = aStr.str();
 
-  MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
-  MED::TIntVector anAttrIds (1, myId);        // Id=0,
-  MED::TIntVector anAttrVals (1, myId);       // Value=0
+  MED::TStringVector anAttrDescs;
+  MED::TIntVector anAttrIds;
+  MED::TIntVector anAttrVals;
+  //MED::TStringVector anAttrDescs (1, ""); // 1 attribute with empty description,
+  //MED::TIntVector anAttrIds (1, myId);    // Id=0,
+  //MED::TIntVector anAttrVals (1, myId);   // Value=0
 
   MED::PFamilyInfo anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 						     aValue,
