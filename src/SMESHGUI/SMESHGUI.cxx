@@ -527,8 +527,8 @@ class CustomItem:public QCustomMenuItem
  *
  */
 //=============================================================================
-SMESHGUI::SMESHGUI():
-QObject()
+SMESHGUI::SMESHGUI( const QString& theName, QObject* theParent ) :
+  SALOMEGUI( theName, theParent )
 {
 }
 
@@ -553,6 +553,12 @@ SMESHGUI* SMESHGUI::GetSMESHGUI()
   return smeshGUI;
 }
 
+extern "C"
+{
+  Standard_EXPORT SALOMEGUI* GetComponentGUI() {
+    return SMESHGUI::GetSMESHGUI();
+  }
+}
 //=============================================================================
 /*!
  *
@@ -724,7 +730,7 @@ QAD_Desktop *SMESHGUI::GetDesktop()
  *
  */
 //=============================================================================
-void SMESHGUI::activeStudyChanged(QAD_Desktop* parent)
+bool SMESHGUI::ActiveStudyChanged(QAD_Desktop* parent)
 {
   MESSAGE("SMESHGUI::activeStudyChanged init.");
   QAD_Study* prevStudy = 0;
@@ -740,7 +746,8 @@ void SMESHGUI::activeStudyChanged(QAD_Desktop* parent)
     //smeshGUI = 0;
     ::UpdateSelectionProp();
   }
-  MESSAGE("SMESHGUI::activeStudyChanged done.") return;
+  MESSAGE("SMESHGUI::activeStudyChanged done.");
+  return true;
 }
 
 //=============================================================================
@@ -3762,75 +3769,20 @@ void SMESHGUI::DiagonalInversion(SMESH::SMESH_Mesh_ptr aMesh,
 //=====================================================================================
 // EXPORTED METHODS
 //=====================================================================================
-extern "C"
+void SMESHGUI::SupportedViewType(int *buffer, int bufferSize)
 {
-	bool OnGUIEvent(int theCommandID, QAD_Desktop * parent)
-	{
-		return SMESHGUI::OnGUIEvent(theCommandID, parent);
-	}
-
-	bool OnKeyPress(QKeyEvent * pe, QAD_Desktop * parent,
-		QAD_StudyFrame * studyFrame)
-	{
-		return SMESHGUI::OnKeyPress(pe, parent, studyFrame);
-	}
-
-	bool OnMousePress(QMouseEvent * pe, QAD_Desktop * parent,
-		QAD_StudyFrame * studyFrame)
-	{
-		return SMESHGUI::OnMousePress(pe, parent, studyFrame);
-	}
-
-	bool OnMouseMove(QMouseEvent * pe, QAD_Desktop * parent,
-		QAD_StudyFrame * studyFrame)
-	{
-		return SMESHGUI::OnMouseMove(pe, parent, studyFrame);
-	}
-
-	bool SetSettings(QAD_Desktop * parent)
-	{
-		return SMESHGUI::SetSettings(parent);
-	}
-
-	bool customPopup(QAD_Desktop * parent, QPopupMenu * popup,
-		const QString & theContext, const QString & theParent,
-		const QString & theObject)
-	{
-		return SMESHGUI::CustomPopup(parent, popup, theContext, theParent,
-			theObject);
-	}
-
-	void definePopup(QString & theContext, QString & theParent,
-		QString & theObject)
-	{
-		SMESHGUI::DefinePopup(theContext, theParent, theObject);
-	}
-
-	bool activeStudyChanged(QAD_Desktop * parent)
-	{
-		SMESHGUI::activeStudyChanged(parent);
-	}
-
-	void buildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
-	{
-		SMESHGUI::BuildPresentation(theIO);
-	}
-
-	void supportedViewType(int *buffer, int bufferSize)
-	{
-		if (!buffer || !bufferSize)
-			return;
-		buffer[0] = (int)VIEW_VTK;
-	}
-
-	void deactivate()
-	{
-	  if ( SMESHGUI::GetSMESHGUI() ) {
-	    SMESHGUI::GetSMESHGUI()->EmitSignalCloseAllDialogs();
-	  }
-	}
-
+  if (!buffer || !bufferSize)
+    return;
+  buffer[0] = (int)VIEW_VTK;
 }
+
+void SMESHGUI::Deactivate()
+{
+  if ( SMESHGUI::GetSMESHGUI() ) {
+    SMESHGUI::GetSMESHGUI()->EmitSignalCloseAllDialogs();
+  }
+}
+
 
 //=============================================================================
 /*!

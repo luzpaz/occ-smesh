@@ -35,6 +35,7 @@
 #include "SMESHDS_Document.hxx"
 
 // SALOME Includes
+#include "SALOMEGUI.h"
 #include "QAD_Desktop.h"
 #include "SALOME_Selection.h"
 #include "SALOME_InteractiveObject.hxx"
@@ -68,7 +69,7 @@ class SMESH_Actor;
 // class    : SMESHGUI
 // purpose  :
 //=================================================================================
-class SMESHGUI : public QObject
+class SMESHGUI : public SALOMEGUI
 {
   Q_OBJECT
 
@@ -108,7 +109,7 @@ private :
 
 public :
 
-  SMESHGUI();
+  SMESHGUI( const QString& name = "", QObject* parent = 0 );
   ~SMESHGUI();
 
   static SMESHGUI*    GetOrCreateSMESHGUI( QAD_Desktop* desktop );
@@ -127,25 +128,18 @@ public :
   bool                DefineDlgPosition(QWidget* aDlg, int& x, int& y) ;
 
 
-  /* Managed by IAPP */
-  Standard_EXPORT  static bool OnGUIEvent ( int theCommandID, QAD_Desktop* parent) ; 
-  Standard_EXPORT  static bool OnMousePress ( QMouseEvent* pe, QAD_Desktop* parent, 
-					      QAD_StudyFrame* studyFrame );
-  Standard_EXPORT  static bool OnMouseMove  ( QMouseEvent* pe, QAD_Desktop* parent, 
-					      QAD_StudyFrame* studyFrame );
-  Standard_EXPORT  static bool OnKeyPress   ( QKeyEvent* pe, QAD_Desktop* parent, 
-					      QAD_StudyFrame* studyFrame );
-  Standard_EXPORT  static void activeStudyChanged ( QAD_Desktop* parent ); 
-  Standard_EXPORT  static bool SetSettings ( QAD_Desktop* parent );
-  Standard_EXPORT  static void DefinePopup( QString & theContext, 
-					    QString & theParent, 
-					    QString & theObject );
-  Standard_EXPORT  static bool CustomPopup ( QAD_Desktop* parent,
-					     QPopupMenu* popup,
-					     const QString& theContext,
-					     const QString& theParent,
-					     const QString& theObject );
-  Standard_EXPORT  static void BuildPresentation(const Handle(SALOME_InteractiveObject)&);
+  virtual bool OnGUIEvent        (int theCommandID, QAD_Desktop* parent);
+  virtual bool OnMousePress      (QMouseEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
+  virtual bool OnMouseMove       (QMouseEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
+  virtual bool OnKeyPress        (QKeyEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
+  virtual bool ActiveStudyChanged( QAD_Desktop* parent );
+  virtual bool SetSettings       ( QAD_Desktop* parent );
+  virtual void DefinePopup       ( QString & theContext, QString & theParent, QString & theObject );
+  virtual bool CustomPopup       ( QAD_Desktop* parent, QPopupMenu* popup, const QString & theContext,
+                                   const QString & theParent, const QString & theObject );
+  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)& theIO );
+  virtual void SupportedViewType (int* buffer, int bufferSize);
+  virtual void Deactivate        ();
 
   void OnEditDelete();
 
