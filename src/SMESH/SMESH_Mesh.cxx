@@ -850,6 +850,19 @@ int SMESH_Mesh::NbQuadrangles() throw(SALOME_Exception)
   return Nb;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Return the number of polygone faces in the mesh. This method run in O(n)
+///////////////////////////////////////////////////////////////////////////////
+int SMESH_Mesh::NbPolygones() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  int Nb = 0;
+  
+  SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
+  while(itFaces->more()) if(itFaces->next()->IsPoly()) Nb++;
+  return Nb;
+}
+
 //=============================================================================
 /*!
  *  
@@ -894,6 +907,15 @@ int SMESH_Mesh::NbPrisms() throw(SALOME_Exception)
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
   while(itVolumes->more()) if(itVolumes->next()->NbNodes()==6) Nb++;
+  return Nb;
+}
+
+int SMESH_Mesh::NbPolyhedrones() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  int Nb = 0;
+  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
+  while(itVolumes->more()) if(itVolumes->next()->IsPoly()) Nb++;
   return Nb;
 }
 

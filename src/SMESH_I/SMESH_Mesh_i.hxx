@@ -182,6 +182,9 @@ public:
 
   CORBA::Long NbQuadrangles()
     throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbPolygones()
+    throw (SALOME::SALOME_Exception);
   
   CORBA::Long NbVolumes()
     throw (SALOME::SALOME_Exception);
@@ -196,6 +199,9 @@ public:
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long NbPrisms()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbPolyhedrones()
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long NbSubMesh()

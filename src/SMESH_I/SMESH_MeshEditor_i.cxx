@@ -124,24 +124,36 @@ CORBA::Boolean SMESH_MeshEditor_i::AddNode(CORBA::Double x,
 
 //=============================================================================
 /*!
- *  
+ *  AddFace
  */
 //=============================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
 {
-	int NbNodes = IDsOfNodes.length();
-	const SMDS_MeshNode* nodes[4];
-	for(int i=0;i<NbNodes;i++) nodes[i]=GetMeshDS()->FindNode(IDsOfNodes[i]);
-	if (NbNodes == 3)
-	{
-		GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2]);
-	}
-	else if (NbNodes == 4)
-	{
-		GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3]);
-	}
-	return true;
+  int NbNodes = IDsOfNodes.length();
+  if (NbNodes < 3)
+  {
+    return false;
+  }
+
+  std::vector<const SMDS_MeshNode*> nodes (NbNodes);
+  //const SMDS_MeshNode* nodes [NbNodes];
+  for (int i = 0; i < NbNodes; i++)
+    nodes[i] = GetMeshDS()->FindNode(IDsOfNodes[i]);
+
+  if (NbNodes == 3)
+  {
+    GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2]);
+  }
+  else if (NbNodes == 4)
+  {
+    GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3]);
+  }
+  else
+  {
+    GetMeshDS()->AddPolygonalFace(nodes);
+  }
+  return true;
 };
 
 //=============================================================================
@@ -165,6 +177,49 @@ CORBA::Boolean SMESH_MeshEditor_i::AddVolume(const SMESH::
 	case 8:GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]); break;
 	}
 	return true;
+};
+
+//=============================================================================
+/*!
+ *  AddPolyhedralVolume
+ */
+//=============================================================================
+CORBA::Boolean SMESH_MeshEditor_i::AddPolyhedralVolume
+                                   (const SMESH::long_array & IDsOfNodes,
+                                    const SMESH::long_array & Quantities)
+{
+  int NbNodes = IDsOfNodes.length();
+  std::vector<const SMDS_MeshNode*> n (NbNodes);
+  //const SMDS_MeshNode* n [NbNodes];
+  for (int i = 0; i < NbNodes; i++)
+    n[i] = GetMeshDS()->FindNode(IDsOfNodes[i]);
+
+  int NbFaces = Quantities.length();
+  std::vector<int> q (NbFaces);
+  //int q [NbFaces];
+  for (int j = 0; j < NbFaces; j++)
+    q[j] = Quantities[j];
+
+  GetMeshDS()->AddPolyhedralVolume(n, q);
+  return true;
+};
+
+//=============================================================================
+/*!
+ *  AddPolyhedralVolumeByFaces
+ */
+//=============================================================================
+CORBA::Boolean SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces
+                                   (const SMESH::long_array & IdsOfFaces)
+{
+  int NbFaces = IdsOfFaces.length();
+  std::vector<const SMDS_MeshFace*> faces (NbFaces);
+  for (int i = 0; i < NbFaces; i++)
+    faces[i] = (SMDS_MeshFace *)GetMeshDS()->FindElement(IdsOfFaces[i]);
+
+  //GetMeshDS()->AddPolyhedralVolumeByFaces(faces);
+  //return true;
+  return false;
 };
 
 //=============================================================================

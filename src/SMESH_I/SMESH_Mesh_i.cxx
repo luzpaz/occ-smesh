@@ -1193,6 +1193,12 @@ CORBA::Long SMESH_Mesh_i::NbQuadrangles()throw(SALOME::SALOME_Exception)
   return _impl->NbQuadrangles();
 }
 
+CORBA::Long SMESH_Mesh_i::NbPolygones()throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbPolygones();
+}
+
 //=============================================================================
 /*!
  *  
@@ -1226,6 +1232,12 @@ CORBA::Long SMESH_Mesh_i::NbPrisms()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   return _impl->NbPrisms();
+}
+
+CORBA::Long SMESH_Mesh_i::NbPolyhedrones()throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbPolyhedrones();
 }
 
 //=============================================================================
