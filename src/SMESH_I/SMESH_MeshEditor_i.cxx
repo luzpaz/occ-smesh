@@ -998,7 +998,8 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                       CORBA::Long SecondNodeIDOnFreeBorder,
                                       CORBA::Long LastNodeIDOnFreeBorder,
                                       CORBA::Long FirstNodeIDOnSide,
-                                      CORBA::Long LastNodeIDOnSide)
+                                      CORBA::Long LastNodeIDOnSide,
+                                      CORBA::Boolean CreatePoly)
 {
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1025,7 +1026,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                             aSide2SecondNode,
                                             aSide2ThirdNode,
                                             false,
-                                            false) );
+                                            CreatePoly) );
 }
 
 //=======================================================================

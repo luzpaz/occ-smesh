@@ -177,7 +177,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                     CORBA::Long SecondNodeIDOnFreeBorder,
                     CORBA::Long LastNodeIDOnFreeBorder,
                     CORBA::Long FirstNodeIDOnSide,
-                    CORBA::Long LastNodeIDOnSide);
+                    CORBA::Long LastNodeIDOnSide,
+                    CORBA::Boolean CreatePoly);
   SMESH::SMESH_MeshEditor::Sew_Error
     SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                     const SMESH::long_array& IDsOfSide2Elements,

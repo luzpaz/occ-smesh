@@ -975,12 +975,12 @@ bool SMESH_MeshEditor::TriToQuad (set<const SMDS_MeshElement*> &       theElems,
 }
 
 
-#define DUMPSO(txt) \
+/*#define DUMPSO(txt) \
 //  cout << txt << endl;
 //=============================================================================
-/*!
- *
- */
+//
+//
+//
 //=============================================================================
 static void swap( int i1, int i2, int idNodes[], gp_Pnt P[] )
 {
@@ -1252,7 +1252,7 @@ bool SMESH_MeshEditor::SortHexaNodes (const SMDS_Mesh * theMesh,
 //   }
 
   return true;
-}
+}*/
 
 //=======================================================================
 //function : laplacianSmooth
@@ -3411,7 +3411,7 @@ SMESH_MeshEditor::Sew_Error
     LinkID_Gen aLinkID_Gen( GetMeshDS() );
     set<long> foundSideLinkIDs, checkedLinkIDs;
     SMDS_VolumeTool volume;
-    const SMDS_MeshNode* faceNodes[ 4 ];
+    //const SMDS_MeshNode* faceNodes[ 4 ];
 
     const SMDS_MeshNode*    sideNode;
     const SMDS_MeshElement* sideElem;
@@ -3439,6 +3439,7 @@ SMESH_MeshEditor::Sew_Error
         const SMDS_MeshElement* elem = invElemIt->next();
         // prepare data for a loop on links, of a face or a volume
         int iPrevNode, iNode = 0, nbNodes = elem->NbNodes();
+        const SMDS_MeshNode* faceNodes[ nbNodes ];
         bool isVolume = volume.Set( elem );
         const SMDS_MeshNode** nodes = isVolume ? volume.GetNodes() : faceNodes;
         if ( isVolume ) // --volume
@@ -3732,7 +3733,7 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
   // find indices of 2 link nodes and of the rest nodes
   int iNode = 0, il1, il2, i3, i4;
   il1 = il2 = i3 = i4 = -1;
-  const SMDS_MeshNode* nodes[ 8 ];
+  const SMDS_MeshNode* nodes[ theFace->NbNodes() ];
   SMDS_ElemIteratorPtr nodeIt = theFace->nodesIterator();
   while ( nodeIt->more() ) {
     const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
@@ -3751,11 +3752,12 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
 
   // arrange link nodes to go one after another regarding the face orientation
   bool reverse = ( Abs( il2 - il1 ) == 1 ? il2 < il1 : il1 < il2 );
+  list<const SMDS_MeshNode *> aNodesToInsert = theNodesToInsert;
   if ( reverse ) {
     iNode = il1;
     il1 = il2;
     il2 = iNode;
-    theNodesToInsert.reverse();
+    aNodesToInsert.reverse();
   }
   // check that not link nodes of a quadrangles are in good order
   int nbFaceNodes = theFace->NbNodes();
@@ -3768,7 +3770,7 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
   if (toCreatePoly || theFace->IsPoly()) {
 
     iNode = 0;
-    vector<const SMDS_MeshNode *> poly_nodes (nbFaceNodes + theNodesToInsert.size());
+    vector<const SMDS_MeshNode *> poly_nodes (nbFaceNodes + aNodesToInsert.size());
 
     // add nodes of face up to first node of link
     bool isFLN = false;
@@ -3782,8 +3784,8 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
     }
 
     // add nodes to insert
-    list<const SMDS_MeshNode*>::iterator nIt = theNodesToInsert.begin();
-    for (; nIt != theNodesToInsert.end(); nIt++) {
+    list<const SMDS_MeshNode*>::iterator nIt = aNodesToInsert.begin();
+    for (; nIt != aNodesToInsert.end(); nIt++) {
       poly_nodes[iNode++] = *nIt;
     }
 
@@ -3811,13 +3813,13 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
     return;
   }
 
-  // put theNodesToInsert between theBetweenNode1 and theBetweenNode2
-  int nbLinkNodes = 2 + theNodesToInsert.size();
+  // put aNodesToInsert between theBetweenNode1 and theBetweenNode2
+  int nbLinkNodes = 2 + aNodesToInsert.size();
   const SMDS_MeshNode* linkNodes[ nbLinkNodes ];
   linkNodes[ 0 ] = nodes[ il1 ];
   linkNodes[ nbLinkNodes - 1 ] = nodes[ il2 ];
-  list<const SMDS_MeshNode*>::iterator nIt = theNodesToInsert.begin();
-  for ( iNode = 1; nIt != theNodesToInsert.end(); nIt++ ) {
+  list<const SMDS_MeshNode*>::iterator nIt = aNodesToInsert.begin();
+  for ( iNode = 1; nIt != aNodesToInsert.end(); nIt++ ) {
     linkNodes[ iNode++ ] = *nIt;
   }
   // decide how to split a quadrangle: compare possible variants

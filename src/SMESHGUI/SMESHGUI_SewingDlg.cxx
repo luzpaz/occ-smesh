@@ -347,7 +347,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
   myOk1 = myOk2 = myOk3 = myOk4 = myOk5 = myOk6 = false;
   myEditCurrentArgument = LineEdit1;
   myEditCurrentArgument->setFocus();
-  
+
   if (!TextLabel5->isEnabled())
     {
       TextLabel5->setEnabled(true);
@@ -360,10 +360,10 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
       SelectButton6->setEnabled(true);
       LineEdit6->setEnabled(true);
     }
-  
+
   if (constructorId != 0 && CheckBoxPoly->isVisible())
     CheckBoxPoly->hide();
-	
+
   switch(constructorId)
     {
     case 0 :
@@ -374,7 +374,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 
         if (!CheckBoxPoly->isVisible())
           CheckBoxPoly->show();
-	
+
 	break;
       }
     case 1 :
@@ -382,13 +382,13 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 	GroupArguments->setTitle( tr( "SEW_CONFORM_FREE_BORDERS" ) );
 	SubGroup1->setTitle( tr( "BORDER_1" ) );
 	SubGroup2->setTitle( tr( "BORDER_2" ) );
-	
+
 	TextLabel6->setEnabled(false);
 	SelectButton6->setEnabled(false);
 	LineEdit6->setEnabled(false);
-	
+
 	myOk6 = true;
-	  
+
 	break;
       }
     case 2 :
@@ -400,7 +400,10 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 	TextLabel5->setEnabled(false);
 	SelectButton5->setEnabled(false);
 	LineEdit5->setEnabled(false);
-	
+
+        if (!CheckBoxPoly->isVisible())
+          CheckBoxPoly->show();
+
 	myOk5 = true;
 
 	break;
@@ -410,7 +413,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 	GroupArguments->setTitle( tr( "SEW_SIDE_ELEMENTS" ) );
 	SubGroup1->setTitle( tr( "SIDE_1" ) );
 	SubGroup2->setTitle( tr( "SIDE_2" ) );
-	
+
 	TextLabel1->setText( tr( "SMESH_ID_ELEMENTS" ) );
 	TextLabel2->setText( tr( "NODE1_TO_MERGE" ) );
 	TextLabel3->setText( tr( "NODE2_TO_MERGE" ) );
@@ -426,7 +429,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
 	break;
       }
     }
-  
+
   if (constructorId != 3)
     {
       TextLabel1->setText( tr( "FIRST_NODE_ID" ) );
@@ -435,14 +438,14 @@ void SMESHGUI_SewingDlg::ConstructorsClicked(int constructorId)
       TextLabel4->setText( tr( "FIRST_NODE_ID" ) );
       TextLabel5->setText( tr( "SECOND_NODE_ID" ) );
       TextLabel6->setText( tr( "LAST_NODE_ID" ) );
-      
+
       LineEdit1->setValidator( new SMESHGUI_IdValidator( this, "validator", 1));
       LineEdit4->setValidator( new SMESHGUI_IdValidator( this, "validator", 1));
 
       SMESH::SetPointRepresentation(true);
       QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
     }
-  
+
   connect(mySelection, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 }
 
@@ -490,7 +493,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 						   LineEdit2->text().toLong(),
 						   LineEdit3->text().toLong(),
 						   LineEdit4->text().toLong(),
-						   LineEdit6->text().toLong());
+						   LineEdit6->text().toLong(),
+                                                   toCreatePoly);
 	  else if (aConstructorId == 3)
 	    {
 	      QStringList aListElementsId1 = QStringList::split( " ", LineEdit1->text(), false);

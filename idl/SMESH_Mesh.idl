@@ -670,7 +670,8 @@ module SMESH
                                in long SecondNodeIDOnFreeBorder,
                                in long LastNodeIDOnFreeBorder,
                                in long FirstNodeIDOnSide,
-                               in long LastNodeIDOnSide);
+                               in long LastNodeIDOnSide,
+			       in boolean CreatePoly);
 
     Sew_Error SewSideElements (in long_array IDsOfSide1Elements,
                                in long_array IDsOfSide2Elements,

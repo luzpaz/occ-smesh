@@ -232,16 +232,16 @@ class SMESH_MeshEditor {
   // insert theNodesToInsert into theFace between theBetweenNode1 and theBetweenNode2.
   // If toCreatePoly is true, replace theFace by polygon, else split theFace.
 
-  static int SortQuadNodes (const SMDS_Mesh * theMesh,
-                            int               theNodeIds[] );
-  // Set 4 nodes of a quadrangle face in a good order.
-  // Swap 1<->2 or 2<->3 nodes and correspondingly return
-  // 1 or 2 else 0.
-
-  static bool SortHexaNodes (const SMDS_Mesh * theMesh,
-                             int               theNodeIds[] );
-  // Set 8 nodes of a hexahedron in a good order.
-  // Return success status
+//  static int SortQuadNodes (const SMDS_Mesh * theMesh,
+//                            int               theNodeIds[] );
+//  // Set 4 nodes of a quadrangle face in a good order.
+//  // Swap 1<->2 or 2<->3 nodes and correspondingly return
+//  // 1 or 2 else 0.
+//
+//  static bool SortHexaNodes (const SMDS_Mesh * theMesh,
+//                             int               theNodeIds[] );
+//  // Set 8 nodes of a hexahedron in a good order.
+//  // Return success status
 
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,
