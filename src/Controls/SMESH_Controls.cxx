@@ -213,26 +213,17 @@ double MinimumAngle::GetValue( const TSequenceOfXYZ& P )
 {
   double aMin;
 
-  if ( P.size() == 3 )
-  {
-    double A0 = getAngle( P( 3 ), P( 1 ), P( 2 ) );
-    double A1 = getAngle( P( 1 ), P( 2 ), P( 3 ) );
-    double A2 = getAngle( P( 2 ), P( 3 ), P( 1 ) );
-
-    aMin = Min( A0, Min( A1, A2 ) );
-  }
-  else if ( P.size() == 4 )
-  {
-    double A0 = getAngle( P( 4 ), P( 1 ), P( 2 ) );
-    double A1 = getAngle( P( 1 ), P( 2 ), P( 3 ) );
-    double A2 = getAngle( P( 2 ), P( 3 ), P( 4 ) );
-    double A3 = getAngle( P( 3 ), P( 4 ), P( 1 ) );
-    
-    aMin = Min( Min( A0, A1 ), Min( A2, A3 ) );
-  }
-  else
+  if (P.size() <3)
     return 0.;
+
+  aMin = getAngle(P( P.size() ), P( 1 ), P( 2 ));
+  aMin = Min(aMin,getAngle(P( P.size()-1 ), P( P.size() ), P( 1 )));
   
+  for (int i=2; i<P.size();i++){
+      double A0 = getAngle( P( i-1 ), P( i ), P( i+1 ) );
+    aMin = Min(aMin,A0);
+  }
+
   return aMin * 180 / PI;
 }
 
@@ -771,12 +762,17 @@ SMDSAbs_ElementType Skew::GetType() const
 */
 double Area::GetValue( const TSequenceOfXYZ& P )
 {
+  double aArea = 0;
   if ( P.size() == 3 )
     return getArea( P( 1 ), P( 2 ), P( 3 ) );
-  else if ( P.size() == 4 )
-    return getArea( P( 1 ), P( 2 ), P( 3 ) ) + getArea( P( 1 ), P( 3 ), P( 4 ) );
+  else if (P.size() > 3)
+    aArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
   else
     return 0;
+
+  for (int i=4; i<=P.size(); i++)
+    aArea += getArea(P(1),P(i-1),P(i));
+  return aArea;
 }
 
 double Area::GetBadRate( double Value, int /*nbNodes*/ ) const
