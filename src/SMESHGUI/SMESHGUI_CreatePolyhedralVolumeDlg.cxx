@@ -47,6 +47,8 @@
 #include "utilities.h"
 
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <TColStd_ListOfInteger.hxx>
+#include <TColStd_ListIteratorOfListOfInteger.hxx>
 
 #include <vtkCell.h>
 #include <vtkIdList.h>
@@ -451,7 +453,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 
 	  aQuantities->length( myFacesByNodes->count() );
 
-	  TColStd_MapOfInteger aNodesIds;
+	  TColStd_ListOfInteger aNodesIds;
 
 	  QListBoxItem* anItem;
 	  int aNbQuantities = 0;
@@ -459,19 +461,19 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 	    QStringList anIds = QStringList::split(" ", anItem->text());
 	    int aNbNodesInFace = 0;
 	    for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it, ++aNbNodesInFace)
-	      aNodesIds.Add( (*it).toInt() );
-	    
+	      aNodesIds.Append( (*it).toInt() );
+
 	    aQuantities[aNbQuantities++] = aNbNodesInFace;
 	  }
-	  
+
 	  anIdsOfNodes->length(aNodesIds.Extent());
 
 	  int aNbIdsOfNodes = 0;
-	  TColStd_MapIteratorOfMapOfInteger It;
+	  TColStd_ListIteratorOfListOfInteger It;
 	  It.Initialize(aNodesIds);
 	  for(;It.More();It.Next())
-	    anIdsOfNodes[aNbIdsOfNodes++] = It.Key();
-	    
+	    anIdsOfNodes[aNbIdsOfNodes++] = It.Value();
+
 	  try
 	    {
 	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
