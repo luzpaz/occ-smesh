@@ -308,8 +308,8 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
     QString entry = static_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].get() )->entry();
     SMESH_Actor* actor = SMESH::FindActorByEntry( entry.latin1() );
     if ( actor && actor->hasIO() ) {
-      SVTK_RenderWindowInteractor* renderInter = SMESH::GetCurrentVtkView()->getRWInteractor();
-      return QVariant( renderInter->isVisible( actor->getIO() ), 0 );
+      if(SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView())
+	return QVariant( aViewWindow->isVisible( actor->getIO() ), 0 );
     }
   }
   return QVariant( false, 0 );
