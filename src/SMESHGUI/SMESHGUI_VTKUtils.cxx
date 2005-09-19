@@ -36,7 +36,6 @@
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
-#include "SVTK_InteractorStyle.h"
 
 #include "utilities.h"
 

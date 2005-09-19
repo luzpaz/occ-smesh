@@ -94,8 +94,6 @@
 
 #include <SVTK_ViewWindow.h>
 #include <SVTK_ViewModel.h>
-#include <SVTK_InteractorStyle.h>
-#include <SVTK_RenderWindowInteractor.h>
 
 #include <VTKViewer_ViewManager.h>
 
