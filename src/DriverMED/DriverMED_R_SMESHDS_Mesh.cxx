@@ -113,6 +113,7 @@ DriverMED_R_SMESHDS_Mesh
               if(MYDEBUG) MESSAGE(aGroupName);
               aFamily->AddGroupName(aGroupName);
             }
+            aFamily->SetId( aFamId );
             myFamilies[aFamId] = aFamily;
 	  }
         }
@@ -126,6 +127,7 @@ DriverMED_R_SMESHDS_Mesh
 	EBooleen anIsNodeNum = aNodeInfo->IsElemNum();
 	TInt aNbElems = aNodeInfo->GetNbElem();
 	if(MYDEBUG) MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
+        DriverMED_FamilyPtr aFamily = myFamilies.begin()->second;
         for(TInt iElem = 0; iElem < aNbElems; iElem++){
 	  TCCoordSlice aCoordSlice = aNodeInfo->GetCoordSlice(iElem);
           double aCoords[3] = {0.0, 0.0, 0.0};
@@ -143,10 +145,10 @@ DriverMED_R_SMESHDS_Mesh
 
           // Save reference to this node from its family
           TInt aFamNum = aNodeInfo->GetFamNum(iElem);
-          if (myFamilies.find(aFamNum) != myFamilies.end())
+          if ( checkFamilyID ( aFamily, aFamNum ))
           {
-            myFamilies[aFamNum]->AddElement(aNode);
-            myFamilies[aFamNum]->SetType(SMDSAbs_Node);
+            aFamily->AddElement(aNode);
+            aFamily->SetType(SMDSAbs_Node);
           }
         }
 
@@ -220,10 +222,11 @@ DriverMED_R_SMESHDS_Mesh
                     if(aResult < DRS_WARN_RENUMBER)
                       aResult = DRS_WARN_RENUMBER;
                   }
-                  if(myFamilies.find(aFamNum) != myFamilies.end()){
+                  if ( checkFamilyID ( aFamily, aFamNum ))
+                  {
                     // Save reference to this element from its family
-                    myFamilies[aFamNum]->AddElement(anElement);
-                    myFamilies[aFamNum]->SetType(anElement->GetType());
+                    aFamily->AddElement(anElement);
+                    aFamily->SetType(anElement->GetType());
                   }
                 }
               } // for (TInt iPG = 0; iPG < nbPolygons; iPG++)
@@ -289,10 +292,11 @@ DriverMED_R_SMESHDS_Mesh
                     if (aResult < DRS_WARN_RENUMBER)
                       aResult = DRS_WARN_RENUMBER;
                   }
-                  if(myFamilies.find(aFamNum) != myFamilies.end()){
+                  if ( checkFamilyID ( aFamily, aFamNum ))
+                  {
                     // Save reference to this element from its family
-                    myFamilies[aFamNum]->AddElement(anElement);
-                    myFamilies[aFamNum]->SetType(anElement->GetType());
+                    aFamily->AddElement(anElement);
+                    aFamily->SetType(anElement->GetType());
                   }
                 }
               } // for (int iPE = 0; iPE < nbPolyedres; iPE++)
@@ -519,7 +523,7 @@ DriverMED_R_SMESHDS_Mesh
 		    if (aResult < DRS_WARN_RENUMBER)
 		      aResult = DRS_WARN_RENUMBER;
 		  }
-		  if (myFamilies.find(aFamNum) != myFamilies.end()) {
+		  if ( checkFamilyID ( aFamily, aFamNum )) {
 		    // Save reference to this element from its family
 		    myFamilies[aFamNum]->AddElement(anElement);
 		    myFamilies[aFamNum]->SetType(anElement->GetType());
@@ -570,10 +574,10 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
   return aMeshNames;
 }
 
-list<string> DriverMED_R_SMESHDS_Mesh::GetGroupNames()
+list<TNameAndType> DriverMED_R_SMESHDS_Mesh::GetGroupNamesAndTypes()
 {
-  list<string> aResult;
-  set<string> aResGroupNames;
+  list<TNameAndType> aResult;
+  set<TNameAndType> aResGroupNames;
 
   map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
   for (; aFamsIter != myFamilies.end(); aFamsIter++)
@@ -583,12 +587,11 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetGroupNames()
     set<string>::const_iterator aGrNamesIter = aGroupNames.begin();
     for (; aGrNamesIter != aGroupNames.end(); aGrNamesIter++)
     {
-      string aName = *aGrNamesIter;
+      TNameAndType aNameAndType = make_pair( *aGrNamesIter, aFamily->GetType() );
       // Check, if this is a Group or SubMesh name
 //if (aName.substr(0, 5) == string("Group")) {
-        if (aResGroupNames.find(aName) == aResGroupNames.end()) {
-          aResGroupNames.insert(aName);
-          aResult.push_back(aName);
+        if ( aResGroupNames.insert( aNameAndType ).second ) {
+          aResult.push_back( aNameAndType );
         }
 //    }
     }
@@ -606,7 +609,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
   for (; aFamsIter != myFamilies.end(); aFamsIter++)
   {
     DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
-    if (aFamily->MemberOf(aGroupName))
+    if (aFamily->GetType() == theGroup->GetType() && aFamily->MemberOf(aGroupName))
     {
       const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
       set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElements.begin();
@@ -704,3 +707,20 @@ void DriverMED_R_SMESHDS_Mesh::CreateAllSubMeshes ()
     }
   }
 }
+/*!
+ * \brief Ensure aFamily to have required ID
+ * \param aFamily - a family to check and update
+ * \param anID - an ID aFamily should have
+ * \retval bool  - true if successful
+ */
+bool DriverMED_R_SMESHDS_Mesh::checkFamilyID(DriverMED_FamilyPtr & aFamily, int anID) const
+{
+  if ( !aFamily || aFamily->GetId() != anID ) {
+    map<int, DriverMED_FamilyPtr>::const_iterator i_fam = myFamilies.find(anID);
+    if ( i_fam == myFamilies.end() )
+      return false;
+    aFamily = i_fam->second;
+  }
+  return ( aFamily->GetId() == anID );
+}
+
