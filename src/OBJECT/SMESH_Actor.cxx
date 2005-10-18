@@ -786,6 +786,8 @@ vtkDataSet* SMESH_ActorDef::GetInput(){
 
 
 void SMESH_ActorDef::SetTransform(VTKViewer_Transform* theTransform){
+  Superclass::SetTransform(theTransform);
+
   myNodeActor->SetTransform(theTransform);
   myBaseActor->SetTransform(theTransform);
 

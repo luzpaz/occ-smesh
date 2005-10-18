@@ -51,7 +51,6 @@
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
-#include "SVTK_InteractorStyle.h"
 
 // OCCT Includes
 #include <Precision.hxx>
@@ -504,8 +503,8 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     myActor = SMESH::FindActorByEntry(aList.First()->getEntry());
     if (!myActor)
       myActor = SMESH::FindActorByObject(myMesh);
-    SVTK_InteractorStyle* aStyle = SMESH::GetInteractorStyle();
-    Handle(VTKViewer_Filter) aFilter = aStyle->GetFilter(myFilterType);
+    SVTK_Selector* aSelector = SMESH::GetSelector();
+    Handle(VTKViewer_Filter) aFilter = aSelector->GetFilter(myFilterType);
     if (!aFilter.IsNull())
       aFilter->SetActor(myActor);
   }
@@ -605,9 +604,9 @@ void SMESHGUI_MultiEditDlg::onFilterAccepted()
 //=======================================================================
 bool SMESHGUI_MultiEditDlg::isIdValid (const int theId) const
 {
-  SVTK_InteractorStyle* aStyle = SMESH::GetInteractorStyle();
+  SVTK_Selector* aSelector = SMESH::GetSelector();
   Handle(SMESHGUI_Filter) aFilter =
-    Handle(SMESHGUI_Filter)::DownCast(aStyle->GetFilter(myFilterType));
+    Handle(SMESHGUI_Filter)::DownCast(aSelector->GetFilter(myFilterType));
 
   return (!aFilter.IsNull() && aFilter->IsObjValid(theId));
 }

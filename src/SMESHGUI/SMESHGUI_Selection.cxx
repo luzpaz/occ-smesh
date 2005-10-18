@@ -218,7 +218,6 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eMultiConnection:   return "eMultiConnection";
     case SMESH_Actor::eMultiConnection2D: return "eMultiConnection2D";
     case SMESH_Actor::eArea:              return "eArea";
-    case SMESH_Actor::eVolume3D:          return "eVolume3D";
     case SMESH_Actor::eTaper:             return "eTaper";
     case SMESH_Actor::eAspectRatio:       return "eAspectRatio";
     case SMESH_Actor::eAspectRatio3D:     return "eAspectRatio3D";
@@ -313,8 +312,8 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
     QString entry = static_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].get() )->entry();
     SMESH_Actor* actor = SMESH::FindActorByEntry( entry.latin1() );
     if ( actor && actor->hasIO() ) {
-      SVTK_RenderWindowInteractor* renderInter = SMESH::GetCurrentVtkView()->getRWInteractor();
-      return QVariant( renderInter->isVisible( actor->getIO() ), 0 );
+      if(SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView())
+	return QVariant( aViewWindow->isVisible( actor->getIO() ), 0 );
     }
   }
   return QVariant( false, 0 );

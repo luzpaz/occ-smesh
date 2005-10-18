@@ -716,8 +716,6 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
     SALOME_ListIO aList;
     aList.Append(myActor->getIO());
     mySelectionMgr->setSelectedObjects(aList,false);
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->highlight( myActor->getIO(), true, true );
   }
   myIsBusy = false;
 }
@@ -1096,11 +1094,26 @@ void SMESHGUI_GroupDlg::onAdd()
 
   SMESH::ElementType aType = SMESH::ALL;
   switch(myTypeId) {
-  case 0: aType = SMESH::NODE; break;
-  case 1: aType = SMESH::EDGE; break;
-  case 2: aType = SMESH::FACE; break;
-  case 3: aType = SMESH::VOLUME; break;
+  case 0: 
+    aType = SMESH::NODE; 
+    mySelector->SetSelectionMode(NodeSelection);
+    break;
+  case 1: 
+    aType = SMESH::EDGE; 
+    mySelector->SetSelectionMode(EdgeSelection);
+    break;
+  case 2: 
+    aType = SMESH::FACE; 
+    mySelector->SetSelectionMode(FaceSelection);
+    break;
+  case 3: 
+    aType = SMESH::VOLUME; 
+    mySelector->SetSelectionMode(VolumeSelection);
+    break;
+  default:
+    mySelector->SetSelectionMode(ActorSelection);
   }
+
 
   if (myCurrentLineEdit == 0) {
     //if (aNbSel != 1) { myIsBusy = false; return; }

@@ -321,12 +321,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       int aFamId = (*aFamsIter)->GetId();
 
       const set<const SMDS_MeshElement *>& anElems = (*aFamsIter)->GetElements();
-	  set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElems.begin();
+      set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElems.begin();
       for (; anElemsIter != anElems.end(); anElemsIter++)
       {
         anElemFamMap[*anElemsIter] = aFamId;
       }
-//      delete (*aFamsIter);
     }
 
     // Storing SMDS nodes to the MED file for the MED mesh
@@ -365,8 +364,9 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     const ERepere SMDS_COORDINATE_SYSTEM = eCART;
 
     PNodeInfo aNodeInfo = myMed->CrNodeInfo(aMeshInfo,
-					    SMDS_COORDINATE_SYSTEM,
 					    aCoordinates,
+					    eFULL_INTERLACE,
+					    SMDS_COORDINATE_SYSTEM,
 					    aCoordNames,
 					    aCoordUnits,
 					    aFamilyNums,
@@ -413,8 +413,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 					      SMDS_MED_ENTITY,
 					      eSEG2,
-					      SMDS_MED_CONNECTIVITY,
 					      aConnectivity,
+					      SMDS_MED_CONNECTIVITY,
 					      aFamilyNums,
 					      anElemNums);
       myMed->SetCellInfo(aCellInfo);
@@ -524,8 +524,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 						SMDS_MED_ENTITY,
 						eTRIA3,
-						SMDS_MED_CONNECTIVITY,
 						aTriaConn,
+						SMDS_MED_CONNECTIVITY,
 						aTriaFamilyNums,
 						anTriaElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eTRIA3<<"; aNbElems = "<<aNbElems);
@@ -535,8 +535,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 						SMDS_MED_ENTITY,
 						eQUAD4,
-						SMDS_MED_CONNECTIVITY,
 						aQuadConn,
+						SMDS_MED_CONNECTIVITY,
 						aQuadFamilyNums,
 						aQuadElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eQUAD4<<"; aNbElems = "<<aNbElems);
@@ -550,9 +550,9 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PPolygoneInfo aCellInfo = myMed->CrPolygoneInfo(aMeshInfo,
                                                         SMDS_MED_ENTITY,
                                                         ePOLYGONE,
-                                                        SMDS_MED_CONNECTIVITY,
                                                         aPolygoneConn,
                                                         aPolygoneInds,
+                                                        SMDS_MED_CONNECTIVITY,
                                                         aPolygoneFamilyNums,
                                                         aPolygoneElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePOLYGONE<<"; aNbElems = "<<aNbElems);
@@ -714,8 +714,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 						SMDS_MED_ENTITY,
 						eTETRA4,
-						SMDS_MED_CONNECTIVITY,
 						aTetraConn,
+						SMDS_MED_CONNECTIVITY,
 						aTetraFamilyNums,
 						anTetraElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eTETRA4<<"; aNbElems = "<<aNbElems);
@@ -725,8 +725,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 						SMDS_MED_ENTITY,
 						ePYRA5,
-						SMDS_MED_CONNECTIVITY,
 						aPyraConn,
+						SMDS_MED_CONNECTIVITY,
 						aPyraFamilyNums,
 						anPyraElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePYRA5<<"; aNbElems = "<<aNbElems);
@@ -736,8 +736,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 						SMDS_MED_ENTITY,
 						ePENTA6,
-						SMDS_MED_CONNECTIVITY,
 						aPentaConn,
+						SMDS_MED_CONNECTIVITY,
 						aPentaFamilyNums,
 						anPentaElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePENTA6<<"; aNbElems = "<<aNbElems);
@@ -747,8 +747,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
 						SMDS_MED_ENTITY,
 						eHEXA8,
-						SMDS_MED_CONNECTIVITY,
 						aHexaConn,
+						SMDS_MED_CONNECTIVITY,
 						aHexaFamilyNums,
 						aHexaElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eHEXA8<<"; aNbElems = "<<aNbElems);
@@ -762,10 +762,10 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	PPolyedreInfo aCellInfo = myMed->CrPolyedreInfo(aMeshInfo,
                                                         SMDS_MED_ENTITY,
                                                         ePOLYEDRE,
-                                                        SMDS_MED_CONNECTIVITY,
-                                                        aPolyedreConn,
-                                                        aPolyedreFaces,
                                                         aPolyedreInds,
+                                                        aPolyedreFaces,
+                                                        aPolyedreConn,
+                                                        SMDS_MED_CONNECTIVITY,
                                                         aPolyedreFamilyNums,
                                                         aPolyedreElemNums);
 	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePOLYEDRE<<"; aNbElems = "<<aNbElems);

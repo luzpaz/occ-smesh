@@ -428,7 +428,7 @@ QString SMESHGUI_FilterTable::Table::text (int row, int col) const
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
-                                            QWidget* parent,
+					    QWidget* parent,
                                             const int type)
 : QFrame(parent),
   myIsLocked( false ),
@@ -443,7 +443,7 @@ SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
-                                            QWidget* parent,
+					    QWidget* parent,
                                             const QValueList<int>& types)
 : QFrame(parent),
   myIsLocked( false ),
@@ -674,7 +674,7 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
          aCriterion == FT_BelongToGeom ||
          aCriterion == FT_BelongToPlane ||
          aCriterion == FT_BelongToCylinder ||
-         aCriterion == FT_LyingOnGeom) {
+	 aCriterion == FT_LyingOnGeom) {
       if (aTable->text(i, 2).isEmpty()) {
         if (theMess)
           QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
@@ -984,7 +984,7 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
                   GetCriterionType(aRow) != FT_LyingOnGeom &&
                   GetCriterionType(aRow) != FT_RangeOfIds &&
                   GetCriterionType(aRow) != FT_FreeEdges &&
-                  GetCriterionType(aRow) != FT_BadOrientedVolume;
+		  GetCriterionType(aRow) != FT_BadOrientedVolume;
   if (!myAddWidgets.contains(anItem))
   {
     myAddWidgets[ anItem ] = new AdditionalWidget(myWgStack);
@@ -1065,10 +1065,10 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aTable->SetEditable(false, row, 2);
   }
   else if (aCriterionType == SMESH::FT_RangeOfIds ||
-           aCriterionType == SMESH::FT_BelongToGeom ||
-           aCriterionType == SMESH::FT_BelongToPlane ||
-           aCriterionType == SMESH::FT_BelongToCylinder ||
-           aCriterionType == SMESH::FT_LyingOnGeom)
+            aCriterionType == SMESH::FT_BelongToGeom ||
+            aCriterionType == SMESH::FT_BelongToPlane ||
+            aCriterionType == SMESH::FT_BelongToCylinder ||
+	    aCriterionType == SMESH::FT_LyingOnGeom)
   {
     QMap<int, QString> aMap;
     aMap[ FT_EqualTo ] = tr("EQUAL_TO");
@@ -1314,7 +1314,6 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToGeom ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_LyingOnGeom ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_BadOrientedVolume ] = tr("BAD_ORIENTED_VOLUME");
-      aCriteria[ SMESH::FT_Volume3D ] = tr("VOLUME_3D");
     }
     return aCriteria;
   }
@@ -1609,7 +1608,7 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*              theModule,
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
-
+  
   construct(theTypes);
 }
 
@@ -1888,7 +1887,7 @@ void SMESHGUI_FilterDlg::onClose()
 
       mySelector->AddOrRemoveIndex( anIter.Key(), aResMap, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->highlight( anIter.Key(), true, true );
+	aViewWindow->highlight( anIter.Key(), true, true );
     }
     mySelectionMgr->setSelectedObjects(aList, false);
   }
@@ -2039,9 +2038,9 @@ bool SMESHGUI_FilterDlg::isValid() const
   {
     int aType = myTable->GetCriterionType(i);
     if (aType == FT_BelongToGeom ||
-        aType == FT_BelongToPlane ||
-        aType == FT_BelongToCylinder ||
-        aType == FT_LyingOnGeom) {
+         aType == FT_BelongToPlane ||
+         aType == FT_BelongToCylinder ||
+	 aType == FT_LyingOnGeom) {
       QString aName;
       myTable->GetThreshold(i, aName);
 
@@ -2217,17 +2216,17 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
 //=======================================================================
 void SMESHGUI_FilterDlg::insertFilterInViewer()
 {
-  if (SVTK_InteractorStyle* aStyle = SMESH::GetInteractorStyle()) {
+  if (SVTK_Selector* aSelector = SMESH::GetSelector()) {
     SMESH::ElementType anEntType = (SMESH::ElementType)myTable->GetType();
 
     if (myFilter[ myTable->GetType() ]->_is_nil() ||
          myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ||
          !mySetInViewer->isChecked()) {
-      SMESH::RemoveFilter(getFilterId(anEntType), aStyle);
+      SMESH::RemoveFilter(getFilterId(anEntType), aSelector);
     } else {
       Handle(SMESHGUI_PredicateFilter) aFilter = new SMESHGUI_PredicateFilter();
       aFilter->SetPredicate(myFilter[ myTable->GetType() ]->GetPredicate());
-      SMESH::SetFilter(aFilter, aStyle);
+      SMESH::SetFilter(aFilter, aSelector);
     }
   }
 }
@@ -2495,10 +2494,10 @@ void SMESHGUI_FilterDlg::updateSelection()
   int aRow, aCol;
 
   if (myTable->CurrentCell(aRow, aCol) &&
-      (myTable->GetCriterionType(aRow) == FT_BelongToGeom ||
-       myTable->GetCriterionType(aRow) == FT_BelongToPlane ||
-       myTable->GetCriterionType(aRow) == FT_BelongToCylinder ||
-       myTable->GetCriterionType(aRow) == FT_LyingOnGeom)) {
+       (myTable->GetCriterionType(aRow) == FT_BelongToGeom ||
+         myTable->GetCriterionType(aRow) == FT_BelongToPlane ||
+         myTable->GetCriterionType(aRow) == FT_BelongToCylinder ||
+	 myTable->GetCriterionType(aRow) == FT_LyingOnGeom)) {
 
     if (myTable->GetCriterionType(aRow) == FT_BelongToGeom ||
         myTable->GetCriterionType(aRow) == FT_LyingOnGeom) {
