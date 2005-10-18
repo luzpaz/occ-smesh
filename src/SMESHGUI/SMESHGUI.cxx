@@ -587,6 +587,7 @@ namespace{
 	  }
 	  anActor->SetControlMode(aControl);
 	  anActor->GetScalarBarActor()->SetTitle(aTitle.latin1());
+	  SMESH::RepaintCurrentView();
 	}
       }
     }
@@ -1169,8 +1170,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
-      SALOME_ListIO l1;
-      aSel->setSelectedObjects( l1 );
+      
+      if (anAction == SMESH::eErase) {
+	SALOME_ListIO l1;
+	aSel->setSelectedObjects( l1 );
+      }
+      else
+	aSel->setSelectedObjects( selected );
       break;
     }
 
@@ -2802,14 +2808,16 @@ void SMESHGUI::createPreferences()
 {
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
+  int updateGroup = addPreference( tr( "PREF_GROUP_UPDATE" ), genTab );
+  addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, SalomeApp_Preferences::Bool, "SMESH", "auto_update" );
+
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
   addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "display_entity" );
-  addPreference( tr( "PREF_AUTO_UPDATE" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "auto_update" );
-
+  addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "use_precision" );
+  
   int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 1 );
 
-  addPreference( tr( "PREF_PRECISION_USE" ), precGroup, SalomeApp_Preferences::Bool );
   int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), precGroup, SalomeApp_Preferences::IntSpin, "SMESH", "controls_precision" );
 
   setPreferenceProperty( prec, "min", 0 );
@@ -2820,9 +2828,15 @@ void SMESHGUI::createPreferences()
   QStringList modes;
   modes.append( "Wireframe" );
   modes.append( "Shading" );
-  modes.append( "Shrink" );
   modes.append( "Nodes" );
+  modes.append( "Shrink" );
+  QValueList<QVariant> indices; 
+  indices.append( 0 ); 
+  indices.append( 1 );
+  indices.append( 2 );
+  indices.append( 3 );
   setPreferenceProperty( dispmode, "strings", modes );
+  setPreferenceProperty( dispmode, "indexes", indices );
   
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
@@ -2909,7 +2923,7 @@ void SMESHGUI::createPreferences()
   QStringList orients;
   orients.append( tr( "SMESH_VERTICAL" ) );
   orients.append( tr( "SMESH_HORIZONTAL" ) );
-  QValueList<QVariant> indices; indices.append( 0 ); indices.append( 1 );
+  indices.clear(); indices.append( 0 ); indices.append( 1 );
   setPreferenceProperty( orient, "strings", orients );
   setPreferenceProperty( orient, "indexes", indices );
   

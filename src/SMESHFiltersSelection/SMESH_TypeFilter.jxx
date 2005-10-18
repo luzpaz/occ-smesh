@@ -1,3 +1,0 @@
-#ifndef _SMESH_TypeFilter_HeaderFile
-#include "SMESH_TypeFilter.hxx"
-#endif
