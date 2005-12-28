@@ -144,37 +144,38 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
     QLabel* lab = new QLabel( (*anIt).myName, GroupC1 );
     GroupC1Layout->addWidget( lab, i, 0 );
 
-    QWidget* w = 0;
-    switch( (*anIt).myValue.type() )
-    {
-    case QVariant::Int:
+    QWidget* w = getCustomWidget( *anIt, GroupC1 );
+    if ( !w ) 
+      switch( (*anIt).myValue.type() )
       {
-	QtxIntSpinBox* sb = new QtxIntSpinBox( GroupC1, (*anIt).myName.latin1() );
-	attuneStdWidget( sb, i );
-	sb->setValue( (*anIt).myValue.toInt() );
-	connect( sb, SIGNAL( valueChanged( int ) ), this, SLOT( onValueChanged() ) );
-	w = sb;
+      case QVariant::Int:
+        {
+          QtxIntSpinBox* sb = new QtxIntSpinBox( GroupC1, (*anIt).myName.latin1() );
+          attuneStdWidget( sb, i );
+          sb->setValue( (*anIt).myValue.toInt() );
+          connect( sb, SIGNAL( valueChanged( int ) ), this, SLOT( onValueChanged() ) );
+          w = sb;
+        }
+        break;
+      case QVariant::Double:
+        {
+          QtxDblSpinBox* sb = new SMESHGUI_SpinBox( GroupC1, (*anIt).myName.latin1() );
+          attuneStdWidget( sb, i );
+          sb->setValue( (*anIt).myValue.toDouble() );
+          connect( sb, SIGNAL( valueChanged( double ) ), this, SLOT( onValueChanged() ) );
+          w = sb;
+        }
+        break;
+      case QVariant::String:
+        {
+          QLineEdit* le = new QLineEdit( GroupC1, (*anIt).myName.latin1() );
+          attuneStdWidget( le, i );
+          le->setText( (*anIt).myValue.toString() );
+          connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
+          w = le;
+        }
+        break;
       }
-      break;
-    case QVariant::Double:
-      {
-	QtxDblSpinBox* sb = new SMESHGUI_SpinBox( GroupC1, (*anIt).myName.latin1() );
-	attuneStdWidget( sb, i );
-	sb->setValue( (*anIt).myValue.toDouble() );
-	connect( sb, SIGNAL( valueChanged( double ) ), this, SLOT( onValueChanged() ) );
-	w = sb;
-      }
-      break;
-    case QVariant::String:
-      {
-	QLineEdit* le = new QLineEdit( GroupC1, (*anIt).myName.latin1() );
-	attuneStdWidget( le, i );
-	le->setText( (*anIt).myValue.toString() );
-	connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
-	w = le;
-      }
-      break;
-    }
 
     if( w )
     {
@@ -224,7 +225,12 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
       params.append( item );
     }
 
-    else 
+    else if ( getParamFromCustomWidget( item, *anIt ))
+    {
+      params.append( item );
+    }
+
+    else
       res = false;
   }
   return res;
@@ -273,10 +279,15 @@ QString SMESHGUI_GenericHypothesisCreator::type() const
 {
   return QString();
 }
-
-
-
-
+QWidget* SMESHGUI_GenericHypothesisCreator::getCustomWidget( const StdParam & /*param*/,
+                                                             QWidget*   /*parent*/) const
+{
+  return 0;
+}
+bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam& , QWidget* ) const
+{
+  return false;
+}
 
 
 

@@ -77,6 +77,8 @@ protected:
   virtual bool     stdParams     ( ListOfStdParams& ) const;
           bool     getStdParamFromDlg( ListOfStdParams& ) const;
   virtual void     attuneStdWidget( QWidget*, const int ) const;
+  virtual QWidget* getCustomWidget( const StdParam &, QWidget* ) const;
+  virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
   virtual QString  caption() const;
   virtual QPixmap  icon() const;
   virtual QString  type() const;
