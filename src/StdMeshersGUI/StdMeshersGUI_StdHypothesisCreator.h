@@ -52,6 +52,8 @@ protected:
   virtual QString  caption() const;
   virtual QPixmap  icon() const;
   virtual QString  type() const;
+  virtual QWidget* getCustomWidget( const StdParam&, QWidget* ) const;
+  virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
 
 private:
           QString hypTypeName( const QString& ) const;

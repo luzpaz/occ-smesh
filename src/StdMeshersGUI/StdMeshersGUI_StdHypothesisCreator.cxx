@@ -39,6 +39,9 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 #include <qpixmap.h>
+#include <qhbox.h>
+#include <qslider.h>
+#include <qlabel.h>
 
 
 const double VALUE_MAX = 1.0e+15, // COORD_MAX
@@ -128,6 +131,13 @@ void StdMeshersGUI_StdHypothesisCreator::storeParams() const
 
       h->SetDeflection( params[0].myValue.toDouble() );
     }
+    else if( hypType()=="AutomaticLength" )
+    {
+      StdMeshers::StdMeshers_AutomaticLength_var h =
+	StdMeshers::StdMeshers_AutomaticLength::_narrow( hypothesis() );
+
+      h->SetFineness( params[0].myValue.toDouble() );
+    }
   }
 }
 
@@ -205,6 +215,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myValue = isCreation() ? 1.0 : h->GetDeflection();
     p.append( item );
   }
+  else if( hypType()=="AutomaticLength" )
+  {
+    StdMeshers::StdMeshers_AutomaticLength_var h =
+      StdMeshers::StdMeshers_AutomaticLength::_narrow( hypothesis() );
+
+    item.myName = tr( "SMESH_FINENESS_PARAM" );
+    item.myValue = isCreation() ? 0.0 : h->GetFineness();
+    p.append( item );
+  }
   else
     res = false;
   return res;
@@ -267,6 +286,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "StartEndLength", "START_END_LENGTH" );
     types.insert( "Deflection1D", "DEFLECTION1D" );
     types.insert( "Arithmetic1D", "ARITHMETIC_1D" );
+    types.insert( "AutomaticLength", "AUTOMATIC_LENGTH" );
   }
 
   QString res;
@@ -274,4 +294,66 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     res = types[ t ];
 
   return res;
+}
+
+//================================================================================
+/*!
+ * \brief Widget: slider with left and right labels
+ */
+//================================================================================
+
+class TDoubleSliderWith2Lables: public QHBox
+{
+public:
+  TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
+                            const double   initValue, const double   bottom,
+                            const double   top      , const double   precision,
+                            QWidget *      parent=0 , const char *   name=0 )
+    :QHBox(parent,name), _bottom(bottom), _precision(precision)
+  {
+    if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
+    _slider = new QSlider( Horizontal, this );
+    _slider->setRange( 0, toInt( top ));
+    _slider->setValue( toInt( initValue ));
+    if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
+  }
+  double value() const { return _bottom + _slider->value() * _precision; }
+  QSlider * getSlider() const { return _slider; }
+  int toInt( double val ) const { return (int) ceil(( val - _bottom ) / _precision ); }
+private:
+  double _bottom, _precision;
+  QSlider * _slider;
+};
+
+//=======================================================================
+//function : getCustomWidget
+//purpose  : 
+//=======================================================================
+
+QWidget* StdMeshersGUI_StdHypothesisCreator::getCustomWidget( const StdParam & param,
+                                                              QWidget*         parent) const
+{
+  if ( hypType()=="AutomaticLength" && param.myValue.type() == QVariant::Double )
+    return new TDoubleSliderWith2Lables( "0 ", " 1", param.myValue.toDouble(),
+                                         0, 1, 0.01, parent );
+
+  return 0;
+}
+
+//=======================================================================
+//function : getParamFromCustomWidget
+//purpose  : 
+//=======================================================================
+
+bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & param,
+                                                                   QWidget*   widget) const
+{
+  if ( hypType()=="AutomaticLength" ) {
+    TDoubleSliderWith2Lables* w = dynamic_cast<TDoubleSliderWith2Lables*>( widget );
+    if ( w ) {
+      param.myValue = w->value();
+      return true;
+    }
+  }
+  return false;
 }
