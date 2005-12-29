@@ -46,7 +46,7 @@ public:
 protected:
   virtual QFrame*  buildFrame    ();
   virtual void     retrieveParams() const;
-  virtual void     storeParams   () const;
+  virtual QString  storeParams   () const;
   virtual bool     stdParams     ( ListOfStdParams& ) const;
   virtual void     attuneStdWidget( QWidget*, const int ) const;
   virtual QString  caption() const;

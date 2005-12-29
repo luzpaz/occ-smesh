@@ -75,7 +75,7 @@ void StdMeshersGUI_StdHypothesisCreator::retrieveParams() const
   //here this method must be empty because buildStdParam sets values itself
 }
 
-void StdMeshersGUI_StdHypothesisCreator::storeParams() const
+QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 {
   ListOfStdParams params;
   bool res = getStdParamFromDlg( params );
@@ -84,6 +84,8 @@ void StdMeshersGUI_StdHypothesisCreator::storeParams() const
     SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().latin1() );
     params.remove( params.begin() );
   }
+
+  QString valueStr = stdParamValues( params );
 
   if( res && !params.isEmpty() )
   {
@@ -139,6 +141,7 @@ void StdMeshersGUI_StdHypothesisCreator::storeParams() const
       h->SetFineness( params[0].myValue.toDouble() );
     }
   }
+  return valueStr;
 }
 
 bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
@@ -155,73 +158,75 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     p.append( item );
   }
 
+  SMESH::SMESH_Hypothesis_var hyp = initParamsHypothesis();
+
   if( hypType()=="LocalLength" )
   {
     StdMeshers::StdMeshers_LocalLength_var h =
-      StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
-    item.myValue = isCreation() ? 1.0 : h->GetLength();
+    item.myValue = h->GetLength();
     p.append( item );
   }
   else if( hypType()=="Arithmetic1D" )
   {
     StdMeshers::StdMeshers_Arithmetic1D_var h =
-      StdMeshers::StdMeshers_Arithmetic1D::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_Arithmetic1D::_narrow( hyp );
 
     item.myName = tr( "SMESH_START_LENGTH_PARAM" );
-    item.myValue = isCreation() ? 1.0 : h->GetLength( true );
+    item.myValue = h->GetLength( true );
     p.append( item );
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
-    item.myValue = isCreation() ? 10.0 : h->GetLength( false );
+    item.myValue = h->GetLength( false );
     p.append( item );
   }
   else if( hypType()=="MaxElementArea" )
   {
     StdMeshers::StdMeshers_MaxElementArea_var h =
-      StdMeshers::StdMeshers_MaxElementArea::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_MaxElementArea::_narrow( hyp );
 
     item.myName = tr( "SMESH_MAX_ELEMENT_AREA_PARAM" );
-    item.myValue = isCreation() ? 1.0 : h->GetMaxElementArea();
+    item.myValue = h->GetMaxElementArea();
     p.append( item );
   }
   else if( hypType()=="MaxElementVolume" )
   {
     StdMeshers::StdMeshers_MaxElementVolume_var h =
-      StdMeshers::StdMeshers_MaxElementVolume::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_MaxElementVolume::_narrow( hyp );
 
     item.myName = tr( "SMESH_MAX_ELEMENT_VOLUME_PARAM" );
-    item.myValue = isCreation() ? 1.0 : h->GetMaxElementVolume();
+    item.myValue = h->GetMaxElementVolume();
     p.append( item );
   }
   else if( hypType()=="StartEndLength" )
   {
     StdMeshers::StdMeshers_StartEndLength_var h =
-      StdMeshers::StdMeshers_StartEndLength::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_StartEndLength::_narrow( hyp );
 
     item.myName = tr( "SMESH_START_LENGTH_PARAM" );
-    item.myValue = isCreation() ? 1.0 : h->GetLength( true );
+    item.myValue = h->GetLength( true );
     p.append( item );
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
-    item.myValue = isCreation() ? 10.0 : h->GetLength( false );
+    item.myValue = h->GetLength( false );
     p.append( item );
   }
   else if( hypType()=="Deflection1D" )
   {
     StdMeshers::StdMeshers_Deflection1D_var h =
-      StdMeshers::StdMeshers_Deflection1D::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_Deflection1D::_narrow( hyp );
 
     item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
-    item.myValue = isCreation() ? 1.0 : h->GetDeflection();
+    item.myValue = h->GetDeflection();
     p.append( item );
   }
   else if( hypType()=="AutomaticLength" )
   {
     StdMeshers::StdMeshers_AutomaticLength_var h =
-      StdMeshers::StdMeshers_AutomaticLength::_narrow( hypothesis() );
+      StdMeshers::StdMeshers_AutomaticLength::_narrow( hyp );
 
     item.myName = tr( "SMESH_FINENESS_PARAM" );
-    item.myValue = isCreation() ? 0.0 : h->GetFineness();
+    item.myValue = h->GetFineness();
     p.append( item );
   }
   else
