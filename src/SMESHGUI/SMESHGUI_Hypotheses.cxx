@@ -27,6 +27,16 @@ SMESHGUI_GenericHypothesisCreator::~SMESHGUI_GenericHypothesisCreator()
 {
 }
 
+void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr initParamsHyp,
+                                                QWidget* parent)
+{
+  MESSAGE( "Creation of hypothesis with initial params" );
+
+  if ( !CORBA::is_nil( initParamsHyp ) && hypType() == initParamsHyp->GetName() )
+    myInitParamsHypo = SMESH::SMESH_Hypothesis::_duplicate( initParamsHyp );
+  create( false, parent );
+}
+
 void SMESHGUI_GenericHypothesisCreator::create( const bool isAlgo, QWidget* parent )
 {
   MESSAGE( "Creation of hypothesis" );
@@ -94,6 +104,7 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
 
   bool res = true;
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
+
   QFrame* fr = buildFrame();
   if( fr )
   {
@@ -105,12 +116,18 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     dlg->setType( type() );
     retrieveParams();
     res = dlg->exec()==QDialog::Accepted;
-    if( res )
-      storeParams();
+    if( res ) {
+      QString paramValues = storeParams();
+      if ( !paramValues.isEmpty() ) {
+        if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
+          SMESH::SetValue( SHyp, paramValues );
+      }
+    }
     delete dlg;
   }
   changeWidgets().clear();
   myHypo = SMESH::SMESH_Hypothesis::_nil();
+  myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
   return res;
 }
 
@@ -236,9 +253,43 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
   return res;
 }
 
+QString SMESHGUI_GenericHypothesisCreator::stdParamValues( const ListOfStdParams& params)
+{
+  QString valueStr = "";
+  ListOfStdParams::const_iterator param = params.begin(), aLast = params.end();
+  for( int i=0; param!=aLast; param++, i++ )
+  {
+    if ( i > 0 )
+      valueStr += "; ";
+    switch( (*param).myValue.type() )
+    {
+    case QVariant::Int:
+      valueStr += valueStr.number( (*param).myValue.toInt() );
+      break;
+    case QVariant::Double:
+      valueStr += valueStr.number( (*param).myValue.toDouble() );
+      break;
+    case QVariant::String:
+      valueStr += (*param).myValue.toString();
+      break;
+    default:
+      QVariant valCopy = (*param).myValue;
+      valueStr += valCopy.asString();
+    }
+  }
+  return valueStr;
+}
+
 SMESH::SMESH_Hypothesis_var SMESHGUI_GenericHypothesisCreator::hypothesis() const
 {
   return myHypo;
+}
+
+SMESH::SMESH_Hypothesis_var SMESHGUI_GenericHypothesisCreator::initParamsHypothesis() const
+{
+  if ( CORBA::is_nil( myInitParamsHypo ))
+    return myHypo;
+  return myInitParamsHypo;
 }
 
 QString SMESHGUI_GenericHypothesisCreator::hypType() const
