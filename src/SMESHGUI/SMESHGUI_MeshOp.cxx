@@ -513,6 +513,66 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
 
 //================================================================================
 /*!
+ * \brief If create or edit a submesh, return a hypothesis holding parameters used
+ *        to mesh a subshape
+  * \param aHypType - The hypothesis type name
+  * \param aServerLib - Server library name
+  * \param hypData - The structure holding the hypothesis type etc.
+  * \retval SMESH::SMESH_Hypothesis_var - the hypothesis holding parameter values
+ */
+//================================================================================
+
+SMESH::SMESH_Hypothesis_var
+SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
+                                          const QString& aServerLib ) const
+{
+  if ( aHypType.isEmpty() || aServerLib.isEmpty() )
+    return SMESH::SMESH_Hypothesis::_nil();
+
+  const int nbColonsInMeshEntry = 3;
+  bool isSubMesh = myToCreate ?
+    !myIsMesh :
+    myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ).contains(':') > nbColonsInMeshEntry; 
+
+  if ( isSubMesh )
+  {
+    // get mesh and geom object
+    SMESH::SMESH_Mesh_var aMeshVar = SMESH::SMESH_Mesh::_nil();
+    GEOM::GEOM_Object_var aGeomVar = GEOM::GEOM_Object::_nil();
+
+    QString anEntry = myDlg->selectedObject
+      ( myToCreate ? SMESHGUI_MeshDlg::Mesh : SMESHGUI_MeshDlg::Obj );
+    if ( _PTR(SObject) pObj = studyDS()->FindObjectID( anEntry.latin1() ))
+    {
+      CORBA::Object_ptr Obj = _CAST( SObject,pObj )->GetObject();
+      if ( myToCreate ) // mesh and geom may be selected
+      {
+        aMeshVar = SMESH::SMESH_Mesh::_narrow( Obj );
+        anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+        if ( _PTR(SObject) pGeom = studyDS()->FindObjectID( anEntry.latin1() ))
+          aGeomVar= GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+      }
+      else // edition: sub-mesh may be selected
+      {
+        SMESH::SMESH_subMesh_var sm = SMESH::SMESH_subMesh::_narrow( Obj );
+        if ( !sm->_is_nil() ) {
+          aMeshVar = sm->GetFather();
+          aGeomVar = sm->GetSubShape();
+        }
+      }
+    }
+
+    if ( !aMeshVar->_is_nil() && !aGeomVar->_is_nil() )
+      return SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType,
+                                                                    aServerLib,
+                                                                    aMeshVar,
+                                                                    aGeomVar );
+  }
+  return SMESH::SMESH_Hypothesis::_nil();
+}
+
+//================================================================================
+/*!
  * \brief Calls plugin methods for hypothesis creation
   * \param theHypType - specifies whether main hypotheses or additional ones
   * are created
@@ -560,8 +620,22 @@ void SMESHGUI_MeshOp::onCreateHyp( const int theHypType, const int theIndex )
     SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aHypTypeName );
 
     // Create hypothesis
-    if( aCreator )
-      aCreator->create( false, myDlg );
+    if ( aCreator )
+    {
+      // When create or edit a submesh, try to initialize a new hypothesis
+      // with values used to mesh a subshape
+      SMESH::SMESH_Hypothesis_var initParamHyp =
+        getInitParamsHypothesis( aHypTypeName, aData->ServerLibName );
+
+      if ( initParamHyp->_is_nil() )
+        aCreator->create( false, myDlg );
+      else
+        aCreator->create( initParamHyp, myDlg );
+    }
+    else
+    {
+      SMESH::CreateHypothesis( aHypTypeName, aData->Label, false );
+    }
   }
 
   QStringList aNewHyps;
@@ -650,18 +724,18 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
       {
         // try to find an existing hypo
         QValueList<SMESH::SMESH_Hypothesis_var> & aList = myExistingHyps[ aDim ][ aHypType ];
-        int iHyp = 0, nbHyp = aList.count();
-        for ( ; iHyp < nbHyp; ++iHyp )
-        {
-          SMESH::SMESH_Hypothesis_var aHyp = aList[ iHyp ];
-          if ( !aHyp->_is_nil() && aHypoTypeName == aHyp->GetName() ) {
-            index = iHyp;
-            break;
-          }
-        }
+        int /*iHyp = 0,*/ nbHyp = aList.count();
+//         for ( ; iHyp < nbHyp; ++iHyp )
+//         {
+//           SMESH::SMESH_Hypothesis_var aHyp = aList[ iHyp ];
+//           if ( !aHyp->_is_nil() && aHypoTypeName == aHyp->GetName() ) {
+//             index = iHyp;
+//             break;
+//           }
+//         }
         if ( index >= 0 ) // found
         {
-          // select an algorithm
+          // select the found hypothesis
           setCurrentHyp ( aDim, aHypType, index );
         }
         else
@@ -676,7 +750,18 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
             // Get hypotheses creator client (GUI)
             SMESHGUI_GenericHypothesisCreator* aCreator =
               SMESH::GetHypothesisCreator( aHypoTypeName );
-            aCreator->create( false, myDlg );
+            if ( aCreator )
+            {
+              // When create or edit a submesh, try to initialize a new hypothesis
+              // with values used to mesh a subshape
+              SMESH::SMESH_Hypothesis_var initParamHyp =
+                getInitParamsHypothesis( aHypoTypeName, aHypData->ServerLibName );
+              aCreator->create( initParamHyp, myDlg );
+            }
+            else
+            {
+              SMESH::CreateHypothesis( aHypoTypeName, aHypData->Label, isAlgo );
+            }
           }
           QStringList aNewHyps;
           _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
