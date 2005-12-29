@@ -81,6 +81,19 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Return a hypothesis holding parameter values corresponding to the mesh
+     * existing on the given geometry.
+     * The returned hypothesis may be the one existing in a study and used
+     * to compute the mesh, or a temporary one created just to pass parameter
+     * values
+     */
+    SMESH_Hypothesis GetHypothesisParameterValues( in string            theHypName,
+                                                   in string            theLibName,
+                                                   in SMESH_Mesh        theMesh,
+                                                   in GEOM::GEOM_Object theGeom)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Create a Mesh object, given a geometry shape.
      * Mesh is created empty (no points, no elements).
      * Shape is explored via GEOM_Client to create local copies.
