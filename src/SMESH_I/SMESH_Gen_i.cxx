@@ -41,6 +41,8 @@
 #include <TopoDS_Shape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TCollection_AsciiString.hxx>
@@ -64,6 +66,8 @@
 #include "SMESHDS_Document.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_Hypothesis.hxx"
 #include "SMESH_Group.hxx"
 
 #include "SMDS_EdgePosition.hxx"
@@ -490,6 +494,84 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
   return hyp._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Return hypothesis of given type holding parameter values of the existing mesh
+  * \param theHypType - hypothesis type name
+  * \param theLibName - plugin library name
+  * \param theMesh - The mesh of interest
+  * \param theGeom - The shape to get parameter values from
+  * \retval SMESH::SMESH_Hypothesis_ptr - The returned hypothesis may be the one existing
+  *    in a study and used to compute the mesh, or a temporary one created just to pass
+  *    parameter values
+ */
+//================================================================================
+
+SMESH::SMESH_Hypothesis_ptr
+SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
+                                           const char*           theLibName,
+                                           SMESH::SMESH_Mesh_ptr theMesh,
+                                           GEOM::GEOM_Object_ptr theGeom)
+    throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
+  if ( CORBA::is_nil( theGeom ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+
+  // -----------------------------------------------
+  // find hypothesis used to mesh theGeom
+  // -----------------------------------------------
+
+  // get mesh and shape
+  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
+  TopoDS_Shape shape = GeomObjectToShape( theGeom );
+  if ( !meshServant || shape.IsNull() )
+    return SMESH::SMESH_Hypothesis::_nil();
+  ::SMESH_Mesh& mesh = meshServant->GetImpl();
+
+  if ( mesh.NbNodes() == 0 ) // empty mesh
+    return SMESH::SMESH_Hypothesis::_nil();
+
+  // create a temporary hypothesis to know its dimention
+  SMESH::SMESH_Hypothesis_var tmpHyp = this->createHypothesis( theHypType, theLibName );
+  SMESH_Hypothesis_i* hypServant = SMESH::DownCast<SMESH_Hypothesis_i*>( tmpHyp );
+  if ( !hypServant )
+    return SMESH::SMESH_Hypothesis::_nil();
+  ::SMESH_Hypothesis* hyp = hypServant->GetImpl();
+
+  // look for a hypothesis of theHypType used to mesh the shape
+  if ( myGen.GetShapeDim( shape ) == hyp->GetDim() )
+  {
+    // check local shape
+    SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( theGeom );
+    int nbLocalHyps = aHypList->length();
+    for ( int i = 0; i < nbLocalHyps; i++ )
+      if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND local!
+        return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
+    // check super shapes
+    TopTools_ListIteratorOfListOfShape itShape( mesh.GetAncestors( shape ));
+    while ( nbLocalHyps == 0 && itShape.More() ) {
+      GEOM::GEOM_Object_ptr geomObj = ShapeToGeomObject( itShape.Value() );
+      if ( ! CORBA::is_nil( geomObj )) {
+        SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( geomObj );
+        nbLocalHyps = aHypList->length();
+        for ( int i = 0; i < nbLocalHyps; i++ )
+          if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND global!
+            return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
+      }
+      itShape.Next();
+    }
+  }
+
+  // let the temporary hypothesis find out some how parameter values
+  if ( hyp->SetParametersByMesh( &mesh, shape ))
+    return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
+    
+  return SMESH::SMESH_Hypothesis::_nil();
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMesh
@@ -506,7 +588,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
   // create mesh
   SMESH::SMESH_Mesh_var mesh = this->createMesh();
   // set shape
-  SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
+  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
   ASSERT( meshServant );
   meshServant->SetShape( theShapeObject );
 
