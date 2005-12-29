@@ -380,7 +380,7 @@ SMESH_Hypothesis::Hypothesis_Status
     int hypId = myHyp->GetId();
     status = _impl->AddHypothesis(myLocSubShape, hypId);
     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
-      _mapHypo[hypId] = myHyp;
+      _mapHypo[hypId] = SMESH::SMESH_Hypothesis::_duplicate( myHyp );
       // assure there is a corresponding submesh
       if ( !_impl->IsMainShape( myLocSubShape )) {
         int shapeId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
