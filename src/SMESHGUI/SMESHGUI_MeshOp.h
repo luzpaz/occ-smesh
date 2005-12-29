@@ -97,6 +97,8 @@ private:
   QString                        name( _PTR(SObject) ) const;
   int                            find( const SMESH::SMESH_Hypothesis_var&,
                                        const QValueList<SMESH::SMESH_Hypothesis_var>& ) const;
+  SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString& aHypType,
+                                                          const QString& aServerLib ) const;
 
 private:
   typedef QMap< int, QValueList<SMESH::SMESH_Hypothesis_var> > IdToHypListMap;
