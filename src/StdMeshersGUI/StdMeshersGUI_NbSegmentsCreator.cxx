@@ -176,17 +176,59 @@ void StdMeshersGUI_NbSegmentsCreator::retrieveParams() const
   myExpr->setText( data.myExpr );
 }
 
-void StdMeshersGUI_NbSegmentsCreator::storeParams() const
+QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
 {
   NbSegmentsHypothesisData data;
   readParamsFromWidgets( data );
   storeParamsToHypo( data );
+
+  QString valStr = QString::number( data.myNbSeg ) += "; ";
+
+  enum DistrType
+  {
+    Regular, //!< equidistant distribution
+    Scale,   //!< scale distribution
+    TabFunc, //!< distribution with density function presented by table
+    ExprFunc //!< distribution with density function presented by expression
+  };
+  bool hasConv = false;
+  switch ( data.myDistrType ) {
+  case Regular :
+    valStr += tr("SMESH_DISTR_REGULAR");
+    break;
+  case Scale   :
+    valStr += tr("SMESH_NB_SEGMENTS_SCALE_PARAM") + " = " + QString::number( data.myScale );
+    break;
+  case TabFunc : {
+    //valStr += tr("SMESH_TAB_FUNC");
+    bool param = true;
+    for( int i=0; i < data.myTable.length(); i++, param = !param ) {
+      if ( param )
+        valStr += "[";
+      valStr += QString::number( data.myTable[ i ]);
+      valStr += ( param ? "," : "]" );
+    }
+    hasConv = true;
+    break;
+  }
+  case ExprFunc:
+    valStr += data.myExpr;
+    hasConv = true;
+    break;
+  }
+  if ( hasConv )
+    if ( data.myConv )
+      valStr += "; " + tr("SMESH_CUT_NEG_MODE");
+    else
+      valStr += "; " + tr("SMESH_EXP_MODE");
+
+  return valStr;
 }
 
 bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisData& h_data ) const
 {
   StdMeshers::StdMeshers_NumberOfSegments_var h =
-    StdMeshers::StdMeshers_NumberOfSegments::_narrow( hypothesis() );
+    StdMeshers::StdMeshers_NumberOfSegments::_narrow( initParamsHypothesis() );
 
   HypothesisData* data = SMESH::GetHypothesisData( hypType() );
   h_data.myName = isCreation() && data ? data->Label : "";

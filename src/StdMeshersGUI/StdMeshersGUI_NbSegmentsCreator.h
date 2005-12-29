@@ -38,7 +38,7 @@ public:
 protected:
   virtual QFrame*  buildFrame();
   virtual void     retrieveParams() const;
-  virtual void     storeParams() const;
+  virtual QString  storeParams() const;
 
 protected slots:
   virtual void     onValueChanged();
