@@ -318,7 +318,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   else if( distr==3 )
     myCutNeg->setText( tr( "SMESH_CUT_NEG_MODE" ) );*/
 
-  if( distr==2 ) //table func
+  if( distr==2 && sender()==myConv ) //table func
   {
     myTable->table()->funcValidator()->setBottom( myConv->id( myConv->selected() )==0 ? -1E20 : 0 );
     SMESH::double_array arr;
