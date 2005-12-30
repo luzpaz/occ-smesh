@@ -12,6 +12,7 @@
 
 #include <QtxIntSpinBox.h>
 #include <QtxComboBox.h>
+#include <QtxDblValidator.h>
 #include <SMESHGUI_SpinBox.h>
 
 #include <qlabel.h>
@@ -142,7 +143,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myConv->setColumnLayout( 0, Qt::Vertical );
   QGridLayout* convLay = new QGridLayout( myConv->layout() );
   convLay->addWidget( new QRadioButton( tr( "SMESH_EXP_MODE" ), myConv ), 0, 0 );
-  convLay->addWidget( new QRadioButton( tr( "SMESH_CUT_NEG_MODE" ), myConv ), 1, 0 );
+  convLay->addWidget( myCutNeg = new QRadioButton( tr( "SMESH_CUT_NEG_MODE" ), myConv ), 1, 0 );
   myGroupLayout->addWidget( myConv, row, 1 );
   row++;
 
@@ -311,6 +312,19 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromWidgets( NbSegmentsHypothesi
 void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 {
   int distr = myDistr->currentItem();
+
+/*  if( distr==2 ) //table func
+    myCutNeg->setText( tr( "SMESH_NO_CONV" ) );
+  else if( distr==3 )
+    myCutNeg->setText( tr( "SMESH_CUT_NEG_MODE" ) );*/
+
+  if( distr==2 ) //table func
+  {
+    myTable->table()->funcValidator()->setBottom( myConv->id( myConv->selected() )==0 ? -1E20 : 0 );
+    SMESH::double_array arr;
+    myTable->table()->data( arr );
+    myTable->table()->setData( arr ); //update data in table
+  }
 
   myScale->setShown( distr==1 );
   myLScale->setShown( distr==1 );

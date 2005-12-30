@@ -15,6 +15,7 @@ class StdMeshersGUI_DistrPreview;
 class QLineEdit;
 class QButtonGroup;
 class QGridLayout;
+class QRadioButton;
 
 typedef struct
 {
@@ -59,6 +60,7 @@ private:
   QLabel          *myLScale, *myLTable, *myLExpr, *myLConv, *myInfo;
   QGridLayout*     myGroupLayout;
   int              myTableRow, myPreviewRow;
+  QRadioButton*    myCutNeg;
 };
 
 #endif
