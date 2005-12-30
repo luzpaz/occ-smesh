@@ -72,6 +72,7 @@ protected:
   virtual QWidget* createEditor( int, int, bool ) const;
   virtual bool     eventFilter( QObject*, QEvent* );
   virtual void     keyPressEvent( QKeyEvent* );
+  virtual QWidget* beginEdit( int row, int col, bool replace );
   virtual void     edit( const int, const int );
 
 private slots:

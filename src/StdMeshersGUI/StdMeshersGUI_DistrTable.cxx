@@ -71,6 +71,14 @@ void StdMeshersGUI_DistrTable::stopEditing( const bool accept )
   endEdit( currEditRow(), currEditCol(), accept, false );
 }
 
+QWidget* StdMeshersGUI_DistrTable::beginEdit( int row, int col, bool replace )
+{
+  QWidget* w = QTable::beginEdit( row, col, replace );
+  if( w && w->inherits( "QLineEdit" ) )
+    ( ( QLineEdit* )w )->selectAll();
+  return w;
+}
+
 void StdMeshersGUI_DistrTable::edit( const int r, const int c )
 {
   if( isEditing() )
