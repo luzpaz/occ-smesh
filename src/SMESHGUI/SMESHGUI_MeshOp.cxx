@@ -500,6 +500,20 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
     return false;
   }
 
+  // Imported mesh, if create sub-mesh or edit mesh
+  if ( !myToCreate || ( myToCreate && !myIsMesh ))
+  {
+    QString aMeshEntry = myDlg->selectedObject
+      ( myToCreate ? SMESHGUI_MeshDlg::Mesh : SMESHGUI_MeshDlg::Obj );
+    if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() )) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
+      if ( !mesh->_is_nil() && CORBA::is_nil( mesh->GetShapeToMesh() )) {
+        theMess = tr( "IMPORTED_MESH" );
+        return false;
+      }
+    }
+  }
+
   // Geom
   if ( myToCreate )
   {
@@ -538,6 +552,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
       }
     }
   }
+    
   return true;
 }
 
