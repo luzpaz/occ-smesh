@@ -1128,6 +1128,15 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   HDFgroup*   aSubSubGroup;
   hdf_size    aSize[ 1 ];
 
+
+  //Remove the files if they exist: BugID: 11225
+  TCollection_AsciiString cmd("rm -f \"");
+  cmd+=filename;
+  cmd+="\" \"";
+  cmd+=meshfile;
+  cmd+="\"";
+  system(cmd.ToCString());
+
   // MED writer to be used by storage process
   DriverMED_W_SMESHDS_Mesh myWriter;
   myWriter.SetFile( meshfile.ToCString() );
@@ -1136,7 +1145,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   // ---> create HDF file
   aFile = new HDFfile( filename.ToCString() );
   aFile->CreateOnDisk();
-  
+
   // --> iterator for top-level objects
   SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( theComponent );
   for ( ; itBig->More(); itBig->Next() ) {
