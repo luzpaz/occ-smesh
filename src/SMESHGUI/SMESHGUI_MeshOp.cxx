@@ -31,6 +31,7 @@
 
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_MeshDlg.h"
+#include "SMESHGUI_ShapeByMeshDlg.h"
 #include "SMESH_TypeFilter.hxx"
 #include "SMESHGUI.h"
 
@@ -38,11 +39,14 @@
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include "SMESH_TypeFilter.hxx"
 #include "SMESH_NumberFilter.hxx"
 
 #include "GEOM_SelectionFilter.h"
+#include "GEOMBase.h"
+#include "GeometryGUI.h"
 
 #include "SalomeApp_Tools.h"
 #include "SALOMEDSClient_Study.hxx"
@@ -51,14 +55,13 @@
 #include "SALOMEDS_SComponent.hxx"
 #include "SALOMEDS_SObject.hxx"
 
-
 #include "LightApp_SelectionMgr.h"
 #include "LightApp_UpdateFlags.h"
 #include "SUIT_MessageBox.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_OverrideCursor.h"
-
-#include "GEOMBase.h"
+#include "SALOME_InteractiveObject.hxx"
+#include "SALOME_ListIO.hxx"
 
 #include "utilities.h"
 
@@ -68,6 +71,17 @@
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
 
+enum { GLOBAL_ALGO_TAG        =3,
+       GLOBAL_HYPO_TAG        =2,
+       LOCAL_ALGO_TAG         =2,
+       LOCAL_HYPO_TAG         =1,
+       SUBMESH_ON_EDGE_TAG    =5,
+       SUBMESH_ON_WIRE_TAG    =6,
+       SUBMESH_ON_FACE_TAG    =7,
+       SUBMESH_ON_SHELL_TAG   =8,
+       SUBMESH_ON_SOLID_TAG   =9,
+       SUBMESH_ON_COMPOUND_TAG=10 };
+       
 //================================================================================
 /*!
  * \brief Constructor
@@ -81,8 +95,11 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
 : SMESHGUI_SelectionOp(),
   myToCreate( theToCreate ),
   myIsMesh( theIsMesh ),
-  myDlg( 0 )
+  myDlg( 0 ),
+  myShapeByMeshDlg( 0 )
 {
+  if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
+    GeometryGUI::InitGeomGen();
 }
 
 //================================================================================
@@ -92,7 +109,7 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
 //================================================================================
 SMESHGUI_MeshOp::~SMESHGUI_MeshOp()
 {
-  if( myDlg )
+  if ( myDlg )
     delete myDlg;
 }
 
@@ -190,6 +207,7 @@ void SMESHGUI_MeshOp::startOperation()
               this, SLOT( onEditHyp( const int, const int) ) );
     }
     connect( myDlg, SIGNAL( hypoSet( const QString& )), SLOT( onHypoSet( const QString& )));
+    connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
   }
   SMESHGUI_SelectionOp::startOperation();
 
@@ -255,6 +273,88 @@ SUIT_SelectionFilter* SMESHGUI_MeshOp::createFilter( const int theId ) const
 
 //================================================================================
 /*!
+ * \brief check if selected shape is a subshape of the shape to mesh
+  * \retval bool - check result
+ */
+//================================================================================
+
+bool SMESHGUI_MeshOp::isSubshapeOk() const
+{
+  if ( !myToCreate || myIsMesh ) // not submesh creation
+    return false;
+
+  QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
+  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
+  if ( pMesh && pGeom ) {
+    SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
+    if ( !mesh->_is_nil() ) {
+      GEOM::GEOM_Object_var mainGeom, subGeom;
+      mainGeom = mesh->GetShapeToMesh();
+      subGeom  = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
+      if ( !mainGeom->_is_nil() && !subGeom->_is_nil() ) {
+        TopoDS_Shape mainShape, subShape;
+        if ( GEOMBase::GetShape( mainGeom, mainShape ) &&
+             GEOMBase::GetShape( subGeom, subShape ) )
+          // 1 is index of mainShape itself
+          return GEOMBase::GetIndex( subShape, mainShape, 0 ) > 1;
+      }
+    }
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief find an existing submesh by the selected shape
+  * \retval _PTR(SObject) - the found submesh SObject
+ */
+//================================================================================
+
+_PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
+{
+  QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
+  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
+  if ( pMesh && pGeom ) {
+    GEOM::GEOM_Object_var geom = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
+    if ( !geom->_is_nil() ) {
+      int tag = -1;
+      switch ( geom->GetShapeType() ) {
+      case GEOM::EDGE:     tag = SUBMESH_ON_EDGE_TAG    ; break;
+      case GEOM::WIRE:     tag = SUBMESH_ON_WIRE_TAG    ; break;
+      case GEOM::FACE:     tag = SUBMESH_ON_FACE_TAG    ; break;
+      case GEOM::SHELL:    tag = SUBMESH_ON_SHELL_TAG   ; break;
+      case GEOM::SOLID:    tag = SUBMESH_ON_SOLID_TAG   ; break;
+      case GEOM::COMPOUND: tag = SUBMESH_ON_COMPOUND_TAG; break;
+      default:;
+      }
+      _PTR(SObject) aSubmeshRoot;
+      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+      if ( pMesh->FindSubObject( tag, aSubmeshRoot ) )
+      {
+        _PTR(ChildIterator) smIter = aStudy->NewChildIterator( aSubmeshRoot );
+        for (; smIter->More(); smIter->Next() )
+        {
+          _PTR(SObject) aSmObj = smIter->Value();
+          _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSmObj);
+          for (; anIter1->More(); anIter1->Next()) {
+            _PTR(SObject) pGeom2 = anIter1->Value();
+            if ( pGeom2->ReferencedObject( pGeom2 ) &&
+                 pGeom2->GetID() == pGeom->GetID() )
+              return aSmObj;
+          }
+        }
+      }
+    }     
+  }
+  return _PTR(SObject)();
+}
+
+//================================================================================
+/*!
  * \brief Updates dialog's look and feel
  *
  * Virtual method redefined from the base class updates dialog's look and feel
@@ -264,9 +364,9 @@ void SMESHGUI_MeshOp::selectionDone()
 {
   SMESHGUI_SelectionOp::selectionDone();
 
-  if ( !myToCreate )
+  try
   {
-    try
+    if ( !myToCreate ) // edition
     {
       QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
       _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
@@ -282,15 +382,44 @@ void SMESHGUI_MeshOp::selectionDone()
       }
       else
         myDlg->reset();
+
     }
-    catch ( const SALOME::SALOME_Exception& S_ex )
+    else if ( !myIsMesh ) // submesh creation
     {
-      SalomeApp_Tools::QtCatchCorbaException( S_ex );
-    }
-    catch ( ... )
-    {
+      // if a submesh on the selected shape already exist, pass to submesh edition mode
+      if ( _PTR(SObject) pSubmesh = getSubmeshByGeom() ) {
+        SMESH::SMESH_subMesh_var sm = 
+          SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pSubmesh );
+        bool editSubmesh = ( !sm->_is_nil() &&
+                             SUIT_MessageBox::question2( myDlg, tr( "SMESH_WARNING" ),
+                                                         tr( "EDIT_SUBMESH_QUESTION"),
+                                                         tr( "SMESH_BUT_YES" ),
+                                                         tr( "SMESH_BUT_NO" ), 1, 0, 0 ));
+        if ( editSubmesh )
+        {
+          selectionMgr()->clearFilters();
+          selectObject( pSubmesh );
+          SMESHGUI::GetSMESHGUI()->switchToOperation(704);
+        }
+        else
+        {
+          selectObject( _PTR(SObject)() );
+          myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
+        }
+      }
+      // enable/disable popup for choice of geom selection way
+      myDlg->setGeomPopupEnabled( !myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh ).isEmpty() );
+
     }
   }
+  catch ( const SALOME::SALOME_Exception& S_ex )
+  {
+    SalomeApp_Tools::QtCatchCorbaException( S_ex );
+  }
+  catch ( ... )
+  {
+  }
+
 
   // Enable tabs according to shape dimension
 
@@ -402,6 +531,11 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
         theMess = tr( "MESH_IS_NULL" );
         return false;
       }
+      if ( !isSubshapeOk() )
+      {
+        theMess = tr( "INVALID_SUBSHAPE" );
+        return false;
+      }
     }
   }
   return true;
@@ -468,9 +602,9 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
   bool isMesh = !_CAST( SComponent, theFather );
   int aPart = -1;
   if ( isMesh )
-    aPart = theHypType == Algo ? 3 : 2;
+    aPart = theHypType == Algo ? GLOBAL_ALGO_TAG : GLOBAL_HYPO_TAG;
   else
-    aPart = theHypType == Algo ? 2 : 1;
+    aPart = theHypType == Algo ? LOCAL_ALGO_TAG : LOCAL_HYPO_TAG;
 
   if ( theFather->FindSubObject( aPart, aHypRoot ) )
   {
@@ -1287,4 +1421,93 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
 bool SMESHGUI_MeshOp::isValid( SUIT_Operation* theOp ) const
 {
   return SMESHGUI_Operation::isValid( theOp ) && !theOp->inherits( "SMESHGUI_MeshOp" );
+}
+
+//================================================================================
+/*!
+ * \brief SLOT. Is called when the user selects a way of geometry selection
+  * \param theByMesh - true if the user wants to find geometry by mesh element
+ */
+//================================================================================
+
+void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
+{
+  if ( theByMesh ) {
+    if ( !myShapeByMeshDlg ) {
+      myShapeByMeshDlg = new SMESHGUI_ShapeByMeshDlg( SMESHGUI::GetSMESHGUI(), "ShapeByMeshDlg");
+      connect(myShapeByMeshDlg, SIGNAL(PublishShape()), SLOT(onPublishShapeByMeshDlg()));
+      connect(myShapeByMeshDlg, SIGNAL(Close()), SLOT(onCloseShapeByMeshDlg()));
+    }
+    // set mesh object to dlg
+    QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+    if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() )) {
+      SMESH::SMESH_Mesh_var aMeshVar =
+        SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
+      if ( !aMeshVar->_is_nil() ) {
+        myDlg->hide();
+        myShapeByMeshDlg->Init();
+        myShapeByMeshDlg->SetMesh( aMeshVar );
+        myShapeByMeshDlg->show();
+      }
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief SLOT. Is called when Ok is pressed in SMESHGUI_ShapeByMeshDlg
+ */
+//================================================================================
+
+void SMESHGUI_MeshOp::onPublishShapeByMeshDlg()
+{
+  onCloseShapeByMeshDlg();
+
+  if ( myShapeByMeshDlg ) {
+    // Select a found geometry object
+    GEOM::GEOM_Object_var aGeomVar = myShapeByMeshDlg->GetShape();
+    if ( !aGeomVar->_is_nil() )
+    {
+      QString ID = aGeomVar->GetStudyEntry();
+      if ( _PTR(SObject) aGeomSO = studyDS()->FindObjectID( ID )) {
+        selectObject( aGeomSO );
+        selectionDone();
+      }
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief SLOT. Is called Close Ok is pressed in SMESHGUI_ShapeByMeshDlg
+ */
+//================================================================================
+
+void SMESHGUI_MeshOp::onCloseShapeByMeshDlg()
+{
+  if ( myDlg ) {
+    myDlg->show();
+    myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
+    myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Selects a SObject
+  * \param theSObj - the SObject to select
+ */
+//================================================================================
+
+void SMESHGUI_MeshOp::selectObject( _PTR(SObject) theSObj ) const
+{
+  if ( LightApp_SelectionMgr* sm = selectionMgr() ) {
+    SALOME_ListIO anIOList;
+    if ( theSObj ) {
+      Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
+        ( theSObj->GetID().c_str(), "SMESH", theSObj->GetName().c_str() );
+      anIOList.Append( anIO );
+    }
+    sm->setSelectedObjects( anIOList, false );
+  }
 }
