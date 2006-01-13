@@ -3083,6 +3083,20 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   return op;
 }
 
+//================================================================================
+/*!
+ * \brief Stops current operations and starts a given one
+  * \param id - The id of the operation to start
+ */
+//================================================================================
+
+void SMESHGUI::switchToOperation(int id)
+{
+  if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() )
+    activeStudy()->abortAllOperations();
+  startOperation( id );
+}
+
 LightApp_Displayer* SMESHGUI::displayer()
 {
   if( !myDisplayer )
