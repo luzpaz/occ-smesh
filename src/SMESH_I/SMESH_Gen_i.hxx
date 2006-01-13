@@ -220,6 +220,11 @@ public:
                                      const SMESH::object_array& theListOfSubShape )
     throw ( SALOME::SALOME_Exception );
 
+  // Return geometrical object the given element is built on
+  GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+                                                  CORBA::Long            theElementID,
+                                                  const char*            theGeomName)
+    throw ( SALOME::SALOME_Exception );
 
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)

@@ -69,6 +69,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Group.hxx"
+#include "SMESH_MeshEditor.hxx"
 
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
@@ -1012,6 +1013,63 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   return false;
 }
 
+//================================================================================
+/*!
+ * \brief Return geometrical object the given element is built on
+ *  \param theMesh - the mesh the element is in
+ *  \param theElementID - the element ID
+ *  \param theGeomName - the name of the result geom object if it is not yet published
+ *  \retval GEOM::GEOM_Object_ptr - the found or just published geom object
+ */
+//================================================================================
+
+GEOM::GEOM_Object_ptr
+SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+                                       CORBA::Long            theElementID,
+                                       const char*            theGeomName)
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
+
+  GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
+  GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
+
+  // get a core mesh DS
+  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
+  if ( meshServant && !geomGen->_is_nil() && !mainShape->_is_nil() )
+  {
+    ::SMESH_Mesh & mesh = meshServant->GetImpl();
+    SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
+    // find the element in mesh
+    if ( const SMDS_MeshElement * elem = meshDS->FindElement( theElementID ) )
+      // find a shape id by the element
+      if ( int shapeID = ::SMESH_MeshEditor( &mesh ).FindShape( elem )) {
+        // get a geom object by the shape id
+        GEOM::GEOM_Object_var geom = ShapeToGeomObject( meshDS->IndexToShape( shapeID ));
+        if ( geom->_is_nil() ) {
+          GEOM::GEOM_IShapesOperations_var op =
+            geomGen->GetIShapesOperations( GetCurrentStudyID() );
+          if ( !op->_is_nil() )
+            geom = op->GetSubShape( mainShape, shapeID );
+        }
+        if ( !geom->_is_nil() ) {
+          // try to find the corresponding SObject
+          GeomObjectToShape( geom ); // geom client remembers the found shape
+          SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
+          if ( SObj->_is_nil() )
+            // publish a new subshape
+            SObj = geomGen->AddInStudy( myCurrentStudy, geom, theGeomName, mainShape );
+          // return only published geometry
+          if ( !SObj->_is_nil() )
+            return geom._retn();
+        }
+      }
+  }
+  return GEOM::GEOM_Object::_nil();
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::Save
@@ -1020,8 +1078,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
  */
 //=============================================================================
 SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
-				      const char*              theURL,
-				      bool                     isMultiFile )
+                                      const char*              theURL,
+                                      bool                     isMultiFile )
 {
   INFOS( "SMESH_Gen_i::Save" );
 
