@@ -104,7 +104,6 @@
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_FileDlg.h"
 #include "SUIT_Desktop.h"
-#include "SUIT_ResourceMgr.h"
 #include "SUIT_OverrideCursor.h"
 #include "SUIT_Study.h"
 #include "SUIT_Session.h"
@@ -2995,11 +2994,54 @@ void SMESHGUI::createPreferences()
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
-  if( sect=="SMESH" )
+  if( sect=="SMESH" ){
+    float sbX1,sbY1,sbW,sbH;
+    SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
     if( name=="selection_object_color" || name=="selection_element_color" || 
         name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
         name=="selection_precision_node" || name=="selection_precision_element" )
       SMESH::UpdateSelectionProp( this );
+    else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
+      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
+      if(sbX1+sbW > 1.0){
+	sbX1=0.01;
+	sbW=0.05;
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
+      }
+    }
+    else if(name == QString("scalar_bar_vertical_y") || name == QString("scalar_bar_vertical_height")){
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y", sbY1);
+      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
+      if(sbY1+sbH > 1.0){
+	sbY1=0.01;
+	sbH=0.5;
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
+      }
+    }
+    else if(name ==  QString("scalar_bar_horizontal_x") || name ==  QString("scalar_bar_horizontal_width")){
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x", sbX1);
+      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
+      if(sbX1+sbW > 1.0){
+	sbX1=0.2;
+	sbW=0.6;
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
+      }
+    }
+    else if(name ==  QString("scalar_bar_horizontal_y") || name ==  QString("scalar_bar_horizontal_height")){
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y", sbY1);
+      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
+      if(sbY1+sbH > 1.0){
+	sbY1=0.01;
+	sbH=0.12;
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
+      }
+    }
+  }
 }
 
 //================================================================================
