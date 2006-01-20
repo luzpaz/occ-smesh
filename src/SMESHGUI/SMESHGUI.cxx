@@ -1070,6 +1070,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   if( !mgr )
     return false;
 
+  if (CORBA::is_nil(GetSMESHGen()->GetCurrentStudy())) {
+    GetSMESHGen()->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
+  }
+
   SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
 
