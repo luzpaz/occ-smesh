@@ -253,8 +253,13 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  this, SLOT(ClickOnApply()));
-  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
 
+  // to update state of the Ok & Apply buttons
+  connect(SpinBox_Dx, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
+  connect(SpinBox_Dy, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
+  connect(SpinBox_Dz, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
+
+  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
   connect(SelectElementsButton, SIGNAL (clicked()),            this, SLOT(SetEditCurrentArgument()));
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   this, SLOT(SelectionIntoArgument()));
@@ -292,9 +297,6 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
   myElementsId = "";
   myNbOkElements = 0;
 
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
   myActor = 0;
   myMesh = SMESH::SMESH_Mesh::_nil();
 
@@ -307,6 +309,25 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
     CheckBoxMesh->setChecked(false);
     onSelectMesh(false);
   }
+
+  CheckIsEnable();
+}
+
+//=================================================================================
+// function : CheckIsEnable()
+// purpose  : Check whether the Ok and Apply buttons should be enabled or not
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::CheckIsEnable()
+{
+  double aX = SpinBox_Dx->GetValue();
+  double aY = SpinBox_Dy->GetValue();
+  double aZ = SpinBox_Dz->GetValue();
+  double aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
+  
+  bool anIsEnable = myNbOkElements > 0 && aModule > 1.0E-38;
+
+  buttonOk->setEnabled(anIsEnable);
+  buttonApply->setEnabled(anIsEnable);
 }
 
 //=================================================================================
@@ -434,9 +455,6 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
   if (send == LineEditElements)
     myNbOkElements = 0;
 
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
   // hilight entered elements/nodes
   SMDS_Mesh* aMesh = 0;
   if (myActor)
@@ -461,10 +479,7 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
     }
   }
 
-  if (myNbOkElements) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
+  CheckIsEnable();
 
   myBusy = false;
 }
@@ -490,8 +505,6 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
 
   myEditCurrentArgument->setText(aString);
   myNbOkElements = 0;
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
   myBusy = false;
 
   // get selected mesh
@@ -593,10 +606,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
   myBusy = false;
 
   // OK
-  if (myNbOkElements) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
+  CheckIsEnable();
 }
 
 //=================================================================================

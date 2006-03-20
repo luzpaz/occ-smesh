@@ -37,6 +37,7 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "CASCatch.hxx"
 
 #include "utilities.h"
 
@@ -920,28 +921,33 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
                                         const SMESH::DirStruct &  theStepVector,
                                         CORBA::Long               theNbOfSteps)
 {
-  SMESHDS_Mesh* aMesh = GetMeshDS();
+  CASCatch_TRY {   
+    SMESHDS_Mesh* aMesh = GetMeshDS();
+    
+    set<const SMDS_MeshElement*> elements;
+    for (int i = 0; i < theIDsOfElements.length(); i++)
+    {
+      CORBA::Long index = theIDsOfElements[i];
+      const SMDS_MeshElement * elem = aMesh->FindElement(index);
+      if ( elem )
+	elements.insert( elem );
+    }
+    const SMESH::PointStruct * P = &theStepVector.PS;
+    gp_Vec stepVec( P->x, P->y, P->z );
+    
+    TElemOfElemListMap aHystory;
+    ::SMESH_MeshEditor anEditor( _myMesh );
+    anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 
-  set<const SMDS_MeshElement*> elements;
-  for (int i = 0; i < theIDsOfElements.length(); i++)
-  {
-    CORBA::Long index = theIDsOfElements[i];
-    const SMDS_MeshElement * elem = aMesh->FindElement(index);
-    if ( elem )
-      elements.insert( elem );
+    // Update Python script
+    TPythonDump() << "stepVector = " << theStepVector;
+    TPythonDump() << this << ".ExtrusionSweep( "
+		  << theIDsOfElements << ", stepVector, " << theNbOfSteps << " )";
+
+  }CASCatch_CATCH(Standard_Failure) {
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();          
+    INFOS( "SMESH_MeshEditor_i::ExtrusionSweep fails - "<< aFail->GetMessageString() );
   }
-  const SMESH::PointStruct * P = &theStepVector.PS;
-  gp_Vec stepVec( P->x, P->y, P->z );
-
-  ::SMESH_MeshEditor anEditor( _myMesh );
-  //anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
-  TElemOfElemListMap aHystory;
-  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
-
-  // Update Python script
-  TPythonDump() << "stepVector = " << theStepVector;
-  TPythonDump() << this << ".ExtrusionSweep( "
-                << theIDsOfElements << ", stepVector, " << theNbOfSteps << " )";
 }
 
 

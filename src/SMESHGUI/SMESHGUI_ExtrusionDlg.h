@@ -114,6 +114,7 @@ private:
 
 private slots:
   void ConstructorsClicked (int);
+  void CheckIsEnable();
   void ClickOnOk();
   bool ClickOnApply();
   void ClickOnCancel();
