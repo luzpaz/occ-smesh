@@ -452,7 +452,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 {
   myMesh = theGroup->GetMesh();
-
+  
   myName->setText(theGroup->GetName());
   myName->home(false);
 
@@ -854,6 +854,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       if (aNbSel != 1 ) {
         myGroup = SMESH::SMESH_Group::_nil();
+	myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil(); 
         myMesh = SMESH::SMESH_Mesh::_nil();
         myIsBusy = false;
         return;
@@ -890,12 +891,14 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	}
         myIsBusy = false;
         myCurrentLineEdit = 0;
+
+	myGroup = SMESH::SMESH_Group::_nil();
+	myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
+	
         init(aGroup);
         myIsBusy = true;
         mySelectSubMesh->setEnabled(true);
         mySelectGroup->setEnabled(true);
-        myGeomGroupBtn->setEnabled(true);
-        myGeomGroupLine->setEnabled(true);
       }
       myCurrentLineEdit = 0;
       myIsBusy = false;
