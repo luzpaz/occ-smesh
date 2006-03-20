@@ -1086,7 +1086,8 @@ SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
 
   long i = 0, iEnd = aBorders.size();
 
-  SMESH::FreeEdges::Borders_var aResult = new SMESH::FreeEdges::Borders(iEnd);
+  SMESH::FreeEdges::Borders_var aResult = new SMESH::FreeEdges::Borders;
+  aResult->length(iEnd);
 
   SMESH::Controls::FreeEdges::TBorders::const_iterator anIter;
   for ( anIter = aBorders.begin() ; anIter != aBorders.end(); anIter++, i++ )
