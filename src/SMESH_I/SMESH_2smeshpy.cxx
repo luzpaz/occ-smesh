@@ -909,12 +909,21 @@ bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd
                                                 const _pyID&              theMesh)
 {
   if ( IsWrappable( theMesh ) && myArgs.Length() > 0 ) {
-    list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
-    for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
-      // clear SetDistrType()
-      if ( (*cmd)->GetString().Location( "SetDistrType", 1, (*cmd)->Length() ))
-        (*cmd)->Clear();
+    list<Handle(_pyCommand)> aNewCommandsList;
+    list<TCollection_AsciiString> aNewList;
+    list<TCollection_AsciiString>::iterator aNewListIter;
+    
+    list<Handle(_pyCommand)>::reverse_iterator cmd = myUnknownCommands.rbegin();
+    for ( ; cmd != myUnknownCommands.rend(); ++cmd ) {
+      aNewListIter = find(aNewList.begin(),aNewList.end(),(*cmd)->GetMethod());
+      if(aNewListIter == aNewList.end()){
+	aNewList.push_front((*cmd)->GetMethod());
+	aNewCommandsList.push_front((*cmd));
+      } else {
+	(*cmd)->Clear();
+      }
     }
+    myUnknownCommands = aNewCommandsList;
   }
   return _pyHypothesis::Addition2Creation( theCmd, theMesh );
 }
@@ -1280,8 +1289,8 @@ void _pyCommand::RemoveArgs()
 bool _pyCommand::SetDependentCmdsAfter() const
 {
   bool orderChanged = false;
-  list< Handle(_pyCommand)>::const_iterator cmd = myDependentCmds.begin();
-  for ( ; cmd != myDependentCmds.end(); ++cmd ) {
+  list< Handle(_pyCommand)>::const_reverse_iterator cmd = myDependentCmds.rbegin();
+  for ( ; cmd != myDependentCmds.rend(); ++cmd ) {
     if ( (*cmd)->GetOrderNb() < GetOrderNb() ) {
       orderChanged = true;
       theGen->SetCommandAfter( *cmd, this );
