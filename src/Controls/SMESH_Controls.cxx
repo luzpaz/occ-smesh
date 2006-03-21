@@ -246,6 +246,7 @@ void  NumericalFunctor::SetPrecision( const long thePrecision )
 
 double NumericalFunctor::GetValue( long theId )
 {
+  myCurrElement = myMesh->FindElement( theId );
   TSequenceOfXYZ P;
   if ( GetPoints( theId, P ))
   {
@@ -484,6 +485,7 @@ namespace{
 double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
 {
   double aQuality = 0.0;
+  if(myCurrElement->IsPoly()) return aQuality;
   int nbNodes = P.size();
   switch(nbNodes){
   case 4:{
