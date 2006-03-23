@@ -2741,7 +2741,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( 6003 ), anId, -1 ); // FREE_BORDER
   popupMgr()->setRule( action( 6003 ), aMeshInVtkHasEdges, true );
-  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeEdges'", false );
+  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeBorders'", false );
 
   popupMgr()->insert( action( 6001 ), anId, -1 ); // LENGTH
   popupMgr()->setRule( action( 6001 ), aMeshInVtkHasEdges, true );
@@ -2755,7 +2755,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( 6002 ), anId, -1 ); // FREE_EDGE
   popupMgr()->setRule( action( 6002 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6002 ), "controlMode = 'eFreeBorders'", false );
+  popupMgr()->setRule( action( 6002 ), "controlMode = 'eFreeEdges'", false );
 
   popupMgr()->insert( action( 6018 ), anId, -1 ); // LENGTH_2D
   popupMgr()->setRule( action( 6018 ), aMeshInVtkHasFaces, true );
