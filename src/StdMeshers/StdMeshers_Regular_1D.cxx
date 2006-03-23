@@ -705,7 +705,7 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
     {
       // Propagation of 1D hypothesis from <aMainEdge> on this edge;
       // get non-auxiliary assigned to _mainEdge
-      nbHyp = aMesh.GetHypotheses( _mainEdge, compatibleFilter, _usedHypList, false );
+      nbHyp = aMesh.GetHypotheses( _mainEdge, compatibleFilter, _usedHypList, true );
     }
   }
 
