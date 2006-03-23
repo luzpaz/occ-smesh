@@ -446,8 +446,14 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     switch (myElementType) {
     case SMDSAbs_Edge:
       aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
-    case SMDSAbs_Face:
-      aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
+    case SMDSAbs_Face:{
+      if(myIsPoly)
+	aMeshEditor->AddPolygonalFace(anArrayOfIdeces.inout());
+      else
+	aMeshEditor->AddFace(anArrayOfIdeces.inout());
+      break;
+
+    }
     case SMDSAbs_Volume:
       aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
     default:;
