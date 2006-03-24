@@ -37,6 +37,7 @@
 
 #include "SUIT_Session.h"
 #include "SUIT_OverrideCursor.h"
+#include "SUIT_MessageBox.h"
 
 #include "SALOME_ListIO.hxx"
 #include "SALOME_InteractiveObject.hxx"
@@ -324,6 +325,10 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg (SMESHGUI* theModule,
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
   GroupButtonsLayout->addWidget(buttonOk, 0, 0);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
 
   SMESHGUI_ClippingDlgLayout->addWidget(GroupPlanes,      0, 0);
   SMESHGUI_ClippingDlgLayout->addWidget(GroupParameters,  1, 0);
@@ -344,6 +349,8 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg (SMESHGUI* theModule,
   myIsSelectPlane = false;
   onSelectionChanged();
 
+  myHelpFileName = "clipping.htm";
+
   // signals and slots connections :
   connect(ComboBoxPlanes, SIGNAL(activated(int)), this, SLOT(onSelectPlane(int)));
   connect(buttonNew, SIGNAL(clicked()), this, SLOT(ClickOnNew()));
@@ -357,6 +364,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg (SMESHGUI* theModule,
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
   /* to close dialog if study frame change */
@@ -423,6 +431,23 @@ void SMESHGUI_ClippingDlg::ClickOnOk()
 void SMESHGUI_ClippingDlg::ClickOnCancel()
 {
   close();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ClippingDlg::ClickOnHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

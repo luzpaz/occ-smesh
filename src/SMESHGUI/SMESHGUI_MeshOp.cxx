@@ -208,6 +208,11 @@ void SMESHGUI_MeshOp::startOperation()
     }
     connect( myDlg, SIGNAL( hypoSet( const QString& )), SLOT( onHypoSet( const QString& )));
     connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
+
+    if ( myToCreate ) 
+      if ( myIsMesh ) myHelpFileName = "/files/constructing_meshes.htm";
+      else myHelpFileName = "/files/constructing_submeshes.htm";
+    else myHelpFileName = "files/reassigning_hypotheses_and_algorithms.htm";
   }
   SMESHGUI_SelectionOp::startOperation();
 
@@ -1501,12 +1506,12 @@ void SMESHGUI_MeshOp::onPublishShapeByMeshDlg()
     if ( !aGeomVar->_is_nil() )
     {
       QString ID = aGeomVar->GetStudyEntry();
-      if ( _PTR(SObject) aGeomSO = studyDS()->FindObjectID( ID )) {
+      if ( _PTR(SObject) aGeomSO = studyDS()->FindObjectID( ID.latin1() )) {
         SMESH::SMESH_Mesh_ptr aMeshPtr = myShapeByMeshDlg->GetMesh();
         if ( !CORBA::is_nil( aMeshPtr )) {
           if (_PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshPtr )) {
             myDlg->activateObject( SMESHGUI_MeshDlg::Mesh );
-            myDlg->selectObject( aMeshSO->GetName(), SMESHGUI_MeshDlg::Mesh, aMeshSO->GetID() );
+            myDlg->selectObject( aMeshSO->GetName().c_str(), SMESHGUI_MeshDlg::Mesh, aMeshSO->GetID().c_str() );
           }
         }
         myDlg->activateObject( SMESHGUI_MeshDlg::Geom );

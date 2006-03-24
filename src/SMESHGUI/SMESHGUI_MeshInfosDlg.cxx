@@ -34,8 +34,11 @@
 #include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_OverrideCursor.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
+#include "SalomeApp_Application.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOME_ListIO.hxx"
 
@@ -344,12 +347,15 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   myButtonsGroupLayout->setAlignment(Qt::AlignTop);
   myButtonsGroupLayout->setSpacing(6); myButtonsGroupLayout->setMargin(11);
 
-  // buttons --> OK button
+  // buttons --> OK and Help buttons
   myOkBtn = new QPushButton(tr("SMESH_BUT_OK" ), myButtonsGroup, "myOkBtn");
   myOkBtn->setAutoDefault(TRUE); myOkBtn->setDefault(TRUE);
-  myButtonsGroupLayout->addStretch();
+  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP" ), myButtonsGroup, "myHelpBtn");
+  myHelpBtn->setAutoDefault(TRUE);
+
   myButtonsGroupLayout->addWidget(myOkBtn);
   myButtonsGroupLayout->addStretch();
+  myButtonsGroupLayout->addWidget(myHelpBtn);
 
   aTopLayout->addLayout(aSelectLayout);
   aTopLayout->addWidget(myWGStack);
@@ -359,6 +365,7 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
 
   // connect signals
   connect(myOkBtn,                 SIGNAL(clicked()),                      this, SLOT(close()));
+  connect( myHelpBtn,              SIGNAL(clicked()),                      this, SLOT(onHelp()));
   connect(mySelectBtn,             SIGNAL(clicked()),                      this, SLOT(onStartSelection()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(close()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
@@ -368,6 +375,8 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
 
   // init dialog with current selection
   onSelectionChanged();
+
+  myHelpFileName = "/files/viewing_mesh_info.htm#?";
 }
 
 //=================================================================================
@@ -523,4 +532,21 @@ void SMESHGUI_MeshInfosDlg::onStartSelection()
   onSelectionChanged();
   myStartSelection = true;
   mySelectLab->setText(tr("INF_SELECT_OBJECT"));
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MeshInfosDlg::onHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }

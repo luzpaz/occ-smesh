@@ -61,6 +61,7 @@ private slots:
     void DeactivateActiveDialog() ;
     void ActivateThisDialog();
     void onStartSelection();
+    void onHelp();
 
 private:
     SMESHGUI*               mySMESHGUI;
@@ -104,8 +105,11 @@ private:
     QLabel*       myGroupType;
     QLabel*       myGroupNb;
 
-    QGroupBox*   myButtonsGroup;
-    QPushButton* myOkBtn;
+    QGroupBox*    myButtonsGroup;
+    QPushButton*  myOkBtn;
+    QPushButton*  myHelpBtn;
+
+    QString       myHelpFileName;
 };
 
 #endif // SMESHGUI_MESHINFOSDLG_H

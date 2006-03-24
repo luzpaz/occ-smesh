@@ -52,6 +52,10 @@ msgstr "&No"
 msgid "SMESH_BUT_CANCEL"
 msgstr "&Cancel"
 
+#Help
+msgid "SMESH_BUT_HELP"
+msgstr "&Help"
+
 #Add
 msgid "SMESH_BUT_ADD"
 msgstr "A&dd"

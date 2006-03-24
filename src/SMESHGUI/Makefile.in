@@ -70,8 +70,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_Swig.cxx \
 		SMESHGUI_MoveNodesDlg.cxx \
 		SMESHGUI_AddMeshElementDlg.cxx \
-		SMESHGUI_EditHypothesesDlg.cxx \
-		SMESHGUI_CreateHypothesesDlg.cxx \
 		SMESHGUI_XmlHandler.cxx \
 		SMESHGUI_Filter.cxx \
 		SMESHGUI_FilterDlg.cxx \
@@ -98,7 +96,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_FilterUtils.cxx \
 		SMESHGUI_PatternUtils.cxx \
 		SMESHGUI_HypothesesUtils.cxx \
-		SMESHGUI_PrecisionDlg.cxx \
 		SMESHGUI_VTKUtils.cxx \
 		SMESHGUI_Selection.cxx \
 		SMESHGUI_CreatePolyhedralVolumeDlg.cxx \
@@ -131,8 +128,6 @@ LIB_MOC = \
 		SMESHGUI_Preferences_SelectionDlg.h \
 		SMESHGUI_MoveNodesDlg.h \
 		SMESHGUI_AddMeshElementDlg.h \
-		SMESHGUI_EditHypothesesDlg.h \
-		SMESHGUI_CreateHypothesesDlg.h \
 		SMESHGUI_FilterDlg.h \
 		SMESHGUI_FilterLibraryDlg.h \
 		SMESHGUI_SingleEditDlg.h \
@@ -148,7 +143,6 @@ LIB_MOC = \
 		SMESHGUI_TranslationDlg.h \
 		SMESHGUI_SymmetryDlg.h \
 		SMESHGUI_SewingDlg.h \
-		SMESHGUI_PrecisionDlg.h \
 		SMESHGUI_MergeNodesDlg.h \
 		SMESHGUI_EditMeshDlg.h \
 		SMESHGUI_CreatePolyhedralVolumeDlg.h \

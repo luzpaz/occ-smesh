@@ -49,6 +49,7 @@
 #include "SUIT_Desktop.h"
 
 #include "SalomeApp_Study.h"
+#include "SalomeApp_Application.h"
 #include "LightApp_SelectionMgr.h"
 
 #include "SVTK_Selector.h"
@@ -256,6 +257,10 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -325,6 +330,8 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 
   SMESHGUI_NodesDlgLayout->addWidget(GroupCoordinates, 1, 0);
 
+  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_nodes";
+
   /* Initialisation and display */
   Init();
 }
@@ -364,6 +371,7 @@ void SMESHGUI_NodesDlg::Init ()
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
   connect(SpinBox_X, SIGNAL (valueChanged(double)), SLOT(ValueChangedInSpinBox(double)));
   connect(SpinBox_Y, SIGNAL (valueChanged(double)), SLOT(ValueChangedInSpinBox(double)));
@@ -473,6 +481,23 @@ void SMESHGUI_NodesDlg::ClickOnCancel()
   mySMESHGUI->ResetState();
 
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_NodesDlg::ClickOnHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

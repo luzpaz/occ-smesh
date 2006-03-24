@@ -34,6 +34,9 @@
 #include "SUIT_Session.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_FileDlg.h"
+#include "SUIT_MessageBox.h"
+
+#include "SalomeApp_Application.h"
 
 // QT Includes
 #include <qapplication.h>
@@ -144,6 +147,8 @@ void SMESHGUI_FilterLibraryDlg::construct (const QValueList<int>& theTypes,
 
   aDlgLay->setStretchFactor(myMainFrame, 1);
 
+  myHelpFileName = "selection_filter_library.htm";
+  
   Init(myTypes, myMode);
 }
 
@@ -244,11 +249,13 @@ QFrame* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
 
   myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"), aGrp);
   myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"), aGrp);
+  myButtons[ BTN_Help  ] = new QPushButton(tr("SMESH_BUT_HELP"), aGrp);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
   connect(myButtons[ BTN_Cancel ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Apply  ], SIGNAL(clicked()), SLOT(onApply()));
+  connect(myButtons[ BTN_Help   ], SIGNAL(clicked()), SLOT(onHelp()));
 
   QMap<int, QPushButton*>::iterator anIter;
   for (anIter = myButtons.begin(); anIter != myButtons.end(); ++anIter)
@@ -459,6 +466,23 @@ void SMESHGUI_FilterLibraryDlg::onClose()
   disconnect( mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_FilterLibraryDlg::onHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

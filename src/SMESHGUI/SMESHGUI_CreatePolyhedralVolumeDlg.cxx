@@ -40,6 +40,8 @@
 #include "SMDS_Mesh.hxx"
 
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SalomeApp_Application.h"
 #include "SalomeApp_Study.h"
@@ -249,6 +251,11 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
   buttonOk->setAutoDefault( TRUE );
   buttonOk->setDefault( TRUE );
   GroupButtonsLayout->addWidget( buttonOk, 0, 0 );
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
+
   SMESHGUI_CreatePolyhedralVolumeDlgLayout->addWidget( GroupButtons, 2, 0 );
 
   /***************************************************************/
@@ -315,6 +322,8 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
   RadioButton1->setChecked( TRUE );
  
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+
+  myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_polyhedrons
   
   Init();
 }
@@ -348,6 +357,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
   connect(buttonOk, SIGNAL( clicked() ),     SLOT( ClickOnOk() ) );
   connect(buttonCancel, SIGNAL( clicked() ), SLOT( ClickOnCancel() ) ) ;
   connect(buttonApply, SIGNAL( clicked() ),  SLOT(ClickOnApply() ) );
+  connect(buttonHelp, SIGNAL(clicked()),     SLOT(ClickOnHelp() ) );
 
   connect( GroupConstructors, SIGNAL(clicked(int) ), SLOT( ConstructorsClicked(int) ) );
   connect(SelectElementsButton, SIGNAL( clicked() ), SLOT( SetEditCurrentArgument() ) ) ;
@@ -558,6 +568,23 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnCancel()
   disconnect( mySelectionMgr, 0, this, 0 );
   mySMESHGUI->ResetState() ;
   reject() ;
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

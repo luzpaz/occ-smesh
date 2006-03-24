@@ -46,6 +46,9 @@
 #include "SUIT_OverrideCursor.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_MessageBox.h"
+#include "SUIT_Session.h"
+
+#include "SalomeApp_Application.h"
 
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
@@ -134,6 +137,10 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -246,6 +253,8 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
+  myHelpFileName = "extrusion.htm";
+
   Init();
 
   /***************************************************************/
@@ -253,6 +262,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()),  this, SLOT(ClickOnHelp()));
 
   // to update state of the Ok & Apply buttons
   connect(SpinBox_Dx, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
@@ -436,6 +446,23 @@ void SMESHGUI_ExtrusionDlg::ClickOnCancel()
     aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::ClickOnHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

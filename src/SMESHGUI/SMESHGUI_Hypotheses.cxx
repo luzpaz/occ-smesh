@@ -8,7 +8,14 @@
 #include <SALOMEDSClient_Study.hxx>
 #include <utilities.h>
 
+#include <SMESHGUI.h>
+
 #include <QtxIntSpinBox.h>
+
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+
+#include <SalomeApp_Application.h>
 
 #include <qframe.h>
 #include <qlayout.h>
@@ -344,7 +351,7 @@ bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam& , QW
 
 
 SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator* creator, QWidget* parent )
-: QtxDialog( parent, "", true, true, QtxDialog::OKCancel ),
+: QtxDialog( parent, "", true, true ),
   myCreator( creator )
 {
   setMinimumSize( 300, height() );
@@ -366,6 +373,29 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
   titLay->addStretch( 1 );
 
   myLayout->addWidget( titFrame, 0 );
+
+  QString aHypType = creator->hypType();
+  if ( aHypType == "LocalLength" )
+    myHelpFileName = "/files/arithmetic_1d.htm#?";
+  else if ( aHypType == "Arithmetic1D")
+    myHelpFileName = "/files/arithmetic_1d.htm#?";
+  else if ( aHypType == "MaxElementArea")
+    myHelpFileName = "/files/max._element_area_hypothesis.htm";
+  else if ( aHypType == "MaxElementVolume")
+    myHelpFileName = "/files/max._element_volume_hypothsis.htm";
+  else if ( aHypType == "StartEndLength")
+    myHelpFileName = "/files/arithmetic_1d.htm#?";
+  else if ( aHypType == "Deflection1D")
+    myHelpFileName = "/files/arithmetic_1d.htm#?";
+  else if ( aHypType == "AutomaticLength")
+    myHelpFileName = "/files/arithmetic_1d.htm#?";
+  else if ( aHypType == "NumberOfSegments")
+    myHelpFileName = "/files/arithmetic_1d.htm#?";
+  else
+    myHelpFileName = "";
+
+  connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
+
 }
 
 SMESHGUI_HypothesisDlg::~SMESHGUI_HypothesisDlg()
@@ -385,6 +415,21 @@ void SMESHGUI_HypothesisDlg::accept()
 {
   if( !myCreator || myCreator->checkParams() )
     QtxDialog::accept();
+}
+
+void SMESHGUI_HypothesisDlg::onHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) {
+    SMESHGUI* aSMESHGUI = dynamic_cast<SMESHGUI*>( app->activeModule() );
+    app->onHelpContextModule(aSMESHGUI ? app->moduleName(aSMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  }
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 void SMESHGUI_HypothesisDlg::setHIcon( const QPixmap& p )

@@ -11,6 +11,7 @@
 #include "SMESH_Actor.h"
 
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SVTK_Selection.h"
 #include "SVTK_Selector.h"
@@ -421,6 +422,10 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
   aGroupButtonsLayout->addWidget(buttonOk, 0, 0);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  aGroupButtonsLayout->addWidget(buttonHelp, 0, 4);
 
   aDialogLayout->addWidget(GroupButtons, 2, 0);
 
@@ -456,30 +461,37 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   case QUAD_EDGE:
     aNumRows = 1;
     myNbCorners = 2;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_edges
     break;
   case QUAD_TRIANGLE:
     aNumRows = 3;
     myNbCorners = 3;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_triangles
     break;
   case QUAD_QUADRANGLE:
     aNumRows = 4;
     myNbCorners = 4;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_quadrangles
     break;
   case QUAD_TETRAHEDRON:
     aNumRows = 6;
     myNbCorners = 4;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_tetrahedrons
     break;
   case QUAD_PYRAMID:
     aNumRows = 8;
     myNbCorners = 5;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?";
     break;
   case QUAD_PENTAHEDRON:
     aNumRows = 9;
     myNbCorners = 6;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?";
     break; 
   case QUAD_HEXAHEDRON:
     aNumRows = 12;
     myNbCorners = 8;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_hexahedrons
     break;
   }
     
@@ -521,6 +533,7 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   connect(buttonOk, SIGNAL(clicked()),     SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()),   SLOT(ClickOnHelp()));
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
@@ -634,6 +647,23 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnCancel()
   mySMESHGUI->ResetState();
   reject();
   return;
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

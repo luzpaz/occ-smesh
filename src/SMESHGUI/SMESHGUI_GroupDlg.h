@@ -87,6 +87,7 @@ private slots:
     void onOK();
     void onClose();
     bool onApply();
+    void onHelp();
     void onDeactivate();
 
     void onListSelectionChanged();
@@ -167,6 +168,8 @@ private:
     SMESHGUI_FilterDlg*           myFilterDlg;
 
     bool                          myCreate, myIsBusy;
+
+    QString                       myHelpFileName;
 };
 
 #endif // DIALOGBOX_GROUP_H

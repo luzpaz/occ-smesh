@@ -43,8 +43,11 @@
 
 #include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SalomeApp_Tools.h"
+#include "SalomeApp_Application.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
@@ -130,6 +133,9 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     myCurrentLineEdit = myMeshGroupLine;
     setSelectionMode(5);
   }
+
+  bool isEditMode = !CORBA::is_nil( myGroupOnGeom );
+  myHelpFileName = isEditMode ? "/files/editing_groups.htm" : "/files/creating_groups.htm";
 }
 
 //=================================================================================
@@ -332,11 +338,15 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   QPushButton* aCloseBtn = new QPushButton(aButtons, "close");
   aCloseBtn->setText(tr("SMESH_BUT_CLOSE"));
   aCloseBtn->setAutoDefault(true);
+  QPushButton* aHelpBtn = new QPushButton(aButtons, "help");
+  aHelpBtn->setText(tr("SMESH_BUT_HELP"));
+  aHelpBtn->setAutoDefault(true);
 
   aBtnLayout->addWidget(aOKBtn);
   aBtnLayout->addWidget(aApplyBtn);
   aBtnLayout->addStretch();
   aBtnLayout->addWidget(aCloseBtn);
+  aBtnLayout->addWidget(aHelpBtn);
 
   /***************************************************************/
   aMainLayout->addWidget(meshGroupLab,    0, 0);
@@ -377,6 +387,7 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   connect(aOKBtn, SIGNAL(clicked()), this, SLOT(onOK()));
   connect(aApplyBtn, SIGNAL(clicked()), this, SLOT(onApply()));
   connect(aCloseBtn, SIGNAL(clicked()), this, SLOT(onClose()));
+  connect(aHelpBtn, SIGNAL(clicked()), this, SLOT(onHelp()));
 
   /* Init selection */
   mySMESHGUI->SetActiveDialogBox(this);
@@ -1542,6 +1553,23 @@ void SMESHGUI_GroupDlg::onClose()
   mySMESHGUI->ResetState();
 
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onHelp()
+{
+  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

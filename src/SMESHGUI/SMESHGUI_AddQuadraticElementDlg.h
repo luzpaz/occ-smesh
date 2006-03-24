@@ -78,7 +78,10 @@ private:
     QPushButton*  buttonOk;
     QPushButton*  buttonCancel;
     QPushButton*  buttonApply;
-   
+    QPushButton * buttonHelp;
+
+    QString       myHelpFileName;
+
 private slots:
   
     void onTextChange(const QString&);
@@ -89,6 +92,7 @@ private slots:
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCorners() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;

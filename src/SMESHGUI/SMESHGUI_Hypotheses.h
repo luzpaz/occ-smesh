@@ -113,11 +113,13 @@ public:
 
 protected slots:
   virtual void accept();
+  void onHelp(); 
 
 private:
   SMESHGUI_GenericHypothesisCreator*   myCreator;
   QVBoxLayout*                         myLayout;
   QLabel                              *myIconLabel, *myTypeLabel;
+  QString                              myHelpFileName;
 };
 
 /*!
