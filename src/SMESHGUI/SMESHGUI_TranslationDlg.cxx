@@ -649,7 +649,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     if (myEditCurrentArgument == (QWidget*)SpinBox1_1) {
       SpinBox1_1->SetValue(x);
       SpinBox1_2->SetValue(y);
-      SpinBox2_3->SetValue(z);
+      SpinBox1_3->SetValue(z);
     } else if (myEditCurrentArgument == (QWidget*)SpinBox2_1) {
       SpinBox2_1->SetValue(x);
       SpinBox2_2->SetValue(y);
