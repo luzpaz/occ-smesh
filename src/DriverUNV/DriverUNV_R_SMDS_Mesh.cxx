@@ -195,25 +195,29 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 
 	  case 116: // Solid Quadratic Brick - HEX20
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[3],
-						aRec.node_labels[2],
-						aRec.node_labels[1],
-						aRec.node_labels[4],
-						aRec.node_labels[7],
 						aRec.node_labels[6],
+						aRec.node_labels[4],
+						aRec.node_labels[2],
+
+						aRec.node_labels[12],
+						aRec.node_labels[18],
+						aRec.node_labels[16],
+						aRec.node_labels[14],
+
+						aRec.node_labels[7],
 						aRec.node_labels[5],
+						aRec.node_labels[3],
+						aRec.node_labels[1],
+
+						aRec.node_labels[19],
+						aRec.node_labels[17],
+						aRec.node_labels[15],
+                                                aRec.node_labels[13],
+
+                                                aRec.node_labels[8],
 						aRec.node_labels[11],
 						aRec.node_labels[10],
 						aRec.node_labels[9],
-						aRec.node_labels[8],
-						aRec.node_labels[15],
-						aRec.node_labels[14],
-						aRec.node_labels[13],
-						aRec.node_labels[12],
-						aRec.node_labels[16],
-						aRec.node_labels[19],
-						aRec.node_labels[18],
-						aRec.node_labels[17],
 						aLabel);
 	    break;
 
