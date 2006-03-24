@@ -259,7 +259,7 @@ $(top_srcdir)/aclocal.m4: $(ACLOCAL_SRC:%=@KERNEL_ROOT_DIR@/salome_adm/unix/conf
                           $(ACLOCAL_GUI:%=@GUI_ROOT_DIR@/adm_local/unix/config_files/%) \
 			  $(ACLOCAL_MED:%=@MED_ROOT_DIR@/adm_local/unix/config_files/%) \
 			  $(ACLOCAL_GEOM:%=@GEOM_ROOT_DIR@/adm_local/unix/config_files/%)
-	cd $(top_srcdir) ; aclocal --acdir=adm_local/unix/config_files -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files \
+	cd $(top_srcdir) ; aclocal -I adm_local/unix/config_files -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files \
 	                                                               -I @GUI_ROOT_DIR@/adm_local/unix/config_files \
 	                                                               -I @MED_ROOT_DIR@/adm_local/unix/config_files \
 								       -I @GEOM_ROOT_DIR@/adm_local/unix/config_files
