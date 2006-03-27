@@ -24,6 +24,7 @@
 
 #include "UNV2411_Structure.hxx"
 #include "UNV2412_Structure.hxx"
+#include "UNV2417_Structure.hxx"
 #include "UNV_Utilities.hxx"
 
 using namespace std;
@@ -65,13 +66,14 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	const TElementLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
 	if(IsBeam(aRec.fe_descriptor_id)) {
-          if(aRec.fe_descriptor_id == 11) {
+          if((aRec.fe_descriptor_id == 11) || (aRec.fe_descriptor_id == 21)) {
             // edge with two nodes
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
                                               aLabel);
           }
           else {
+	    cout<<"### Id of element = "<<aRec.fe_descriptor_id<<endl;
             // quadratic edge (with 3 nodes)
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
@@ -240,9 +242,14 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 
 	  }
 	}
-	if(!anElement)
-	  MESSAGE("DriverUNV_R_SMDS_Mesh::Perform - can not add element with ID = "<<aLabel<<" and type = "<<aRec.fe_descriptor_id);
+	//	if(!anElement)
+	//	  MESSAGE("DriverUNV_R_SMDS_Mesh::Perform - can not add element with ID = "<<aLabel<<" and type = "<<aRec.fe_descriptor_id);
       }
+    }
+    {
+      using namespace UNV2417;      
+      TDataSet aDataSet2417;
+      UNV2417::Read(in_stream,aDataSet2417);
     }
   }
   catch(const std::exception& exc){
