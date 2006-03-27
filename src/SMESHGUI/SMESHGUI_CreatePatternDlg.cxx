@@ -516,6 +516,7 @@ bool SMESHGUI_CreatePatternDlg::loadFromObject (const bool theMess)
       if      (aCode == SMESH::SMESH_Pattern::ERR_LOAD_EMPTY_SUBMESH  ) aMess = tr("ERR_LOAD_EMPTY_SUBMESH");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADF_NARROW_FACE   ) aMess = tr("ERR_LOADF_NARROW_FACE");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADF_CLOSED_FACE   ) aMess = tr("ERR_LOADF_CLOSED_FACE");
+      else if (aCode == SMESH::SMESH_Pattern::ERR_LOADF_CANT_PROJECT   ) aMess = tr("ERR_LOADF_CANT_PROJECT");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADV_BAD_SHAPE     ) aMess = tr("ERR_LOADV_BAD_SHAPE");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADV_COMPUTE_PARAMS) aMess = tr("ERR_LOADV_COMPUTE_PARAMS");
       else                                                              aMess = tr("ERROR_OF_CREATION");

@@ -1954,6 +1954,9 @@ msgstr "It is impossible to create pattern from narrow face"
 msgid "SMESHGUI_CreatePatternDlg::ERR_LOADF_CLOSED_FACE"
 msgstr "It is impossible to create pattern from face having seam edge"
 
+msgid "SMESHGUI_CreatePatternDlg::ERR_LOADF_CANT_PROJECT"
+msgstr "Impossible to perform projection of nodes to the face"
+
 msgid "SMESHGUI_CreatePatternDlg::ERR_LOADV_BAD_SHAPE"
 msgstr "Pattern can be created from closed shell or solid with 6 faces only"
 
