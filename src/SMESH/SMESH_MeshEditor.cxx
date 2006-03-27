@@ -122,11 +122,8 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
       const SMDS_PositionPtr& aPosition = node->GetPosition();
       if ( aPosition.get() ) {
-        int aShapeID = aPosition->GetShapeId();
-        if ( aShapeID ) {
-          TopoDS_Shape aShape = aMesh->IndexToShape( aShapeID );
-          SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShape );
-          if ( sm )
+        if ( int aShapeID = aPosition->GetShapeId() ) {
+          if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShapeID ) )
             smmap.insert( sm );
         }
       }
@@ -145,6 +142,10 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
     for ( smIt = smmap.begin(); smIt != smmap.end(); smIt++ )
       (*smIt)->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
   }
+
+  // Check if the whole mesh becomes empty
+  if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
+    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
   return true;
 }
