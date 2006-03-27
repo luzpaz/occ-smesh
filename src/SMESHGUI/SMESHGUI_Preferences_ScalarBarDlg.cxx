@@ -637,8 +637,8 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
 
 	  if ( myScalarBarActor->GetLookupTable() ) {
 	    float *range = myScalarBarActor->GetLookupTable()->GetRange();
-	    myMinEdit->setText( QString::number( range[0] ) );
-	    myMaxEdit->setText( QString::number( range[1] ) );
+	    myMinEdit->setText( QString::number( range[0],'g',12 ) );
+	    myMaxEdit->setText( QString::number( range[1],'g',12 ) );
 	  }
 
 	  vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
