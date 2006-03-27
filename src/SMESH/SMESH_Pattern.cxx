@@ -3548,6 +3548,40 @@ bool SMESH_Pattern::
 }
 
 //=======================================================================
+//function : clearSubMesh
+//purpose  : 
+//=======================================================================
+
+static bool clearSubMesh( SMESH_Mesh*         theMesh,
+                          const TopoDS_Shape& theShape)
+{
+  bool removed = false;
+  if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMeshContaining( theShape ))
+  {
+    if ( aSubMesh->GetSubMeshDS() ) {
+      removed =
+        aSubMesh->GetSubMeshDS()->NbElements() || aSubMesh->GetSubMeshDS()->NbNodes();
+      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
+    }
+  }
+  else {
+    SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
+    if ( SMESHDS_SubMesh* aSubMeshDS = aMeshDS->MeshElements( theShape ))
+    {
+      SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+      removed = eIt->more();
+      while ( eIt->more() )
+        aMeshDS->RemoveElement( eIt->next() );
+      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
+      removed = removed || nIt->more();
+      while ( nIt->more() )
+        aMeshDS->RemoveNode( static_cast<const SMDS_MeshNode*>( nIt->next() ));
+    }
+  }
+  return removed;
+}
+
+//=======================================================================
 //function : clearMesh
 //purpose  : clear mesh elements existing on myShape in theMesh
 //=======================================================================
@@ -3557,20 +3591,11 @@ void SMESH_Pattern::clearMesh(SMESH_Mesh* theMesh) const
 
   if ( !myShape.IsNull() )
   {
-    if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMesh/*Containing*/( myShape ))
-    {
-      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
-    }
-    else {
-      SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
-      if ( SMESHDS_SubMesh* aSubMeshDS = aMeshDS->MeshElements( myShape ))
+    if ( !clearSubMesh( theMesh, myShape ) && !myIs2D ) { // myShape is SHELL but volumes may be bound to SOLID
+      TopTools_ListIteratorOfListOfShape it( theMesh->GetAncestors( myShape ));
+      for (; it.More() && it.Value().ShapeType() == TopAbs_SOLID; it.Next())
       {
-        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-        while ( eIt->more() )
-          aMeshDS->RemoveElement( eIt->next() );
-        SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
-        while ( nIt->more() )
-          aMeshDS->RemoveNode( static_cast<const SMDS_MeshNode*>( nIt->next() ));
+        clearSubMesh( theMesh, it.Value() );
       }
     }
   }
