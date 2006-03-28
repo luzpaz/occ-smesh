@@ -91,6 +91,11 @@ namespace SMESH {
       conn = aConn;
       break;
     }
+    case QUAD_EDGE: {
+      static int aConn[] = {1,0,2};
+      conn = aConn;
+      break;
+    }
     default:;
     }
     if ( !conn ) {
