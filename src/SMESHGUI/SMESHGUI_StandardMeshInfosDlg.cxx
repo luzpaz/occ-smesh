@@ -43,7 +43,7 @@
 #include "SUIT_OverrideCursor.h"
 #include "SUIT_MessageBox.h"
 
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 
 #include "LightApp_SelectionMgr.h"
 #include "SALOME_ListIO.hxx"
@@ -178,7 +178,7 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
   mySelectionMgr->installFilter(myMeshFilter);
   onSelectionChanged();
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#?";
+  myHelpFileName = "/files/viewing_mesh_info.htm#standard_infos";
 }
 
 //=================================================================================
@@ -457,7 +457,7 @@ void SMESHGUI_StandardMeshInfosDlg::onStartSelection()
 //=================================================================================
 void SMESHGUI_StandardMeshInfosDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

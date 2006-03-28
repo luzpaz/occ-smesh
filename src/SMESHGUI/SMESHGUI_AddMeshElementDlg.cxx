@@ -40,6 +40,7 @@
 
 #include "SUIT_Session.h"
 #include "SUIT_MessageBox.h"
+#include "LightApp_Application.h"
 
 #include "SVTK_Selection.h"
 #include "SVTK_Selector.h"
@@ -530,7 +531,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::ClickOnHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

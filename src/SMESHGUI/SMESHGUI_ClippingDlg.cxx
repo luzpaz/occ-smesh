@@ -43,7 +43,7 @@
 #include "SALOME_InteractiveObject.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
 
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 #include "LightApp_SelectionMgr.h"
 
 #include "SVTK_Selector.h"
@@ -439,7 +439,7 @@ void SMESHGUI_ClippingDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_ClippingDlg::ClickOnHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

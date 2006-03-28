@@ -37,7 +37,7 @@
 #include "SMDS_Mesh.hxx"
 
 #include "LightApp_SelectionMgr.h"
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_MessageBox.h"
 #include "SUIT_Desktop.h"
@@ -279,7 +279,7 @@ void SMESHGUI_SingleEditDlg::onClose()
 //=================================================================================
 void SMESHGUI_SingleEditDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

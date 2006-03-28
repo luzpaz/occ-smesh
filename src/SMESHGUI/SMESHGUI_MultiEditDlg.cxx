@@ -47,7 +47,7 @@
 #include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
 
@@ -486,7 +486,7 @@ void SMESHGUI_MultiEditDlg::onClose()
 //=================================================================================
 void SMESHGUI_MultiEditDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

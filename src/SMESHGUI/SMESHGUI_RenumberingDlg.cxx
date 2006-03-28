@@ -40,7 +40,7 @@
 #include "SUIT_Session.h"
 #include "SUIT_MessageBox.h"
 
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 
 #include "SALOME_ListIO.hxx"
 
@@ -97,11 +97,11 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const cha
   GroupConstructors = new QButtonGroup(this, "GroupConstructors");
   if (unit == 0) {
     GroupConstructors->setTitle(tr("SMESH_NODES" ));
-    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#?";
+    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_nodes";
   }
   else if (unit == 1) {
     GroupConstructors->setTitle(tr("SMESH_ELEMENTS" ));
-    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#?";
+    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_elements";
   }
   GroupConstructors->setExclusive(TRUE);
   GroupConstructors->setColumnLayout(0, Qt::Vertical);
@@ -316,7 +316,7 @@ void SMESHGUI_RenumberingDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_RenumberingDlg::ClickOnHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

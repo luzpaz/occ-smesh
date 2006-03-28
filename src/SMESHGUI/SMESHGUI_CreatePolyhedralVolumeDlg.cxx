@@ -47,6 +47,7 @@
 #include "SalomeApp_Study.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_MessageBox.h"
+#include "LightApp_Application.h"
 #include "LightApp_SelectionMgr.h"
 #include "utilities.h"
 
@@ -576,7 +577,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

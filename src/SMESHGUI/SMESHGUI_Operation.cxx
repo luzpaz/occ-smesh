@@ -13,7 +13,7 @@
 #include <SMESHGUI_Dialog.h>
 
 #include <SalomeApp_Study.h>
-#include <SalomeApp_Application.h>
+#include <LightApp_Application.h>
 
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
@@ -169,7 +169,7 @@ void SMESHGUI_Operation::onCancel()
 //=======================================================================
 void SMESHGUI_Operation::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(getSMESHGUI() ? app->moduleName(getSMESHGUI()->moduleName()) : QString(""), myHelpFileName);
   else {

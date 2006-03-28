@@ -36,7 +36,7 @@
 #include "SUIT_FileDlg.h"
 #include "SUIT_MessageBox.h"
 
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 
 // QT Includes
 #include <qapplication.h>
@@ -474,7 +474,7 @@ void SMESHGUI_FilterLibraryDlg::onClose()
 //=================================================================================
 void SMESHGUI_FilterLibraryDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

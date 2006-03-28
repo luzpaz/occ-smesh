@@ -15,7 +15,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 
-#include <SalomeApp_Application.h>
+#include <LightApp_Application.h>
 
 #include <qframe.h>
 #include <qlayout.h>
@@ -376,21 +376,21 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
 
   QString aHypType = creator->hypType();
   if ( aHypType == "LocalLength" )
-    myHelpFileName = "/files/arithmetic_1d.htm#?";
+    myHelpFileName = "/files/arithmetic_1d.htm#Average_length";
   else if ( aHypType == "Arithmetic1D")
-    myHelpFileName = "/files/arithmetic_1d.htm#?";
+    myHelpFileName = "/files/arithmetic_1d.htm#arithmetic_1D";
   else if ( aHypType == "MaxElementArea")
     myHelpFileName = "/files/max._element_area_hypothesis.htm";
   else if ( aHypType == "MaxElementVolume")
     myHelpFileName = "/files/max._element_volume_hypothsis.htm";
   else if ( aHypType == "StartEndLength")
-    myHelpFileName = "/files/arithmetic_1d.htm#?";
+    myHelpFileName = "/files/arithmetic_1d.htm#start_and_end_length";
   else if ( aHypType == "Deflection1D")
-    myHelpFileName = "/files/arithmetic_1d.htm#?";
+    myHelpFileName = "/files/arithmetic_1d.htm#deflection_1D";
   else if ( aHypType == "AutomaticLength")
-    myHelpFileName = "/files/arithmetic_1d.htm#?";
+    myHelpFileName = "/files/arithmetic_1d.htm#automatic_length";
   else if ( aHypType == "NumberOfSegments")
-    myHelpFileName = "/files/arithmetic_1d.htm#?";
+    myHelpFileName = "/files/arithmetic_1d.htm#Number_of_elements";
   else
     myHelpFileName = "";
 
@@ -419,7 +419,7 @@ void SMESHGUI_HypothesisDlg::accept()
 
 void SMESHGUI_HypothesisDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) {
     SMESHGUI* aSMESHGUI = dynamic_cast<SMESHGUI*>( app->activeModule() );
     app->onHelpContextModule(aSMESHGUI ? app->moduleName(aSMESHGUI->moduleName()) : QString(""), myHelpFileName);

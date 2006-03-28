@@ -40,7 +40,7 @@
 #include "SMDS_MeshNode.hxx"
 
 #include "LightApp_SelectionMgr.h"
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_Session.h"
@@ -345,7 +345,7 @@ void SMESHGUI_MoveNodesDlg::onClose()
 //=================================================================================
 void SMESHGUI_MoveNodesDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

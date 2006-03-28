@@ -52,7 +52,7 @@
 #include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Study.h"
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 
 #include "SALOMEDS_SObject.hxx"
 
@@ -486,7 +486,7 @@ void SMESHGUI_MeshPatternDlg::onClose()
 //=================================================================================
 void SMESHGUI_MeshPatternDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

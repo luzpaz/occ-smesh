@@ -38,7 +38,7 @@
 #include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOME_ListIO.hxx"
 
@@ -376,7 +376,7 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   // init dialog with current selection
   onSelectionChanged();
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#?";
+  myHelpFileName = "/files/viewing_mesh_info.htm#advanced infos";
 }
 
 //=================================================================================
@@ -540,7 +540,7 @@ void SMESHGUI_MeshInfosDlg::onStartSelection()
 //=================================================================================
 void SMESHGUI_MeshInfosDlg::onHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

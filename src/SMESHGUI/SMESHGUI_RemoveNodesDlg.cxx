@@ -42,7 +42,7 @@
 #include "SUIT_Session.h"
 #include "SUIT_MessageBox.h"
 
-#include "SalomeApp_Application.h"
+#include "LightApp_Application.h"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
@@ -184,7 +184,7 @@ SMESHGUI_RemoveNodesDlg
     GroupC1Layout->addWidget(LineEditC1A1, 0, 2);
     SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupC1, 1, 0);
 
-    myHelpFileName = "/files/removing_nodes_and_elements.htm#?";
+    myHelpFileName = "/files/removing_nodes_and_elements.htm#remove_a_node";
 
     Init(); /* Initialisations */
 }
@@ -311,7 +311,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::ClickOnHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {

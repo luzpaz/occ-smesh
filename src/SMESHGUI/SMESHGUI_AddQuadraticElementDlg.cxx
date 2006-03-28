@@ -12,6 +12,7 @@
 
 #include "SUIT_Session.h"
 #include "SUIT_MessageBox.h"
+#include "LightApp_Application.h"
 
 #include "SVTK_Selection.h"
 #include "SVTK_Selector.h"
@@ -466,37 +467,37 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   case QUAD_EDGE:
     aNumRows = 1;
     myNbCorners = 2;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_edges
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_edges
     break;
   case QUAD_TRIANGLE:
     aNumRows = 3;
     myNbCorners = 3;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_triangles
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_triangles
     break;
   case QUAD_QUADRANGLE:
     aNumRows = 4;
     myNbCorners = 4;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_quadrangles
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_quadrangles
     break;
   case QUAD_TETRAHEDRON:
     aNumRows = 6;
     myNbCorners = 4;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_tetrahedrons
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_tetrahedrons
     break;
   case QUAD_PYRAMID:
     aNumRows = 8;
     myNbCorners = 5;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?";
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_pyramids
     break;
   case QUAD_PENTAHEDRON:
     aNumRows = 9;
     myNbCorners = 6;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?";
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_pentahedrons
     break; 
   case QUAD_HEXAHEDRON:
     aNumRows = 12;
     myNbCorners = 8;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#?"; //Adding_hexahedrons
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_hexahedrons
     break;
   }
     
@@ -660,7 +661,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
 {
-  SalomeApp_Application* app = (SalomeApp_Application*)(SUIT_Session::session()->activeApplication());
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
