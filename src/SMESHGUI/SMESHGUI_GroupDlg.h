@@ -48,6 +48,7 @@ class QListBox;
 class QPushButton;
 class QCheckBox;
 class QWidgetStack;
+class QtxIntSpinBox;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
@@ -145,7 +146,7 @@ private:
     QLineEdit*                    myGroupLine;
 
     QCheckBox*                    mySelectColorGroup;
-    QLineEdit*                    myColorGroupLine;
+    QtxIntSpinBox*                myColorSpinBox;
 
     QCheckBox*                    mySelectGeomGroup;
     QPushButton*                  myGeomGroupBtn;
