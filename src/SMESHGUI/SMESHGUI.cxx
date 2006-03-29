@@ -831,6 +831,7 @@ SalomeApp_Module( "SMESH" )
   }
 
   myActiveDialogBox = 0;
+  myFilterLibraryDlg = 0;
   myState = -1;
   myDisplayer = 0;
 
@@ -2060,7 +2061,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       aTypes.append( SMESH::FACE );
       aTypes.append( SMESH::VOLUME );
     }
-    new SMESHGUI_FilterLibraryDlg( this, SMESH::GetDesktop( this ), aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
+    if (!myFilterLibraryDlg)
+      myFilterLibraryDlg = new SMESHGUI_FilterLibraryDlg( this, SMESH::GetDesktop( this ), aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
+    else if (myFilterLibraryDlg->isHidden())
+      myFilterLibraryDlg->show();
+    myFilterLibraryDlg->raise();
   }
   break;
 

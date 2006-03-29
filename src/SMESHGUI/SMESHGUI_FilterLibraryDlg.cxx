@@ -102,7 +102,7 @@ SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
                                                       const QValueList<int>& theTypes,
                                                       const int              theMode,
                                                       const char*            theName)
-     : QDialog( parent, theName, true, WStyle_Customize |
+     : QDialog( parent, theName, false, WStyle_Customize |
                 WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
      mySMESHGUI( theModule )
 {
