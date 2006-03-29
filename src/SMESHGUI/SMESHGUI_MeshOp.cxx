@@ -96,7 +96,7 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
   myToCreate( theToCreate ),
   myIsMesh( theIsMesh ),
   myDlg( 0 ),
-  myShapeByMeshDlg( 0 )
+  myShapeByMeshOp( 0 )
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
@@ -243,10 +243,10 @@ void SMESHGUI_MeshOp::startOperation()
 
   myDlg->setHypoSets( SMESH::GetHypothesesSets() );
 
-  selectionDone();
-
   myDlg->setCurrentTab( SMESH::DIM_1D );
   myDlg->show();
+
+  selectionDone();
 }
 
 //================================================================================
@@ -384,7 +384,7 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
 //================================================================================
 void SMESHGUI_MeshOp::selectionDone()
 {
-  if ( myShapeByMeshDlg && myShapeByMeshDlg->isShown() )
+  if ( !dlg()->isShown() )
     return;
 
   SMESHGUI_SelectionOp::selectionDone();
@@ -482,7 +482,7 @@ void SMESHGUI_MeshOp::selectionDone()
         SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
         if ( !mesh->_is_nil() )
           enable = ( shapeDim > 1 ) && ( mesh->NbEdges() > 0 );
-      }            
+      }
       myDlg->setGeomPopupEnabled( enable );
     }
   }
@@ -1471,22 +1471,24 @@ bool SMESHGUI_MeshOp::isValid( SUIT_Operation* theOp ) const
 void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
 {
   if ( theByMesh ) {
-    if ( !myShapeByMeshDlg ) {
-      myShapeByMeshDlg = new SMESHGUI_ShapeByMeshDlg( SMESHGUI::GetSMESHGUI(), "ShapeByMeshDlg");
-      connect(myShapeByMeshDlg, SIGNAL(PublishShape()), SLOT(onPublishShapeByMeshDlg()));
-      connect(myShapeByMeshDlg, SIGNAL(Close()), SLOT(onCloseShapeByMeshDlg()));
+    if ( !myShapeByMeshOp ) {
+      myShapeByMeshOp = new SMESHGUI_ShapeByMeshOp();
+      connect(myShapeByMeshOp, SIGNAL(committed(SUIT_Operation*)),
+              SLOT(onPublishShapeByMeshDlg(SUIT_Operation*)));
+      connect(myShapeByMeshOp, SIGNAL(aborted(SUIT_Operation*)),
+              SLOT(onCloseShapeByMeshDlg(SUIT_Operation*)));
     }
-    // set mesh object to dlg
+    // set mesh object to SMESHGUI_ShapeByMeshOp and start it
     QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
     if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() )) {
       SMESH::SMESH_Mesh_var aMeshVar =
         SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
       if ( !aMeshVar->_is_nil() ) {
         myDlg->hide();
-        myDlg->activateObject( SMESHGUI_MeshDlg::Mesh );
-        myShapeByMeshDlg->Init();
-        myShapeByMeshDlg->SetMesh( aMeshVar );
-        myShapeByMeshDlg->show();
+        myShapeByMeshOp->setModule( getSMESHGUI() );
+        myShapeByMeshOp->setStudy( 0 );
+        myShapeByMeshOp->SetMesh( aMeshVar );
+        myShapeByMeshOp->start();
       }
     }
   }
@@ -1498,32 +1500,21 @@ void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
  */
 //================================================================================
 
-void SMESHGUI_MeshOp::onPublishShapeByMeshDlg()
+void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
 {
-  if ( myShapeByMeshDlg ) {
+  if ( myShapeByMeshOp == op ) {
+    myDlg->show();
     // Select a found geometry object
-    GEOM::GEOM_Object_var aGeomVar = myShapeByMeshDlg->GetShape();
+    GEOM::GEOM_Object_var aGeomVar = myShapeByMeshOp->GetShape();
     if ( !aGeomVar->_is_nil() )
     {
       QString ID = aGeomVar->GetStudyEntry();
       if ( _PTR(SObject) aGeomSO = studyDS()->FindObjectID( ID.latin1() )) {
-        SMESH::SMESH_Mesh_ptr aMeshPtr = myShapeByMeshDlg->GetMesh();
-        if ( !CORBA::is_nil( aMeshPtr )) {
-          if (_PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshPtr )) {
-            myDlg->activateObject( SMESHGUI_MeshDlg::Mesh );
-            myDlg->selectObject( aMeshSO->GetName().c_str(), SMESHGUI_MeshDlg::Mesh, aMeshSO->GetID().c_str() );
-          }
-        }
-        myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
         selectObject( aGeomSO );
-        //selectionDone();
+        selectionDone();
       }
     }
-    else {
-      onCloseShapeByMeshDlg();
-    }
   }
-  myDlg->show();
 }
 
 //================================================================================
@@ -1532,12 +1523,10 @@ void SMESHGUI_MeshOp::onPublishShapeByMeshDlg()
  */
 //================================================================================
 
-void SMESHGUI_MeshOp::onCloseShapeByMeshDlg()
+void SMESHGUI_MeshOp::onCloseShapeByMeshDlg(SUIT_Operation* op)
 {
-  if ( myDlg ) {
+  if ( myShapeByMeshOp == op && myDlg ) {
     myDlg->show();
-    myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
-    myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
   }
 }
 

@@ -40,7 +40,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class SMESHGUI_MeshDlg;
-class SMESHGUI_ShapeByMeshDlg;
+class SMESHGUI_ShapeByMeshOp;
 
 /*!
  * \brief Operation for mech creation or editing
@@ -71,8 +71,8 @@ protected slots:
   void                           onEditHyp( const int theHypType, const int theIndex );
   void                           onHypoSet( const QString& theSetName );
   void                           onGeomSelectionByMesh( bool );
-  void                           onPublishShapeByMeshDlg();
-  void                           onCloseShapeByMeshDlg();
+  void                           onPublishShapeByMeshDlg(SUIT_Operation*);
+  void                           onCloseShapeByMeshDlg(SUIT_Operation*);
 
 private:
   bool                           isValid( QString& ) const;
@@ -109,7 +109,7 @@ private:
   typedef QMap< int, IdToHypListMap > DimToHypMap;
   
   SMESHGUI_MeshDlg*              myDlg;
-  SMESHGUI_ShapeByMeshDlg*       myShapeByMeshDlg;
+  SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
   bool                           myToCreate;
   bool                           myIsMesh;
   
