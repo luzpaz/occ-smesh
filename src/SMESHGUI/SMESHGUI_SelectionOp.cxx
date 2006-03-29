@@ -80,6 +80,9 @@ SMESHGUI_SelectionOp::~SMESHGUI_SelectionOp()
 //=================================================================================
 void SMESHGUI_SelectionOp::startOperation()
 {
+  myOldSelectionMode = selectionMode();
+  setSelectionMode( myDefSelectionMode );
+
   SMESHGUI_Operation::startOperation();
   if( dlg() )
   {
@@ -90,9 +93,6 @@ void SMESHGUI_SelectionOp::startOperation()
     connect( dlg(), SIGNAL( objectDeactivated( int ) ), this, SLOT( onDeactivateObject( int ) ) );
     connect( dlg(), SIGNAL( selectionChanged( int ) ), this, SLOT( onSelectionChanged( int ) ) );
   }
-
-  myOldSelectionMode = selectionMode();
-  setSelectionMode( myDefSelectionMode );
 }
 
 //=================================================================================
@@ -118,9 +118,9 @@ void SMESHGUI_SelectionOp::removeCustomFilters() const
 //=================================================================================
 void SMESHGUI_SelectionOp::commitOperation()
 {
+  SMESHGUI_Operation::commitOperation();  
   removeCustomFilters();
   setSelectionMode( myOldSelectionMode );
-  SMESHGUI_Operation::commitOperation();  
 }
 
 //=================================================================================
@@ -129,9 +129,9 @@ void SMESHGUI_SelectionOp::commitOperation()
 //=================================================================================
 void SMESHGUI_SelectionOp::abortOperation()
 {
+  SMESHGUI_Operation::abortOperation();
   removeCustomFilters();
   setSelectionMode( myOldSelectionMode );  
-  SMESHGUI_Operation::abortOperation();
 }
 
 //=================================================================================
