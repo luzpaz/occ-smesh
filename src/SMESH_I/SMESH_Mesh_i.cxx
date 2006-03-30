@@ -73,6 +73,8 @@ using SMESH::TPythonDump;
 
 int SMESH_Mesh_i::myIdGenerator = 0;
 
+
+
 //=============================================================================
 /*!
  *  Constructor
@@ -235,6 +237,18 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
   // Read mesh with name = <theMeshName> into SMESH_Mesh
   _impl->UNVToMesh( theFileName );
 
+  CreateGroupServants();
+
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( !aStudy->_is_nil() ) {
+    // publishing of the groups in the study (sub-meshes are out of scope of UNV import)
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
+    for (; it != _mapGroups.end(); it++ ) {
+      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
+      _gen_i->PublishGroup( aStudy, _this(), aGroup,
+                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
+    }
+  }
   return 1;
 }
 
@@ -266,24 +280,7 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
 {
   // Read mesh with name = <theMeshName> and all its groups into SMESH_Mesh
   int status = _impl->MEDToMesh( theFileName, theMeshName );
-
-  // Create group servants, if any groups were imported
-  list<int> aGroupIds = _impl->GetGroupIds();
-  for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
-    SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
-
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
-    SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
-    aGroupImpl->Register();
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
-
-    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
-    _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
-
-    // register CORBA object for persistence
-    int nextId = _gen_i->RegisterObject( aGroup );
-    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
-  }
+  CreateGroupServants();
 
   return status;
 }
@@ -1581,3 +1578,26 @@ CORBA::Long SMESH_Mesh_i::GetMeshPtr()
 {
   return (CORBA::Long)_impl;
 }
+
+
+void SMESH_Mesh_i::CreateGroupServants() 
+{
+  // Create group servants, if any groups were imported
+  list<int> aGroupIds = _impl->GetGroupIds();
+  for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
+    SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
+
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+    SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
+    aGroupImpl->Register();
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+
+    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
+    _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
+
+    // register CORBA object for persistence
+    int nextId = _gen_i->RegisterObject( aGroup );
+    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+  }
+}
+

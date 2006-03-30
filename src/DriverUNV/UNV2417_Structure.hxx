@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include <fstream>	
+#include <string>	
 
 
 namespace UNV2417{
@@ -30,6 +31,7 @@ namespace UNV2417{
   typedef std::vector<int> TListOfId; // Nodal connectivitiesList of Id
 
   struct TRecord{
+    std::string    GroupName;
     TListOfId NodeList;
     TListOfId ElementList;
   };
@@ -38,6 +40,7 @@ namespace UNV2417{
   typedef std::map<TGroupId, TRecord> TDataSet;
 
   void Read(std::ifstream& in_stream, TDataSet& theDataSet);
+  void ReadGroup(const std::string& myGroupLabel, std::ifstream& in_stream, TDataSet& theDataSet);
 };
 
 

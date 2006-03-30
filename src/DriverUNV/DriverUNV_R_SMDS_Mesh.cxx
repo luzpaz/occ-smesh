@@ -19,6 +19,7 @@
 //
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "SMDS_Mesh.hxx"
+#include "SMDS_MeshGroup.hxx"
 
 #include "utilities.h"
 
@@ -35,6 +36,13 @@ static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
+
+
+DriverUNV_R_SMDS_Mesh::~DriverUNV_R_SMDS_Mesh()
+{
+  if (myGroup != 0) 
+    delete myGroup;
+}
 
 
 Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
@@ -73,7 +81,6 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                               aLabel);
           }
           else {
-	    cout<<"### Id of element = "<<aRec.fe_descriptor_id<<endl;
             // quadratic edge (with 3 nodes)
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
@@ -248,8 +255,67 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
     }
     {
       using namespace UNV2417;      
+      in_stream.seekg(0);
       TDataSet aDataSet2417;
       UNV2417::Read(in_stream,aDataSet2417);
+      if(MYDEBUG) MESSAGE("Perform - aDataSet2417.size() = "<<aDataSet2417.size());
+      if  (aDataSet2417.size() > 0) {
+	myGroup = new SMDS_MeshGroup(myMesh);
+	TDataSet::const_iterator anIter = aDataSet2417.begin();
+	for(; anIter != aDataSet2417.end(); anIter++){
+	  const TGroupId& aLabel = anIter->first;
+	  const TRecord& aRec = anIter->second;
+	  //SMDS_MeshGroup* aNewGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Edge);
+	  //myGroupNames.insert(TGroupNamesMap::value_type(aNewGroup, aRec.GroupName));
+	  //myGroupId.insert(TGroupIdMap::value_type(aNewGroup, aLabel));
+
+	  int aNodesNb = aRec.NodeList.size();
+	  int i;
+	  if (aNodesNb > 0) {
+	    SMDS_MeshGroup* aNodesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Node);
+	    std::string aGrName = aRec.GroupName + "_Nodes";
+	    myGroupNames.insert(TGroupNamesMap::value_type(aNodesGroup, aGrName));
+	    myGroupId.insert(TGroupIdMap::value_type(aNodesGroup, aLabel));
+
+	    for (i = 0; i < aNodesNb; i++) {
+	      const SMDS_MeshNode* aNode = myMesh->FindNode(aRec.NodeList[i]);
+	      if (aNode)
+		aNodesGroup->Add(aNode);
+	    }
+	  }
+	  int aElementsNb = aRec.ElementList.size();
+	  if (aElementsNb > 0){
+	    SMDS_MeshGroup* aEdgesGroup = 0;
+	    SMDS_MeshGroup* aFacesGroup = 0;
+
+	    for (i = 0; i < aElementsNb; i++) {
+	      const SMDS_MeshElement* aElement = myMesh->FindElement(aRec.ElementList[i]);
+	      if (aElement) {
+		switch (aElement->GetType()) {
+		case SMDSAbs_Edge:
+		  if (!aEdgesGroup) {
+		    aEdgesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Edge);
+		    std::string aEdgesGrName = aRec.GroupName + "_Edges";
+		    myGroupNames.insert(TGroupNamesMap::value_type(aEdgesGroup, aEdgesGrName));
+		    myGroupId.insert(TGroupIdMap::value_type(aEdgesGroup, aLabel));
+		  }
+		  aEdgesGroup->Add(aElement);
+		  break;
+		case SMDSAbs_Face:
+		  if (!aFacesGroup) {
+		    aFacesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Face);
+		    std::string aFacesGrName = aRec.GroupName + "_Faces";
+		    myGroupNames.insert(TGroupNamesMap::value_type(aFacesGroup, aFacesGrName));
+		    myGroupId.insert(TGroupIdMap::value_type(aFacesGroup, aLabel));
+		  }
+		  aFacesGroup->Add(aElement);
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
+      }
     }
   }
   catch(const std::exception& exc){

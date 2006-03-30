@@ -260,6 +260,8 @@ public:
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
+  void CreateGroupServants();
+
   static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here
   SMESH_Gen_i* _gen_i;
