@@ -184,10 +184,40 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   myReader.SetMeshId(-1);
   myReader.Perform();
   if(MYDEBUG){
-    MESSAGE("MEDToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
-    MESSAGE("MEDToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
-    MESSAGE("MEDToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
-    MESSAGE("MEDToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
+    MESSAGE("UNVToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
+    MESSAGE("UNVToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
+    MESSAGE("UNVToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
+    MESSAGE("UNVToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
+  }
+  SMDS_MeshGroup* aGroup = (SMDS_MeshGroup*) myReader.GetGroup();
+  if (aGroup != 0) {
+    TGroupNamesMap aGroupNames = myReader.GetGroupNamesMap();
+    //const TGroupIdMap& aGroupId = myReader.GetGroupIdMap();
+    aGroup->InitSubGroupsIterator();
+    while (aGroup->MoreSubGroups()) {
+      SMDS_MeshGroup* aSubGroup = (SMDS_MeshGroup*) aGroup->NextSubGroup();
+      std::string aName = aGroupNames[aSubGroup];
+      int aId;
+
+      SMESH_Group* aSMESHGroup = AddGroup( aSubGroup->GetType(), aName.c_str(), aId );
+      if ( aSMESHGroup ) {
+	if(MYDEBUG) MESSAGE("UNVToMesh - group added: "<<aName);      
+	SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aSMESHGroup->GetGroupDS() );
+	if ( aGroupDS ) {
+	  aGroupDS->SetStoreName(aName.c_str());
+	  aSubGroup->InitIterator();
+	  const SMDS_MeshElement* aElement = 0;
+	  while (aSubGroup->More()) {
+	    aElement = aSubGroup->Next();
+	    if (aElement) {
+	      aGroupDS->SMDSGroup().Add(aElement);
+	    }
+	  }
+	  if (aElement)
+	    aGroupDS->SetType(aElement->GetType());
+	}
+      }
+    }
   }
   return 1;
 }
@@ -242,7 +272,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
 
 int SMESH_Mesh::STLToMesh(const char* theFileName)
 {
-  if(MYDEBUG) MESSAGE("UNVToMesh - theFileName = "<<theFileName);
+  if(MYDEBUG) MESSAGE("STLToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
   _isShapeToMesh = true;
@@ -252,10 +282,10 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
   myReader.SetMeshId(-1);
   myReader.Perform();
   if(MYDEBUG){
-    MESSAGE("MEDToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
-    MESSAGE("MEDToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
-    MESSAGE("MEDToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
-    MESSAGE("MEDToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
+    MESSAGE("STLToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
+    MESSAGE("STLToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
+    MESSAGE("STLToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
+    MESSAGE("STLToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
   }
   return 1;
 }
