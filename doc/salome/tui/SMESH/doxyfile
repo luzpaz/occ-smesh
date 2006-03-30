@@ -59,9 +59,10 @@ WARN_LOGFILE           = log.txt
 INPUT                  = ../../../share/salome/idl/SMESH_Gen.idl \
                          ../../../share/salome/idl/SMESH_Mesh.idl \
                          ../../../share/salome/idl/SMESH_BasicHypothesis.idl \
-                         ../../../share/salome/idl/SMESH_Hypothesis.idl
-FILE_PATTERNS          = 
-RECURSIVE              = NO
+                         ../../../share/salome/idl/SMESH_Hypothesis.idl \
+			 ../../../build/salome/bin
+FILE_PATTERNS          = *.idl python_extension_must_be_here
+RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
