@@ -74,7 +74,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	const TElementLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
 	if(IsBeam(aRec.fe_descriptor_id)) {
-          if((aRec.fe_descriptor_id == 11) || (aRec.fe_descriptor_id == 21)) {
+          if(aRec.fe_descriptor_id == 11) {
             // edge with two nodes
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
@@ -83,8 +83,8 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
           else {
             // quadratic edge (with 3 nodes)
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
-                                              aRec.node_labels[1],
                                               aRec.node_labels[2],
+                                              aRec.node_labels[1],
                                               aLabel);
           }
 	}
@@ -105,10 +105,10 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	  case 42: // Plane Stress Quadratic Triangle - TRI6
 	  case 92: // Thin Shell Quadratic Triangle - TRI6
 	    anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
-					      aRec.node_labels[1],
 					      aRec.node_labels[2],
-					      aRec.node_labels[3],
 					      aRec.node_labels[4],
+					      aRec.node_labels[1],
+					      aRec.node_labels[3],
 					      aRec.node_labels[5],
 					      aLabel);
 	    break;
@@ -125,12 +125,12 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	  case 45: // Plane Stress Quadratic Quadrilateral - QUAD8
 	  case 95: // Thin Shell   Quadratic Quadrilateral - QUAD8
 	    anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
-					      aRec.node_labels[1],
 					      aRec.node_labels[2],
-					      aRec.node_labels[3],
 					      aRec.node_labels[4],
-					      aRec.node_labels[5],
 					      aRec.node_labels[6],
+					      aRec.node_labels[1],
+					      aRec.node_labels[3],
+					      aRec.node_labels[5],
 					      aRec.node_labels[7],
 					      aLabel);
 	    break;
@@ -149,15 +149,18 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 
 	  case 118: // Solid Quadratic Tetrahedron - TET10
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[2],
-						aRec.node_labels[1],
-						aRec.node_labels[3],
-						aRec.node_labels[6],
-						aRec.node_labels[5],
 						aRec.node_labels[4],
-						aRec.node_labels[7],
+						aRec.node_labels[2],
+
 						aRec.node_labels[9],
+
+						aRec.node_labels[5],
+						aRec.node_labels[3],
+                                                aRec.node_labels[1],
+
+                                                aRec.node_labels[6],
 						aRec.node_labels[8],
+						aRec.node_labels[7],
 						aLabel);
 	    break;
 	    
@@ -173,20 +176,24 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	    
 	  case 113: // Solid Quadratic Prism - PRISM15
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[2],
-						aRec.node_labels[1],
-						aRec.node_labels[3],
-						aRec.node_labels[5],
 						aRec.node_labels[4],
+						aRec.node_labels[2],
+
+						aRec.node_labels[9],
+						aRec.node_labels[13],
+						aRec.node_labels[11],
+
+						aRec.node_labels[5],
+						aRec.node_labels[3],
+                                                aRec.node_labels[1],
+
+						aRec.node_labels[14],
+						aRec.node_labels[12],
+                                                aRec.node_labels[10],
+
+                                                aRec.node_labels[6],
 						aRec.node_labels[8],
 						aRec.node_labels[7],
-						aRec.node_labels[6],
-						aRec.node_labels[11],
-						aRec.node_labels[10],
-						aRec.node_labels[9],
-						aRec.node_labels[12],
-						aRec.node_labels[14],
-						aRec.node_labels[13],
 						aLabel);
 	    break;
 	    
@@ -232,18 +239,19 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 
 	  case 114: // pyramid of 13 nodes (quadratic) - PIRA13
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[3],
-						aRec.node_labels[2],
-						aRec.node_labels[1],
-						aRec.node_labels[4],
-						aRec.node_labels[8],
-						aRec.node_labels[7],
 						aRec.node_labels[6],
+						aRec.node_labels[4],
+						aRec.node_labels[2],
+						aRec.node_labels[7],
 						aRec.node_labels[5],
-						aRec.node_labels[9],
-						aRec.node_labels[12],
+						aRec.node_labels[3],
+						aRec.node_labels[1],
+
+						aRec.node_labels[8],
 						aRec.node_labels[11],
 						aRec.node_labels[10],
+						aRec.node_labels[9],
+						aRec.node_labels[12],
 						aLabel);
 	    break;
 

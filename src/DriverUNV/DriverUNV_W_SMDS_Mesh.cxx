@@ -22,6 +22,8 @@
 #include "DriverUNV_W_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
+#include "SMDS_QuadraticEdge.hxx"
+#include "SMDS_QuadraticFaceOfNodes.hxx"
 
 #include "utilities.h"
 
@@ -86,15 +88,19 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	  int aNbNodes = anElem->NbNodes();
 	  TRecord aRec;
 	  aRec.node_labels.reserve(aNbNodes);
-	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+	  SMDS_ElemIteratorPtr aNodesIter;
+          if( anElem->IsQuadratic() ) {
+            aNodesIter = static_cast<const SMDS_QuadraticEdge* >
+              ( anElem )->interlacedNodesElemIterator();
+            aRec.fe_descriptor_id = 21;
+          } else {
+            aNodesIter = anElem->nodesIterator();
+            aRec.fe_descriptor_id = 11;
+          }
 	  for(; aNodesIter->more();){
 	    const SMDS_MeshElement* aNode = aNodesIter->next();
 	    aRec.node_labels.push_back(aNode->GetID());
 	  }
-          if(aNbNodes==2)
-            aRec.fe_descriptor_id = 11;
-          else
-            aRec.fe_descriptor_id = 21;
 	  aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
 	}
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
@@ -109,7 +115,12 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	  int aNbNodes = anElem->NbNodes();
 	  TRecord aRec;
 	  aRec.node_labels.reserve(aNbNodes);
-	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+	  SMDS_ElemIteratorPtr aNodesIter;
+          if( anElem->IsQuadratic() )
+            aNodesIter = static_cast<const SMDS_QuadraticFaceOfNodes* >
+              ( anElem )->interlacedNodesElemIterator();
+          else
+            aNodesIter = anElem->nodesIterator();
 	  for(; aNodesIter->more();){
 	    const SMDS_MeshElement* aNode = aNodesIter->next();
 	    aRec.node_labels.push_back(aNode->GetID());
@@ -170,25 +181,25 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	    break;
 	  }
 	  case 10: {
-	    static int anIds[] = {0,2,1,3,6,5,4,7,9,8};
+	    static int anIds[] = {0,4,2,9,5,3, 1,6,8, 7};
 	    aConn = anIds;
 	    anId = 118;
 	    break;
 	  }
 	  case 13: {
-	    static int anIds[] = {0,3,2,1,4,8,7,6,5,9,12,11,10};
+	    static int anIds[] = {0,6,4,2,7,5,3,1,8,11,10,9,12};
 	    aConn = anIds;
 	    anId = 114;
 	    break;
 	  }
 	  case 15: {
-	    static int anIds[] = {0,2,1,3,5,4,8,7,6,11,10,9,12,14,13};
+	    static int anIds[] = {0,4,2,9,13,11,5,3,1,14,12,10,6,8,7};
 	    aConn = anIds;
 	    anId = 113;
 	    break;
 	  }
 	  case 20: {
-	    static int anIds[] = {0,3,2,1,4,7,6,5,11,10,9,8,15,14,13,12,16,19,18,17};
+	    static int anIds[] = {0,6, 4,2, 12,18,16,14,7, 5, 3, 1, 19,17,15,13,8, 11,10,9};
 	    aConn = anIds;
 	    anId = 116;
 	    break;
