@@ -74,14 +74,13 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	const TElementLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
 	if(IsBeam(aRec.fe_descriptor_id)) {
-          if(aRec.fe_descriptor_id == 11) {
-            // edge with two nodes
+          switch ( aRec.fe_descriptor_id.size() ) {
+          case 2: // edge with two nodes
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
                                               aLabel);
-          }
-          else {
-            // quadratic edge (with 3 nodes)
+            break;
+          case 3: // quadratic edge (with 3 nodes)
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[2],
                                               aRec.node_labels[1],

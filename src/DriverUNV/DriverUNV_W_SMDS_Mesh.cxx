@@ -92,7 +92,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           if( anElem->IsQuadratic() ) {
             aNodesIter = static_cast<const SMDS_QuadraticEdge* >
               ( anElem )->interlacedNodesElemIterator();
-            aRec.fe_descriptor_id = 21;
+            aRec.fe_descriptor_id = 22;
           } else {
             aNodesIter = anElem->nodesIterator();
             aRec.fe_descriptor_id = 11;
