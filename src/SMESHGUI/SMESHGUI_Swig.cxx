@@ -299,10 +299,10 @@ SMESH_Swig::SMESH_Swig()
 
   MESSAGE("Constructeur");
 
-  if(!CORBA::is_nil(anORB))
+  if(CORBA::is_nil(anORB))
     ProcessVoidEvent(new TEvent(anORB));
 
-  ASSERT(CORBA::is_nil(anORB));
+  ASSERT(!CORBA::is_nil(anORB));
 }
 
 
@@ -440,7 +440,7 @@ SMESH_Swig::AddNewHypothesis(const char* theIOR)
   CORBA::String_var anEntry = aSObject->GetID();
   return anEntry._retn();
 }
-  
+
 
 //===============================================================
 const char* 
