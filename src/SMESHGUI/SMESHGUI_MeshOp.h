@@ -84,11 +84,14 @@ private:
                                                _PTR(SObject) theFather,
                                                QStringList& theHyps, 
                                                QValueList<SMESH::SMESH_Hypothesis_var>& theHypVars );
-  
+
+  void                           createHypothesis(const int theDim, const int theType,
+						  const QString& theTypeName);
+
   bool                           createMesh( QString& );
   bool                           createSubMesh( QString& );
   bool                           editMeshOrSubMesh( QString& );
-  
+
   int                            currentHyp( const int, const int ) const;
   bool                           isAccessibleDim( const int ) const;
   void                           setCurrentHyp( const int, const int, const int );
@@ -107,12 +110,12 @@ private:
 private:
   typedef QMap< int, QValueList<SMESH::SMESH_Hypothesis_var> > IdToHypListMap;
   typedef QMap< int, IdToHypListMap > DimToHypMap;
-  
+
   SMESHGUI_MeshDlg*              myDlg;
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
   bool                           myToCreate;
   bool                           myIsMesh;
-  
+
   DimToHypMap                    myExistingHyps; //!< all hypothesis of SMESH module
   DimToHypMap                    myObjHyps;      //!< hypothesis assigned to the current 
                                                  //   edited mesh/sub-mesh

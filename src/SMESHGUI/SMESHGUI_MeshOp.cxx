@@ -745,78 +745,82 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
 
 //================================================================================
 /*!
- * \brief Calls plugin methods for hypothesis creation
-  * \param theHypType - specifies whether main hypotheses or additional ones
-  * are created
+ * \brief Create hypothesis
+  * \param theHypType - hypothesis category (main or additional)
   * \param theIndex - index of type of hypothesis to be cerated
  *
- * Speicfies dimension of hypothesis to be created (using sender() method), specifies
- * its type and calls plugin methods for hypothesis creation
+ * Specifies dimension of hypothesis to be created (using sender() method),
+ * specifies its type and calls method for hypothesis creation
  */
 //================================================================================
 void SMESHGUI_MeshOp::onCreateHyp( const int theHypType, const int theIndex )
 {
-  // Speicfies dimension of hypothesis to be created
+  // Specifies dimension of hypothesis to be created
   const QObject* aSender = sender();
   int aDim = -1;
-  for ( int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++ )
-    if ( aSender == myDlg->tab( i ) )
+  for (int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++)
+    if (aSender == myDlg->tab(i))
       aDim = i;
-  if ( aDim == -1 )
+  if (aDim == -1)
     return;
 
-  // Speicfies type of hypothesis to be created
-  QStringList aHypTypeNames = SMESH::GetAvailableHypotheses( false , aDim, theHypType == AddHyp );
-  if ( theIndex < 0 || theIndex >= aHypTypeNames.count() )
+  // Specifies type of hypothesis to be created
+  QStringList aHypTypeNames = SMESH::GetAvailableHypotheses(false, aDim, theHypType == AddHyp);
+  if (theIndex < 0 || theIndex >= aHypTypeNames.count())
     return;
-
   QString aHypTypeName = aHypTypeNames[ theIndex ];
-  HypothesisData* aData = SMESH::GetHypothesisData( aHypTypeName.latin1() );
-  if ( aData == 0 )
+
+  // Create hypothesis
+  createHypothesis(aDim, theHypType, aHypTypeName);
+}
+
+//================================================================================
+/*!
+ *  Create hypothesis and update dialog.
+ *  \param theDim - dimension of hypothesis to be created
+ *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
+ *  \param theTypeName - specifies hypothesis to be created
+ */
+//================================================================================
+void SMESHGUI_MeshOp::createHypothesis (const int theDim,
+                                        const int theType,
+                                        const QString& theTypeName)
+{
+  HypothesisData* aData = SMESH::GetHypothesisData(theTypeName.latin1());
+  if (!aData)
     return;
+
+  // existing hypos
+  QValueList<SMESH::SMESH_Hypothesis_var>& aList = myExistingHyps[theDim][theType];
+  int nbHyp = aList.count();
 
   QString aClientLibName = aData->ClientLibName;
-  QStringList anOldHyps;
-  _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
-  existingHyps( aDim, theHypType, aFather, anOldHyps, myExistingHyps[ aDim ][ theHypType ] );
-
-  if ( aClientLibName == "" )
-  {
+  if (aClientLibName == "") {
     // Call hypothesis creation server method (without GUI)
-    QString aHypName = aData->Label;
-    SMESH::CreateHypothesis( aHypTypeName, aHypName, false );
-  }
-  else
-  {
+    SMESH::CreateHypothesis(theTypeName, aData->Label, false);
+  } else {
     // Get hypotheses creator client (GUI)
-    SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aHypTypeName );
+    SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
-    if ( aCreator )
-    {
+    if (aCreator) {
       // When create or edit a submesh, try to initialize a new hypothesis
       // with values used to mesh a subshape
       SMESH::SMESH_Hypothesis_var initParamHyp =
-        getInitParamsHypothesis( aHypTypeName, aData->ServerLibName );
-
-      if ( initParamHyp->_is_nil() )
-        aCreator->create( false, myDlg );
-      else
-        aCreator->create( initParamHyp, myDlg );
-    }
-    else
-    {
-      SMESH::CreateHypothesis( aHypTypeName, aData->Label, false );
+        getInitParamsHypothesis(theTypeName, aData->ServerLibName);
+      aCreator->create(initParamHyp, myDlg);
+    } else {
+      SMESH::CreateHypothesis(theTypeName, aData->Label, false);
     }
   }
 
+  _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
+
   QStringList aNewHyps;
-  aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
-  existingHyps( aDim, theHypType, aFather, aNewHyps, myExistingHyps[ aDim ][ theHypType ] );
-  if ( aNewHyps.count() > anOldHyps.count() )
-  {
-    for ( int i = anOldHyps.count(); i < aNewHyps.count(); i++ )
-      myDlg->tab( aDim )->addHyp( theHypType, aNewHyps[ i ] );
+  existingHyps(theDim, theType, aFather, aNewHyps, myExistingHyps[theDim][theType]);
+  if (aNewHyps.count() > nbHyp) {
+    for (int i = nbHyp; i < aNewHyps.count(); i++)
+      myDlg->tab(theDim)->addHyp(theType, aNewHyps[i]);
   }
 }
 
@@ -858,92 +862,35 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   * \param theSetName - The name of hypotheses set
  */
 //================================================================================
-
 void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
 {
-  HypothesesSet* aHypoSet = SMESH::GetHypothesesSet( theSetName );
-  if ( !aHypoSet ) return;
+  HypothesesSet* aHypoSet = SMESH::GetHypothesesSet(theSetName);
+  if (!aHypoSet) return;
 
-  for ( int aHypType = Algo; aHypType < AddHyp; aHypType++ )
-  {
+  for (int aHypType = Algo; aHypType < AddHyp; aHypType++) {
     bool isAlgo = (aHypType == Algo);
 
     // clear all hyps
-    for ( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
-      setCurrentHyp( dim, aHypType, -1 );
+    for (int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++)
+      setCurrentHyp(dim, aHypType, -1);
 
     // set hyps from the set
-    
-    QStringList* aHypoList = isAlgo ? & aHypoSet->AlgoList : & aHypoSet->HypoList;
-    for ( int i = 0, n = aHypoList->count(); i < n; i++ )
-    {
+    QStringList* aHypoList = isAlgo ? &aHypoSet->AlgoList : &aHypoSet->HypoList;
+    for (int i = 0, n = aHypoList->count(); i < n; i++) {
       const QString& aHypoTypeName = (*aHypoList)[ i ];
-      HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
-      if ( !aHypData )
+      HypothesisData* aHypData = SMESH::GetHypothesisData(aHypoTypeName);
+      if (!aHypData)
 	continue;
 
       int aDim = aHypData->Dim[0];
       // create or/and set
-      int index = -1;
-      if ( isAlgo )
-      {
-        QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( isAlgo, aDim );
-        index = aHypTypeNameList.findIndex( aHypoTypeName );
-        if ( index < 0 ) continue;
-        setCurrentHyp ( aDim, aHypType, index );
-      }
-      else
-      {
-        // try to find an existing hypo
-        QValueList<SMESH::SMESH_Hypothesis_var> & aList = myExistingHyps[ aDim ][ aHypType ];
-        int /*iHyp = 0,*/ nbHyp = aList.count();
-//         for ( ; iHyp < nbHyp; ++iHyp )
-//         {
-//           SMESH::SMESH_Hypothesis_var aHyp = aList[ iHyp ];
-//           if ( !aHyp->_is_nil() && aHypoTypeName == aHyp->GetName() ) {
-//             index = iHyp;
-//             break;
-//           }
-//         }
-        if ( index >= 0 ) // found
-        {
-          // select the found hypothesis
-          setCurrentHyp ( aDim, aHypType, index );
-        }
-        else
-        {
-          // create a hypothesis
-          QString aClientLibName = aHypData->ClientLibName;
-          if ( aClientLibName == "" ) {
-            // Call hypothesis creation server method (without GUI)
-            SMESH::CreateHypothesis( aHypoTypeName, aHypData->Label, isAlgo );
-          }
-          else {
-            // Get hypotheses creator client (GUI)
-            SMESHGUI_GenericHypothesisCreator* aCreator =
-              SMESH::GetHypothesisCreator( aHypoTypeName );
-            if ( aCreator )
-            {
-              // When create or edit a submesh, try to initialize a new hypothesis
-              // with values used to mesh a subshape
-              SMESH::SMESH_Hypothesis_var initParamHyp =
-                getInitParamsHypothesis( aHypoTypeName, aHypData->ServerLibName );
-              aCreator->create( initParamHyp, myDlg );
-            }
-            else
-            {
-              SMESH::CreateHypothesis( aHypoTypeName, aHypData->Label, isAlgo );
-            }
-          }
-          QStringList aNewHyps;
-          _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
-          existingHyps( aDim, aHypType, aFather, aNewHyps, aList );
-          if ( aList.count() > nbHyp )
-          {
-            for ( int i = nbHyp; i < aNewHyps.count(); i++ )
-              myDlg->tab( aDim )->addHyp( aHypType, aNewHyps[ i ] );
-          }
-        }
+      if (isAlgo) {
+        QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses(isAlgo, aDim);
+        int index = aHypTypeNameList.findIndex(aHypoTypeName);
+        if (index < 0) continue;
+        setCurrentHyp(aDim, aHypType, index);
+      } else {
+        createHypothesis(aDim, aHypType, aHypoTypeName);
       }
     } // loop on hypos in the set
   } // loop on algo/hypo
@@ -1162,20 +1109,23 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
       break;
     }
   }
-  if ( anAlgoVar->_is_nil() )
-  {
+
+  if (anAlgoVar->_is_nil()) {
     HypothesisData* aHypData = SMESH::GetHypothesisData( aHypName );
-    if ( aHypData )
-    {
+    if (aHypData) {
       QString aClientLibName = aHypData->ClientLibName;
-      if ( aClientLibName == "" )
-        SMESH::CreateHypothesis( aHypName, aHypData->Label, true );
-      else
-      {
-        SMESHGUI_GenericHypothesisCreator* aCreator =
-          SMESH::GetHypothesisCreator( aHypName );
-        if ( aCreator )
-          aCreator->create( true, myDlg );
+      if (aClientLibName == "") {
+        // Call hypothesis creation server method (without GUI)
+        SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
+      } else {
+        // Get hypotheses creator client (GUI)
+        SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
+
+        // Create algorithm
+        if (aCreator)
+          aCreator->create(true, myDlg);
+        else
+          SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
       }
       QStringList tmpList;
       _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
