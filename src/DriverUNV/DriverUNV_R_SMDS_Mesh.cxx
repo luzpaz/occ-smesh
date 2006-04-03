@@ -74,7 +74,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	const TElementLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
 	if(IsBeam(aRec.fe_descriptor_id)) {
-          switch ( aRec.fe_descriptor_id.size() ) {
+          switch ( aRec.node_labels.size() ) {
           case 2: // edge with two nodes
             anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
