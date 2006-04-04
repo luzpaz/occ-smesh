@@ -41,6 +41,8 @@ namespace UNV2417{
 
   void Read(std::ifstream& in_stream, TDataSet& theDataSet);
   void ReadGroup(const std::string& myGroupLabel, std::ifstream& in_stream, TDataSet& theDataSet);
+
+  void Write(std::ofstream& out_stream, const TDataSet& theDataSet);
 };
 
 

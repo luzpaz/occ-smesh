@@ -1,6 +1,9 @@
 #include "UNV2417_Structure.hxx"
 #include "UNV_Utilities.hxx"
 
+#include <fstream>	
+#include <iomanip>
+
 using namespace std;
 using namespace UNV;
 using namespace UNV2417;
@@ -12,10 +15,10 @@ static int MYDEBUG = 0;
 #endif
 
 
-static string _group_labels[] = {"2417", "2429", "2430", "2432", "2435"};
-#define NBGROUP 5
+static string _group_labels[] = {"2417", "2429", "2430", "2432", "2435", "2452"};
+#define NBGROUP 6
 
-//static string _label_dataset = "2435";
+static string _label_dataset = "2429";
 
 void UNV2417::Read(std::ifstream& in_stream, TDataSet& theDataSet)
 {
@@ -72,10 +75,10 @@ void UNV2417::ReadGroup(const std::string& myGroupLabel, std::ifstream& in_strea
     int aElType;
     int aElId;
     int aNum;
-        for(int j=0; j < n_nodes; j++){
+    for(int j=0; j < n_nodes; j++){
       in_stream>>aElType;
       in_stream>>aElId;
-      if (myGroupLabel.compare("2435") == 0) {
+      if ((myGroupLabel.compare("2435") == 0) || (myGroupLabel.compare("2452") == 0)) {
 	in_stream>>aTmp;
 	in_stream>>aTmp;
       }
@@ -95,4 +98,63 @@ void UNV2417::ReadGroup(const std::string& myGroupLabel, std::ifstream& in_strea
     theDataSet.insert(TDataSet::value_type(aId,aRec));
   }
 
+}
+
+
+void UNV2417::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
+{
+  if(!out_stream.good())
+    EXCEPTION(runtime_error,"ERROR: Output file not good.");
+  
+  /*
+   * Write beginning of dataset
+   */
+  out_stream<<"    -1\n";
+  out_stream<<"  "<<_label_dataset<<"\n";
+
+  TDataSet::const_iterator anIter = theDataSet.begin();
+  for(; anIter != theDataSet.end(); anIter++){
+    const TGroupId& aLabel = anIter->first;
+    const TRecord& aRec = anIter->second;
+    int aNbNodes = aRec.NodeList.size();
+    int aNbElements = aRec.ElementList.size();
+    int aNbRecords = aNbNodes + aNbElements;
+
+    out_stream<<std::setw(10)<<aLabel;  /* group ID */
+    out_stream<<std::setw(10)<<0;  
+    out_stream<<std::setw(10)<<0;
+    out_stream<<std::setw(10)<<0;
+    out_stream<<std::setw(10)<<0;
+    out_stream<<std::setw(10)<<0;
+    out_stream<<std::setw(10)<<0;
+    out_stream<<std::setw(10)<<aNbRecords<<std::endl; 
+
+    out_stream<<aRec.GroupName<<std::endl;
+    int aRow = 0;
+    int i;
+    for (i = 0; i < aNbNodes; i++) {
+      if (aRow == 4) {
+	out_stream<<std::endl; 
+	aRow = 0;
+      }
+      out_stream<<std::setw(10)<<7;
+      out_stream<<std::setw(10)<<aRec.NodeList[i];
+      aRow++;
+    }
+    for (i = 0; i < aNbElements; i++) {
+      if (aRow == 4) {
+	out_stream<<std::endl; 
+	aRow = 0;
+      }
+      out_stream<<std::setw(10)<<8;
+      out_stream<<std::setw(10)<<aRec.ElementList[i];
+      aRow++;
+    }
+    out_stream<<std::endl; 
+  }
+
+  /*
+   * Write end of dataset
+   */
+  out_stream<<"    -1\n";
 }

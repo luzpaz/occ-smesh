@@ -23,6 +23,7 @@
 
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverUNV_W_SMDS_Mesh.h"
+#include "SMESH_Group.hxx"
 
 using namespace std;
 

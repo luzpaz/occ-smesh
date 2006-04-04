@@ -22,6 +22,8 @@
 #include "DriverUNV_W_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
+#include "SMESHDS_GroupBase.hxx"
+#include "SMESH_Group.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 
@@ -29,6 +31,7 @@
 
 #include "UNV2411_Structure.hxx"
 #include "UNV2412_Structure.hxx"
+#include "UNV2417_Structure.hxx"
 #include "UNV_Utilities.hxx"
 
 using namespace std;
@@ -220,6 +223,39 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
       UNV2412::Write(out_stream,aDataSet2412);
+    }
+    {
+      using namespace UNV2417;
+      TDataSet aDataSet2417;
+      for ( TGroupsMap::iterator it = myGroupsMap.begin(); it != myGroupsMap.end(); it++ ) {
+	SMESH_Group*       aGroup   = it->second;
+	SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+	if ( aGroupDS ) {
+	  TRecord aRec;
+	  aRec.GroupName = aGroup->GetName();
+	  int i;
+	  SMDS_ElemIteratorPtr aIter = aGroupDS->GetElements();
+	  if (aGroupDS->GetType() == SMDSAbs_Node) {
+	    aRec.NodeList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.NodeList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  } else {
+	    aRec.ElementList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.ElementList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  }
+	  aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
+	}
+      }
+      UNV2417::Write(out_stream,aDataSet2417);
     }
   }
   catch(const std::exception& exc){

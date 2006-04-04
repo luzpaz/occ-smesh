@@ -21,11 +21,21 @@
 #define _INCLUDE_DRIVERUNV_W_SMDS_MESH
 
 #include "Driver_SMDS_Mesh.h"
+#include "SMESH_Group.hxx"
+#include <map>
+
+
+typedef std::map<int, SMESH_Group*> TGroupsMap;
 
 class DriverUNV_W_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
   virtual Status Perform();
+
+  void SetGroups(const TGroupsMap& theGroupsMap) { myGroupsMap = theGroupsMap; }
+
+ private:
+  TGroupsMap myGroupsMap;
 };
 
 
