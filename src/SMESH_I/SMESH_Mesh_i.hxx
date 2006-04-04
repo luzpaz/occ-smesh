@@ -178,13 +178,25 @@ public:
   CORBA::Long NbEdges()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbEdgesOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbFaces()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbFacesOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbTriangles()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbTrianglesOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbQuadrangles()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbQuadranglesOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbPolygons()
@@ -193,16 +205,31 @@ public:
   CORBA::Long NbVolumes()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbVolumesOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbTetras()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbTetrasOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbHexas()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbHexasOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbPyramids()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbPyramidsOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbPrisms()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbPrismsOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbPolyhedrons()

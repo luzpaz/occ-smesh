@@ -111,6 +111,15 @@ module SMESH
     FACE,
     VOLUME
   };
+  
+  /*!
+   * ElementOrder points out entities of what order are requested
+   */
+  enum ElementOrder {
+    ORDER_ANY,          /*! entities of any order */
+    ORDER_LINEAR,       /*! entities of 1st order */
+    ORDER_SQUARE        /*! entities of 2nd order */
+  };
 
   /*!
    * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods)
@@ -395,13 +404,25 @@ module SMESH
     long NbEdges()
       raises (SALOME::SALOME_Exception);
 
+    long NbEdgesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbFaces()
+      raises (SALOME::SALOME_Exception);
+
+    long NbFacesOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbTriangles()
       raises (SALOME::SALOME_Exception);
 
+    long NbTrianglesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbQuadrangles()
+      raises (SALOME::SALOME_Exception);
+
+    long NbQuadranglesOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbPolygons()
@@ -410,16 +431,31 @@ module SMESH
     long NbVolumes()
       raises (SALOME::SALOME_Exception);
 
+    long NbVolumesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbTetras()
+      raises (SALOME::SALOME_Exception);
+
+    long NbTetrasOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbHexas()
       raises (SALOME::SALOME_Exception);
 
+    long NbHexasOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbPyramids()
       raises (SALOME::SALOME_Exception);
 
+    long NbPyramidsOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbPrisms()
+      raises (SALOME::SALOME_Exception);
+
+    long NbPrismsOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbPolyhedrons()

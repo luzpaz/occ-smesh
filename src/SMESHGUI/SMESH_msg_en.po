@@ -764,7 +764,17 @@ msgstr "Standard Mesh Infos"
 msgid "SMESH_MESHINFO_NAME"
 msgstr "Name"
 
-#Faces :
+#Order :
+msgid "SMESH_MESHINFO_ORDER0"
+msgstr "Total"
+
+msgid "SMESH_MESHINFO_ORDER1"
+msgstr "Linear"
+
+msgid "SMESH_MESHINFO_ORDER2"
+msgstr "Square"
+
+#Elements :
 msgid "SMESH_MESHINFO_ELEMENTS"
 msgstr "Elements"
 
