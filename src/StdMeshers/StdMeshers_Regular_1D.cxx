@@ -347,7 +347,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
 
   double f, l;
   Handle(Geom_Curve) Curve = BRep_Tool::Curve(theEdge, f, l);
-  GeomAdaptor_Curve C3d(Curve);
+  GeomAdaptor_Curve C3d (Curve, f, l);
 
   double length = EdgeLength(theEdge);
 
