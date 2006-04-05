@@ -63,7 +63,7 @@ void UNV2412::Read(std::ifstream& in_stream, TDataSet& theDataSet)
       // end of dataset is reached
       break;
     }
-
+    
     int n_nodes;
     TRecord aRec;
     in_stream>>aRec.fe_descriptor_id;
@@ -145,6 +145,7 @@ bool UNV2412::IsBeam(int theFeDescriptorId){
   case 11: // edge with 2 nodes
   case 21: 
   case 22: // edge with 3 nodes
+  case 23: // curved beam
   case 24:
   case 25:
     return true;

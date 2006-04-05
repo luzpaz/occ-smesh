@@ -272,12 +272,10 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	for(; anIter != aDataSet2417.end(); anIter++){
 	  const TGroupId& aLabel = anIter->first;
 	  const TRecord& aRec = anIter->second;
-	  //SMDS_MeshGroup* aNewGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Edge);
-	  //myGroupNames.insert(TGroupNamesMap::value_type(aNewGroup, aRec.GroupName));
-	  //myGroupId.insert(TGroupIdMap::value_type(aNewGroup, aLabel));
 
 	  int aNodesNb = aRec.NodeList.size();
 	  int aElementsNb = aRec.ElementList.size();
+
 	  bool useSuffix = ((aNodesNb > 0) && (aElementsNb > 0));
 	  int i;
 	  if (aNodesNb > 0) {
@@ -319,12 +317,12 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 		  aFacesGroup->Add(aElement);
 		  break;
 		}
-	      }
+	      } 
 	    }
 	  }
 	}
       }
-    }
+    } 
   }
   catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
