@@ -948,7 +948,7 @@ void SMESH_Mesh::ExportUNV(const char *file) throw(SALOME_Exception)
   myWriter.SetFile(string(file));
   myWriter.SetMesh(_myMeshDS);
   myWriter.SetMeshId(_idDoc);
-  myWriter.SetGroups(_mapGroup);
+  //  myWriter.SetGroups(_mapGroup);
   myWriter.Perform();
 }
 

@@ -23,7 +23,7 @@
 
 #include "SMDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
-#include "SMESH_Group.hxx"
+//#include "SMESH_Group.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 
@@ -224,7 +224,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       }
       UNV2412::Write(out_stream,aDataSet2412);
     }
-    {
+    /*    {
       using namespace UNV2417;
       TDataSet aDataSet2417;
       for ( TGroupsMap::iterator it = myGroupsMap.begin(); it != myGroupsMap.end(); it++ ) {
@@ -256,7 +256,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	}
       }
       UNV2417::Write(out_stream,aDataSet2417);
-    }
+      }*/
   }
   catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
