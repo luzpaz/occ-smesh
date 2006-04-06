@@ -141,8 +141,8 @@ void SMESHGUI_Operation::onOk()
 {
   if( onApply() )
     commit();
-  else
-    abort();
+  //else
+  //  abort();
 }
 
 //=======================================================================

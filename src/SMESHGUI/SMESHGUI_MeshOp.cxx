@@ -141,6 +141,7 @@ bool SMESHGUI_MeshOp::onApply()
   QString aMess;
   if ( !isValid( aMess ) )
   {
+    dlg()->show();
     if ( aMess != "" )
       SUIT_MessageBox::warn1( myDlg,
         tr( "SMESH_WRN_WARNING" ), aMess, tr( "SMESH_BUT_OK" ) );
