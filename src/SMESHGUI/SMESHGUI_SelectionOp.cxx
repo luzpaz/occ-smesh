@@ -67,11 +67,7 @@ SMESHGUI_SelectionOp::SMESHGUI_SelectionOp( const Selection_Mode mode )
 //=================================================================================
 SMESHGUI_SelectionOp::~SMESHGUI_SelectionOp()
 {
-  Filters::const_iterator anIt = myFilters.begin(),
-                          aLast = myFilters.end();
-  for( ; anIt!=aLast; anIt++ )
-    if( anIt.data() )
-      delete anIt.data();
+  removeCustomFilters();
 }
 
 //=================================================================================
@@ -99,17 +95,21 @@ void SMESHGUI_SelectionOp::startOperation()
 // name     : removeCustomFilters
 // purpose  :
 //=================================================================================
-void SMESHGUI_SelectionOp::removeCustomFilters() const
+void SMESHGUI_SelectionOp::removeCustomFilters()
 {
-  LightApp_SelectionMgr* mgr = selectionMgr();
-  if( !mgr )
-    return;
-    
-  Filters::const_iterator anIt = myFilters.begin(),
-                          aLast = myFilters.end();
-  for( ; anIt!=aLast; anIt++ )
-    if( anIt.data() )
-      mgr->removeFilter( anIt.data() );
+  if (myFilters.count() > 0) {
+    LightApp_SelectionMgr* mgr = selectionMgr();
+    Filters::const_iterator anIt = myFilters.begin(),
+                            aLast = myFilters.end();
+    for (; anIt != aLast; anIt++) {
+      if (anIt.data()) {
+        if (mgr) mgr->removeFilter(anIt.data());
+        delete anIt.data();
+      }
+    }
+
+    myFilters.clear();
+  }
 }
 
 //=================================================================================
@@ -195,9 +195,7 @@ void SMESHGUI_SelectionOp::onActivateObject( int id )
 //=================================================================================
 void SMESHGUI_SelectionOp::onDeactivateObject( int id )
 {
-  LightApp_SelectionMgr* mgr = selectionMgr();
-  if( mgr && myFilters.contains( id ) && myFilters[ id ] )
-    mgr->removeFilter( myFilters[ id ] );
+  removeCustomFilters();
 }
 
 //=================================================================================
