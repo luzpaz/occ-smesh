@@ -58,7 +58,7 @@
 
 #include <vtkTextProperty.h>
 #include <vtkScalarBarActor.h>
-#include <vtkScalarsToColors.h>
+#include <vtkLookupTable.h>
 
 #define MINIMUM_WIDTH 70
 #define MARGIN_SIZE   11
@@ -520,7 +520,11 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
 
     double aMin = myMinEdit->text().toDouble();
     double aMax = myMaxEdit->text().toDouble();
-    myScalarBarActor->GetLookupTable()->SetRange( aMin, aMax );
+    vtkLookupTable* myLookupTable =
+      static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+    myLookupTable->SetRange( aMin, aMax );
+    myLookupTable->SetNumberOfTableValues(myColorsSpin->value());
+    myLookupTable->Build();
     SMESH::RepaintCurrentView();
   } else {
     // Scalar Bar preferences

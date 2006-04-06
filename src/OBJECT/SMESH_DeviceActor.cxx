@@ -284,6 +284,7 @@ void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
     aScalars->Delete();
 	
     theLookupTable->SetRange(aScalars->GetRange());
+    theLookupTable->SetNumberOfTableValues(theScalarBarActor->GetMaximumNumberOfColors());
     theLookupTable->Build();
     
     myMergeFilter->SetScalars(aDataSet);
