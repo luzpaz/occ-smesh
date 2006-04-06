@@ -781,6 +781,10 @@ namespace{
 	  else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
 	    SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
 	    aMesh->RemoveSubMesh( aSubMesh );
+	    
+	    _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+	    if (aMeshSO)
+              SMESH::ModifiedMesh(aMeshSO, false);
 	  }
 	  else if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
             SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
