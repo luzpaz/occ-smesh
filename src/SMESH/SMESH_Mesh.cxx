@@ -949,6 +949,16 @@ void SMESH_Mesh::ExportUNV(const char *file) throw(SALOME_Exception)
   myWriter.SetMesh(_myMeshDS);
   myWriter.SetMeshId(_idDoc);
   //  myWriter.SetGroups(_mapGroup);
+
+  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    SMESH_Group*       aGroup   = it->second;
+    SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+    if ( aGroupDS ) {
+      string aGroupName = aGroup->GetName();
+      aGroupDS->SetStoreName( aGroupName.c_str() );
+      myWriter.AddGroup( aGroupDS );
+    }
+  }
   myWriter.Perform();
 }
 

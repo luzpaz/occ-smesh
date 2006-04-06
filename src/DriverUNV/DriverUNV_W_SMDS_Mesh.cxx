@@ -224,6 +224,45 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       }
       UNV2412::Write(out_stream,aDataSet2412);
     }
+    {
+      using namespace UNV2417;
+      cout << "### MyGroups size " << myGroups.size() << endl;
+      if (myGroups.size() > 0) {
+	TDataSet aDataSet2417;
+	TGroupList::const_iterator aIter = myGroups.begin();
+	for (; aIter != myGroups.end(); aIter++) {
+	  SMESHDS_GroupBase* aGroupDS = *aIter;
+	  TRecord aRec;
+	  aRec.GroupName = aGroupDS->GetStoreName();
+	  cout << "### GrName = "<<aRec.GroupName<<endl;
+	  cout << "### GrSize = "<<aGroupDS->Extent()<<endl;
+	  cout << "### GrType = "<<aGroupDS->GetType()<<endl;
+
+	  int i;
+	  SMDS_ElemIteratorPtr aIter = aGroupDS->GetElements();
+	  if (aGroupDS->GetType() == SMDSAbs_Node) {
+	    aRec.NodeList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.NodeList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  } else {
+	    aRec.ElementList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.ElementList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  }
+	  aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
+	}
+	UNV2417::Write(out_stream,aDataSet2417);
+	myGroups.clear();
+      }
+    }
     /*    {
       using namespace UNV2417;
       TDataSet aDataSet2417;

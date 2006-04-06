@@ -18,7 +18,7 @@ static int MYDEBUG = 0;
 static string _group_labels[] = {"2417", "2429", "2430", "2432", "2435", "2452", "2467"};
 #define NBGROUP 7
 
-static string _label_dataset = "2429";
+static string _label_dataset = "2467";
 
 void UNV2417::Read(std::ifstream& in_stream, TDataSet& theDataSet)
 {
@@ -134,21 +134,25 @@ void UNV2417::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
     int aRow = 0;
     int i;
     for (i = 0; i < aNbNodes; i++) {
-      if (aRow == 4) {
+      if (aRow == 2) {
 	out_stream<<std::endl; 
 	aRow = 0;
       }
       out_stream<<std::setw(10)<<7;
       out_stream<<std::setw(10)<<aRec.NodeList[i];
+      out_stream<<std::setw(10)<<0;
+      out_stream<<std::setw(10)<<0;
       aRow++;
     }
     for (i = 0; i < aNbElements; i++) {
-      if (aRow == 4) {
+      if (aRow == 2) {
 	out_stream<<std::endl; 
 	aRow = 0;
       }
       out_stream<<std::setw(10)<<8;
       out_stream<<std::setw(10)<<aRec.ElementList[i];
+      out_stream<<std::setw(10)<<0;
+      out_stream<<std::setw(10)<<0;
       aRow++;
     }
     out_stream<<std::endl; 
