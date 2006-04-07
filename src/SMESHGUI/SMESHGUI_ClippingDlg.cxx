@@ -159,7 +159,7 @@ protected:
     myActor->SetInfinitive(true);
     myActor->SetMapper(myMapper);
 
-    float anRGB[3];
+    vtkFloatingPointType anRGB[3];
     vtkProperty* aProp = vtkProperty::New();
     SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
     aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
@@ -656,18 +656,18 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
 
   OrientedPlane* aPlane = myPlanes[aCurPlaneIndex].GetPointer();
 
-  float aNormal[3];
+  vtkFloatingPointType aNormal[3];
   SMESH::Orientation anOrientation;
-  float aDir[3][3] = {{0, 0, 0}, {0, 0, 0}};
+  vtkFloatingPointType aDir[3][3] = {{0, 0, 0}, {0, 0, 0}};
   {
     static double aCoeff = vtkMath::Pi()/180.0;
 
-    float aRot[2] = {getRotation1(), getRotation2()};
+    vtkFloatingPointType aRot[2] = {getRotation1(), getRotation2()};
     aPlane->myAngle[0] = aRot[0];
     aPlane->myAngle[1] = aRot[1];
 
-    float anU[2] = {cos(aCoeff*aRot[0]), cos(aCoeff*aRot[1])};
-    float aV[2] = {sqrt(1.0-anU[0]*anU[0]), sqrt(1.0-anU[1]*anU[1])};
+    vtkFloatingPointType anU[2] = {cos(aCoeff*aRot[0]), cos(aCoeff*aRot[1])};
+    vtkFloatingPointType aV[2] = {sqrt(1.0-anU[0]*anU[0]), sqrt(1.0-anU[1]*anU[1])};
     aV[0] = aRot[0] > 0? aV[0]: -aV[0];
     aV[1] = aRot[1] > 0? aV[1]: -aV[1];
 
@@ -715,37 +715,37 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   myActor->SetPlaneParam(aNormal, getDistance(), aPlane);
 
   vtkDataSet* aDataSet = myActor->GetInput();
-  float *aPnt = aDataSet->GetCenter();
+  vtkFloatingPointType *aPnt = aDataSet->GetCenter();
 
-  float* anOrigin = aPlane->GetOrigin();
-  float aDel = aDataSet->GetLength()/2.0;
+  vtkFloatingPointType* anOrigin = aPlane->GetOrigin();
+  vtkFloatingPointType aDel = aDataSet->GetLength()/2.0;
 
-  float aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
-			{aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
-  float aParam, aPnt0[3], aPnt1[3], aPnt2[3];
+  vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
+				       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
+  vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
 
-  float aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
-		     aPnt[1] - aDelta[0][1] - aDelta[1][1],
-		     aPnt[2] - aDelta[0][2] - aDelta[1][2]};
-  float aPnt02[3] = {aPnt01[0] + aNormal[0],
-		      aPnt01[1] + aNormal[1],
-		      aPnt01[2] + aNormal[2]};
+  vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
+				    aPnt[1] - aDelta[0][1] - aDelta[1][1],
+				    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
+  vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
+				    aPnt01[1] + aNormal[1],
+				    aPnt01[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
 
-  float aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
-		     aPnt[1] - aDelta[0][1] + aDelta[1][1],
-		     aPnt[2] - aDelta[0][2] + aDelta[1][2]};
-  float aPnt12[3] = {aPnt11[0] + aNormal[0],
-		     aPnt11[1] + aNormal[1],
-		     aPnt11[2] + aNormal[2]};
+  vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
+				    aPnt[1] - aDelta[0][1] + aDelta[1][1],
+				    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
+  vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
+				    aPnt11[1] + aNormal[1],
+				    aPnt11[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
 
-  float aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
-		     aPnt[1] + aDelta[0][1] - aDelta[1][1],
-		     aPnt[2] + aDelta[0][2] - aDelta[1][2]};
-  float aPnt22[3] = {aPnt21[0] + aNormal[0],
-		     aPnt21[1] + aNormal[1],
-		     aPnt21[2] + aNormal[2]};
+  vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
+				    aPnt[1] + aDelta[0][1] - aDelta[1][1],
+				    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
+  vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
+				    aPnt21[1] + aNormal[1],
+				    aPnt21[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
 
   vtkPlaneSource* aPlaneSource = aPlane->myPlaneSource;

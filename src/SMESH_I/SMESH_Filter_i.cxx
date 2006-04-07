@@ -2511,11 +2511,12 @@ static LDOM_Element createFilterItem( const char*       theName,
   {
     LDOM_Element aCriterionItem = theDoc.createElement( "criterion" );
 
-    aCriterionItem.setAttribute( ATTR_TYPE         , toString( aCriteria[ i ].Type      ) );
-    aCriterionItem.setAttribute( ATTR_COMPARE      , toString( aCriteria[ i ].Compare   ) );
-    aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString( aCriteria[ i ].Threshold ) );
-    aCriterionItem.setAttribute( ATTR_UNARY        , toString( aCriteria[ i ].UnaryOp   ) );
-    aCriterionItem.setAttribute( ATTR_BINARY       , toString( aCriteria[ i ].BinaryOp  ) );
+    typedef long int TLongParam;
+    aCriterionItem.setAttribute( ATTR_TYPE         , toString( TLongParam( aCriteria[ i ].Type) ) );
+    aCriterionItem.setAttribute( ATTR_COMPARE      , toString( TLongParam( aCriteria[ i ].Compare ) ) );
+    aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString( TLongParam( aCriteria[ i ].Threshold ) ) );
+    aCriterionItem.setAttribute( ATTR_UNARY        , toString( TLongParam( aCriteria[ i ].UnaryOp ) ) );
+    aCriterionItem.setAttribute( ATTR_BINARY       , toString( TLongParam( aCriteria[ i ].BinaryOp ) ) );
 
     aCriterionItem.setAttribute( ATTR_THRESHOLD_STR, (const char*)aCriteria[ i ].ThresholdStr );
     aCriterionItem.setAttribute( ATTR_TOLERANCE    , toString( aCriteria[ i ].Tolerance ) );

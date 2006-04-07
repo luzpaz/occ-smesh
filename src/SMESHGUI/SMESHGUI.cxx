@@ -457,28 +457,28 @@ namespace{
 	      anActor->SetRepresentation(SMESH_Actor::ePoint);
 	      break;
 	    case 1132:{
-	      float color[3];
+	      vtkFloatingPointType color[3];
 	      anActor->GetSufaceColor(color[0], color[1], color[2]);
 	      int c0 = int (color[0] * 255);
 	      int c1 = int (color[1] * 255);
 	      int c2 = int (color[2] * 255);
 	      QColor c(c0, c1, c2);
 
-	      float edgecolor[3];
+	      vtkFloatingPointType edgecolor[3];
 	      anActor->GetEdgeColor(edgecolor[0], edgecolor[1], edgecolor[2]);
 	      c0 = int (edgecolor[0] * 255);
 	      c1 = int (edgecolor[1] * 255);
 	      c2 = int (edgecolor[2] * 255);
 	      QColor e(c0, c1, c2);
 
-	      float backfacecolor[3];
+	      vtkFloatingPointType backfacecolor[3];
 	      anActor->GetBackSufaceColor(backfacecolor[0], backfacecolor[1], backfacecolor[2]);
 	      c0 = int (backfacecolor[0] * 255);
 	      c1 = int (backfacecolor[1] * 255);
 	      c2 = int (backfacecolor[2] * 255);
 	      QColor b(c0, c1, c2);
 
-	      float nodecolor[3];
+	      vtkFloatingPointType nodecolor[3];
 	      anActor->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2]);
 	      c0 = int (nodecolor[0] * 255);
 	      c1 = int (nodecolor[1] * 255);
@@ -489,7 +489,7 @@ namespace{
 	      if(Edgewidth == 0)
 		Edgewidth = 1;
 	      int intValue = int(anActor->GetNodeSize());
-	      float Shrink = anActor->GetShrinkFactor();
+	      vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
 
 	      SMESHGUI_Preferences_ColorDlg *aDlg =
 		new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI(), "" );
@@ -506,26 +506,26 @@ namespace{
 		QColor nodecolor = aDlg->GetColor(3);
 		QColor backfacecolor = aDlg->GetColor(4);
 		/* actor color and backface color */
-		anActor->SetSufaceColor(float (color.red()) / 255.,
-					 float (color.green()) / 255.,
-					 float (color.blue()) / 255.);
-		anActor->SetBackSufaceColor(float (backfacecolor.red()) / 255.,
-					     float (backfacecolor.green()) / 255.,
-					     float (backfacecolor.blue()) / 255.);
+		anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
+					vtkFloatingPointType (color.green()) / 255.,
+					vtkFloatingPointType (color.blue()) / 255.);
+		anActor->SetBackSufaceColor(vtkFloatingPointType (backfacecolor.red()) / 255.,
+					    vtkFloatingPointType (backfacecolor.green()) / 255.,
+					    vtkFloatingPointType (backfacecolor.blue()) / 255.);
 
 		/* edge color */
-		anActor->SetEdgeColor(float (edgecolor.red()) / 255.,
-				       float (edgecolor.green()) / 255.,
-				       float (edgecolor.blue()) / 255.);
+		anActor->SetEdgeColor(vtkFloatingPointType (edgecolor.red()) / 255.,
+				      vtkFloatingPointType (edgecolor.green()) / 255.,
+				      vtkFloatingPointType (edgecolor.blue()) / 255.);
 
 		/* Shrink factor and size edges */
 		anActor->SetShrinkFactor(aDlg->GetIntValue(3) / 100.);
 		anActor->SetLineWidth(aDlg->GetIntValue(1));
 
 		/* Nodes color and size */
-		anActor->SetNodeColor(float (nodecolor.red()) / 255.,
-			       float (nodecolor.green()) / 255.,
-				       float (nodecolor.blue()) / 255.);
+		anActor->SetNodeColor(vtkFloatingPointType (nodecolor.red()) / 255.,
+				      vtkFloatingPointType (nodecolor.green()) / 255.,
+				      vtkFloatingPointType (nodecolor.blue()) / 255.);
 		anActor->SetNodeSize(aDlg->GetIntValue(2));
 
 		delete aDlg;

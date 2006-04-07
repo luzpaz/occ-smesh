@@ -120,7 +120,7 @@ namespace SMESH {
     vtkUnstructuredGrid* myGrid;
     //vtkProperty* myBackProp, *myProp;
 
-    float anRGB[3], aBackRGB[3];
+    vtkFloatingPointType myRGB[3], myBackRGB[3];
 
   public:
     TElementSimulation (SalomeApp_Application* theApplication)
@@ -143,14 +143,14 @@ namespace SMESH {
       myPreviewActor->SetMapper(myMapper);
 
       vtkProperty* myProp = vtkProperty::New();
-      GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-      myProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+      GetColor( "SMESH", "fill_color", myRGB[0], myRGB[1], myRGB[2], QColor( 0, 170, 255 ) );
+      myProp->SetColor( myRGB[0], myRGB[1], myRGB[2] );
       myPreviewActor->SetProperty( myProp );
       myProp->Delete();
 
       vtkProperty* myBackProp = vtkProperty::New();
-      GetColor( "SMESH", "backface_color", aBackRGB[0], aBackRGB[1], aBackRGB[2], QColor( 0, 0, 255 ) );
-      myBackProp->SetColor( aBackRGB[0], aBackRGB[1], aBackRGB[2] );
+      GetColor( "SMESH", "backface_color", myBackRGB[0], myBackRGB[1], myBackRGB[2], QColor( 0, 0, 255 ) );
+      myBackProp->SetColor( myBackRGB[0], myBackRGB[1], myBackRGB[2] );
       myPreviewActor->SetBackfaceProperty( myBackProp );
       myBackProp->Delete();
 
@@ -200,7 +200,7 @@ namespace SMESH {
       // take care of orientation
       if ( aType == VTK_CONVEX_POINT_SET ) {
         if ( theReverse && theMode == VTK_SURFACE ) {
-          //myPreviewActor->GetProperty()->SetColor( aBackRGB[0], aBackRGB[1], aBackRGB[2] );
+          //myPreviewActor->GetProperty()->SetColor( myBackRGB[0], myBackRGB[1], myBackRGB[2] );
         }
       }
       else {
@@ -230,7 +230,7 @@ namespace SMESH {
       // restore normal orientation
       if ( aType == VTK_CONVEX_POINT_SET ) {
         if ( theReverse  && theMode == VTK_SURFACE ) {
-          //myPreviewActor->GetProperty()->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+          //myPreviewActor->GetProperty()->SetColor( myRGB[0], myRGB[1], myRGB[2] );
         }
       }
     }

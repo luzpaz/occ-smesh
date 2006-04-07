@@ -640,13 +640,13 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
 	  vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
 
 	  if ( myScalarBarActor->GetLookupTable() ) {
-	    float *range = myScalarBarActor->GetLookupTable()->GetRange();
+	    vtkFloatingPointType *range = myScalarBarActor->GetLookupTable()->GetRange();
 	    myMinEdit->setText( QString::number( range[0],'g',12 ) );
 	    myMaxEdit->setText( QString::number( range[1],'g',12 ) );
 	  }
 
 	  vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
-	  float aTColor[3];
+	  vtkFloatingPointType aTColor[3];
 	  aTitleTextPrp->GetColor( aTColor );
 	  myTitleColorBtn->setPaletteBackgroundColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
 	  myTitleFontCombo->setCurrentItem( aTitleTextPrp->GetFontFamily() );
@@ -655,7 +655,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
 	  myTitleShadowCheck->setChecked( aTitleTextPrp->GetShadow() );
 
 	  vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
-	  float aLColor[3];
+	  vtkFloatingPointType aLColor[3];
 	  aLabelsTextPrp->GetColor( aLColor );
 	  myLabelsColorBtn->setPaletteBackgroundColor( QColor( (int)( aLColor[0]*255 ), (int)( aLColor[1]*255 ), (int)( aLColor[2]*255 ) ) );
 	  myLabelsFontCombo->setCurrentItem( aLabelsTextPrp->GetFontFamily() );

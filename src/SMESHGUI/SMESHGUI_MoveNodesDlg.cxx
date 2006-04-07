@@ -52,6 +52,7 @@
 #include "SALOME_ListIO.hxx"
 
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 #include "utilities.h"
 
@@ -61,7 +62,6 @@
 // VTK includes
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -547,7 +547,7 @@ void SMESHGUI_MoveNodesDlg::redisplayPreview()
   aCellTypesArray->InsertNextValue(VTK_VERTEX);
   anIdList->Delete();
 
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
   aCellLocationsArray->SetNumberOfComponents(1);
   aCellLocationsArray->SetNumberOfTuples(1);
 

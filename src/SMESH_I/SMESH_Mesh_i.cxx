@@ -1639,7 +1639,7 @@ SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const boo
 
 CORBA::Long SMESH_Mesh_i::GetMeshPtr()
 {
-  return (CORBA::Long)_impl;
+  return CORBA::Long(size_t(_impl));
 }
 
 

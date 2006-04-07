@@ -62,6 +62,7 @@
 #include "SVTK_ViewModel.h"
 #include "SVTK_Selector.h"
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
@@ -89,7 +90,6 @@
 // VTK Includes
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -1226,7 +1226,7 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
       else aCellTypesArray->InsertNextValue(VTK_EMPTY_CELL);
     }
 
-    vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+    VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
     aCellLocationsArray->SetNumberOfComponents(1);
     aCellLocationsArray->SetNumberOfTuples(aNbCells);
 

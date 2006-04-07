@@ -54,6 +54,7 @@
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 // OCCT Includes
 #include <Precision.hxx>
@@ -68,7 +69,6 @@
 #include <vtkPolygon.h>
 #include <vtkConvexPointSet.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -1320,7 +1320,7 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
     }
   }
 
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
   aCellLocationsArray->SetNumberOfComponents(1);
   aCellLocationsArray->SetNumberOfTuples(aNbCells);
 

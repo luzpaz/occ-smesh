@@ -115,12 +115,12 @@ class TPolySimulation{
       myPreviewActor->SetMapper( myMapper );
       myPreviewActor->SetRepresentation( 3 );
 
-      float anRGB[3];
+      vtkFloatingPointType anRGB[3];
       vtkProperty* aProp = vtkProperty::New();
       GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
       aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
       myPreviewActor->SetProperty( aProp );
-      float aFactor,aUnits;
+      vtkFloatingPointType aFactor,aUnits;
       myPreviewActor->SetResolveCoincidentTopology(true);
       myPreviewActor->GetPolygonOffsetParameters(aFactor,aUnits);
       myPreviewActor->SetPolygonOffsetParameters(aFactor,0.2*aUnits);

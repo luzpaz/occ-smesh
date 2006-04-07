@@ -80,8 +80,8 @@ void SMESH_ExtractGeometry::Execute()
   vtkIdList *cellPts;
   vtkCell *cell;
   int numCellPts;
-  float *x;
-  float multiplier;
+  vtkFloatingPointType *x;
+  vtkFloatingPointType multiplier;
   vtkPoints *newPts;
   vtkIdList *newCellPts;
   vtkDataSet *input = this->GetInput();
@@ -156,7 +156,7 @@ void SMESH_ExtractGeometry::Execute()
     // To extract boundary cells, we have to create supplemental information
     if ( this->ExtractBoundaryCells )
       {
-      float val;
+      vtkFloatingPointType val;
       newScalars = vtkFloatArray::New();
       newScalars->SetNumberOfValues(numPts);
 

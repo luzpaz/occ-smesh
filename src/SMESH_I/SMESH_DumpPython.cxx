@@ -174,7 +174,7 @@ namespace SMESH
       myStream << aSObject->GetID();
     } else if ( !CORBA::is_nil(theArg)) {
       if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
-        myStream << "smeshObj_" << (int) theArg;
+        myStream << "smeshObj_" << size_t(theArg);
       else
         myStream << NotPublishedObjectName();
     }
