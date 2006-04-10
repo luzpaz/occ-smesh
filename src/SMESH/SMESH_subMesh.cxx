@@ -197,8 +197,8 @@ bool SMESH_subMesh::SubMeshesComputed()
     // one face with READY_TO_COMPUTE state in order to be able to
     // recompute 3D when a locale triangle hypo changes (see PAL7428).
     // So we check if mesh is really present
-    //bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
-    bool computeOk = ( ds && ( ds->GetNodes()->more() || ds->GetElements()->more() ));
+    bool computeOk = (sm->GetComputeState() == COMPUTE_OK ||
+                      (ds && ( ds->GetNodes()->more() || ds->GetElements()->more() )));
     if (!computeOk)
     {
       const TopoDS_Shape & ss = sm->GetSubShape();
