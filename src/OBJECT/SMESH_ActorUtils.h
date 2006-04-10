@@ -23,7 +23,7 @@
 #include <qcolor.h>
 #include <qstring.h>
 
-#include <vtkSystemIncludes.h>
+#include "VTKViewer.h"
 
 class vtkUnstructuredGrid;
 

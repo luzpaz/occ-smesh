@@ -20,14 +20,14 @@
 
 #include "SMESH_ExtractGeometry.h"
 
-#include "vtkCell.h"
-#include "vtkCellData.h"
-#include "vtkFloatArray.h"
-#include "vtkIdList.h"
-#include "vtkImplicitFunction.h"
-#include "vtkObjectFactory.h"
-#include "vtkPointData.h"
-#include "vtkUnstructuredGrid.h"
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkIdList.h>
+#include <vtkImplicitFunction.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 
