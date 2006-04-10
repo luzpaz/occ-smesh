@@ -489,6 +489,16 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   else
     aScript += aSMESHGen + ".SetCurrentStudy(None)";
 
+  // import python files corresponding to plugins
+  set<string> moduleNameSet;
+  map<string, GenericHypothesisCreator_i*>::iterator hyp_creator = myHypCreatorMap.begin();
+  for ( ; hyp_creator != myHypCreatorMap.end(); ++hyp_creator ) {
+    string moduleName = hyp_creator->second->GetModuleName();
+    bool newModule = moduleNameSet.insert( moduleName ).second;
+    if ( newModule )
+      aScript += helper + "\n\t" + "import " + (char*) moduleName.c_str();
+  }
+
   // Dump trace of restored study
   if (theSavedTrace.Length() > 0) {
     // For the convertion of IDL API calls -> smesh.py API, "smesh" standing for SMESH_Gen
