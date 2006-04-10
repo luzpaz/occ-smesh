@@ -41,6 +41,7 @@
 
 class SMESHGUI_MeshDlg;
 class SMESHGUI_ShapeByMeshOp;
+class HypothesisData;
 
 /*!
  * \brief Operation for mech creation or editing
@@ -51,9 +52,10 @@ class SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
 { 
   Q_OBJECT
       
-  enum HypType{ Algo = 0, MainHyp, AddHyp };
-
 public:
+
+  enum HypType{ Algo = 0, MainHyp, AddHyp, NbHypTypes };
+
   SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh = true );
   virtual ~SMESHGUI_MeshOp();
   
@@ -73,17 +75,28 @@ protected slots:
   void                           onGeomSelectionByMesh( bool );
   void                           onPublishShapeByMeshDlg(SUIT_Operation*);
   void                           onCloseShapeByMeshDlg(SUIT_Operation*);
+  void                           onAlgoSelected( const int theIndex,
+                                                 const int theDim = -1);
 
 private:
+
+  typedef QValueList<HypothesisData*> THypDataList; // typedef: list of hypothesis data
+
   bool                           isValid( QString& ) const;
-  void                           availableHyps( const int theDim, 
-                                                const int theHypType, 
-                                                QStringList& theHyps ) const;
-  void                           existingHyps( const int theDim, 
-                                               const int theHypType, 
+  void                           availableHyps( const int       theDim, 
+                                                const int       theHypType,
+                                                QStringList&    theHyps,
+                                                THypDataList&   theDataList,
+                                                HypothesisData* theAlgoData = 0 ) const;
+  void                           existingHyps( const int     theDim, 
+                                               const int     theHypType, 
                                                _PTR(SObject) theFather,
-                                               QStringList& theHyps, 
-                                               QValueList<SMESH::SMESH_Hypothesis_var>& theHypVars );
+                                               QStringList&  theHyps, 
+                                               QValueList<SMESH::SMESH_Hypothesis_var>& theHypVars,
+                                               HypothesisData* theAlgoData = 0);
+  HypothesisData*                hypData( const int theDim,
+                                          const int theHypType,
+                                          const int theIndex); // access to myAvailableHypData
 
   void                           createHypothesis(const int theDim, const int theType,
 						  const QString& theTypeName);
@@ -119,6 +132,11 @@ private:
   DimToHypMap                    myExistingHyps; //!< all hypothesis of SMESH module
   DimToHypMap                    myObjHyps;      //!< hypothesis assigned to the current 
                                                  //   edited mesh/sub-mesh
+
+  // hypdata corresponding to hypotheses present in myDlg
+  THypDataList                   myAvailableHypData[3][NbHypTypes];
+
+  bool                           myIgnoreAlgoSelection;
 };
 
 #endif

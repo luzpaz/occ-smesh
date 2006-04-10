@@ -115,6 +115,7 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
     connect( myEditHyp[ i ], SIGNAL( clicked() ), SLOT( onEditHyp() ) );
     connect( myHyp[ i ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
   }
+  connect( myHyp[ Algo ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
   
   // Initialize controls
   
@@ -141,6 +142,8 @@ SMESHGUI_MeshTab::~SMESHGUI_MeshTab()
 void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& theHyps )
 {
   myAvailableHyps[ theId ] = theHyps;
+
+  bool enable = ! theHyps.isEmpty();
   if ( theId == Algo )
   {
     myHyp[ Algo ]->clear();
@@ -148,6 +151,11 @@ void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& the
     myHyp[ Algo ]->insertStringList( theHyps );
     myHyp[ Algo ]->setCurrentItem( 0 );
   }
+  else {
+    myCreateHyp[ theId ]->setEnabled( enable );
+    myEditHyp[ theId ]->setEnabled( false );
+  }
+  myHyp[ theId ]->setEnabled( enable );
 }
 
 //================================================================================
@@ -295,15 +303,20 @@ void SMESHGUI_MeshTab::onEditHyp()
 /*!
  * \brief Updates "Edit hypothesis" button state
  * 
- * SLOT called when current hypothesis changed disables "Edit hypothesis" button
- * if current hypothesis is <None>, enables otherwise
+ * SLOT called when current hypothesis changed. Disables "Edit hypothesis" button
+ * if current hypothesis is <None>, enables otherwise.
+ * If an algorithm changed, emits selectAlgo( theIndex ) signal
  */
 //================================================================================
 void SMESHGUI_MeshTab::onHyp( int theIndex )
 {
   const QObject* aSender = sender();
-  int anIndex = aSender == myHyp[ MainHyp ] ? MainHyp : AddHyp;
-  myEditHyp[ anIndex ]->setEnabled( theIndex > 0 );
+  if ( aSender == myHyp[ Algo ] )
+    emit selectAlgo( theIndex - 1 ); // - 1 because there is NONE on the top
+  else {
+    int anIndex = aSender == myHyp[ MainHyp ] ? MainHyp : AddHyp;
+    myEditHyp[ anIndex ]->setEnabled( theIndex > 0 );
+  }
 }
 
 //================================================================================
@@ -379,9 +392,9 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   myTabs[ Dim1D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabs[ Dim2D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabs[ Dim3D ] = new SMESHGUI_MeshTab( myTabWg );
-  myTabWg->addTab( myTabs[ Dim1D ], tr( "DIM_1D" ) );
-  myTabWg->addTab( myTabs[ Dim2D ], tr( "DIM_2D" ) );
   myTabWg->addTab( myTabs[ Dim3D ], tr( "DIM_3D" ) );
+  myTabWg->addTab( myTabs[ Dim2D ], tr( "DIM_2D" ) );
+  myTabWg->addTab( myTabs[ Dim1D ], tr( "DIM_1D" ) );
 
   // Hypotheses Sets
   myHypoSetPopup = new QPopupMenu();
@@ -462,7 +475,7 @@ void SMESHGUI_MeshDlg::reset()
 //================================================================================    
 void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
 {
-  myTabWg->setCurrentPage( theId );
+  myTabWg->setCurrentPage( Dim3D - theId );
 }
 
 //================================================================================
