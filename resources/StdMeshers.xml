@@ -93,7 +93,7 @@
     <algorithm type="MEFISTO_2D"
 	       label-id="Triangle (Mefisto)"
 	       icon-id="mesh_algo_mefisto.png"
-               hypos="LengthFromEdges"
+               hypos="LengthFromEdges,MaxElementArea"
                input="EDGE"
                output="TRIA"
                dim="2"/>
