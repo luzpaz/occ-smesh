@@ -97,6 +97,16 @@ namespace SMESH {
       conn = aConn;
       break;
     }
+    case QUAD_TRIANGLE: {
+      static int aConn[] = {0,2,1,5,4,3};
+      conn = aConn;
+      break;
+    }
+    case QUAD_QUADRANGLE: {
+      static int aConn[] = {0,3,2,1,7,6,5,4};
+      conn = aConn;
+      break;
+    }
     default:;
     }
     if ( !conn ) {
@@ -204,8 +214,8 @@ namespace SMESH {
         }
       }
       else {
-        // VTK cell connectivity opposites the MED one
-        if ( !theReverse ) {
+        // VTK cell connectivity opposites the MED one for volumic elements
+        if ( theIds.size() > 8 ? !theReverse : theReverse ) {
           ReverseConnectivity( theIds, theType );
         }
       }
