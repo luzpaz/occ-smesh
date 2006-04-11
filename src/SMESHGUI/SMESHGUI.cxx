@@ -794,6 +794,20 @@ namespace{
 	    // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
 	    //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
 	    //op->start();
+	    SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_nil();
+
+	    _PTR(ChildIterator) it = aStudy->NewChildIterator(obj);
+	    if ( it->More() ){
+	      _PTR(SObject) CSO = it->Value();
+	      aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( CSO ) );
+	      if ( !aSubMesh->_is_nil() )
+		{
+		  SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+		  _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+		  if (aMeshSO)
+		    SMESH::ModifiedMesh(aMeshSO, false);
+		}
+	    }
 	    aStudyBuilder->RemoveObjectWithChildren( obj );
 	    //op->finish();
 	  }
