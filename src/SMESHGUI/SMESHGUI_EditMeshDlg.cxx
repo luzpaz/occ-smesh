@@ -156,7 +156,7 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   GroupMeshLayout->addWidget(LineEditMesh, 0, 2);
   DlgLayout->addWidget(GroupMesh, 1, 0);
 
-  myHelpFileName = "/files/merging_nodes.htm";// merging_elements.htm
+  myHelpFileName = "merge_elements.htm";
 
   Init(); // Initialisations
 }

@@ -135,9 +135,6 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     myCurrentLineEdit = myMeshGroupLine;
     setSelectionMode(5);
   }
-
-  bool isEditMode = !CORBA::is_nil( myGroupOnGeom );
-  myHelpFileName = isEditMode ? "/files/editing_groups.htm" : "/files/creating_groups.htm";
 }
 
 //=================================================================================
@@ -152,10 +149,14 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
 
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  if (create)
+  if (create) {
     setCaption(tr("SMESH_CREATE_GROUP_TITLE"));
-  else
+    myHelpFileName = "/files/creating_groups.htm";
+  }
+  else {
     setCaption(tr("SMESH_EDIT_GROUP_TITLE"));
+    myHelpFileName = "/files/editing_groups.htm";
+  }
 
   setSizeGripEnabled(TRUE);
 

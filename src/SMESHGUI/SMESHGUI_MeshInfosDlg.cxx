@@ -446,7 +446,7 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   // init dialog with current selection
   onSelectionChanged();
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#advanced infos";
+  myHelpFileName = "/files/viewing_mesh_info.htm#advanced_infos";
 }
 
 //=================================================================================
