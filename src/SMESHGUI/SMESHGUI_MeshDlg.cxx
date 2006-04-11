@@ -175,6 +175,7 @@ void SMESHGUI_MeshTab::setExistingHyps( const int theId, const QStringList& theH
     myHyp[ theId ]->insertItem( tr( "NONE" ) );
     myHyp[ theId ]->insertStringList( theHyps );
     myHyp[ theId ]->setCurrentItem( 0 );
+    myHyp[ theId ]->setEnabled( !theHyps.isEmpty() );
     myEditHyp[ theId ]->setEnabled( false );
   }
 }
@@ -296,7 +297,7 @@ void SMESHGUI_MeshTab::onEditHyp()
 {
   const QObject* aSender = sender();
   int aHypType = aSender == myEditHyp[ MainHyp ] ? MainHyp : AddHyp;
-  emit editHyp( aHypType, myHyp[ aHypType ]->currentItem() );
+  emit editHyp( aHypType, myHyp[ aHypType ]->currentItem() - 1 );  // - 1 because there is NONE on the top
 }
 
 //================================================================================
@@ -490,8 +491,12 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
   for ( int i = Dim1D; i <= Dim3D; ++i ) {
     int dim = i + 1;
     bool enable = ( dim <= maxDim );
-    if ( !enable )
+    if ( !enable ) {
       myTabs[ i ]->reset();
+      if ( myTabs[ i ] == myTabWg->currentPage() && i != Dim1D)
+        // deselect desebled tab
+        myTabWg->setCurrentPage( i - 1 );
+    }
     myTabWg->setTabEnabled( myTabs[ i ], enable );
   }
 }
