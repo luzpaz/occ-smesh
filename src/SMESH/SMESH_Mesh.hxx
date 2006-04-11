@@ -180,7 +180,7 @@ public:
   enum ElementOrder {
     ORDER_ANY,          /*! entities of any order */
     ORDER_LINEAR,       /*! entities of 1st order */
-    ORDER_SQUARE        /*! entities of 2nd order */
+    ORDER_QUADRATIC     /*! entities of 2nd order */
   };
 
   int NbEdges(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);

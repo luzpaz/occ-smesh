@@ -772,7 +772,7 @@ msgid "SMESH_MESHINFO_ORDER1"
 msgstr "Linear"
 
 msgid "SMESH_MESHINFO_ORDER2"
-msgstr "Square"
+msgstr "Quadratic"
 
 #Elements :
 msgid "SMESH_MESHINFO_ELEMENTS"

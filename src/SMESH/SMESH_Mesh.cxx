@@ -1000,7 +1000,7 @@ int SMESH_Mesh::NbEdges(ElementOrder order) throw(SALOME_Exception)
   while (it->more()) {
     const SMDS_MeshEdge* cur = it->next();
     if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_SQUARE && cur->IsQuadratic() )
+         order == ORDER_QUADRATIC && cur->IsQuadratic() )
       Nb++;
   }
   return Nb;
@@ -1022,7 +1022,7 @@ int SMESH_Mesh::NbFaces(ElementOrder order) throw(SALOME_Exception)
   while (it->more()) {
     const SMDS_MeshFace* cur = it->next();
     if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_SQUARE && cur->IsQuadratic() )
+         order == ORDER_QUADRATIC && cur->IsQuadratic() )
       Nb++;
   }
   return Nb;
@@ -1043,7 +1043,7 @@ int SMESH_Mesh::NbTriangles(ElementOrder order) throw(SALOME_Exception)
     if ( !curFace->IsPoly() && 
 	 ( order == ORDER_ANY && (nbnod==3 || nbnod==6) ||
            order == ORDER_LINEAR && nbnod==3 ||
-           order == ORDER_SQUARE && nbnod==6 ) )
+           order == ORDER_QUADRATIC && nbnod==6 ) )
       Nb++;
   }
   return Nb;
@@ -1064,7 +1064,7 @@ int SMESH_Mesh::NbQuadrangles(ElementOrder order) throw(SALOME_Exception)
     if ( !curFace->IsPoly() && 
 	 ( order == ORDER_ANY && (nbnod==4 || nbnod==8) ||
            order == ORDER_LINEAR && nbnod==4 ||
-           order == ORDER_SQUARE && nbnod==8 ) )
+           order == ORDER_QUADRATIC && nbnod==8 ) )
       Nb++;
   }
   return Nb;
@@ -1099,7 +1099,7 @@ int SMESH_Mesh::NbVolumes(ElementOrder order) throw(SALOME_Exception)
   while (it->more()) {
     const SMDS_MeshVolume* cur = it->next();
     if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_SQUARE && cur->IsQuadratic() )
+         order == ORDER_QUADRATIC && cur->IsQuadratic() )
       Nb++;
   }
   return Nb;
@@ -1116,7 +1116,7 @@ int SMESH_Mesh::NbTetras(ElementOrder order) throw(SALOME_Exception)
     if ( !curVolume->IsPoly() && 
 	 ( order == ORDER_ANY && (nbnod==4 || nbnod==10) ||
            order == ORDER_LINEAR && nbnod==4 ||
-           order == ORDER_SQUARE && nbnod==10 ) )
+           order == ORDER_QUADRATIC && nbnod==10 ) )
       Nb++;
   }
   return Nb;
@@ -1133,7 +1133,7 @@ int SMESH_Mesh::NbHexas(ElementOrder order) throw(SALOME_Exception)
     if ( !curVolume->IsPoly() && 
 	 ( order == ORDER_ANY && (nbnod==8 || nbnod==20) ||
            order == ORDER_LINEAR && nbnod==8 ||
-           order == ORDER_SQUARE && nbnod==20 ) )
+           order == ORDER_QUADRATIC && nbnod==20 ) )
       Nb++;
   }
   return Nb;
@@ -1150,7 +1150,7 @@ int SMESH_Mesh::NbPyramids(ElementOrder order) throw(SALOME_Exception)
     if ( !curVolume->IsPoly() && 
 	 ( order == ORDER_ANY && (nbnod==5 || nbnod==13) ||
            order == ORDER_LINEAR && nbnod==5 ||
-           order == ORDER_SQUARE && nbnod==13 ) )
+           order == ORDER_QUADRATIC && nbnod==13 ) )
       Nb++;
   }
   return Nb;
@@ -1167,7 +1167,7 @@ int SMESH_Mesh::NbPrisms(ElementOrder order) throw(SALOME_Exception)
     if ( !curVolume->IsPoly() && 
 	 ( order == ORDER_ANY && (nbnod==6 || nbnod==15) ||
            order == ORDER_LINEAR && nbnod==6 ||
-           order == ORDER_SQUARE && nbnod==15 ) )
+           order == ORDER_QUADRATIC && nbnod==15 ) )
       Nb++;
   }
   return Nb;
