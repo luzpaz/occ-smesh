@@ -1116,15 +1116,9 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
 //=================================================================================
 void SMESHGUI_GroupDlg::onSelectColorGroup(bool on)
 {
-  if (on) {
-    setSelectionMode(7);
-  }
-  else {
+  if (!on)
     myColorSpinBox->setValue(0);
-    myCurrentLineEdit = 0;
-    if (myTypeId != -1)
-      setSelectionMode(myTypeId);
-  }
+  
   myColorSpinBox->setEnabled(on);
 }
 
