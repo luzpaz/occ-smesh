@@ -797,7 +797,7 @@ namespace{
 	    SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_nil();
 
 	    _PTR(ChildIterator) it = aStudy->NewChildIterator(obj);
-	    if ( it->More() ){
+	    for ( ; it->More(); it->Next() ){
 	      _PTR(SObject) CSO = it->Value();
 	      aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( CSO ) );
 	      if ( !aSubMesh->_is_nil() )
@@ -806,6 +806,7 @@ namespace{
 		  _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
 		  if (aMeshSO)
 		    SMESH::ModifiedMesh(aMeshSO, false);
+		  break;
 		}
 	    }
 	    aStudyBuilder->RemoveObjectWithChildren( obj );
