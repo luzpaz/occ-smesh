@@ -195,6 +195,7 @@ void SMESHGUI_MeshTab::addHyp( const int theId, const QString& theHyp )
   myHyp[ theId ]->insertItem( theHyp );
   myHyp[ theId ]->setCurrentItem( myHyp[ theId ]->count() - 1 );
   myEditHyp[ theId ]->setEnabled( true );
+  myHyp[ theId ]->setEnabled( true );
 }
 
 //================================================================================
