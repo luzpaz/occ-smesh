@@ -26,6 +26,7 @@
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_2smeshpy.hxx"
 
 #include <TColStd_HSequenceOfInteger.hxx>
@@ -253,7 +254,7 @@ namespace SMESH
 
   TPythonDump& TPythonDump::operator<<(SMESH_MeshEditor_i* theArg)
   {
-    myStream << MeshEditorName(); return *this;
+    myStream << MeshEditorName() << "_" << ( theArg ? theArg->GetMeshId() : -1 ); return *this;
   }
 
   TPythonDump& TPythonDump::operator<<(const TCollection_AsciiString & theStr)

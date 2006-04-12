@@ -227,6 +227,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                     CORBA::Long NodeID2OfSide1ToMerge,
                     CORBA::Long NodeID2OfSide2ToMerge);
 
+  int GetMeshId() const { return _myMesh->GetId(); }
+
  private:
   SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }
   SMESH_Mesh   *_myMesh;
