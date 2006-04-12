@@ -181,7 +181,8 @@ private:
 class _pyMesh: public _pyObject
 {
   std::list< Handle(_pyCommand) > myAddHypCmds;
-  std::list< Handle(_pyCommand) > mySubmeshes; 
+  std::list< Handle(_pyCommand) > mySubmeshes;
+  bool                            myHasEditor;
 public:
   _pyMesh(const Handle(_pyCommand) theCreationCmd);
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }

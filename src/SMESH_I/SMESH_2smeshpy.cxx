@@ -186,7 +186,7 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
 
   // Mesh provides SMESH_IDSource interface used in SMESH_MeshEditor.
   // Add access to wrapped mesh
-  if ( objID == TPythonDump::MeshEditorName() ) {
+  if ( objID.Location( TPythonDump::MeshEditorName(), 1, objID.Length() )) {
     // in all SMESH_MeshEditor's commands, a SMESH_IDSource is the first arg
     id_mesh = myMeshes.find( aCommand->GetArg( 1 ));
     if ( id_mesh != myMeshes.end() )
@@ -431,7 +431,8 @@ static bool sameGroupType( const _pyID&                   grpID,
  */
 //================================================================================
 
-_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd): _pyObject(theCreationCmd)
+_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd):
+  _pyObject(theCreationCmd), myHasEditor(false)
 {
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
@@ -528,7 +529,20 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         theCommand->SetArg( 2, theCommand->GetArg( 2 ) + ".GetAlgorithm()" );
     }
   }
-  else { // apply theCommand to the mesh wrapped by smeshpy mesh
+
+  // leave only one mesh_editor_<nb> = mesh.GetMeshEditor()
+  else if ( theCommand->GetMethod() == "GetMeshEditor")
+  {
+    if ( myHasEditor )
+      theCommand->Clear();
+    else
+      AddMeshAccess( theCommand );
+    myHasEditor = true;
+  }
+
+  // apply theCommand to the mesh wrapped by smeshpy mesh
+  else
+  {
     AddMeshAccess( theCommand );
   }
 }
