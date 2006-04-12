@@ -225,13 +225,15 @@ void SMESHGUI_MeshOp::startOperation()
   for ( int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++ )
   {
     SMESHGUI_MeshTab* aTab = myDlg->tab( i );
-    QStringList anAvailable;
+    QStringList hypList;
     // clear available hypotheses
-    aTab->setAvailableHyps( MainHyp, anAvailable );
-    aTab->setAvailableHyps( AddHyp, anAvailable );
+    aTab->setAvailableHyps( MainHyp, hypList );
+    aTab->setAvailableHyps( AddHyp, hypList );
+    aTab->setExistingHyps( MainHyp, hypList );
+    aTab->setExistingHyps( AddHyp, hypList );
     // set algos
-    availableHyps( i, Algo, anAvailable, myAvailableHypData[i][Algo] );
-    aTab->setAvailableHyps( Algo, anAvailable );
+    availableHyps( i, Algo, hypList, myAvailableHypData[i][Algo] );
+    aTab->setAvailableHyps( Algo, hypList );
   }
   if ( myToCreate )
   {
