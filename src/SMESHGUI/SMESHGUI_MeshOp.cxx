@@ -249,6 +249,8 @@ void SMESHGUI_MeshOp::startOperation()
   myDlg->show();
 
   selectionDone();
+
+  myIgnoreAlgoSelection = false;
 }
 
 //================================================================================
@@ -472,8 +474,9 @@ void SMESHGUI_MeshOp::selectionDone()
         }
         else
         {
-          selectObject( _PTR(SObject)() );
           myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
+          selectObject( _PTR(SObject)() );
+          selectionDone();
         }
       }
 
@@ -957,6 +960,8 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   if (aTopDim == -1)
     return;
 
+  const bool isSubmesh = ( myToCreate ? !myIsMesh : myDlg->isObjectShown( SMESHGUI_MeshDlg::Mesh ));
+
   HypothesisData* algoData = hypData( aDim, Algo, theIndex );
   HypothesisData* algoByDim[3];
   algoByDim[ aDim ] = algoData;
@@ -1009,7 +1014,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
       // restore previously selected algo
       algoIndex = myAvailableHypData[dim][Algo].findIndex( curAlgo );
-      if ( algoIndex < 0 && soleCompatible )
+      if ( !isSubmesh && algoIndex < 0 && soleCompatible )
         // select the sole compatible algo
         algoIndex = myAvailableHypData[dim][Algo].findIndex( soleCompatible );
       setCurrentHyp( dim, Algo, algoIndex );
@@ -1059,7 +1064,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       int hypIndex = -1;
       if ( !curHyp->_is_nil() && !anExisting.isEmpty() )
         hypIndex = this->find( curHyp, myExistingHyps[ dim ][ type ]);
-      if ( hypIndex < 0 && anExisting.count() == 1 ) {
+      if ( !isSubmesh && hypIndex < 0 && anExisting.count() == 1 ) {
         // none is yet selected => select the sole existing if it is not optional
         QString hypTypeName = myExistingHyps[ dim ][ type ][ 0 ]->GetName();
         bool isOptional = true;
@@ -1076,7 +1081,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 //================================================================================
 /*!
  * \brief Creates and selects hypothesis of hypotheses set 
-  * \param theSetName - The name of hypotheses set
+ * \param theSetName - The name of hypotheses set
  */
 //================================================================================
 void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
@@ -1233,6 +1238,12 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
       }
     }
   }
+
+  // deselect geometry: next submesh sould be created on other subshape
+  myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
+  selectObject( _PTR(SObject)() );
+  selectionDone();
+
   return true;
 }
 
