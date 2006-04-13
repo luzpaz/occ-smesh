@@ -368,11 +368,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
     else
     {
       // Number Of Segments hypothesis
+      int NbSegm = _ivalue[ NB_SEGMENTS_IND ];
+      if ( NbSegm < 1 )  return false;
+      if ( NbSegm == 1 ) return true;
+
       switch (_ivalue[ DISTR_TYPE_IND ])
       {
       case StdMeshers_NumberOfSegments::DT_Scale:
         {
-          int NbSegm   = _ivalue[ NB_SEGMENTS_IND ];
           double scale = _value[ SCALE_FACTOR_IND ];
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
