@@ -479,8 +479,11 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     // set mesh to hypo
     const _pyID& hypID = theCommand->GetArg( 2 );
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
-    if ( !hyp.IsNull() && hyp->GetMesh().IsEmpty() )
-      hyp->SetMesh( this->GetID() );
+    if ( !hyp.IsNull() ) {
+      myHypos.push_back( hyp );
+      if ( hyp->GetMesh().IsEmpty() )
+        hyp->SetMesh( this->GetID() );
+    }
   }
   else if ( method == "CreateGroupFromGEOM" ) {// (type, name, grp)
     _pyID grp = theCommand->GetArg( 3 );
@@ -510,7 +513,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     while ( cmd != myAddHypCmds.end() )
     {
       // AddHypothesis(geom, hyp)
-      if ( hypID == (*cmd)->GetArg( 2 )) { // erase both commands
+      if ( hypID == (*cmd)->GetArg( 2 )) { // erase both (add and remove) commands
         theCommand->Clear();
         (*cmd)->Clear();
         cmd = myAddHypCmds.erase( cmd );
@@ -520,17 +523,19 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         ++cmd;
       }
     }
-    if ( ! hasAddCmd ) {
+    Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
+    if ( ! hasAddCmd ) { // hypo addition already wrapped
       // access to wrapped mesh
       AddMeshAccess( theCommand );
       // access to wrapped algo
-      Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
       if ( !hyp.IsNull() && hyp->IsAlgo() && hyp->IsWrapped() )
         theCommand->SetArg( 2, theCommand->GetArg( 2 ) + ".GetAlgorithm()" );
     }
+    // remove hyp from myHypos
+    myHypos.remove( hyp );
   }
 
-  // leave only one mesh_editor_<nb> = mesh.GetMeshEditor()
+  // leave only one "  mesh_editor_<nb> = mesh.GetMeshEditor()"
   else if ( theCommand->GetMethod() == "GetMeshEditor")
   {
     if ( myHasEditor )
@@ -631,6 +636,11 @@ void _pyMesh::Flush()
   }
   myAddHypCmds.clear();
   mySubmeshes.clear();
+
+  // flush hypotheses
+  list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
+  for ( ; hyp != myHypos.end(); ++hyp )
+    (*hyp)->Flush();
 }
 
 //================================================================================
@@ -849,8 +859,6 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
   for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
     afterCmd->AddDependantCmd( *cmd );
   }
-  myArgCommands.clear();
-  myUnknownCommands.clear();
 
   return myIsWrapped;
 }
@@ -886,8 +894,11 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 
 void _pyHypothesis::Flush()
 {
-//   if ( IsWrapped() )
-//     GetCreationCmd()->Clear();
+  if ( IsWrapped() ) {
+    // forget previous hypothesis modifications
+    myArgCommands.clear();
+    myUnknownCommands.clear();
+  }
 }
 
 //================================================================================
@@ -922,30 +933,51 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd,
                                                 const _pyID&              theMesh)
 {
-  if ( IsWrappable( theMesh ) && myArgs.Length() > 0 ) {
-    list<Handle(_pyCommand)> aNewCommandsList;
-    list<TCollection_AsciiString> aNewList;
-    list<TCollection_AsciiString>::iterator aNewListIter;
-    
-    list<Handle(_pyCommand)>::reverse_iterator cmd = myUnknownCommands.rbegin();
-    for ( ; cmd != myUnknownCommands.rend(); ++cmd ) {
-      aNewListIter = find(aNewList.begin(),aNewList.end(),(*cmd)->GetMethod());
-      if(aNewListIter == aNewList.end()){
-	aNewList.push_front((*cmd)->GetMethod());
-	aNewCommandsList.push_front((*cmd));
-      } else {
-	(*cmd)->Clear();
+  if ( IsWrappable( theMesh ) && myArgs.Length() > 1 ) {
+    // scale factor (2-nd arg) is provided: clear SetDistrType(1)
+    list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
+    for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
+      if ( (*cmd)->GetMethod() == "SetDistrType" ) {
+        if ( (*cmd)->GetArg( 1 ) == "1" )
+          (*cmd)->Clear();
+        else {
+          // distribution type changed: remove scale factor from args
+          myArgs.Remove( 2, myArgs.Length() );
+          break;
+        }
       }
     }
-    myUnknownCommands = aNewCommandsList;
   }
   return _pyHypothesis::Addition2Creation( theCmd, theMesh );
 }
 
 //================================================================================
 /*!
+ * \brief remove repeated commands defining distribution
+ */
+//================================================================================
+
+void _pyNumberOfSegmentsHyp::Flush()
+{
+  const int nbCmdLists = 2;
+  list<Handle(_pyCommand)> * cmds[nbCmdLists] = { &myArgCommands, &myUnknownCommands };
+  for ( int i = 0; i < nbCmdLists; ++i ) {
+    set<TCollection_AsciiString> uniqueMethods;
+    list<Handle(_pyCommand)> & cmdList = *cmds[i];
+    list<Handle(_pyCommand)>::reverse_iterator cmd = cmdList.rbegin();
+    for ( ; cmd != cmdList.rend(); ++cmd ) {
+      bool isNewInSet = uniqueMethods.insert( (*cmd)->GetMethod() ).second;
+      if ( ! isNewInSet )
+        (*cmd)->Clear();
+    }
+    cmdList.clear();
+  }
+}
+
+//================================================================================
+/*!
  * \brief _pyAlgorithm constructor
-  * \param theCreationCmd - The command like "algo = smeshgen.CreateHypothesis(type,lib)"
+ * \param theCreationCmd - The command like "algo = smeshgen.CreateHypothesis(type,lib)"
  */
 //================================================================================
 

@@ -180,6 +180,7 @@ private:
  */
 class _pyMesh: public _pyObject
 {
+  std::list< Handle(_pyHypothesis) > myHypos;
   std::list< Handle(_pyCommand) > myAddHypCmds;
   std::list< Handle(_pyCommand) > mySubmeshes;
   bool                            myHasEditor;
@@ -267,6 +268,7 @@ public:
   _pyNumberOfSegmentsHyp(const Handle(_pyCommand)& theCrCmd): _pyHypothesis(theCrCmd) {}
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
+  void Flush();
 
   DEFINE_STANDARD_RTTI (_pyNumberOfSegmentsHyp)
 };
