@@ -934,13 +934,16 @@ bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd
                                                 const _pyID&              theMesh)
 {
   if ( IsWrappable( theMesh ) && myArgs.Length() > 1 ) {
-    // scale factor (2-nd arg) is provided: clear SetDistrType(1)
-    list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
-    for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
+    // scale factor (2-nd arg) is provided: clear SetDistrType(1) command
+    bool scaleDistrType = false;
+    list<Handle(_pyCommand)>::reverse_iterator cmd = myUnknownCommands.rbegin();
+    for ( ; cmd != myUnknownCommands.rend(); ++cmd ) {
       if ( (*cmd)->GetMethod() == "SetDistrType" ) {
-        if ( (*cmd)->GetArg( 1 ) == "1" )
+        if ( (*cmd)->GetArg( 1 ) == "1" ) {
+          scaleDistrType = true;
           (*cmd)->Clear();
-        else {
+        }
+        else if ( !scaleDistrType ) {
           // distribution type changed: remove scale factor from args
           myArgs.Remove( 2, myArgs.Length() );
           break;
