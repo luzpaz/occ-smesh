@@ -489,17 +489,16 @@ void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
 
 void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
 {
-  for ( int i = Dim1D; i <= Dim3D; ++i ) {
-    int dim = i + 1;
-    bool enable = ( dim <= maxDim );
-    if ( !enable ) {
-      myTabs[ i ]->reset();
-      if ( myTabs[ i ] == myTabWg->currentPage() && i != Dim1D)
-        // deselect desebled tab
-        myTabWg->setCurrentPage( i - 1 );
-    }
-    myTabWg->setTabEnabled( myTabs[ i ], enable );
+  const int DIM = maxDim - 1;
+  for ( int dim = Dim1D; dim <= Dim3D; ++dim ) {
+    bool enable = ( dim <= DIM );
+    if ( !enable )
+      myTabs[ dim ]->reset();
+    myTabWg->setTabEnabled( myTabs[ dim ], enable );
   }
+  // deselect desabled tab
+  if ( !myTabWg->isTabEnabled( myTabWg->currentPage() ))
+    setCurrentTab( DIM - 1 );
 }
 
 //================================================================================
