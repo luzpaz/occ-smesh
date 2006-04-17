@@ -29,6 +29,8 @@
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
@@ -46,7 +48,7 @@ class SMESH_Hypothesis;
 class SMESH_Algo;
 class SMESH_Gen;
 
-class SMESH_subMesh
+class SMESH_EXPORT SMESH_subMesh
 {
  public:
   SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,

@@ -9,6 +9,8 @@
 #ifndef MED_Utilities_HeaderFile
 #define MED_Utilities_HeaderFile
 
+#include "SMESH_DriverUNV.hxx"
+
 #include <iostream>	
 #include <sstream>	
 #include <string>
@@ -18,7 +20,7 @@
 namespace UNV{
   using namespace std;
 
-  class PrefixPrinter{
+  class MESHDRIVERUNV_EXPORT PrefixPrinter{
     static int myCounter;
   public:
     PrefixPrinter();

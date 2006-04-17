@@ -24,7 +24,6 @@
 //  File   : SMESH_MEDSupport_i.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "SMESH_MEDSupport_i.hxx"
 #include "utilities.h"
 #include "Utils_CorbaException.hxx"
@@ -36,6 +35,8 @@ using namespace std;
 #include "SMESH_subMesh.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
+
+using namespace std;
 
 
 //=============================================================================

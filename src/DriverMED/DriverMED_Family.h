@@ -28,6 +28,8 @@
 #ifndef _INCLUDE_DRIVERMED_FAMILY
 #define _INCLUDE_DRIVERMED_FAMILY
 
+#include "SMESH_DriverMED.hxx"
+
 #include "SMDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_SubMesh.hxx"
@@ -46,7 +48,7 @@
 class DriverMED_Family;
 typedef boost::shared_ptr<DriverMED_Family> DriverMED_FamilyPtr;
 
-class DriverMED_Family
+class MESHDRIVERMED_EXPORT DriverMED_Family
 {
  public:
 

@@ -79,7 +79,7 @@ class vtkTimeStamp;
 class SMESH_DeviceActor;
 
 
-class SMESH_ActorDef : public SMESH_Actor{
+class SMESHOBJECT_EXPORT SMESH_ActorDef : public SMESH_Actor{
   friend class SMESH_VisualObj;
   friend class SMESH_Actor;
 

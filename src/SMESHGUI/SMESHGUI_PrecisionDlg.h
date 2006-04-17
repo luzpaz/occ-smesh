@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_PrecisionDlg_H
 #define SMESHGUI_PrecisionDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 class QSpinBox;
@@ -42,7 +44,7 @@ class SMESHGUI;
   Description : Dialog to specify precision of mesh quality controls
 */
 
-class SMESHGUI_PrecisionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_PrecisionDlg : public QDialog
 {
   Q_OBJECT
 

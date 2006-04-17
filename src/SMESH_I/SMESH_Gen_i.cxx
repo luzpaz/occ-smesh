@@ -52,7 +52,24 @@
 #include "utilities.h"
 #include <fstream>
 #include <stdio.h>
-#include <dlfcn.h>
+
+#ifdef WNT
+ #include <windows.h>
+#else
+ #include <dlfcn.h>
+#endif
+
+#ifdef WNT
+ #define LibHandle HMODULE
+ #define LoadLib( name ) LoadLibrary( name )
+ #define GetProc GetProcAddress
+ #define UnLoadLib( handle ) FreeLibrary( handle );
+#else
+ #define LibHandle void*
+ #define LoadLib( name ) dlopen( name, RTLD_LAZY )
+ #define GetProc dlsym
+ #define UnLoadLib( handle ) dlclose( handle );
+#endif
 
 #include <HDFOI.hxx>
 
@@ -304,23 +321,27 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     {
       // load plugin library
       if(MYDEBUG) MESSAGE("Loading server meshers plugin library ...");
-      void* libHandle = dlopen (theLibName, RTLD_LAZY);
+      LibHandle libHandle = LoadLib( theLibName );
       if (!libHandle)
       {
         // report any error, if occured
+#ifndef WNT
         const char* anError = dlerror();
         throw(SALOME_Exception(anError));
+#else
+        throw(SALOME_Exception(LOCALIZED( "Can't load server meshers plugin library" )));
+#endif
       }
 
       // get method, returning hypothesis creator
       if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
       typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char* theHypName);
       GetHypothesisCreator procHandle =
-        (GetHypothesisCreator)dlsym( libHandle, "GetHypothesisCreator" );
+        (GetHypothesisCreator)GetProc( libHandle, "GetHypothesisCreator" );
       if (!procHandle)
       {
         throw(SALOME_Exception(LOCALIZED("bad hypothesis plugin library")));
-        dlclose(libHandle);
+        UnLoadLib(libHandle);
       }
 
       // get hypothesis creator
@@ -2807,7 +2828,7 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
 //=============================================================================
 
 extern "C"
-{
+{ SMESH_I_EXPORT
   PortableServer::ObjectId* SMESHEngine_factory( CORBA::ORB_ptr            orb,
 						 PortableServer::POA_ptr   poa, 
 						 PortableServer::ObjectId* contId,

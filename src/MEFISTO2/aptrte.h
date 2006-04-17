@@ -28,10 +28,14 @@
 #define aptrte__h
 
 #include <limits.h>   // limites min max int long real ...
+#ifndef WIN32
 #include <unistd.h>   // gethostname, ...
+#endif
 #include <stdio.h>
+#ifndef WIN32
 #include <iostream.h> // pour cout cin ...
 #include <iomanip.h>  // pour le format des io setw, stx, setfill, ...
+#endif
 #include <string.h>   // pour les fonctions sur les chaines de caracteres
 #include <ctype.h>
 #include <stdlib.h>
@@ -39,9 +43,21 @@
 #include <time.h>
 
 #include <sys/types.h>
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 
-void qualitetrte( R3 *mnpxyd,
+#ifdef WNT
+ #if defined MEFISTO2D_EXPORTS
+  #define MEFISTO2D_EXPORT __declspec( dllexport )
+ #else
+  #define MEFISTO2D_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define MEFISTO2D_EXPORT
+#endif
+
+  void qualitetrte( R3 *mnpxyd,
 		  Z & mosoar, Z & mxsoar, Z *mnsoar,
 		  Z & moartr, Z & mxartr, Z *mnartr,
 		  Z & nbtria, R & quamoy, R & quamin );
@@ -75,7 +91,8 @@ void qualitetrte( R3 *mnpxyd,
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-void  aptrte( Z nutysu, R aretmx,
+MEFISTO2D_EXPORT
+  void  aptrte( Z nutysu, R aretmx,
 	      Z nblf,   Z *nudslf, R2 *uvslf,
 	      Z nbpti,  R2 *uvpti,
 	      Z & nbst, R2 * & uvst, Z & nbt, Z * & nust,

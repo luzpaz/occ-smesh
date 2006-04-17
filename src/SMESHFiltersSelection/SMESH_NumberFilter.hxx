@@ -23,6 +23,8 @@
 #ifndef _SMESH_NumberFilter_HeaderFile
 #define _SMESH_NumberFilter_HeaderFile
 
+#include "SMESH_Type.h"
+
 #include "SUIT_SelectionFilter.h"
 
 #include <TopAbs_ShapeEnum.hxx>
@@ -45,7 +47,7 @@ class SUIT_DataOwner;
  *                * theMainObject   - Sub-shapes of this object is selected only
  *                * theIsClosedOnly - Closed shapes is selected if this parameter is true
  */
-class SMESH_NumberFilter : public SUIT_SelectionFilter
+class SMESHFILTERSSELECTION_EXPORT SMESH_NumberFilter : public SUIT_SelectionFilter
 {
  public:
   SMESH_NumberFilter (const char*            theKind,

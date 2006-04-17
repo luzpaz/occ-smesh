@@ -28,6 +28,8 @@
 #ifndef SMESHGUI_Hypotheses_HeaderFile
 #define SMESHGUI_Hypotheses_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
@@ -40,7 +42,7 @@ class QPixmap;
 /*!
  * \brief Auxiliary class for creation of hypotheses
 */
-class SMESHGUI_GenericHypothesisCreator : public QObject
+class SMESHGUI_EXPORT SMESHGUI_GenericHypothesisCreator : public QObject
 {
   Q_OBJECT
 

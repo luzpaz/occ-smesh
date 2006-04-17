@@ -29,6 +29,8 @@
 #ifndef _SMESH_HYPOTHESIS_I_HXX_
 #define _SMESH_HYPOTHESIS_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
@@ -40,7 +42,7 @@
 // ======================================================
 // Generic hypothesis
 // ======================================================
-class SMESH_Hypothesis_i:
+class SMESH_I_EXPORT SMESH_Hypothesis_i:
   public virtual POA_SMESH::SMESH_Hypothesis,
   public virtual SALOME::GenericObj_i
 {
@@ -85,7 +87,7 @@ protected:
 // ======================================================
 // Generic hypothesis creator
 // ======================================================
-class GenericHypothesisCreator_i
+class SMESH_I_EXPORT GenericHypothesisCreator_i
 {
 public:
   // Create a hypothesis

@@ -27,6 +27,8 @@
 #ifndef _SMDS_Mesh_HeaderFile
 #define _SMDS_Mesh_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
@@ -34,17 +36,6 @@
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include <NCollection_Map.hxx>
-
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -59,7 +50,7 @@ typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshFace *> > SMDS_FaceIterat
 typedef SMDS_Iterator<const SMDS_MeshVolume *> SMDS_VolumeIterator;
 typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshVolume *> > SMDS_VolumeIteratorPtr;
 
-class SMDS_WNT_EXPORT SMDS_Mesh:public SMDS_MeshObject{
+class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
   
   SMDS_Mesh();

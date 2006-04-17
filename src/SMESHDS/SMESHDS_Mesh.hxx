@@ -27,6 +27,8 @@
 #ifndef _SMESHDS_Mesh_HeaderFile
 #define _SMESHDS_Mesh_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshEdge.hxx"
@@ -68,15 +70,9 @@
   namespace gstd = std;
 #endif
 
-#if defined WNT && defined WIN32 && defined SMESHDS_EXPORTS
-#define SMESHDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMESHDS_WNT_EXPORT
-#endif
-
 class SMESHDS_GroupBase;
 
-class SMESHDS_WNT_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
+class SMESHDS_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
 public:
   SMESHDS_Mesh(int MeshID);
   void ShapeToMesh(const TopoDS_Shape & S);

@@ -29,6 +29,8 @@
 #ifndef _SMESH_GEN_I_HXX_
 #define _SMESH_GEN_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -58,7 +60,7 @@ class SALOME_LifeCycleCORBA;
 // ===========================================================
 // Study context - stores study-connected objects references
 // ==========================================================
-class StudyContext
+class SMESH_I_EXPORT StudyContext
 {
 public:
   // constructor
@@ -122,7 +124,7 @@ private:
 // ===========================================================
 // SMESH module's engine
 // ==========================================================
-class SMESH_Gen_i:
+class SMESH_I_EXPORT SMESH_Gen_i:
   public virtual POA_SMESH::SMESH_Gen,
   public virtual Engines_Component_i 
 {

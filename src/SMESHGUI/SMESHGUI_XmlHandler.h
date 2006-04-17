@@ -28,12 +28,14 @@
 #ifndef SMESHGUI_XmlHandler_HeaderFile
 #define SMESHGUI_XmlHandler_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_Hypotheses.h"
 
 #include <qxml.h>
 #include <map>
 
-class SMESHGUI_XmlHandler : public QXmlDefaultHandler
+class SMESHGUI_EXPORT SMESHGUI_XmlHandler : public QXmlDefaultHandler
 {
  public:
   SMESHGUI_XmlHandler();

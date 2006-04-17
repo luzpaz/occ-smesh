@@ -29,13 +29,15 @@
 #ifndef  SMESH_SPINBOX_H
 #define  SMESH_SPINBOX_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <QtxDblSpinBox.h>
 
 //=================================================================================
 // class    : SMESHGUI_SpinBox
 // purpose  : Derivated from QtxDblSpinBox class 
 //=================================================================================
-class SMESHGUI_SpinBox : public QtxDblSpinBox
+class SMESHGUI_EXPORT SMESHGUI_SpinBox : public QtxDblSpinBox
 {
   Q_OBJECT
 

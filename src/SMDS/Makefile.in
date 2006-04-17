@@ -113,7 +113,8 @@ EXPORT_HEADERS= \
 	SMDS_FaceOfEdges.hxx \
 	SMDS_FaceOfNodes.hxx \
 	SMDS_PolygonalFaceOfNodes.hxx \
-	SMDS_VolumeTool.hxx
+	SMDS_VolumeTool.hxx \
+	SMESH_SMDS.hxx
 #	SMDS_Tria3OfNodes.hxx \
 #	SMDS_HexahedronOfNodes.hxx
 

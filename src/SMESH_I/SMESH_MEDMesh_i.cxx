@@ -1137,9 +1137,15 @@ void SMESH_MEDMesh_i::createFamilies() throw(SALOME::SALOME_Exception)
 			SMESH_MEDFamily_i *famservant =
 				new SMESH_MEDFamily_i(famIdent, submesh_i,
 				famName, famDes, SALOME_MED::MED_NODE);
-			SALOME_MED::FAMILY_ptr famille =
-				SALOME_MED::FAMILY::_narrow(famservant->
-				POA_SALOME_MED::FAMILY::_this());
+#ifdef WNT
+      SALOME_MED::FAMILY_ptr famille = SALOME_MED::FAMILY::_nil();
+      POA_SALOME_MED::FAMILY* servantbase = dynamic_cast<POA_SALOME_MED::FAMILY*>(famservant);
+      if ( servantbase )
+        famille = SALOME_MED::FAMILY::_narrow( servantbase->_this() );
+#else 
+  		SALOME_MED::FAMILY_ptr famille = 
+        SALOME_MED::FAMILY::_narrow( famservant->POA_SALOME_MED::FAMILY::_this() );
+#endif
 			_families.push_back(famille);
 		}
 	}

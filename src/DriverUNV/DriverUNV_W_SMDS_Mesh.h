@@ -20,9 +20,11 @@
 #ifndef _INCLUDE_DRIVERUNV_W_SMDS_MESH
 #define _INCLUDE_DRIVERUNV_W_SMDS_MESH
 
+#include "SMESH_DriverUNV.hxx"
+
 #include "Driver_SMDS_Mesh.h"
 
-class DriverUNV_W_SMDS_Mesh: public Driver_SMDS_Mesh
+class MESHDRIVERUNV_EXPORT DriverUNV_W_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
   virtual Status Perform();

@@ -32,6 +32,8 @@
 #ifndef SMESHGUI_MeshOp_H
 #define SMESHGUI_MeshOp_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_SelectionOp.h"
 #include <qstringlist.h>
 
@@ -47,7 +49,7 @@ class SMESHGUI_ShapeByMeshDlg;
  *
  *  This operation is used for mech creation or editing. 
 */
-class SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
+class SMESHGUI_EXPORT SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
 { 
   Q_OBJECT
       

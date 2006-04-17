@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_Swig.hxx"
 
 #include "Utils_ORB_INIT.hxx"
@@ -54,6 +53,8 @@ using namespace std;
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
+
+using namespace std;
 
 static CORBA::ORB_var _orb;
 

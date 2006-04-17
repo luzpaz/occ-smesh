@@ -50,7 +50,8 @@ EXPORT_HEADERS= \
 	SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx \
 	SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx \
 	SMESH_SequenceOfElemPtr.hxx \
-	SMESH_SequenceOfNode.hxx
+	SMESH_SequenceOfNode.hxx \
+	SMESH_SMESH.hxx
 
 EXPORT_PYSCRIPTS =
 

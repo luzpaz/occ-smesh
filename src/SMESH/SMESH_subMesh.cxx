@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_subMesh.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -52,6 +51,8 @@ using namespace std;
 #include <TopoDS.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #endif
+
+using namespace std;
 
 //=============================================================================
 /*!

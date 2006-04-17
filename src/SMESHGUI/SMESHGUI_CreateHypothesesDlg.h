@@ -28,6 +28,8 @@
 #ifndef DIALOGBOX_CREATE_HYPOTHESES_H
 #define DIALOGBOX_CREATE_HYPOTHESES_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 // QT Includes
 #include <qvariant.h>
 #include <qdialog.h>
@@ -52,7 +54,7 @@ class SMESHGUI;
 // class    : SMESHGUI_CreateHypothesesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_CreateHypothesesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_CreateHypothesesDlg : public QDialog
 {
     Q_OBJECT
 

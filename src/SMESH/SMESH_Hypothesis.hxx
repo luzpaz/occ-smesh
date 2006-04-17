@@ -29,13 +29,15 @@
 #ifndef _SMESH_HYPOTHESIS_HXX_
 #define _SMESH_HYPOTHESIS_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESHDS_Hypothesis.hxx"
 
 class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
 
-class SMESH_Hypothesis: public SMESHDS_Hypothesis
+class SMESH_EXPORT SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
 public:
   enum Hypothesis_Status // in the order of severity

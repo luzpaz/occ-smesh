@@ -29,10 +29,12 @@
 #ifndef _SMESH_2D_ALGO_HXX_
 #define _SMESH_2D_ALGO_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESH_Algo.hxx"
 #include <TopoDS_Wire.hxx>
 
-class SMESH_2D_Algo:
+class SMESH_EXPORT SMESH_2D_Algo:
   public SMESH_Algo
 {
 public:

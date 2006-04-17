@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_EDIT_HYPOTHESES_H
 #define DIALOGBOX_EDIT_HYPOTHESES_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
 #include "LightApp_SelectionMgr.h"
@@ -58,7 +60,7 @@ typedef map<std::string, int> MapIOR;
 // class    : SMESHGUI_EditHypothesesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EditHypothesesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_EditHypothesesDlg : public QDialog
 {
     Q_OBJECT
 

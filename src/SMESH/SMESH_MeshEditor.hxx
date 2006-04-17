@@ -30,6 +30,8 @@
 #ifndef SMESH_MeshEditor_HeaderFile
 #define SMESH_MeshEditor_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Controls.hxx"
 #include "SMESH_SequenceOfNode.hxx"
@@ -49,7 +51,7 @@ class gp_Ax1;
 class gp_Vec;
 class gp_Pnt;
 
-class SMESH_MeshEditor {
+class SMESH_EXPORT SMESH_MeshEditor {
  public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );

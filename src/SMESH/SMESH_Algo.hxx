@@ -29,6 +29,8 @@
 #ifndef _SMESH_ALGO_HXX_
 #define _SMESH_ALGO_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 
 #include <TopoDS_Shape.hxx>
@@ -44,7 +46,7 @@ class TopoDS_Face;
 class TopoDS_Shape;
 class SMESHDS_Mesh;
 
-class SMESH_Algo:public SMESH_Hypothesis
+class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
   public:
 	SMESH_Algo(int hypId, int studyId, SMESH_Gen * gen);

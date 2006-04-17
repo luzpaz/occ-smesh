@@ -152,7 +152,7 @@ namespace SMESH {
       aCellLocationsArray->SetNumberOfTuples(1);
 
       aCells->InitTraversal();
-      vtkIdType npts;
+      vtkIdType npts = 0;
       aCellLocationsArray->SetValue(0, aCells->GetTraversalLocation(npts));
 
       aGrid->SetCells(aCellTypesArray, aCellLocationsArray, aCells);

@@ -25,6 +25,8 @@
 #ifndef SMESH_Block_HeaderFile
 #define SMESH_Block_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -52,7 +54,7 @@ class SMDS_MeshNode;
 // parameters inside the block and vice versa
 // =========================================================
 
-class SMESH_Block: public math_FunctionSetWithDerivatives
+class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
 {
  public:
   enum TShapeID { // ids of the block sub-shapes

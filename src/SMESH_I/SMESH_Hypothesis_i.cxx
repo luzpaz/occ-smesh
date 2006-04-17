@@ -26,11 +26,12 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include <iostream>
 #include <sstream>
 #include "SMESH_Hypothesis_i.hxx"
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!

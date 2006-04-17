@@ -26,10 +26,13 @@
 #ifndef SMESH_IndexedMapOfShape_HeaderFile
 #define SMESH_IndexedMapOfShape_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <NCollection_DefineIndexedMap.hxx>
 
 #include <TopoDS_Shape.hxx>
 
+SMESH_EXPORT 
 inline Standard_Boolean IsEqual(const TopoDS_Shape& S1,
                                 const TopoDS_Shape& S2)
 {

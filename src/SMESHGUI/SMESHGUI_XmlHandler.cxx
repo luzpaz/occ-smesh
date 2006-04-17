@@ -91,6 +91,15 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       myServerLib  = atts.value("server-lib");
       myClientLib  = atts.value("gui-lib");
 
+#ifdef WNT
+      myServerLib += ".dll";
+      myClientLib += ".dll";
+#else
+      myServerLib = "lib" + myServerLib + ".so";
+      myClientLib = "lib" + myClientLib + ".so";
+#endif
+
+
       QString aResName = atts.value("resources");
       if (aResName != "")
       {

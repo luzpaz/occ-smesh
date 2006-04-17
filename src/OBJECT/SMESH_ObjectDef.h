@@ -51,7 +51,7 @@ class SMDS_MeshElement;
   Class       : SMESH_VisualObj
   Description : Base class for all mesh objects to be visuilised
 */
-class SMESH_VisualObjDef: public SMESH_VisualObj
+class SMESHOBJECT_EXPORT SMESH_VisualObjDef: public SMESH_VisualObj
 {
 public:
   typedef std::list<const SMDS_MeshElement*>   TEntityList;
@@ -104,7 +104,7 @@ private:
   Description : Class for visualisation of mesh
 */
 
-class SMESH_MeshObj: public SMESH_VisualObjDef
+class SMESHOBJECT_EXPORT SMESH_MeshObj: public SMESH_VisualObjDef
 {
 public:
 
@@ -136,7 +136,7 @@ protected:
   Description : Base class for visualisation of submeshes and groups
 */
 
-class SMESH_SubMeshObj: public SMESH_VisualObjDef
+class SMESHOBJECT_EXPORT SMESH_SubMeshObj: public SMESH_VisualObjDef
 {
 public:
 
@@ -160,7 +160,7 @@ protected:
   Description : Class for visualisation of groups
 */
 
-class SMESH_GroupObj: public SMESH_SubMeshObj
+class SMESHOBJECT_EXPORT SMESH_GroupObj: public SMESH_SubMeshObj
 {
 public:
                             SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr, SMESH_MeshObj* );
@@ -181,7 +181,7 @@ private:
   Description : Class for visualisation of submeshes
 */
 
-class SMESH_subMeshObj : public SMESH_SubMeshObj
+class SMESHOBJECT_EXPORT SMESH_subMeshObj : public SMESH_SubMeshObj
 {
 public:
 

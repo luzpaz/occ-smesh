@@ -4,10 +4,15 @@
 
 #include "SMESH_2smeshpy.hxx"
 
-#include "SMESH_Gen_i.hxx"
 #include "utilities.h"
 #include "SMESH_PythonDump.hxx"
 #include "Resource_DataMapOfAsciiStringAsciiString.hxx"
+
+#include "SMESH_Gen_i.hxx"
+/* SALOME headers that include CORBA headers that include windows.h 
+ * that defines GetObject symbol as GetObjectA should stand before SALOME headers
+ * that declare methods named GetObject - to apply the same rules of GetObject renaming
+ * and thus to avoid mess with GetObject symbol on Windows */
 
 IMPLEMENT_STANDARD_HANDLE (_pyObject          ,Standard_Transient);
 IMPLEMENT_STANDARD_HANDLE (_pyCommand         ,Standard_Transient);

@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_ShapeByMeshDlg_H
 #define SMESHGUI_ShapeByMeshDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 // IDL Headers
@@ -48,7 +50,7 @@ class SMESHGUI;
  *        by selecting mesh elements
  */
 
-class SMESHGUI_ShapeByMeshDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ShapeByMeshDlg : public QDialog
 {
   Q_OBJECT
 

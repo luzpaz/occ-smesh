@@ -958,7 +958,7 @@ void SMESHGUI_FilterTable::onRemoveBtn()
     if (aTable->isRowSelected(i))
     {
       aRows.resize(aRows.size() + 1);
-      aRows[ aRows.size() - 1 ] = i;
+      aRows[ (int)(aRows.size() - 1) ] = i;
       removeAdditionalWidget(aTable, i);
     }
   }

@@ -26,12 +26,13 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!

@@ -719,7 +719,7 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
   if ( theEdgeNum < 0 || theEdgeNum > 3 || nbNodes != 3 && nbNodes != 4 || theEdgeNum > nbNodes )
     return false;
 
-  int anIds[ nbNodes ];
+  vector<int> anIds( nbNodes );
   SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
   int i = 0;
   while( anIter->more() )
@@ -834,7 +834,7 @@ void SMESH_MeshObj::Update( int theIsClear )
             int nbNodes = anIndexes[i++];
             // nodes
             //ASSERT( nbNodes < 9 );
-            const SMDS_MeshNode* aNodes[ nbNodes ];
+            const SMDS_MeshNode** aNodes = new const SMDS_MeshNode*[ nbNodes ];
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
               aNodes[ iNode ] = FindNode( myMesh, anIndexes[i++] );
             // change

@@ -28,6 +28,8 @@
 #ifndef DIALOGBOX_GROUP_H
 #define DIALOGBOX_GROUP_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
@@ -58,7 +60,7 @@ class SVTK_ViewWindow;
 // class    : SMESHGUI_GroupDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_GroupDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_GroupDlg : public QDialog
 { 
     Q_OBJECT
 

@@ -24,6 +24,8 @@
 #ifndef SMESH_Pattern_HeaderFile
 #define SMESH_Pattern_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <vector>
 #include <list>
 #include <map>
@@ -53,7 +55,7 @@ class TopoDS_Edge;
 // of 6 faces.
 //
 
-class SMESH_Pattern {
+class SMESH_EXPORT SMESH_Pattern {
  public:
   
   SMESH_Pattern ();

@@ -29,6 +29,8 @@
 #ifndef _SMESH_MESH_I_HXX_
 #define _SMESH_MESH_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -48,7 +50,7 @@ class SMESH_GroupBase_i;
 
 #include <map>
 
-class SMESH_Mesh_i:
+class SMESH_I_EXPORT SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
   public virtual SALOME::GenericObj_i
 {
@@ -159,7 +161,7 @@ public:
     throw (SALOME::SALOME_Exception);
   void ExportUNV( const char* file )
     throw (SALOME::SALOME_Exception);
-  void ExportSTL( const char* file, const bool isascii )
+  void ExportSTL( const char* file, bool isascii )
     throw (SALOME::SALOME_Exception);
 
   SALOME_MED::MESH_ptr GetMEDMesh()
@@ -216,7 +218,7 @@ public:
   SMESH::long_array* GetNodesId()
     throw (SALOME::SALOME_Exception);
   
-  SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
   char* Dump();

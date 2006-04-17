@@ -20,7 +20,9 @@
 #ifndef SMESHGUI_Utils_HeaderFile
 #define SMESHGUI_Utils_HeaderFile
 
-#include <CORBA.h>
+#include "SMESH_SMESHGUI.hxx"
+
+#include <omniORB4/CORBA.h>
 
 #include "SALOMEDSClient_definitions.hxx"
 #include "SALOME_InteractiveObject.hxx"
@@ -44,21 +46,27 @@ class LightApp_SelectionMgr;
 
 namespace SMESH {
 
+SMESHGUI_EXPORT
   SUIT_Desktop*
   GetDesktop(const CAM_Module* theModule);
 
+SMESHGUI_EXPORT
   LightApp_SelectionMgr*
   GetSelectionMgr(const SalomeApp_Module* theModule);
 
+SMESHGUI_EXPORT
   SalomeApp_Study*
   GetAppStudy(const CAM_Module* theModule);
 
+SMESHGUI_EXPORT
   SUIT_ResourceMgr*
   GetResourceMgr( const SalomeApp_Module* );
   
+SMESHGUI_EXPORT
   _PTR(Study)
   GetCStudy(const SalomeApp_Study* theStudy);
 
+SMESHGUI_EXPORT
   CORBA::Object_var DataOwnerToObject(const LightApp_DataOwnerPtr& theOwner);
 
   template<class TInterface> typename TInterface::_var_type
@@ -71,20 +79,29 @@ namespace SMESH {
     }
 
 
+SMESHGUI_EXPORT
   SUIT_Study* GetActiveStudy();
 
+SMESHGUI_EXPORT
   SUIT_ViewWindow* GetActiveWindow();
 
+SMESHGUI_EXPORT
   _PTR(Study) GetActiveStudyDocument();
 
+SMESHGUI_EXPORT
   _PTR(SObject) FindSObject(CORBA::Object_ptr theObject);
 
+SMESHGUI_EXPORT
   void SetName  (_PTR(SObject) theSObject, const char* theName);
+
+SMESHGUI_EXPORT
   void SetValue (_PTR(SObject) theSObject, const char* theValue);
 
+SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
 				     _PTR(Study) theStudy);
 
+SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject(_PTR(SObject) theSObject);
 
   template<class TInterface> typename TInterface::_var_type
@@ -96,6 +113,7 @@ namespace SMESH {
       return TInterface::_nil();
     }
 
+SMESHGUI_EXPORT
   CORBA::Object_var IObjectToObject(const Handle(SALOME_InteractiveObject)& theIO);
 
   template<class TInterface> typename TInterface::_var_type
@@ -107,6 +125,7 @@ namespace SMESH {
       return TInterface::_nil();
     }
 
+SMESHGUI_EXPORT
   CORBA::Object_var IORToObject(const char* theIOR);
 
   template<class TInterface> typename TInterface::_var_type
@@ -118,10 +137,13 @@ namespace SMESH {
       return TInterface::_nil();
     }
 
+SMESHGUI_EXPORT
   int GetNameOfSelectedIObjects (LightApp_SelectionMgr*, QString& theName);
 
+SMESHGUI_EXPORT
   _PTR(SObject) GetMeshOrSubmesh (_PTR(SObject) theSObject);
 
+SMESHGUI_EXPORT
   void ModifiedMesh (_PTR(SObject) theSObject, bool theIsRight);
 
 //  void UpdateObjBrowser (bool);
