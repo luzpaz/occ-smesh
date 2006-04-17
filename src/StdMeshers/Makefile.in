@@ -50,7 +50,8 @@ EXPORT_HEADERS = \
 	StdMeshers_Hexa_3D.hxx \
 	StdMeshers_AutomaticLength.hxx \
 	StdMeshers_Distribution.hxx \
-	StdMeshers_QuadranglePreference.hxx
+	StdMeshers_QuadranglePreference.hxx \
+	SMESH_StdMeshers.hxx
 
 EXPORT_PYSCRIPTS =
 

@@ -27,6 +27,8 @@
 #ifndef StdMeshers_Penta_3D_HeaderFile
 #define StdMeshers_Penta_3D_HeaderFile
 
+#include "SMESH_StdMeshers.hxx"
+
 #include <map>
 
 ////////////////////////////////////////////////////////////////////////
@@ -44,7 +46,7 @@
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 
-class StdMeshers_SMESHBlock {
+class STDMESHERS_EXPORT StdMeshers_SMESHBlock {
  
 public:
   //
@@ -102,7 +104,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////
 #include "SMDS_MeshNode.hxx"
 
-class StdMeshers_TNode {
+class STDMESHERS_EXPORT StdMeshers_TNode {
 
 public:
   
@@ -160,7 +162,7 @@ private:
 #include "SMESH_Mesh.hxx"
 #include <TopoDS_Shape.hxx>
 //
-class StdMeshers_Penta_3D {
+class STDMESHERS_EXPORT StdMeshers_Penta_3D {
 //
   public: // methods
     StdMeshers_Penta_3D();

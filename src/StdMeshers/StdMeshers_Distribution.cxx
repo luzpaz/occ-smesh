@@ -53,7 +53,7 @@ bool Function::value( const double, double& f ) const
   {
     CASCatch_TRY
     {
-      f = pow( 10, f );
+      f = pow( 10., f );
     }
     CASCatch_CATCH(CASCatch_Failure)
     {
@@ -201,7 +201,7 @@ FunctionExpr::~FunctionExpr()
 {
 }
 
-Standard_Boolean FunctionExpr::Value( Standard_Real T, Standard_Real& F )
+Standard_Boolean FunctionExpr::Value( const Standard_Real T, Standard_Real& F )
 {
   double f;
   Standard_Boolean res = value( T, f );

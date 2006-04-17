@@ -30,6 +30,8 @@
 #ifndef _SMESH_QUADRANGLE_2D_HXX_
 #define _SMESH_QUADRANGLE_2D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_2D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 #include "Utils_SALOME_Exception.hxx"
@@ -59,7 +61,7 @@ typedef struct faceQuadStruct
   UVPtStruct* uv_grid;
 } FaceQuadStruct;
 
-class StdMeshers_Quadrangle_2D:
+class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D:
   public SMESH_2D_Algo
 {
 public:

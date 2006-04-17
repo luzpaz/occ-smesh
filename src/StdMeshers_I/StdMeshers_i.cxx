@@ -25,7 +25,8 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
+#include "SMESH_StdMeshers_I.hxx"
+
 #include "SMESH_Gen_i.hxx"
 
 #include "utilities.h"
@@ -48,6 +49,8 @@ using namespace std;
 #include "StdMeshers_Quadrangle_2D_i.hxx"
 #include "StdMeshers_Hexa_3D_i.hxx"
 
+using namespace std;
+
 //=============================================================================
 /*!
  *
@@ -56,6 +59,7 @@ using namespace std;
 
 extern "C"
 {
+STDMESHERS_I_EXPORT
   GenericHypothesisCreator_i* GetHypothesisCreator (const char* aHypName)
   {
     MESSAGE("Get HypothesisCreator for " << aHypName);
