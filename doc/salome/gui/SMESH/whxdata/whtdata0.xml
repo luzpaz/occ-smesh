@@ -19,7 +19,8 @@
     <item name="Editing Meshes" url="files/reassigning_hypotheses_and_algorithms.htm" />
   </book>
   <book name="Viewing meshes" >
-    <item name="About viewing meshes" url="about_viewing_meshes.htm" />
+    <item name="Viewing meshes" url="about_viewing_meshes.htm" />
+    <item name="VTK 3D Viewer" url="files/vtk_3d_viewer.htm" />
     <item name="Mesh infos" url="files/viewing_mesh_info.htm" />
     <item name="Numbering" url="files/displaying_nodes_numbers.htm" />
     <item name="Display Mode" url="presentation.htm" />

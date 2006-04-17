@@ -184,6 +184,7 @@ files\uniting_a_set_of_triangles.htm
 files\uniting_two_triangles.htm
 files\using_operations_on_groups.htm
 files\viewing_mesh_info.htm
+files\vtk_3d_viewer.htm
 files\warp.htm
 free_borders.htm
 free_edges.htm
@@ -212,7 +213,6 @@ pics\smoothing2.png
 pics\b-mberofsegments.png
 pics\b-flection1d.png
 pics\a-cuttingofquadrangles.png
-image129.gif
 pics\addquadrangle.png
 pics\intersectgroups.png
 pics\editgroup.png
@@ -255,6 +255,8 @@ image50.gif
 image94.gif
 image83.gif
 image31.jpg
+pics\graduatedaxes1.png
+pics\image107.gif
 pics\automaticlength.png
 pics\image27.gif
 pics\add_polyhedron.png
@@ -272,6 +274,7 @@ image76.jpg
 image84.gif
 image32.jpg
 image40.gif
+pics\image108.gif
 pics\aqt.png
 pics\distributionwithtabledensity.png
 pics\smoothing.png
@@ -283,7 +286,7 @@ image74.gif
 image63.gif
 image22.jpg
 image41.gif
-pics\createsubmesh.png
+pics\image109.gif
 pics\meshimportmesh.png
 pics\deletegroups.png
 pics\editing_groups1.png
@@ -311,6 +314,7 @@ pics\extrusionalongaline2.png
 image79.jpg
 image98.gif
 image32.gif
+pics\image91.gif
 image152.gif
 pics\cut_groups2.png
 image130.gif
@@ -326,10 +330,10 @@ image36.jpg
 image33.gif
 image25.jpg
 i_blue.jpg
+image15.jpg
 image142.gif
 pics\cut_groups3.png
 image131.gif
-pics\c-editmesh.png
 pics\add_quadrangle.png
 pics\uniting_a_set_of_triangles1.png
 pics\a-deflection1d.png
@@ -355,6 +359,7 @@ image46.gif
 image35.gif
 image27.jpg
 image24.gif
+pics\createmesh-inv2.png
 image144.gif
 pics\intersect_groups1.png
 image133.gif
@@ -367,6 +372,7 @@ image58.gif
 image36.gif
 image25.gif
 note1.gif
+pics\createmesh-inv3.png
 image145.gif
 pics\intersect_groups2.png
 image134.gif
@@ -376,6 +382,7 @@ pics\addedge.png
 image123.gif
 image101.gif
 image37.gif
+pics\image96.gif
 image146.gif
 pics\intersect_groups3.png
 image135.gif
@@ -386,13 +393,13 @@ pics\patternmapping1.png
 image90.jpg
 image124.gif
 image102.gif
-image19.jpg
 image49.gif
 image38.gif
+pics\image100.gif
+pics\image97.gif
 pics\length-crit.png
 image147.gif
 image136.gif
-pics\c-createmesh.png
 pics\a-nbsegments2.png
 pics\a-startendlength.png
 pics\patternmapping2.png
@@ -404,6 +411,8 @@ image103.gif
 pics\exemple.gif
 image39.gif
 image28.gif
+pics\advanced_mesh_infos.png
+pics\image98.gif
 image148.gif
 pics\meshexportmesh.png
 pics\image21.gif
@@ -416,17 +425,22 @@ image126.gif
 image104.gif
 image18.gif
 image70.jpg
+pics\createmesh-inv.png
+pics\image102.gif
+pics\image99.gif
+pics\image77.gif
 pics\meshtrianglemergeelem1.png
 pics\mergeelems.png
 pics\union_groups2.png
 pics\length2d.png
-pics\a-advmeshinfo.png
 pics\renumbernodes.png
 image127.gif
 image93.jpg
 image105.gif
 image19.gif
 image71.jpg
+pics\image89.gif
+pics\image78.gif
 pics\image23.gif
 pics\selectionfilterlibrary.png
 pics\union_groups3.png
