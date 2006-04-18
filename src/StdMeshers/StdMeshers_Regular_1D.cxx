@@ -648,8 +648,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       if(_quadraticMesh) {
         // create medium node
         double prm = param - du/2.;
-        gp_Pnt PM = Curve->Value(prm);
-        SMDS_MeshNode * NM = meshDS->AddNode(PM.X(), PM.Y(), PM.Z());
+        SMDS_MeshNode * NM = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnEdge(NM, shapeID, prm);
         SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node, NM);
         meshDS->SetMeshElementOnShape(edge, shapeID);
@@ -664,8 +663,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     if(_quadraticMesh) {
       // create medium node
       double prm = l - du/2.;
-      gp_Pnt PM = Curve->Value(prm);
-      SMDS_MeshNode * NM = meshDS->AddNode(PM.X(), PM.Y(), PM.Z());
+      SMDS_MeshNode * NM = meshDS->AddNode(P.X(), P.Y(), P.Z());
       meshDS->SetNodeOnEdge(NM, shapeID, prm);
       SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast, NM);
       meshDS->SetMeshElementOnShape(edge, shapeID);
