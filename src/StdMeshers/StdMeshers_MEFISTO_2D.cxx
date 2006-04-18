@@ -221,7 +221,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
 
   if ( _quadraticMesh && _hypLengthFromEdges )
-    _edgeLength *= 2.;
+    aretmx *= 2.;
 
   myOuterWire = BRepTools::OuterWire(F);
   nbpnt += NumberOfPoints(aMesh, myOuterWire);
