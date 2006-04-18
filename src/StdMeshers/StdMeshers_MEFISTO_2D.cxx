@@ -220,6 +220,9 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   myTool = new StdMeshers_Helper(aMesh);
   _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
 
+  if ( _quadraticMesh && _hypLengthFromEdges )
+    _edgeLength *= 2.;
+
   myOuterWire = BRepTools::OuterWire(F);
   nbpnt += NumberOfPoints(aMesh, myOuterWire);
   if ( nbpnt < 3 ) { // ex: a circle with 2 segments
