@@ -1620,7 +1620,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
         if ( anOldHypIndex >= 0 ) {
           SMESH::RemoveHypothesisOrAlgorithmOnMesh(
             pObj, myExistingHyps[ dim ][ hypType ][ anOldHypIndex ] );
-          myExistingHyps.remove( anOldHypIndex );
+          myObjHyps[ dim ][ hypType ].clear();
         }
 
         // assign new hypotheses
