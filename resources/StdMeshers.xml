@@ -7,8 +7,8 @@
 
 <meshers-group name="Standard Meshers"
                resources="StdMeshers"
-               server-lib="libStdMeshersEngine.so"
-               gui-lib="libStdMeshersGUI.so">
+               server-lib="StdMeshersEngine"
+               gui-lib="StdMeshersGUI">
   <hypotheses>
 
     <hypothesis type="LocalLength"
