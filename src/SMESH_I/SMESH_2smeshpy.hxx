@@ -73,24 +73,31 @@ DEFINE_STANDARD_HANDLE (_pyMesh      ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyHypothesis,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyAlgorithm ,_pyHypothesis);
 
+typedef TCollection_AsciiString _pyID;
+
+// ===========================================================
 /*!
  * \brief Class operating on a command string looking like
  *        ResultValue = Object.Method( Arg1, Arg2,...)
  */
+// ===========================================================
+
 class _pyCommand: public Standard_Transient
 {
-  int myOrderNb; // position within the script
-  TCollection_AsciiString myString;
-  TCollection_AsciiString myRes, myObj, myMeth;
-  TColStd_SequenceOfAsciiString myArgs;
-  TColStd_SequenceOfInteger myBegPos; //!< where myRes, myObj, ... begin
-  std::list< Handle(_pyCommand) > myDependentCmds;
+  int                             myOrderNb;            //!< position within the script
+  TCollection_AsciiString         myString;             //!< command text
+  TCollection_AsciiString         myRes, myObj, myMeth; //!< found parts of command
+  TColStd_SequenceOfAsciiString   myArgs;               //!< found arguments
+  TColStd_SequenceOfInteger       myBegPos;             //!< where myRes, myObj, ... begin
+  std::list< Handle(_pyCommand) > myDependentCmds; //!< commands that sould follow me in the script
+
   enum { UNKNOWN=-1, EMPTY=0, RESULT_IND, OBJECT_IND, METHOD_IND, ARG1_IND };
   int GetBegPos( int thePartIndex );
   void SetBegPos( int thePartIndex, int thePosition );
   void SetPart( int thePartIndex, const TCollection_AsciiString& theNewPart,
                 TCollection_AsciiString& theOldPart);
   void FindAllArgs() { GetArg(1); }
+
 public:
   _pyCommand() {};
   _pyCommand( const TCollection_AsciiString& theString, int theNb )
@@ -123,13 +130,14 @@ public:
   { return myDependentCmds.push_back( cmd ); }
   bool SetDependentCmdsAfter() const;
 
+  bool AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod );
+
   DEFINE_STANDARD_RTTI (_pyCommand)
 };
 
 /*!
  * \brief Root of all objects
  */
-typedef TCollection_AsciiString _pyID;
 
 class _pyObject: public Standard_Transient
 {
@@ -142,6 +150,7 @@ public:
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
   virtual void Process(const Handle(_pyCommand) & theCommand) = 0;
   virtual void Flush() = 0;
+  virtual const char* AccessorMethod() const;
 
   DEFINE_STANDARD_RTTI (_pyObject)
 };
@@ -165,11 +174,13 @@ public:
   void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
   void SetAccessorMethod(const _pyID& theID, const char* theMethod );
+  const char* AccessorMethod() const { return SMESH_2smeshpy::GenName(); }
 private:
   std::map< _pyID, Handle(_pyMesh) > myMeshes;
   std::list< Handle(_pyHypothesis) > myHypos;
   std::list< Handle(_pyCommand) >    myCommands;
   int                                myNbCommands;
+  bool                               myHasPattern;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
 
   DEFINE_STANDARD_RTTI (_pyGen)
@@ -178,6 +189,7 @@ private:
 /*!
  * \brief Contains commands concerning mesh substructures
  */
+#define _pyMesh_ACCESS_METHOD "GetMesh()"
 class _pyMesh: public _pyObject
 {
   std::list< Handle(_pyHypothesis) > myHypos;
@@ -189,12 +201,14 @@ public:
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
+  const char* AccessorMethod() const { return _pyMesh_ACCESS_METHOD; }
 private:
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
-  { theCommand->SetObject( theCommand->GetObject() + ".GetMesh()" ); }
+  { theCommand->SetObject( theCommand->GetObject() + "." _pyMesh_ACCESS_METHOD ); }
 
   DEFINE_STANDARD_RTTI (_pyMesh)
 };
+#undef _pyMesh_ACCESS_METHOD 
 
 /*!
  * \brief Root class for hypothesis
@@ -283,6 +297,7 @@ public:
   _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
+  const char* AccessorMethod() const { return "GetAlgorithm()"; }
 
   DEFINE_STANDARD_RTTI (_pyAlgorithm)
 };

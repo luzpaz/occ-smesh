@@ -140,6 +140,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
     myID2AccessorMethod( theEntry2AccessorMethod )
 {
   myNbCommands = 0;
+  myHasPattern = false;
   // make that GetID() to return TPythonDump::SMESHGenName()
   GetCreationCmd()->GetString() += "=";
 }
@@ -148,7 +149,6 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
 /*!
  * \brief Convert a command using a specific converter
   * \param theCommand - the command to convert
-  * \retval bool - convertion result
  */
 //================================================================================
 
@@ -178,19 +178,25 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
     id_mesh->second->Process( aCommand );
     return;
   }
-  // SMESH_Hypothesis method
+  // SMESH_Hypothesis method?
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp )
-    if ( !(*hyp)->IsAlgo() && objID == (*hyp)->GetID() )
+    if ( !(*hyp)->IsAlgo() && objID == (*hyp)->GetID() ) {
       (*hyp)->Process( aCommand );
+      return;
+    }
 
-  // Mesh provides SMESH_IDSource interface used in SMESH_MeshEditor.
-  // Add access to wrapped mesh
-  if ( objID.Location( TPythonDump::MeshEditorName(), 1, objID.Length() )) {
-    // in all SMESH_MeshEditor's commands, a SMESH_IDSource is the first arg
-    id_mesh = myMeshes.find( aCommand->GetArg( 1 ));
-    if ( id_mesh != myMeshes.end() )
-      aCommand->SetArg( 1 , aCommand->GetArg( 1 ) + ".GetMesh()" );
+  // Add access to a wrapped mesh
+  for ( id_mesh = myMeshes.begin(); id_mesh != myMeshes.end(); ++id_mesh ) {
+    if ( aCommand->AddAccessorMethod( id_mesh->first, id_mesh->second->AccessorMethod() ))
+      break;
+  }
+
+  // Add access to a wrapped algorithm
+  for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp ) {
+    if ( (*hyp)->IsAlgo() &&
+         aCommand->AddAccessorMethod( (*hyp)->GetID(), (*hyp)->AccessorMethod() ))
+      break;
   }
 }
 
@@ -233,6 +239,15 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       id_mesh->second->Flush();
       return;
     }
+  }
+
+  // leave only one smeshgen.GetPattern() in the script
+  if ( theCommand->GetMethod() == "GetPattern" ) {
+    if ( myHasPattern ) {
+      theCommand->Clear();
+      return;
+    }
+    myHasPattern = true;
   }
 
   // smeshgen.Method() --> smesh.smesh.Method()
@@ -1347,4 +1362,56 @@ bool _pyCommand::SetDependentCmdsAfter() const
     }
   }
   return orderChanged;
+}
+//================================================================================
+/*!
+ * \brief Insert accessor method after theObjectID
+  * \param theObjectID - id of the accessed object
+  * \param theAcsMethod - name of the method giving access to the object
+  * \retval bool - false if theObjectID is not found in the command string
+ */
+//================================================================================
+
+bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod )
+{
+  if ( !theAcsMethod )
+    return false;
+  // start object search from the object, i.e. ignore result
+  GetObject();
+  int beg = GetBegPos( OBJECT_IND );
+  if ( beg < 1 || beg > Length() )
+    return false;
+  while (( beg = myString.Location( theObjectID, beg, Length() )))
+  {
+    // check that theObjectID is not just a part of a longer ID
+    int afterEnd = beg + theObjectID.Length();
+    Standard_Character c = myString.Value( afterEnd );
+    if ( !isalnum( c ) && c != ':' ) {
+      // insertion
+      int oldLen = Length();
+      myString.Insert( afterEnd, (char*) theAcsMethod );
+      myString.Insert( afterEnd, "." );
+      // update starting positions of the parts following the modified one
+      int posDelta = Length() - oldLen;
+      for ( int i = 1; i <= myBegPos.Length(); ++i ) {
+        if ( myBegPos( i ) > afterEnd )
+          myBegPos( i ) += posDelta;
+      }
+      return true;
+    }
+    beg = afterEnd; // is a part - next search
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Return method name giving access to an interaface object wrapped by python class
+  * \retval const char* - method name
+ */
+//================================================================================
+
+const char* _pyObject::AccessorMethod() const
+{
+  return 0;
 }
