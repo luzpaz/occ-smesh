@@ -195,7 +195,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
 {
   SMDS_MeshFace * face=createTriangle(n1, n2, n3);
 
-  if (!registerElement(ID, face)) {
+  if (face && !registerElement(ID, face)) {
     RemoveElement(face, false);
     face = NULL;
   }
@@ -246,7 +246,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
 {
   SMDS_MeshFace * face=createQuadrangle(n1, n2, n3, n4);
 
-  if (!registerElement(ID, face)) {
+  if (face && !registerElement(ID, face)) {
     RemoveElement(face, false);
     face = NULL;
   }
