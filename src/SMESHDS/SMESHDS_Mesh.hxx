@@ -45,30 +45,14 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Edge.hxx>
-#include <map>
-#ifdef WNT
-#include <hash_map>
-#endif
 
-//Not portable see http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_4 to know more.
-#ifdef __GNUC__
-  #if __GNUC__ < 3
-    #include <hash_map.h>
-    namespace gstd { using ::hash_map; }; // inherit globals
-  #elif __GNUC__ == 3
-    #include <ext/hash_map>
-    #if __GNUC_MINOR__ == 0
-      namespace gstd = std;               // GCC 3.0
-    #else
-      namespace gstd = ::__gnu_cxx;       // GCC 3.1 and later
-    #endif
-  #else                                   // GCC 4.0 and later
-    #include <ext/hash_map>
-    namespace gstd = ::__gnu_cxx;
-  #endif
-#else      // ...  there are other compilers, right?
-  namespace gstd = std;
-#endif
+#include <NCollection_DataMap.hxx>
+#include <map>
+/*
+ * Using of native haah_map isn't portable and don't work on WIN32 platform.
+ * So this functionality implement on new NCollection_DataMap technology
+ */
+#include "SMESHDS_DataMapOfShape.hxx"
 
 class SMESHDS_GroupBase;
 
@@ -245,31 +229,6 @@ public:
   ~SMESHDS_Mesh();
   
 private:
-#ifndef WNT
-  struct HashTopoDS_Shape{
-    size_t operator()(const TopoDS_Shape& S) const {
-      return S.HashCode(2147483647);
-    }
-  };
-#else
-  typedef gstd::hash_compare< TopoDS_Shape, less<TopoDS_Shape> > HashTopoDS;
-
-  class HashTopoDS_Shape : public HashTopoDS {
-  public:
-  
-    size_t operator()(const TopoDS_Shape& S) const {
-      return S.HashCode(2147483647);
-    }
-
-	bool operator()(const TopoDS_Shape& S1,const TopoDS_Shape& S2) const {
-		return S1==S2;
-	}
-  };
-
-
-
-#endif
-
   void addNodeToSubmesh( const SMDS_MeshNode* aNode, int Index )
   {
     //Update or build submesh
@@ -279,13 +238,14 @@ private:
     it->second->AddNode( aNode ); // add aNode to submesh
   }
 
+  /*int HashCode( const TopoDS_Shape& S, const Standard_Integer theUpper ) const
+  {
+      return S.HashCode(2147483647);
+  }*/ 
+
   typedef std::list<const SMESHDS_Hypothesis*> THypList;
 
-#ifndef WNT
-  typedef gstd::hash_map<TopoDS_Shape,THypList,HashTopoDS_Shape> ShapeToHypothesis;
-#else
-  typedef gstd::hash_map<TopoDS_Shape,THypList,HashTopoDS_Shape> ShapeToHypothesis;
-#endif
+  typedef NCollection_DataMap< TopoDS_Shape, THypList > ShapeToHypothesis;
 
   ShapeToHypothesis          myShapeToHypothesis;
 
