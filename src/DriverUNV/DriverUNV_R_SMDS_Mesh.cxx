@@ -293,6 +293,8 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	  if (aElementsNb > 0){
 	    SMDS_MeshGroup* aEdgesGroup = 0;
 	    SMDS_MeshGroup* aFacesGroup = 0;
+	    SMDS_MeshGroup* aVolumeGroup = 0;
+	    bool createdGroup = false;
 
 	    for (i = 0; i < aElementsNb; i++) {
 	      const SMDS_MeshElement* aElement = myMesh->FindElement(aRec.ElementList[i]);
@@ -301,20 +303,35 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 		case SMDSAbs_Edge:
 		  if (!aEdgesGroup) {
 		    aEdgesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Edge);
+		    if (!useSuffix && createdGroup) useSuffix = true;
 		    std::string aEdgesGrName = (useSuffix) ? aRec.GroupName + "_Edges" : aRec.GroupName;
 		    myGroupNames.insert(TGroupNamesMap::value_type(aEdgesGroup, aEdgesGrName));
 		    myGroupId.insert(TGroupIdMap::value_type(aEdgesGroup, aLabel));
+		    createdGroup = true;
 		  }
 		  aEdgesGroup->Add(aElement);
 		  break;
 		case SMDSAbs_Face:
 		  if (!aFacesGroup) {
 		    aFacesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Face);
+		    if (!useSuffix && createdGroup) useSuffix = true;
 		    std::string aFacesGrName = (useSuffix) ? aRec.GroupName + "_Faces" : aRec.GroupName;
 		    myGroupNames.insert(TGroupNamesMap::value_type(aFacesGroup, aFacesGrName));
 		    myGroupId.insert(TGroupIdMap::value_type(aFacesGroup, aLabel));
+		    createdGroup = true;
 		  }
 		  aFacesGroup->Add(aElement);
+		  break;
+		case SMDSAbs_Volume:
+		  if (!aVolumeGroup) {
+		    aVolumeGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Volume);
+		    if (!useSuffix && createdGroup) useSuffix = true;
+		    std::string aVolumeGrName = (useSuffix) ? aRec.GroupName + "_Volumes" : aRec.GroupName;
+		    myGroupNames.insert(TGroupNamesMap::value_type(aVolumeGroup, aVolumeGrName));
+		    myGroupId.insert(TGroupIdMap::value_type(aVolumeGroup, aLabel));
+		    createdGroup = true;
+		  }
+		  aVolumeGroup->Add(aElement);
 		  break;
 		}
 	      } 
