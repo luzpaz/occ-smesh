@@ -1998,16 +1998,16 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     int         aCriterion    = theCriteria[ i ].Type;
     int         aCompare      = theCriteria[ i ].Compare;
     double      aThreshold    = theCriteria[ i ].Threshold;
+    const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
+    const char* aThresholdID  = theCriteria[ i ].ThresholdID;
     int         aUnary        = theCriteria[ i ].UnaryOp;
     int         aBinary       = theCriteria[ i ].BinaryOp;
     double      aTolerance    = theCriteria[ i ].Tolerance;
-    const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
-    const char* aThresholdID  = theCriteria[ i ].ThresholdID;
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
     TPythonDump()<<"aCriteria.append(SMESH.Filter.Criterion("<<
-      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"',"<<
+      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"','"<<aThresholdID<<"',"<<
       aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
