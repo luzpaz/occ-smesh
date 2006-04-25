@@ -63,8 +63,8 @@ class SMDS_EXPORT SMDS_MeshElement:public SMDS_MeshObject
 	virtual SMDSAbs_ElementType GetType() const = 0;
 	virtual bool IsPoly() const { return false; };
 
-	friend std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
-	friend bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
+	friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
+	friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
 
   protected:
 	SMDS_MeshElement(int ID=-1);
