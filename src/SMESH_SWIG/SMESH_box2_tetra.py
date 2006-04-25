@@ -68,7 +68,7 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 10
 
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
 
 print hypNbSeg.GetName()
@@ -81,7 +81,7 @@ print "-------------------------- MaxElementArea"
 
 maxElementArea = 500
 
-hypArea = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hypArea = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hypArea.SetMaxElementArea(maxElementArea)
 
 print hypArea.GetName()
@@ -94,7 +94,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 500
 
-hypVolume = smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
+hypVolume = smesh.CreateHypothesis("MaxElementVolume", "StdMeshersEngine")
 hypVolume.SetMaxElementVolume(maxElementVolume)
 
 print hypVolume.GetName()
@@ -109,12 +109,12 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
 smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 print "-------------------------- NETGEN_3D"

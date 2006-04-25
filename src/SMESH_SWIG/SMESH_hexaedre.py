@@ -84,20 +84,20 @@ smesh.SetCurrentStudy(salome.myStudy)
 # ---- create Hypothesis
 print "-------------------------- create Hypothesis"
 numberOfSegments = 4
-hypNbSegA=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSegA=smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSegA.SetNumberOfSegments(numberOfSegments)
 numberOfSegments = 10
-hypNbSegB=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSegB=smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSegB.SetNumberOfSegments(numberOfSegments)
 numberOfSegments = 15
-hypNbSegC=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSegC=smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSegC.SetNumberOfSegments(numberOfSegments)
 
 # ---- create Algorithms
 print "-------------------------- create Algorithms"
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-quad2D=smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
-hexa3D=smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
+regular1D=smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
+quad2D=smesh.CreateHypothesis("Quadrangle_2D", "StdMeshersEngine")
+hexa3D=smesh.CreateHypothesis("Hexa_3D", "StdMeshersEngine")
 
 # ---- init a Mesh with the geom shape
 shape_mesh = blob

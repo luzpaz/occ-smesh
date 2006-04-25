@@ -53,7 +53,7 @@ print"---------------------Hypothesis"
 #---------------- NumberOfSegments
 numberOfSegment = 9
 
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
+hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "StdMeshersEngine" )
 hypNbSeg.SetNumberOfSegments( numberOfSegment )
 
 print hypNbSeg.GetName()
@@ -64,7 +64,7 @@ smeshgui.SetName(salome.ObjectToID(hypNbSeg), "Nb. Segments")
 #--------------------------Max. Element Area
 maxElementArea = 200
 
-hypArea200 = smesh.CreateHypothesis("MaxElementArea","libStdMeshersEngine.so")
+hypArea200 = smesh.CreateHypothesis("MaxElementArea","StdMeshersEngine")
 hypArea200.SetMaxElementArea( maxElementArea )
 print hypArea200.GetName()
 print hypArea200.GetMaxElementArea()
@@ -74,14 +74,14 @@ smeshgui.SetName(salome.ObjectToID(hypArea200), "Max. Element Area")
 print"---------------------Algorithms"
 
 #----------------------------Wire discretisation
-algoWireDes = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
+algoWireDes = smesh.CreateHypothesis( "Regular_1D", "StdMeshersEngine" )
 listHyp = algoWireDes.GetCompatibleHypothesis()
 
 print algoWireDes.GetName()
 smeshgui.SetName(salome.ObjectToID(algoWireDes), "Ware descritisation")
 
 #----------------------------Triangle (Mefisto)
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
+algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "StdMeshersEngine" )
 listHyp = algoMef.GetCompatibleHypothesis()
 
 print algoMef.GetName()

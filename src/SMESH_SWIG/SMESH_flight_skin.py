@@ -48,7 +48,7 @@ print "-------------------------- LocalLength"
 
 lengthOfSegments = 0.3
 
-hypLength = smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
+hypLength = smesh.CreateHypothesis("LocalLength", "StdMeshersEngine")
 hypLength.SetLength(lengthOfSegments)
 
 print hypLength.GetName()
@@ -59,7 +59,7 @@ smeshgui.SetName(salome.ObjectToID(hypLength), "LocalLength_0.3")
 
 print "-------------------------- LengthFromEdges"
 
-hypLengthFromEdge = smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
+hypLengthFromEdge = smesh.CreateHypothesis("LengthFromEdges", "StdMeshersEngine")
 
 print hypLengthFromEdge.GetName()
 print hypLengthFromEdge.GetId()
@@ -70,13 +70,13 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
 
 smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 

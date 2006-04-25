@@ -57,22 +57,22 @@ smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init(salome.myStudyId)
 
 # create hypoteses
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg.SetNumberOfSegments(12)
 idseg = salome.ObjectToID(hypNbSeg) 
 smeshgui.SetName(idseg, "NumberOfSegments_10");
 
-hypArea = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hypArea = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hypArea.SetMaxElementArea(30)
 idarea = salome.ObjectToID(hypArea)
 smeshgui.SetName(idarea, "MaxElementArea_20");
 
 # create algorithmes
-algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+algoReg = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 idreg = salome.ObjectToID(algoReg)
 smeshgui.SetName(idreg, "Regular_1D");
 
-algoMef = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+algoMef = smesh.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
 idmef = salome.ObjectToID(algoMef)
 smeshgui.SetName(idmef, "MEFISTO_2D");
 

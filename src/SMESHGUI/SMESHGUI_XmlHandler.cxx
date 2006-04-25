@@ -90,12 +90,15 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       myPluginName = atts.value("name");
       myServerLib  = atts.value("server-lib");
       myClientLib  = atts.value("gui-lib");
-
+/* It's Need to tranlate lib name for WIN32 or X platform
+ * (only client lib, because server lib translates in SMESH_Gen_i::createHypothesis
+ *  for normal work of *.py files )
+ */
 #ifdef WNT
-      myServerLib += ".dll";
+      //myServerLib += ".dll";
       myClientLib += ".dll";
 #else
-      myServerLib = "lib" + myServerLib + ".so";
+      //myServerLib = "lib" + myServerLib + ".so";
       myClientLib = "lib" + myClientLib + ".so";
 #endif
 

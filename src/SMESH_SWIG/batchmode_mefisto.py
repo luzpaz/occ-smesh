@@ -34,7 +34,7 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
     print "-------------------------- create Hypothesis"
     if (len is not None):
         print "-------------------------- LocalLength"
-        hypLength1 = smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
+        hypLength1 = smesh.CreateHypothesis("LocalLength", "StdMeshersEngine")
         hypLength1.SetLength(len)
         print "Hypothesis type : ", hypLength1.GetName()
         print "Hypothesis ID   : ", hypLength1.GetId()
@@ -42,7 +42,7 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
     
     if (nbseg is not None):   
         print "-------------------------- NumberOfSegments"
-        hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+        hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
         hypNbSeg1.SetNumberOfSegments(nbseg)
         print "Hypothesis type : ", hypNbSeg1.GetName()
         print "Hypothesis ID   : ", hypNbSeg1.GetId()
@@ -50,7 +50,7 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
 
     if (area == "LengthFromEdges"):
         print "-------------------------- LengthFromEdges"
-        hypLengthFromEdges = smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
+        hypLengthFromEdges = smesh.CreateHypothesis("LengthFromEdges", "StdMeshersEngine")
         hypLengthFromEdges.SetMode(1)
         print "Hypothesis type     : ", hypLengthFromEdges.GetName()
         print "Hypothesis ID       : ", hypLengthFromEdges.GetId()
@@ -58,7 +58,7 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
        
     else:
         print "-------------------------- MaxElementArea"
-        hypArea1 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+        hypArea1 = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
         hypArea1.SetMaxElementArea(area)
         print "Hypothesis type : ", hypArea1.GetName()
         print "Hypothesis ID   : ", hypArea1.GetId()
@@ -66,7 +66,7 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
               
     
     print "-------------------------- Regular_1D"
-    algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+    algoReg = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
    
     listHyp = algoReg.GetCompatibleHypothesis()
     for hyp in listHyp:
@@ -76,7 +76,7 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
     print "Algo ID  : ", algoReg.GetId()
    
     print "-------------------------- MEFISTO_2D"
-    algoMef = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+    algoMef = smesh.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
     
     listHyp = algoMef.GetCompatibleHypothesis()
     for hyp in listHyp:

@@ -115,7 +115,7 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegment = 10
 
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
+hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "StdMeshersEngine" )
 hypNbSeg.SetNumberOfSegments( numberOfSegment )
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
@@ -127,7 +127,7 @@ print "-------------------------- MaxElementArea"
 
 maxElementArea = 20
 
-hypArea = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
+hypArea = smesh.CreateHypothesis( "MaxElementArea", "StdMeshersEngine" )
 hypArea.SetMaxElementArea( maxElementArea )
 print hypArea.GetName()
 print hypArea.GetId()
@@ -139,7 +139,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 20
 
-hypVolume = smesh.CreateHypothesis( "MaxElementVolume", "libStdMeshersEngine.so" )
+hypVolume = smesh.CreateHypothesis( "MaxElementVolume", "StdMeshersEngine" )
 hypVolume.SetMaxElementVolume( maxElementVolume )
 print hypVolume.GetName()
 print hypVolume.GetId()
@@ -149,7 +149,7 @@ smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_20")
 
 print "-------------------------- Regular_1D"
 
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
+algoReg1D = smesh.CreateHypothesis( "Regular_1D", "StdMeshersEngine" )
 listHyp =algoReg1D.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
@@ -160,7 +160,7 @@ smeshgui.SetName(salome.ObjectToID(algoReg1D), "Regular_1D")
 
 print "-------------------------- MEFISTO_2D"
 
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
+algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "StdMeshersEngine" )
 listHyp = algoMef.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp

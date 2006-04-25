@@ -92,7 +92,7 @@ class Mesh_Algorithm:
         """
         return self.algo
 
-    def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
+    def Create(self, mesh, geom, hypo, so="StdMeshersEngine"):
         """
          Private method
         """
@@ -113,7 +113,7 @@ class Mesh_Algorithm:
         SetName(self.algo, name + "/" + hypo)
         mesh.mesh.AddHypothesis(self.geom, self.algo)
 
-    def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so"):
+    def Hypothesis(self, hyp, args=[], so="StdMeshersEngine"):
         """
          Private method
         """

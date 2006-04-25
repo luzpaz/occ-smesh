@@ -307,8 +307,28 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
                                                           const char* theLibName)
      throw (SALOME::SALOME_Exception)
 {
+  /* It's Need to tranlate lib name for WIN32 or X platform */
+  char* aPlatformLibName = 0;
+  if ( theLibName && theLibName[0] != '\0'  )
+  {
+#ifdef WNT
+    aPlatformLibName = new char[ strlen(theLibName) + 5 ];
+    aPlatformLibName[0] = '\0';
+    aPlatformLibName = strcat( aPlatformLibName, theLibName );
+    aPlatformLibName = strcat( aPlatformLibName, ".dll" );
+#else
+    aPlatformLibName = new char[ strlen(theLibName) + 7 ];
+    aPlatformLibName[0] = '\0';
+    aPlatformLibName = strcat( aPlatformLibName, "lib" );
+    aPlatformLibName = strcat( aPlatformLibName, theLibName );
+    aPlatformLibName = strcat( aPlatformLibName, ".dll" );
+#endif
+  }
+  
+
+
   Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << theLibName);
+  if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << aPlatformLibName/*theLibName*/);
 
   // create a new hypothesis object servant
   SMESH_Hypothesis_i* myHypothesis_i = 0;
@@ -321,7 +341,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     {
       // load plugin library
       if(MYDEBUG) MESSAGE("Loading server meshers plugin library ...");
-      LibHandle libHandle = LoadLib( theLibName );
+      LibHandle libHandle = LoadLib( aPlatformLibName/*theLibName*/ );
       if (!libHandle)
       {
         // report any error, if occured
@@ -362,12 +382,15 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
       myHypCreatorMap[string(theHypName)]->Create (myPoa, GetCurrentStudyID(), &myGen);
     // _CS_gbo Explicit activation (no longer made in the constructor).
     myHypothesis_i->Activate();
-    myHypothesis_i->SetLibName(theLibName); // for persistency assurance
+    myHypothesis_i->SetLibName(aPlatformLibName/*theLibName*/); // for persistency assurance
   }
   catch (SALOME_Exception& S_ex)
   {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
+
+  if ( aPlatformLibName )
+    delete[] aPlatformLibName;
 
   if (!myHypothesis_i)
     return hypothesis_i._retn();
@@ -375,7 +398,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   // activate the CORBA servant of hypothesis
   hypothesis_i = SMESH::SMESH_Hypothesis::_narrow( myHypothesis_i->_this() );
   int nextId = RegisterObject( hypothesis_i );
-  if(MYDEBUG) MESSAGE( "Add hypo to map with id = "<< nextId );
+  if(MYDEBUG) MESSAGE( "Add hypo to map with id = "<< nextId );  
 
   return hypothesis_i._retn();
 }

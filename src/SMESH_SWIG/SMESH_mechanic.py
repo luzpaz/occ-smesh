@@ -140,7 +140,7 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegment = 10
 
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
+hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "StdMeshersEngine" )
 hypNbSeg.SetNumberOfSegments( numberOfSegment )
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
@@ -152,7 +152,7 @@ print "-------------------------- MaxElementArea"
 
 maxElementArea = 25
 
-hypArea25 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
+hypArea25 = smesh.CreateHypothesis( "MaxElementArea", "StdMeshersEngine" )
 hypArea25.SetMaxElementArea( maxElementArea )
 print hypArea25.GetName()
 print hypArea25.GetId()
@@ -164,7 +164,7 @@ print "-------------------------- MaxElementArea"
 
 maxElementArea = 35
 
-hypArea35 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
+hypArea35 = smesh.CreateHypothesis( "MaxElementArea", "StdMeshersEngine" )
 hypArea35.SetMaxElementArea( maxElementArea )
 print hypArea35.GetName()
 print hypArea35.GetId()
@@ -174,7 +174,7 @@ smeshgui.SetName(salome.ObjectToID(hypArea35), "MaxElementArea_35")
 
 print "-------------------------- Regular_1D"
 
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
+algoReg1D = smesh.CreateHypothesis( "Regular_1D", "StdMeshersEngine" )
 listHyp = algoReg1D.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
@@ -185,7 +185,7 @@ smeshgui.SetName(salome.ObjectToID(algoReg1D), "Regular_1D")
 
 print "-------------------------- MEFISTO_2D"
 
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
+algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "StdMeshersEngine" )
 listHyp = algoMef.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
@@ -196,7 +196,7 @@ smeshgui.SetName(salome.ObjectToID(algoMef), "MEFISTO_2D")
 
 print "-------------------------- SMESH_Quadrangle_2D"
 
-algoQuad = smesh.CreateHypothesis( "Quadrangle_2D", "libStdMeshersEngine.so" )
+algoQuad = smesh.CreateHypothesis( "Quadrangle_2D", "StdMeshersEngine" )
 listHyp = algoQuad.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp

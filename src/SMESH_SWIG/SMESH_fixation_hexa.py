@@ -37,7 +37,7 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 5
 
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
 
 print hypNbSeg.GetName()
@@ -50,19 +50,19 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- Quadrangle_2D"
 
-quad2D = smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
+quad2D = smesh.CreateHypothesis("Quadrangle_2D", "StdMeshersEngine")
 
 smeshgui.SetName(salome.ObjectToID(quad2D), "Quadrangle_2D")
 
 print "-------------------------- Hexa_3D"
 
-hexa3D = smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
+hexa3D = smesh.CreateHypothesis("Hexa_3D", "StdMeshersEngine")
 
 smeshgui.SetName(salome.ObjectToID(hexa3D), "Hexa_3D")
 

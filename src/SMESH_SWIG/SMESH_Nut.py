@@ -89,7 +89,7 @@ smeshgui.SetName( idmesh, "Nut" )
 #HYPOTHESIS CREATION
 print "-------------------------- Average length"
 theAverageLength = 5
-hAvLength = smesh.CreateHypothesis( "LocalLength", "libStdMeshersEngine.so" )
+hAvLength = smesh.CreateHypothesis( "LocalLength", "StdMeshersEngine" )
 hAvLength.SetLength( theAverageLength )
 print hAvLength.GetName()
 print hAvLength.GetId()
@@ -97,7 +97,7 @@ smeshgui.SetName(salome.ObjectToID(hAvLength), "AverageLength_5")
 
 print "-------------------------- MaxElementArea"
 theMaxElementArea = 20
-hArea20 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
+hArea20 = smesh.CreateHypothesis( "MaxElementArea", "StdMeshersEngine" )
 hArea20.SetMaxElementArea( theMaxElementArea )
 print hArea20.GetName()
 print hArea20.GetId()
@@ -106,7 +106,7 @@ smeshgui.SetName(salome.ObjectToID(hArea20), "MaxElementArea_20")
 
 print "-------------------------- MaxElementVolume"
 theMaxElementVolume = 150
-hVolume150 = smesh.CreateHypothesis( "MaxElementVolume", "libStdMeshersEngine.so" )
+hVolume150 = smesh.CreateHypothesis( "MaxElementVolume", "StdMeshersEngine" )
 hVolume150.SetMaxElementVolume( theMaxElementVolume )
 print hVolume150.GetName()
 print hVolume150.GetId()
@@ -119,7 +119,7 @@ mesh.AddHypothesis(shape_mesh, hVolume150)
 
 print "-------------------------- Regular_1D"
 
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
+algoReg1D = smesh.CreateHypothesis( "Regular_1D", "StdMeshersEngine" )
 listHyp = algoReg1D.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
@@ -128,7 +128,7 @@ print algoReg1D.GetId()
 smeshgui.SetName(salome.ObjectToID(algoReg1D), "Wire discretisation")
 
 print "-------------------------- MEFISTO_2D"
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
+algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "StdMeshersEngine" )
 listHyp = algoMef.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp

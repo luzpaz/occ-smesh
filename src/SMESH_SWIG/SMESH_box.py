@@ -36,22 +36,22 @@ smeshgui.Init(salome.myStudyId)
 
 # Hypothesis
 
-hypL1=meshgenerator.CreateHypothesis("LocalLength","libStdMeshersEngine.so")
+hypL1=meshgenerator.CreateHypothesis("LocalLength","StdMeshersEngine")
 hypL1.SetLength(0.25)
 hypL1Id = salome.ObjectToID(hypL1) 
 smeshgui.SetName(hypL1Id, "LocalLength")
 
 # Algorithm
 
-alg1D=meshgenerator.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+alg1D=meshgenerator.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 alg1DId = salome.ObjectToID(alg1D) 
 smeshgui.SetName(alg1DId, "algo1D")
 
-alg2D=meshgenerator.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
+alg2D=meshgenerator.CreateHypothesis("Quadrangle_2D", "StdMeshersEngine")
 alg2DId = salome.ObjectToID(alg2D) 
 smeshgui.SetName(alg2DId, "algo2D")
 
-alg3D=meshgenerator.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
+alg3D=meshgenerator.CreateHypothesis("Hexa_3D", "StdMeshersEngine")
 alg3DId = salome.ObjectToID(alg3D) 
 smeshgui.SetName(alg3DId, "algo3D")
  

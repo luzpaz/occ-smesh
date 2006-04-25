@@ -119,7 +119,7 @@ print "-------------------------- NumberOfSegments the global one"
 
 numberOfSegments = 10
 
-hypNbSeg=smesh.CreateHypothesis("NumberOfSegments","libStdMeshersEngine.so")
+hypNbSeg=smesh.CreateHypothesis("NumberOfSegments","StdMeshersEngine")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
 hypNbSegID = hypNbSeg.GetId()
 print hypNbSeg.GetName()
@@ -132,7 +132,7 @@ print "-------------------------- NumberOfSegments in the Z direction"
 
 numberOfSegmentsZ = 40
 
-hypNbSegZ=smesh.CreateHypothesis("NumberOfSegments","libStdMeshersEngine.so")
+hypNbSegZ=smesh.CreateHypothesis("NumberOfSegments","StdMeshersEngine")
 hypNbSegZ.SetNumberOfSegments(numberOfSegmentsZ)
 hypNbSegZID = hypNbSegZ.GetId()
 print hypNbSegZ.GetName()
@@ -147,17 +147,17 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D=smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- Quadrangle_2D"
 
-quad2D=smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
+quad2D=smesh.CreateHypothesis("Quadrangle_2D", "StdMeshersEngine")
 smeshgui.SetName(salome.ObjectToID(quad2D), "Quadrangle_2D")
 
 print "-------------------------- Hexa_3D"
 
-hexa3D=smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
+hexa3D=smesh.CreateHypothesis("Hexa_3D", "StdMeshersEngine")
 smeshgui.SetName(salome.ObjectToID(hexa3D), "Hexa_3D")
 
 # ---- init a Mesh with the volume

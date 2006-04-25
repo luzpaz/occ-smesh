@@ -66,7 +66,7 @@ print "-------------------------- create Hypothesis"
 
 print "-------------------------- LocalLength"
 
-hypo1 = gen.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
+hypo1 = gen.CreateHypothesis("LocalLength", "StdMeshersEngine")
 print hypo1.GetName()
 print hypo1.GetId()
 print hypo1.GetLength()
@@ -79,7 +79,7 @@ hyp3 = gen.CreateHypothesis("bidon", "")
 
 print "-------------------------- NumberOfSegments"
 
-hypo3 = gen.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypo3 = gen.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypo3.SetNumberOfSegments(7)
 print hypo3.GetName()
 print hypo3.GetNumberOfSegments()
@@ -87,7 +87,7 @@ print hypo3.GetId()
 
 print "-------------------------- MaxElementArea"
 
-hypo4 = gen.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hypo4 = gen.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hypo4.SetMaxElementArea(5000)
 print hypo4.GetName()
 print hypo4.GetMaxElementArea()
@@ -95,7 +95,7 @@ print hypo4.GetId()
 
 print "-------------------------- Regular_1D"
 
-algo_1 = gen.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+algo_1 = gen.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 print algo_1.GetName()
 print algo_1.GetId()
 listHyp = algo_1.GetCompatibleHypothesis()
@@ -105,7 +105,7 @@ print algo_1.GetId()
 
 print "-------------------------- MEFISTO_2D"
 
-algo_2 = gen.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+algo_2 = gen.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
 print algo_2.GetName()
 print algo_2.GetId()
 listHyp = algo_2.GetCompatibleHypothesis()

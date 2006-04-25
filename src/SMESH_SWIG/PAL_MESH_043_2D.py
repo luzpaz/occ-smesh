@@ -60,18 +60,18 @@ smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init(salome.myStudyId)
 
 # create hypoteses
-hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg1.SetNumberOfSegments(18)
 id_hypNbSeg1 = salome.ObjectToID(hypNbSeg1) 
 smeshgui.SetName(id_hypNbSeg1, "NumberOfSegments 1");
 
-hypNbSeg2 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg2 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg2.SetNumberOfSegments(34)
 id_hypNbSeg2 = salome.ObjectToID(hypNbSeg2) 
 smeshgui.SetName(id_hypNbSeg2, "NumberOfSegments 2");
 
 # create algorithmes
-algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+algoReg = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 id_algoReg = salome.ObjectToID(algoReg)
 smeshgui.SetName(id_algoReg, "Regular_1D");
 

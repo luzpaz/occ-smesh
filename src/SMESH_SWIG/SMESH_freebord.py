@@ -23,15 +23,15 @@ aBox  = salome.IDToObject( idbox )
 
 # Create mesh
 
-hyp1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hyp1 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hyp1.SetNumberOfSegments(5)
-hyp2 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hyp2 = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hyp2.SetMaxElementArea(20)
-hyp3 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hyp3 = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hyp3.SetMaxElementArea(50)
 
-algo1 = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-algo2 = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+algo1 = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
+algo2 = smesh.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
 
 mesh = smesh.CreateMesh(aBox)
 mesh.AddHypothesis(aBox,hyp1)

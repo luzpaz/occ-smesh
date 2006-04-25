@@ -63,7 +63,7 @@ smeshgui.Init(salome.myStudyId)
 print "-------------------------- create Hypothesis"
 
 print "-------------------------- LocalLength"
-hypLen1 = smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
+hypLen1 = smesh.CreateHypothesis("LocalLength", "StdMeshersEngine")
 hypLen1.SetLength(100)
 print hypLen1.GetName()
 print hypLen1.GetId()
@@ -74,7 +74,7 @@ smeshgui.SetName(idlength, "Local_Length_100");
 
 hypNbSeg = []
 print "-------------------------- NumberOfSegments"
-hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg1.SetDistrType(0)
 hypNbSeg1.SetNumberOfSegments(7)
 print hypNbSeg1.GetName()
@@ -84,7 +84,7 @@ idseg1 = salome.ObjectToID(hypNbSeg1)
 smeshgui.SetName(idseg1, "NumberOfSegmentsReg");
 hypNbSeg.append(hypNbSeg1)
 
-hypNbSeg2 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg2 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg2.SetDistrType(1)
 hypNbSeg2.SetNumberOfSegments(7)
 hypNbSeg2.SetScaleFactor(2)
@@ -95,7 +95,7 @@ idseg2 = salome.ObjectToID(hypNbSeg2)
 smeshgui.SetName(idseg2, "NumberOfSegmentsScale");
 hypNbSeg.append(hypNbSeg2)
 
-hypNbSeg3 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg3 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg3.SetDistrType(2)
 hypNbSeg3.SetNumberOfSegments(7)
 hypNbSeg3.SetTableFunction( [0, 0.1, 0.5, 1.0, 1.0, 0.1] )
@@ -107,7 +107,7 @@ idseg3 = salome.ObjectToID(hypNbSeg3)
 smeshgui.SetName(idseg3, "NumberOfSegmentsTable");
 hypNbSeg.append(hypNbSeg3)
 
-hypNbSeg4 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg4 = smesh.CreateHypothesis("NumberOfSegments", "StdMeshersEngine")
 hypNbSeg4.SetDistrType(3)
 hypNbSeg4.SetNumberOfSegments(10)
 hypNbSeg4.SetExpressionFunction("sin(3*t)")
@@ -120,7 +120,7 @@ smeshgui.SetName(idseg4, "NumberOfSegmentsExpr");
 hypNbSeg.append(hypNbSeg4)
 
 print "-------------------------- MaxElementArea"
-hypArea1 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hypArea1 = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hypArea1.SetMaxElementArea(2500)
 print hypArea1.GetName()
 print hypArea1.GetId()
@@ -130,7 +130,7 @@ idarea1 = salome.ObjectToID(hypArea1)
 smeshgui.SetName(idarea1, "MaxElementArea_2500");
 
 print "-------------------------- MaxElementArea"
-hypArea2 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hypArea2 = smesh.CreateHypothesis("MaxElementArea", "StdMeshersEngine")
 hypArea2.SetMaxElementArea(500)
 print hypArea2.GetName()
 print hypArea2.GetId()
@@ -140,7 +140,7 @@ idarea2 = salome.ObjectToID(hypArea2)
 smeshgui.SetName(idarea2, "MaxElementArea_500");
 
 print "-------------------------- Regular_1D"
-algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+algoReg = smesh.CreateHypothesis("Regular_1D", "StdMeshersEngine")
 listHyp = algoReg.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
@@ -151,7 +151,7 @@ idreg = salome.ObjectToID(algoReg)
 smeshgui.SetName(idreg, "Regular_1D");
 
 print "-------------------------- MEFISTO_2D"
-algoMef = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+algoMef = smesh.CreateHypothesis("MEFISTO_2D", "StdMeshersEngine")
 listHyp = algoMef.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
