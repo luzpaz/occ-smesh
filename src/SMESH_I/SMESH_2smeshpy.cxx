@@ -198,6 +198,25 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
          aCommand->AddAccessorMethod( (*hyp)->GetID(), (*hyp)->AccessorMethod() ))
       break;
   }
+
+  // PAL12227. PythonDump was not updated at proper time; result is
+  //     aCriteria.append(SMESH.Filter.Criterion(17,26,0,'L1',26,25,1e-07,SMESH.EDGE,-1))
+  // TypeError: __init__() takes exactly 11 arguments (10 given)
+  char wrongCommand[] = "SMESH.Filter.Criterion(";
+  if ( int beg = theCommand.Location( wrongCommand, 1, theCommand.Length() ))
+  {
+    _pyCommand tmpCmd( theCommand.SubString( beg, theCommand.Length() ), -1);
+    // there must be 10 arguments, 5-th arg ThresholdID is missing,
+    const int wrongNbArgs = 9, missingArg = 5;
+    if ( tmpCmd.GetNbArgs() == wrongNbArgs )
+    {
+      for ( int i = wrongNbArgs; i > missingArg; --i )
+        tmpCmd.SetArg( i + 1, tmpCmd.GetArg( i ));
+      tmpCmd.SetArg(  missingArg, "''");
+      aCommand->GetString().Trunc( beg - 1 );
+      aCommand->GetString() += tmpCmd.GetString();
+    }
+  }
 }
 
 //================================================================================
@@ -1309,10 +1328,17 @@ void _pyCommand::SetArg( int index, const TCollection_AsciiString& theArg)
   if ( pos < 1 ) // no index-th arg exist, append inexistent args
   {
     // find a closing parenthesis
-    pos = Length();
-    while ( pos > 0 && myString.Value( pos ) != ')' )
-      --pos;
-    if ( pos == 0 ) { // no parentheses at all
+    if ( int lastArgInd = GetNbArgs() ) {
+      pos = GetBegPos( ARG1_IND + lastArgInd  - 1 ) + GetArg( lastArgInd ).Length();
+      while ( pos > 0 && pos <= Length() && myString.Value( pos ) != ')' )
+        ++pos;
+    }
+    else {
+      pos = Length();
+      while ( pos > 0 && myString.Value( pos ) != ')' )
+        --pos;
+    }
+    if ( pos < 1 || myString.Value( pos ) != ')' ) { // no parentheses at all
       myString += "()";
       pos = Length();
     }
