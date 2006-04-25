@@ -29,17 +29,8 @@
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
 
-module GEOM
-{
-  interface GEOM_Object;
-};
-
-
-module SALOME_MED
-{
-  interface MESH;
-  interface FAMILY;
-};
+#include "GEOM_Gen.idl"
+#include "MED.idl"
 
 
 module SMESH
