@@ -1,6 +1,6 @@
-//  MEFISTO : library to compute 2D triangulation from segmented boundaries
+//  MEFISTO2: a library to compute 2D triangulation from segmented boundaries
 //
-//  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+//  Copyright (C) 2006  Laboratoire J.-L. Lions UPMC Paris
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -18,23 +18,26 @@
 //
 //  See http://www.ann.jussieu.fr/~perronne or email Perronnet@ann.jussieu.fr
 //
-//
-//  File   : aptrte.cxx
+//  File   : aptrte.cxx   le C++ de l'appel du trianguleur plan
 //  Module : SMESH
-//  Author: Alain PERRONNET
+//  Author : Alain PERRONNET
+//  Date   : 16 mars 2006
 
 #include "Rn.h"
 #include "aptrte.h"
-#ifndef WIN32
 #include "utilities.h"
 
 using namespace std;
-#endif
 
 extern "C"
 {
   R aretemaxface_;
-  R areteideale_( R3 xyz, R3 direction )
+  MEFISTO2D_EXPORT   
+    R
+  #ifdef WIN32
+      __stdcall
+  #endif
+      areteideale()//( R3 xyz, R3 direction )
   {
     return aretemaxface_;
   }
@@ -50,7 +53,7 @@ void tempscpu_( double & tempsec )
 //Retourne le temps CPU utilise en secondes
 {  
   tempsec = ( (double) clock() ) / CLOCKS_PER_SEC;
-  // MESSAGEE( "temps cpu=" << tempsec );
+  //MESSAGE( "temps cpu=" << tempsec );
 }
 
 
@@ -60,15 +63,15 @@ void deltacpu_( R & dtcpu )
   tempscpu_( cpunew );
   dtcpu  = R( cpunew - cpuold );
   cpuold = cpunew;
-  // MESSAGEE( "delta temps cpu=" << dtcpu );
+  //MESSAGE( "delta temps cpu=" << dtcpu );
   return;
 }
 
-
-void  aptrte( Z nutysu, R aretmx,
-	      Z nblf,   Z * nudslf, R2 * uvslf,
-	      Z nbpti,  R2 *uvpti,
-	      Z & nbst, R2 * & uvst, Z & nbt, Z * & nust,
+void  aptrte( Z   nutysu, R      aretmx,
+	      Z   nblf,   Z  *   nudslf,  R2 * uvslf,
+	      Z   nbpti,  R2 *   uvpti,
+	      Z & nbst,   R2 * & uvst,
+	      Z & nbt,    Z  * & nust,
 	      Z & ierr )
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // but : appel de la triangulation par un arbre-4 recouvrant
@@ -112,9 +115,12 @@ void  aptrte( Z nutysu, R aretmx,
 // ierr   : 0 si pas d'erreur
 //        > 0 sinon
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// auteur : Alain Perronnet  Analyse Numerique Paris UPMC   decembre 2001
+// auteur : Alain Perronnet  Laboratoire J.-L. LIONS Paris UPMC mars 2006
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
+  Z  nbsttria=4; //Attention: 4 sommets stockes par triangle
+                 //no st1, st2, st3, 0 (non quadrangle)
+
   R  d, tcpu=0;
   R3 direction=R3(0,0,0);  //direction pour areteideale() inactive ici!
   Z  nbarfr=nudslf[nblf];  //nombre total d'aretes des lignes fermees
@@ -123,7 +129,7 @@ void  aptrte( Z nutysu, R aretmx,
   R3 *mnpxyd=NULL;
   Z  *mnsoar=NULL, mosoar=7, mxsoar, n1soar; //le hachage des aretes
   Z  *mnartr=NULL, moartr=3, mxartr, n1artr; //le no des 3 aretes des triangles
-  Z  *mntree=NULL, motree=9, mxtree;   //L'arbre 4 de TE et nombre d'entiers par TE
+  Z  *mntree=NULL, motree=9, mxtree; //L'arbre 4 de TE et nombre d'entiers par TE
   Z  *mnqueu=NULL, mxqueu;
   Z  *mn1arcf=NULL;
   Z  *mnarcf=NULL, mxarcf;
@@ -131,7 +137,6 @@ void  aptrte( Z nutysu, R aretmx,
   Z  *mnarcf2=NULL;
   Z  *mnarcf3=NULL;
   Z  *mntrsu=NULL;
-  Z  *mndalf=NULL;
   Z  *mnslig=NULL;
   Z  *mnarst=NULL;
   Z  *mnlftr=NULL;
@@ -144,6 +149,7 @@ void  aptrte( Z nutysu, R aretmx,
   Z  i, l, n, ns, ns0, ns1, ns2, nosotr[3], nt;
   Z  mxsomm, nbsomm, nbarpi, nbarli, ndtri0, mn;
   Z  moins1=-1;
+  R  dist;
 
   aretemaxface_ = aretmx;
 
@@ -153,19 +159,14 @@ void  aptrte( Z nutysu, R aretmx,
 
   // quelques reservations de tableaux pour faire les calculs
   // ========================================================
-  // le tableau pointeur sur la premiere arete de chaque ligne fermee
-  if( mndalf!=NULL ) delete [] mndalf;
-  mndalf = new Z[1+nblf];
-  if( mndalf==NULL ) goto ERREUR;
-  mndalf[0]=0;
-
   // declaration du tableau des coordonnees des sommets de la frontiere
   // puis des sommets internes ajoutes
   // majoration empirique du nombre de sommets de la triangulation
-  i =  4*nbarfr/10;
+  i = 4*nbarfr/10;
   mxsomm = Max( 20000, 64*nbpti+i*i );
-  // MESSAGEE( "APTRTE: Depart de la triangulation avec " );
-  // MESSAGEE( "nutysu=" << nutysu << "  aretmx=" << aretmx << "  mxsomm=" << mxsomm );
+  MESSAGE( "APTRTE: Debut de la triangulation plane avec " );
+  MESSAGE( "nutysu=" << nutysu << "  aretmx=" << aretmx << "  mxsomm=" << mxsomm );
+  MESSAGE( nbarfr << " sommets sur la frontiere et " << nbpti << " points internes");
 
  NEWDEPART:
   //mnpxyd( 3, mxsomm ) les coordonnees UV des sommets et la taille d'arete aux sommets
@@ -190,23 +191,14 @@ void  aptrte( Z nutysu, R aretmx,
   mnsoar = new Z[mosoar*mxsoar];
   if( mnsoar==NULL ) goto ERREUR;
   //initialiser le tableau mnsoar pour le hachage des aretes
-#ifdef DFORTRAN
-  INSOAR( mxsomm, mosoar, mxsoar, n1soar, mnsoar );
-#else
-  insoar_( mxsomm, mosoar, mxsoar, n1soar, mnsoar );
-#endif  
+  insoar( mxsomm, mosoar, mxsoar, n1soar, mnsoar );
 
   // mnarst( mxsomm ) numero mnsoar d'une arete pour chacun des sommets
   if( mnarst!=NULL ) delete [] mnarst;
   mnarst = new Z[1+mxsomm];
   if( mnarst==NULL ) goto ERREUR;
   n = 1+mxsomm;
-
-#ifdef DFORTRAN
-  AZEROI( n, mnarst );
-#else
-  azeroi_( n, mnarst );
-#endif  
+  azeroi( n, mnarst );
 
   // mnslig( mxsomm ) no de sommet dans sa ligne pour chaque sommet frontalier
   //               ou no du point si interne forc'e par l'utilisateur
@@ -214,11 +206,7 @@ void  aptrte( Z nutysu, R aretmx,
   if( mnslig!=NULL ) delete [] mnslig;
   mnslig = new Z[mxsomm];
   if( mnslig==NULL ) goto ERREUR;
-#ifdef DFORTRAN
-  AZEROI( mxsomm, mnslig );
-#else
-  azeroi_( mxsomm, mnslig );
-#endif  
+  azeroi( mxsomm, mnslig );
 
   // initialisation des aretes frontalieres de la triangulation future
   // renumerotation des sommets des aretes des lignes pour la triangulation
@@ -238,13 +226,13 @@ void  aptrte( Z nutysu, R aretmx,
     ns0 = nudslf[n-1];
     mnpxyd[ns0].x = uvslf[ns0].x;
     mnpxyd[ns0].y = uvslf[ns0].y;
-    mnpxyd[ns0].z = areteideale_( mnpxyd[ns0], direction );
+    mnpxyd[ns0].z = areteideale();//( mnpxyd[ns0], direction );
 //     MESSAGE("Sommet " << ns0 << ": " << mnpxyd[ns0].x
 // 	 << " " << mnpxyd[ns0].y << " longueur arete=" << mnpxyd[ns0].z);
 
     //carre de la longueur de l'arete 1 de la ligne fermee n
-    d = pow( uvslf[ns0+1].x - uvslf[ns0].x, 2 );
-    d = d  + pow( uvslf[ns0+1].y - uvslf[ns0].y, 2 ) ;
+    d = pow( uvslf[ns0+1].x - uvslf[ns0].x, 2 ) 
+      + pow( uvslf[ns0+1].y - uvslf[ns0].y, 2 ) ;
     aremin = Min( aremin, d );
     aremax = Max( aremax, d );
 
@@ -260,17 +248,13 @@ void  aptrte( Z nutysu, R aretmx,
 
      //le numero n de la ligne du sommet et son numero ns1 dans la ligne
     mnslig[ns0-1] = 1000000 * n + ns1-nudslf[n-1];
-#ifdef DFORTRAN
-    FASOAR( ns1, ns2, moins1, moins1, n,
-#else
-    fasoar_( ns1, ns2, moins1, moins1, n,
-#endif    
+    fasoar( ns1, ns2, moins1, moins1, n,
 	     mosoar, mxsoar, n1soar, mnsoar, mnarst,
 	     noar0,  ierr );
     //pas de test sur ierr car pas de saturation possible a ce niveau
 
     //le pointeur dans le hachage sur la premiere arete de la ligne fermee n
-    mndalf[n] = noar0;
+    //mndalf[n] = noar0;
 
     //la nouvelle arete est la suivante de l'arete definie juste avant
     if( noar > 0 )
@@ -294,13 +278,13 @@ void  aptrte( Z nutysu, R aretmx,
       ns = ns1 - 1;
       mnpxyd[ns].x = uvslf[ns].x;
       mnpxyd[ns].y = uvslf[ns].y;
-      mnpxyd[ns].z = areteideale_( mnpxyd[ns], direction );
+      mnpxyd[ns].z = areteideale();//( mnpxyd[ns], direction );
 //       MESSAGE("Sommet " << ns << ": " << mnpxyd[ns].x
 // 	   << " " << mnpxyd[ns].y << " longueur arete=" << mnpxyd[ns].z);
 
       //carre de la longueur de l'arete
-      d = pow( uvslf[ns2-1].x - uvslf[ns1-1].x, 2); 
-      d = d  + pow( uvslf[ns2-1].y - uvslf[ns1-1].y, 2);
+      d = pow( uvslf[ns2-1].x - uvslf[ns1-1].x, 2) 
+        + pow( uvslf[ns2-1].y - uvslf[ns1-1].y, 2);
       aremin = Min( aremin, d );
       aremax = Max( aremax, d );
 
@@ -308,11 +292,7 @@ void  aptrte( Z nutysu, R aretmx,
       mnslig[ns] = 1000000 * n + ns1-nudslf[n-1];
 
       //ajout de l'arete dans la liste
-#ifdef DFORTRAN
-      FASOAR( ns1, ns2, moins1, moins1, n,
-#else
-      fasoar_( ns1, ns2, moins1, moins1, n,
-#endif      
+      fasoar( ns1, ns2, moins1, moins1, n,
 	       mosoar, mxsoar, n1soar, mnsoar,
 	       mnarst, noar, ierr );
       //pas de test sur ierr car pas de saturation possible a ce niveau
@@ -332,8 +312,8 @@ void  aptrte( Z nutysu, R aretmx,
   aremax = sqrt( aremax );  //longueur maximale d'une arete
 
   aretmx = Min( aretmx, aremax );  //pour homogeneiser
-  // MESSAGEE("nutysu=" << nutysu << "  aretmx=" << aretmx 
-  //     << "  arete min=" << aremin << "  arete max=" << aremax);
+  MESSAGE("nutysu=" << nutysu << "  aretmx=" << aretmx 
+       << "  arete min=" << aremin << "  arete max=" << aremax);
 
   //chainage des aretes frontalieres : la derniere arete frontaliere
   mnsoar[ mosoar * noar - mosoar + 5 ] = 0;
@@ -357,7 +337,7 @@ void  aptrte( Z nutysu, R aretmx,
     //les 2 coordonnees du point i de sommet nbs
     mnpxyd[ns1].x = uvpti[i].x;
     mnpxyd[ns1].y = uvpti[i].y;
-    mnpxyd[ns1].z = areteideale_( mnpxyd[ns1], direction );
+    mnpxyd[ns1].z = areteideale();//( mnpxyd[ns1], direction );
     //le numero i du point interne
     mnslig[ns1] = i+1;
     ns1++;
@@ -373,18 +353,14 @@ void  aptrte( Z nutysu, R aretmx,
   mxtree = 2 * mxsomm;
 
  NEWTREE:  //en cas de saturation de l'un des tableaux, on boucle
-  // MESSAGEE( "Debut triangulation avec mxsomm=" << mxsomm );
+  MESSAGE( "Debut triangulation avec mxsomm=" << mxsomm );
   if( mntree != NULL ) delete [] mntree;
   nbsomm = nbarpi;
   mntree = new Z[motree*(1+mxtree)];
   if( mntree==NULL ) goto ERREUR;
 
   //initialisation du tableau letree et ajout dans letree des sommets 1 a nbsomm
-#ifdef DFORTRAN
-  TEAJTE( mxsomm, nbsomm, mnpxyd, comxmi, aretmx, mxtree, mntree, ierr );
-#else
-  teajte_( mxsomm, nbsomm, mnpxyd, comxmi, aretmx, mxtree, mntree, ierr );
-#endif  
+  teajte( mxsomm, nbsomm, mnpxyd, comxmi, aretmx, mxtree, mntree, ierr );
   comxmi[0].z=0;
   comxmi[1].z=0;
 
@@ -393,13 +369,13 @@ void  aptrte( Z nutysu, R aretmx,
     //saturation de letree => sa taille est augmentee et relance
     mxtree = mxtree * 2;
     ierr   = 0;
-    // MESSAGEE( "Nouvelle valeur de mxtree=" << mxtree );
+    MESSAGE( "Nouvelle valeur de mxtree=" << mxtree );
     goto NEWTREE;
   }
 
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE( "Temps de l'ajout arbre-4 des Triangles Equilateraux=" << d << " secondes" );
+  MESSAGE( "Temps de l'ajout arbre-4 des Triangles Equilateraux=" << d << " secondes" );
   if( ierr != 0 ) goto ERREUR;
   //ici le tableau mnpxyd contient les sommets des te et les points frontaliers et internes
 
@@ -412,19 +388,15 @@ void  aptrte( Z nutysu, R aretmx,
   mnqueu = new Z[mxqueu];
   if( mnqueu==NULL) goto ERREUR;
 
-#ifdef DFORTRAN
-  TEHOTE( nutysu, nbarpi, mxsomm, nbsomm, mnpxyd,
-#else
-  tehote_( nutysu, nbarpi, mxsomm, nbsomm, mnpxyd,
-#endif  
+  tehote( nutysu, nbarpi, mxsomm, nbsomm, mnpxyd,
 	   comxmi, aretmx,
 	   mntree, mxqueu, mnqueu,
 	   ierr );
 
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE("Temps de l'adaptation et l'homogeneisation de l'arbre-4 des TE="
-  //     << d << " secondes");
+  MESSAGE("Temps de l'adaptation et l'homogeneisation de l'arbre-4 des TE="
+       << d << " secondes");
   if( ierr != 0 )
   {
     //destruction du tableau auxiliaire et de l'arbre
@@ -432,7 +404,7 @@ void  aptrte( Z nutysu, R aretmx,
     {
       //letree sature
       mxtree = mxtree * 2;
-      // MESSAGEE( "Redemarrage avec la valeur de mxtree=" << mxtree );
+      MESSAGE( "Redemarrage avec la valeur de mxtree=" << mxtree );
       ierr = 0;
       goto NEWTREE;
     }
@@ -443,11 +415,7 @@ void  aptrte( Z nutysu, R aretmx,
   // trianguler les triangles equilateraux feuilles a partir de leurs 3 sommets
   // et des points de la frontiere, des points internes imposes interieurs
   // ==========================================================================
-#ifdef DFORTRAN
-  TETRTE( comxmi, aretmx, nbarpi, mxsomm, mnpxyd,
-#else
-  tetrte_( comxmi, aretmx, nbarpi, mxsomm, mnpxyd,
-#endif  
+  tetrte( comxmi, aretmx, nbarpi, mxsomm, mnpxyd,
 	   mxqueu, mnqueu, mntree, mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr, mnarst,
 	   ierr );
@@ -459,7 +427,7 @@ void  aptrte( Z nutysu, R aretmx,
   //Temps calcul
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE( "Temps de la triangulation des TE=" << d << " secondes" );
+  MESSAGE( "Temps de la triangulation des TE=" << d << " secondes" );
 
   // ierr =0 si pas d'erreur
   //      =1 si le tableau mnsoar est sature
@@ -476,22 +444,16 @@ void  aptrte( Z nutysu, R aretmx,
   // avec echange des 2 diagonales afin de rendre la triangulation delaunay
   // ======================================================================
   // formation du chainage 6 des aretes internes a echanger eventuellement
-#ifdef DFORTRAN
-  AISOAR( mosoar, mxsoar, mnsoar, na );
-  TEDELA( mnpxyd, mnarst,
-#else
-  aisoar_( mosoar, mxsoar, mnsoar, na );
-  tedela_( mnpxyd, mnarst,
-#endif
-  
+  aisoar( mosoar, mxsoar, mnsoar, na );
+  tedela( mnpxyd, mnarst,
 	   mosoar, mxsoar, n1soar, mnsoar, na,
 	   moartr, mxartr, n1artr, mnartr, n );
 
-  // MESSAGEE( "Nombre d'echanges des diagonales de 2 triangles=" << n );
+  MESSAGE( "Nombre d'echanges des diagonales de 2 triangles=" << n );
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE("Temps de la triangulation Delaunay par echange des diagonales="
-  //     << d << " secondes");
+  MESSAGE("Temps de la triangulation Delaunay par echange des diagonales="
+       << d << " secondes");
 
   //qualites de la triangulation actuelle
   qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
@@ -514,21 +476,17 @@ void  aptrte( Z nutysu, R aretmx,
   mnarcf2 = new Z[mxarcf];
   if( mnarcf2 == NULL ) goto ERREUR;
 
-#ifdef DFORTRAN
-  TEREFR( nbarpi, mnpxyd,
-#else
-  terefr_( nbarpi, mnpxyd,
-#endif
+  terefr( nbarpi, mnpxyd,
 	   mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, n1artr, mnartr, mnarst,
 	   mxarcf, mn1arcf, mnarcf, mnarcf1, mnarcf2,
 	   n, ierr );
 
-  // MESSAGEE( "Restauration de " << n << " aretes perdues de la frontiere" );
+  MESSAGE( "Restauration de " << n << " aretes perdues de la frontiere" );
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE("Temps de la recuperation des aretes perdues de la frontiere="
-  //     << d << " secondes");
+  MESSAGE("Temps de la recuperation des aretes perdues de la frontiere="
+       << d << " secondes");
 
   if( ierr != 0 ) goto ERREUR;
 
@@ -559,11 +517,7 @@ void  aptrte( Z nutysu, R aretmx,
   for (n=0; n<nblf; n++)  //numero de la ligne fermee de 1 a nblf
     mnlftr[n] = n+1;
 
-#ifdef DFORTRAN
-  TESUEX( nblf,   mnlftr,
-#else
-  tesuex_( nblf,   mnlftr,
-#endif  
+  tesuex( nblf,   mnlftr,
 	   ndtri0, nbsomm, mnpxyd, mnslig,
 	   mosoar, mxsoar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr, mnarst,
@@ -574,7 +528,7 @@ void  aptrte( Z nutysu, R aretmx,
 
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE( "Temps de la suppression des triangles externes=" << d );
+  MESSAGE( "Temps de la suppression des triangles externes=" << d );
   if( ierr != 0 ) goto ERREUR;
 
   //qualites de la triangulation actuelle
@@ -588,28 +542,27 @@ void  aptrte( Z nutysu, R aretmx,
   // mise en delaunay de la triangulation
   // =====================================================
   mnarcf3 = new Z[mxarcf];
-  if( mnarcf3 == NULL ) goto ERREUR;
-
-#ifdef DFORTRAN
-  TEAMQT( nutysu,
-#else
-  teamqt_( nutysu,
-#endif  
+  if( mnarcf3 == NULL )
+  {
+    cout << "aptrte: MC saturee mnarcf3=" << mnarcf3 << endl;
+    goto ERREUR;
+  }
+  teamqt( nutysu,
 	   mnarst, mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr,
 	   mxarcf, mnarcf2, mnarcf3,
 	   mn1arcf, mnarcf, mnarcf1,
 	   comxmi, nbarpi, nbsomm, mxsomm, mnpxyd, mnslig,
 	   ierr );
+  if( mnarcf3 != NULL ) {delete [] mnarcf3; mnarcf3=NULL;}
   if( mn1arcf != NULL ) {delete [] mn1arcf; mn1arcf=NULL;}
   if( mnarcf  != NULL ) {delete [] mnarcf;  mnarcf =NULL;}
   if( mnarcf1 != NULL ) {delete [] mnarcf1; mnarcf1=NULL;}
   if( mnarcf2 != NULL ) {delete [] mnarcf2; mnarcf2=NULL;}
-  if( mnarcf3 != NULL ) {delete [] mnarcf3; mnarcf3=NULL;}
 
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE( "Temps de l'amelioration de la qualite de la triangulation=" << d );
+  MESSAGE( "Temps de l'amelioration de la qualite de la triangulation=" << d );
   if( ierr != 0 ) goto ERREUR;
 
   //qualites de la triangulation finale
@@ -626,11 +579,7 @@ void  aptrte( Z nutysu, R aretmx,
     if( mnartr[nt*moartr-moartr] != 0 )
     {
       //le numero des 3 sommets du triangle nt
-#ifdef DFORTRAN
-      NUSOTR( nt, mosoar, mnsoar, moartr, mnartr, nosotr );
-#else
-      nusotr_( nt, mosoar, mnsoar, moartr, mnartr, nosotr );
-#endif      
+      nusotr( nt, mosoar, mnsoar, moartr, mnartr, nosotr );
       //les 3 sommets du triangle sont actifs
       mnarst[ nosotr[0] ] = 1;
       mnarst[ nosotr[1] ] = 1;
@@ -689,7 +638,7 @@ void  aptrte( Z nutysu, R aretmx,
   // -----------------------------------------------------
   // boucle sur les triangles occupes (internes et externes)
   if( nust != NULL ) delete [] nust;
-  nust = new Z[4*nbt];
+  nust = new Z[nbsttria*nbt];
   if( nust == NULL ) goto ERREUR;
   nbt = 0;
   for (i=1; i<=mxartr; i++)
@@ -698,24 +647,19 @@ void  aptrte( Z nutysu, R aretmx,
     if( mnartr[i*moartr-moartr] != 0 )
     {
       //le triangle i est interne => nosotr numero de ses 3 sommets
-#ifdef DFORTRAN
-      NUSOTR( i, mosoar, mnsoar, moartr, mnartr,  nosotr );
-#else
-      nusotr_( i, mosoar, mnsoar, moartr, mnartr,  nosotr );
-#endif      
+      nusotr( i, mosoar, mnsoar, moartr, mnartr,  nosotr );
       nust[nbt++] = mnarst[ nosotr[0] ];
       nust[nbt++] = mnarst[ nosotr[1] ];
       nust[nbt++] = mnarst[ nosotr[2] ];
       nust[nbt++] = 0;
     }
   }
-  nbt /= 4;  //le nombre final de triangles de la surface
-  // MESSAGEE("Nombre de sommets=" << nbst
-  //     << "  Nombre de triangles=" << nbt);
-
+  nbt /= nbsttria;  //le nombre final de triangles de la surface
+  MESSAGE( "APTRTE: Fin de la triangulation plane avec "<<nbst<<" sommets et "
+	   << nbt << " triangles=" << nbt);
   deltacpu_( d );
   tcpu += d;
-  // MESSAGEE( "Temps total de la triangulation=" << tcpu << " secondes" );
+  MESSAGE( "APTRTE: Temps total de la triangulation plane=" << tcpu << " secondes" );
 
   // destruction des tableaux auxiliaires
   // ------------------------------------
@@ -725,7 +669,6 @@ void  aptrte( Z nutysu, R aretmx,
   if( mnslig != NULL ) delete [] mnslig;
   if( mnsoar != NULL ) delete [] mnsoar;
   if( mnpxyd != NULL ) delete [] mnpxyd;
-  if( mndalf != NULL ) delete [] mndalf;
   if( mntree != NULL ) delete [] mntree;
   if( mnqueu != NULL ) delete [] mnqueu;
   if( mntrsu != NULL ) delete [] mntrsu;
@@ -747,7 +690,7 @@ void  aptrte( Z nutysu, R aretmx,
   }
   else
   {
-    // MESSAGEE( "Triangulation non realisee " << ierr );
+    MESSAGE( "APTRTE: Triangulation NON REALISEE  avec erreur=" << ierr );
     if( ierr == 0 ) ierr=1;
     goto NETTOYAGE;
   }
@@ -806,18 +749,10 @@ void qualitetrte( R3 *mnpxyd,
       nbtria++;
 
       //le numero des 3 sommets du triangle nt
-#ifdef DFORTRAN
-      NUSOTR( nt, mosoar, mnsoar, moartr, mnartr,  nosotr );
-#else
-      nusotr_( nt, mosoar, mnsoar, moartr, mnartr,  nosotr );
-#endif
+      nusotr( nt, mosoar, mnsoar, moartr, mnartr,  nosotr );
 
       //la qualite du triangle ns1 ns2 ns3
-#ifdef DFORTRAN
-      QUTR2D( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1],
-#else
-      qutr2d_( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1],
-#endif      
+      qutr2d( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1],
 	       qualite );
 
       //la qualite moyenne
@@ -827,19 +762,14 @@ void qualitetrte( R3 *mnpxyd,
       quamin = Min( quamin, qualite );
 
       //aire signee du triangle nt
-#ifdef DFORTRAN
-      d = SURTD2( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1] );
-#else
-      d = surtd2_( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1] );
-#endif
-      
+      d = surtd2( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1] );
       if( d<0 )
       {
 	//un triangle d'aire negative de plus
 	nbtrianeg++;
-	// MESSAGEE("ATTENTION: le triangle " << nt << " de sommets:"
-	//     << nosotr[0] << " " << nosotr[1] << " " << nosotr[2]
-	//     << " a une aire " << d <<"<=0");
+	MESSAGE("ATTENTION: le triangle " << nt << " de sommets:"
+	     << nosotr[0] << " " << nosotr[1] << " " << nosotr[2]
+	     << " a une aire " << d <<"<=0");
       }
 
       //aire des triangles actuels
@@ -849,12 +779,12 @@ void qualitetrte( R3 *mnpxyd,
 
   //les affichages
   quamoy /= nbtria;
-  // MESSAGEE("Qualite moyenne=" << quamoy
-  //     << "  Qualite minimale=" << quamin
-  //     << " des " << nbtria << " triangles de surface totale="
-  //     << aire);
+  MESSAGE("Qualite moyenne=" << quamoy
+       << "  Qualite minimale=" << quamin
+       << " des " << nbtria << " triangles de surface plane totale="
+       << aire);
 
-  //if( nbtrianeg>0 )
-  //  MESSAGE( "ATTENTION: nombre de triangles d'aire negative=" << nbtrianeg );
+  if( nbtrianeg>0 )
+    MESSAGE( "ATTENTION: nombre de triangles d'aire negative=" << nbtrianeg );
   return;
 }
