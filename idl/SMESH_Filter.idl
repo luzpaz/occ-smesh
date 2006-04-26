@@ -29,11 +29,7 @@
 #include "SALOME_GenericObj.idl"
 #include "SMESH_Mesh.idl"
 
-
-module GEOM
-{
-  interface GEOM_Object;
-};
+#include "GEOM_Gen.idl"
 
 
 module SMESH
