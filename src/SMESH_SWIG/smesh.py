@@ -228,7 +228,7 @@ class Mesh_Segment_Python(Mesh_Segment):
          Private constructor
         """
         import Python1dPlugin
-        self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
+        self.Create(mesh, geom, "Python_1D", "Python1dEngine")
 
     def PythonSplit1D(self, n, func):
         """
@@ -236,7 +236,7 @@ class Mesh_Segment_Python(Mesh_Segment):
          \param n for the number of segments that cut an edge
          \param func for the python function that calculate the length of all segments
         """
-        hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so")
+        hyp = self.Hypothesis("PythonSplit1D", [n], "Python1dEngine")
         hyp.SetNumberOfSegments(n)
         hyp.SetPythonLog10RatioFunction(func)
         return hyp
@@ -306,10 +306,10 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
          Private constructor
         """
         if algo == NETGEN:
-            self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
+            self.Create(mesh, geom, "NETGEN_3D", "NETGENEngine")
         elif algo == GHS3D:
             import GHS3DPlugin
-            self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
+            self.Create(mesh, geom, "GHS3D_3D" , "GHS3DEngine")
 
     def MaxElementVolume(self, vol):
         """

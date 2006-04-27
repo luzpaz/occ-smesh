@@ -90,7 +90,7 @@ smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 print "-------------------------- NETGEN_3D"
 
-netgen3D = smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
+netgen3D = smesh.CreateHypothesis("NETGEN_3D", "NETGENEngine")
 
 smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
 

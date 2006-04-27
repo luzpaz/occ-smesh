@@ -171,7 +171,7 @@ smeshgui.SetName(salome.ObjectToID(algoMef), "MEFISTO_2D")
 
 print "-------------------------- NETGEN_3D"
 
-algoNg = smesh.CreateHypothesis( "NETGEN_3D", "libNETGENEngine.so" )
+algoNg = smesh.CreateHypothesis( "NETGEN_3D", "NETGENEngine" )
 listHyp = algoNg.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp

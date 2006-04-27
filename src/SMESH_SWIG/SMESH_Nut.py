@@ -138,7 +138,7 @@ smeshgui.SetName(salome.ObjectToID(algoMef), "Triangle (Mefisto)")
 
 print "-------------------------- NETGEN_3D"
 
-algoNg = smesh.CreateHypothesis( "NETGEN_3D", "libNETGENEngine.so" )
+algoNg = smesh.CreateHypothesis( "NETGEN_3D", "NETGENEngine" )
 print algoNg.GetName()
 print algoNg.GetId()
 smeshgui.SetName(salome.ObjectToID(algoNg), "Tetrahedron (NETGEN)")

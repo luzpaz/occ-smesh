@@ -94,13 +94,16 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
  * (only client lib, because server lib translates in SMESH_Gen_i::createHypothesis
  *  for normal work of *.py files )
  */
+      if( !myClientLib.isEmpty() )
+      {
 #ifdef WNT
       //myServerLib += ".dll";
-      myClientLib += ".dll";
+        myClientLib += ".dll";
 #else
       //myServerLib = "lib" + myServerLib + ".so";
-      myClientLib = "lib" + myClientLib + ".so";
+        myClientLib = "lib" + myClientLib + ".so";
 #endif
+      }
 
 
       QString aResName = atts.value("resources");
