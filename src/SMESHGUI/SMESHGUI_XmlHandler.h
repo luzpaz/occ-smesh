@@ -34,6 +34,7 @@
 
 #include <qxml.h>
 #include <map>
+#include <list>
 
 class SMESHGUI_EXPORT SMESHGUI_XmlHandler : public QXmlDefaultHandler
 {
