@@ -2878,7 +2878,11 @@ void SMESHGUI::createPreferences()
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
   if( sect=="SMESH" ){
-    float sbX1,sbY1,sbW,sbH;
+    float sbX1=0.01,
+          sbW=0.05,
+          sbY1=0.01,
+	        sbH=0.5;
+
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
     if( name=="selection_object_color" || name=="selection_element_color" || 
@@ -2890,8 +2894,6 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
       if(sbX1+sbW > 1.0){
 	aWarning = "Origin and Size Vertical: X+Width > 1\n";	
-	sbX1=0.01;
-	sbW=0.05;
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
       }
@@ -2901,8 +2903,6 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
       if(sbY1+sbH > 1.0){
 	aWarning = "Origin and Size Vertical: Y+Height > 1\n";
-	sbY1=0.01;
-	sbH=0.5;
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
       }
