@@ -321,7 +321,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     aPlatformLibName[0] = '\0';
     aPlatformLibName = strcat( aPlatformLibName, "lib" );
     aPlatformLibName = strcat( aPlatformLibName, theLibName );
-    aPlatformLibName = strcat( aPlatformLibName, ".dll" );
+    aPlatformLibName = strcat( aPlatformLibName, ".so" );
 #endif
   }
   
