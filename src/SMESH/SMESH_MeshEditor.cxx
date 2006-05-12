@@ -4156,7 +4156,7 @@ SMESH_MeshEditor::Sew_Error
             // test a link geometrically
             gp_XYZ nextXYZ ( n->X(), n->Y(), n->Z() );
             bool linkIsBetter = false;
-            double dot, dist;
+            double dot = 0.0, dist = 0.0;
             if ( searchByDir ) { // choose most co-directed link
               dot = bordDir * ( nextXYZ - prevXYZ ).Normalized();
               linkIsBetter = ( dot > maxDot );
