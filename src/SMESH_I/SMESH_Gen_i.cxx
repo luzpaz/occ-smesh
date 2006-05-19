@@ -248,7 +248,8 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   myShapeReader = NULL;  // shape reader
   mySMESHGen = this;
 
-  OSD::SetSignal( true );
+  // set it in standalone mode only
+  //OSD::SetSignal( true );
 }
 
 //=============================================================================
@@ -421,6 +422,20 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
 void SMESH_Gen_i::SetEmbeddedMode( CORBA::Boolean theMode )
 {
   myIsEmbeddedMode = theMode;
+
+  if ( !myIsEmbeddedMode ) {
+    bool raiseFPE;
+#ifdef _DEBUG_
+    raiseFPE = true;
+    char* envDisableFPE = getenv("DISABLE_FPE");
+    if (envDisableFPE && atoi(envDisableFPE))
+      raiseFPE = false;
+#else
+    raiseFPE = false;
+#endif
+    OSD::SetSignal( raiseFPE );
+  }
+  // else OSD::SetSignal() is called in GUI
 }
 
 //=============================================================================
