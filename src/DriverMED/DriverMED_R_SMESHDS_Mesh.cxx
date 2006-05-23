@@ -83,6 +83,10 @@ DriverMED_R_SMESHDS_Mesh
 	// Reading the MED mesh
 	//---------------------
 	PMeshInfo aMeshInfo = aMed->GetPMeshInfo(iMesh+1);
+
+	if (aMeshInfo->GetType() != MED::eNON_STRUCTURE)
+	  continue; // not implemented yet
+
         string aMeshName;
         if (myMeshId != -1) {
           ostringstream aMeshNameStr;
@@ -94,6 +98,7 @@ DriverMED_R_SMESHDS_Mesh
 	if(MYDEBUG) MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
         aResult = DRS_OK;
+
 	//TInt aMeshDim = aMeshInfo->GetDim();
 	
         // Reading MED families to the temporary structure
