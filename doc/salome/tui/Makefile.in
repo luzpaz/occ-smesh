@@ -62,6 +62,8 @@ docs:
 	cp -fr $(srcdir)/SMESH/HTML/ SMESH/
 	rm -fr INPUT
 
+dev_docs: docs
+
 clean:
 	rm -fr SMESH
 

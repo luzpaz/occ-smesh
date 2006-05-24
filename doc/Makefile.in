@@ -38,6 +38,17 @@ docs:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done
+
+usr_docs:
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done
+
+dev_docs:
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done
+
 clean:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\

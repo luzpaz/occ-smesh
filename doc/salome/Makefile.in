@@ -31,6 +31,8 @@ srcdir=@srcdir@
 VPATH=.:@srcdir@
 
 SUBDIRS= tui gui
+SUBDIRSTUI= tui
+SUBDIRSGUI= gui
 
 @COMMENCE@
 
@@ -38,7 +40,16 @@ docs:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done; \
-	cp -f $(srcdir)/SMESH_index_v3.1.0.html SMESH_index_v3.1.0.html
+
+usr_docs:
+	@@SETX@; for d in $(SUBDIRSGUI); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done; \
+
+dev_docs:
+	@@SETX@; for d in $(SUBDIRSTUI); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done; \
 
 clean:
 	@@SETX@; for d in $(SUBDIRS); do 	\
@@ -54,10 +65,8 @@ install:
 	$(MAKE) docs
 	(cd tui && $(MAKE) install);
 	(cd gui && $(MAKE) install);
-	cp -f SMESH_index_v3.1.0.html $(docdir)
 
 uninstall:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done; \
-	rm -fr $(docdir)/SMESH_index_v3.1.0.html

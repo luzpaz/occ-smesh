@@ -18,6 +18,8 @@ docs:
 	cp -fr $(srcdir)/SMESH ./
 	-find $(PWD) -name CVS -exec rm -rf {} \;
 
+usr_docs: docs
+
 clean:
 	rm -fr `ls | grep -v "Makefile"`
 
