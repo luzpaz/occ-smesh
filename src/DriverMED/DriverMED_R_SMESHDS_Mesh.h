@@ -60,6 +60,9 @@ class DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
    */
   bool checkFamilyID(DriverMED_FamilyPtr & aFamily, int anID) const;
 
+  bool buildMeshGrille(const MED::PWrapper& theWrapper,
+		       const MED::PMeshInfo& theMeshInfo);
+
  private:
   std::string myMeshName;
   std::map<int, DriverMED_FamilyPtr> myFamilies;
