@@ -21,7 +21,8 @@ PYTHON_SCRIPTS = \
 
 docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
-	cp -fr ./SMESH/doxyfile ./SMESH/doxyfile_py ./INPUT
+	cp -fr ./SMESH/doxyfile ./SMESH/doxyfile_py ./INPUT; \
+	cp -fr ./SMESH/sources/static/tree.js ./INPUT/sources/static; \
 	cd INPUT; \
 	sed 's|../../../share/salome|$(root_srcdir)|' ./doxyfile > ./doxyfile1; \
 	sed 's|../../build/salome|$(top_builddir)|' ./doxyfile1 > ./doxyfile2; \
