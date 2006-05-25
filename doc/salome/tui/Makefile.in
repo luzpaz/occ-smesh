@@ -21,11 +21,11 @@ PYTHON_SCRIPTS = \
 
 docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
+	cp -fr ./SMESH/doxyfile ./SMESH/doxyfile_py ./INPUT
 	cd INPUT; \
 	sed 's|../../../share/salome|$(root_srcdir)|' ./doxyfile > ./doxyfile1; \
 	sed 's|../../build/salome|$(top_builddir)|' ./doxyfile1 > ./doxyfile2; \
-	sed "s|version|`cut -d: -f2 $(root_srcdir)/bin/VERSION`|" ./doxyfile2 > ./doxyfile3; \
-	mv -f doxyfile3 doxyfile1; \
+	mv -f doxyfile2 doxyfile1; \
 	if (test "x@DOXYGEN_WITH_PYTHON@" = "xyes"); then \
 	  echo "DOXYGEN SUPPORT PYTHON - @DOXYGEN_WITH_PYTHON@"; \
 	  sed 's|python_extension_must_be_here|*.py|' ./doxyfile1 > ./doxyfile2; \
