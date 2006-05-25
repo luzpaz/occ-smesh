@@ -61,11 +61,11 @@ LIB_CLIENT_IDL =
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(OCC_INCLUDES) $(BOOST_CPPFLAGS)
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS += $(KERNEL_CXXFLAGS) $(OCC_INCLUDES) $(BOOST_CPPFLAGS)
+CXXFLAGS += $(KERNEL_CXXFLAGS)
 LDFLAGS  += -lMeshDriver $(OCC_KERNEL_LIBS)
 
-LDFLAGSFORBIN += -lMeshDriver -lSMDS -L${KERNEL_ROOT_DIR}/lib/salome -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
+LDFLAGSFORBIN += -lMeshDriver -lSMDS $(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
 
 @CONCLUDE@
 

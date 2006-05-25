@@ -113,13 +113,7 @@ dnl
 
 AC_CXX_HAVE_SSTREAM
 
-echo
-echo ---------------------------------------------
-echo BOOST Library
-echo ---------------------------------------------
-echo
 
-CHECK_BOOST
 
 dnl
 dnl ---------------------------------------------
@@ -251,6 +245,14 @@ CHECK_HDF5
 
 echo
 echo ---------------------------------------------
+echo BOOST Library
+echo ---------------------------------------------
+echo
+
+CHECK_BOOST
+
+echo
+echo ---------------------------------------------
 echo Testing OpenCascade
 echo ---------------------------------------------
 echo
@@ -346,7 +348,7 @@ else
 fi
 
 # make other build directories
-for rep in salome_adm adm_local doc bin/salome include/salome lib/salome share/salome/resources idl
+for rep in salome_adm adm_local doc bin/salome include/salome lib${LIB_LOCATION_SUFFIX}/salome share/salome/resources idl
 do
 #   if test ! -d $rep ; then
 #      eval mkdir $rep
