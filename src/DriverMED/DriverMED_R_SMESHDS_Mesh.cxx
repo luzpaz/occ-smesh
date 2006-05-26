@@ -935,7 +935,7 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     switch(aGrilleInfo->GetGeom()){
     case MED::eSEG2:
       if(aNodeIds.size() != 2){
-	aRes = false;
+	res = false;
 	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 2!="<<aNodeIds.size());
       }
       anElement = myMesh->AddEdgeWithID(aNodeIds[0],
@@ -944,7 +944,7 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
       break;
     case MED::eQUAD4:
       if(aNodeIds.size() != 4){
-	aRes = false;
+	res = false;
 	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 4!="<<aNodeIds.size());
       }
       anElement = myMesh->AddFaceWithID(aNodeIds[0],
@@ -955,7 +955,7 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
       break;
     case MED::eHEXA8:
       if(aNodeIds.size() != 8){
-	aRes = false;
+	res = false;
 	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 8!="<<aNodeIds.size());
       }
       anElement = myMesh->AddVolumeWithID(aNodeIds[0],
