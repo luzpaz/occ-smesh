@@ -28,7 +28,7 @@
 top_srcdir=@top_srcdir@
 top_builddir=.
 srcdir=@srcdir@
-VPATH=.:@srcdir@:@top_srcdir@/bin:./resources:@top_srcdir@/resources:./bin:@top_srcdir@/idl
+VPATH=.:@srcdir@:@top_srcdir@/bin:./bin/salome:./resources:@top_srcdir@/resources:./bin:@top_srcdir@/idl
 
 
 @COMMENCE@
@@ -168,15 +168,22 @@ mesh_conv_to_quad.png
 BIN_SCRIPT= \
 VERSION
 
+# copy header files in common directory
+
 include_list = include/salome/SALOMEconfig.h \
                include/salome/SMESH_version.h
 
-# copy header files in common directory
 ifneq ($(HAVE_SSTREAM),yes)
 	include_list += include/salome/sstream
 endif
 
 inc: idl $(include_list)
+
+bin: bin/salome/VERSION
+
+bin/salome/VERSION : bin/VERSION
+	-$(RM) $@
+	$(LN_S) ../../$< $@
 
 include/salome/SALOMEconfig.h: salome_adm/unix/SALOMEconfig.ref
 	-$(RM) $@
@@ -196,7 +203,8 @@ include/salome/sstream: salome_adm/unix/sstream
 	$(LN_S) ../../$< $@
 
 include/salome/SMESH_version.h: SMESH_version.h
-	cp $< $@
+	-$(RM) $@
+	$(LN_S) ../../$< $@
 
 depend: depend_idl
 

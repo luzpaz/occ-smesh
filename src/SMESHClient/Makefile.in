@@ -90,7 +90,12 @@ LDFLAGS  += $(OCC_KERNEL_LIBS) \
 	-lSALOMELocalTrace \
 	-lSALOMEBasics \
 	-lOpUtil \
-	-lTKShHealing
+	-lTKShHealing \
+	-lMeshDriverDAT \
+	-lMeshDriverSTL \
+	-lMeshDriverMED \
+	-lMeshDriverUNV \
+	-lMeshDriver
 
 LDFLAGSFORBIN += $(LDFLAGS)
 
