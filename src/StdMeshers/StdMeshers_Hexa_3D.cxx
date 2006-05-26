@@ -265,7 +265,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
         aQuads[i]->nbPts[1] != aQuads[i]->nbPts[3]) {
       MESSAGE("different number of points on the opposite edges of face " << i);
       //                  ASSERT(0);
-      return ClearAndReturn( aQuads, false );
+      // \begin{E.A.}
+      // Try to go into penta algorithm 'cause it has been improved.
+      // return ClearAndReturn( aQuads, false );
+      bool bIsOk = ComputePentahedralMesh(aMesh, aShape);
+      return ClearAndReturn( aQuads, bIsOk );
+      // \end{E.A.}
     }
   }
 
