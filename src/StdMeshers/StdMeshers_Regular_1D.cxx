@@ -287,7 +287,8 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
                                int nbSeg, Function& func,
                                list<double>& theParams)
 {
-  OSD::SetSignal( true );
+  // never do this way
+  //OSD::SetSignal( true );
 
   if( nbSeg<=0 )
     return false;
