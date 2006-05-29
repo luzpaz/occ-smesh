@@ -19,7 +19,7 @@ doxygen=@DOXYGEN@
 PYTHON_SCRIPTS = \
 	smesh.py
 
-docs:
+dev_docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
 	cp -fr ./SMESH/doxyfile ./SMESH/doxyfile_py ./INPUT; \
 	cp -fr ./SMESH/sources/static/tree.js ./INPUT/sources/static; \
@@ -62,8 +62,6 @@ docs:
 	cp -fr $(srcdir)/SMESH/sources/ SMESH/
 	cp -fr $(srcdir)/SMESH/HTML/ SMESH/
 	rm -fr INPUT
-
-dev_docs: docs
 
 clean:
 	rm -fr SMESH

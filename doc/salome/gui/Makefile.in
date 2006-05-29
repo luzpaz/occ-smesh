@@ -14,11 +14,11 @@ VPATH=.:@srcdir@
 
 @COMMENCE@
 
-docs:
+usr_docs:
 	cp -fr $(srcdir)/SMESH ./
 	-find $(PWD) -name CVS -prune -exec rm -rf {} \;
 
-usr_docs: docs
+docs: usr_docs
 
 clean:
 	rm -fr `ls | grep -v "Makefile"`
