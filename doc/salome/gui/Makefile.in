@@ -16,7 +16,7 @@ VPATH=.:@srcdir@
 
 docs:
 	cp -fr $(srcdir)/SMESH ./
-	-find $(PWD) -name CVS -exec rm -rf {} \;
+	-find $(PWD) -name CVS -prune -exec rm -rf {} \;
 
 usr_docs: docs
 
@@ -29,7 +29,7 @@ distclean: clean
 install:
 	mkdir -p $(docdir)/gui
 	cp -rf SMESH $(docdir)/gui
-	-find $(PWD) -name CVS -exec rm -rf {} \;
+	-find $(PWD) -name CVS -prune -exec rm -rf {} \;
 
 uninstall:
 	rm -rf $(docdir)/gui/SMESH
