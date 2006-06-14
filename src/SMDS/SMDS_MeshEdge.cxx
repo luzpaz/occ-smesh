@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -133,6 +133,18 @@ bool operator<(const SMDS_MeshEdge & e1, const SMDS_MeshEdge & e2)
 	if(id11<id21) return true;
 	else if(id11==id21) return (id21<id22);
 	else return false;
+}
+
+/*!
+ * \brief Return node by its index
+ * \param ind - node index
+ * \retval const SMDS_MeshNode* - the node
+ * 
+ * Index is wrapped if it is out of a valid range
+ */
+const SMDS_MeshNode* SMDS_MeshEdge::GetNode(const int ind) const
+{
+  return myNodes[ WrappedIndex( ind )];
 }
 
 //=======================================================================

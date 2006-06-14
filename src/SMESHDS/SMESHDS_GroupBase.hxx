@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -68,6 +68,12 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   virtual ~SMESHDS_GroupBase() {}
 
+  void SetColorGroup (int theColorGroup)
+  { myColorGroup = theColorGroup;}
+  
+  int GetColorGroup() const
+  { return myColorGroup;}
+  
  protected:
   const SMDS_MeshElement* findInMesh (const int theID) const;
   void resetIterator();
@@ -86,7 +92,7 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   int                  myCurIndex;
   int                  myCurID;
   SMDS_ElemIteratorPtr myIterator;
-
+  int                  myColorGroup;
 };
 
 #endif

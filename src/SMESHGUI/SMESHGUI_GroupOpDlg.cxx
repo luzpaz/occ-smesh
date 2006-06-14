@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -35,6 +35,10 @@
 
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "LightApp_SelectionMgr.h"
 #include "SVTK_Selection.h"
@@ -72,9 +76,18 @@ SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule, const int theMode
 {
   myMode = theMode;
 
-  if (myMode == UNION) setCaption(tr("UNION_OF_TWO_GROUPS"));
-  else if (myMode == INTERSECT) setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
-  else setCaption(tr("CUT_OF_TWO_GROUPS"));
+  if (myMode == UNION) {
+    setCaption(tr("UNION_OF_TWO_GROUPS"));
+    myHelpFileName = "/files/using_operations_on_groups.htm#Union";
+  }
+  else if (myMode == INTERSECT) {
+    setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
+    myHelpFileName = "/files/using_operations_on_groups.htm#Intersection";
+  }
+  else {
+    setCaption(tr("CUT_OF_TWO_GROUPS"));
+    myHelpFileName = "/files/using_operations_on_groups.htm#Cut";
+  }
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -139,6 +152,7 @@ QFrame* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
   myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn  = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -148,11 +162,13 @@ QFrame* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   // connect signals and slots
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+  connect(myHelpBtn, SIGNAL(clicked()), SLOT(onHelp()));
 
   return aFrame;
 }
@@ -185,9 +201,6 @@ void SMESHGUI_GroupOpDlg::Init()
   connect(myBtn1, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
   connect(myBtn2, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   // set selection mode
@@ -292,6 +305,23 @@ void SMESHGUI_GroupOpDlg::onClose()
   mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

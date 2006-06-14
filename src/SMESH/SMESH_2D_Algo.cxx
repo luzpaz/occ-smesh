@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -28,7 +28,7 @@
 
 #include "SMESH_2D_Algo.hxx"
 #include "SMESH_Gen.hxx"
-#include "SMESH_subMesh.hxx"
+#include <TopExp.hxx>
 
 #include "utilities.h"
 
@@ -81,13 +81,14 @@ int SMESH_2D_Algo::NumberOfWires(const TopoDS_Shape& S)
 int SMESH_2D_Algo::NumberOfPoints(SMESH_Mesh& aMesh, const TopoDS_Wire& W)
 {
   int nbPoints = 0;
-  for (TopExp_Explorer exp(W,TopAbs_EDGE); exp.More(); exp.Next())
-    {
-      const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
-      int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
-      //SCRUTE(nb);
-      nbPoints += nb +1; // internal points plus 1 vertex of 2 (last point ?)
-    }
-  //SCRUTE(nbPoints);
+  for (TopExp_Explorer exp(W,TopAbs_EDGE); exp.More(); exp.Next()) {
+    const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
+    int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
+    if(_quadraticMesh)
+      nb = nb/2;
+    nbPoints += nb + 1; // internal points plus 1 vertex of 2 (last point ?)
+  }
   return nbPoints;
 }
+
+

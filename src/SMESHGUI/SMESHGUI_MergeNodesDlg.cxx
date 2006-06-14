@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -41,6 +41,10 @@
 #include "GEOMBase.h"
 
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
@@ -129,6 +133,10 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -257,6 +265,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()),   this, SLOT(ClickOnHelp()));
 
   connect(SelectMeshButton, SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(DetectButton, SIGNAL (clicked()), this, SLOT(onDetect()));
@@ -273,10 +282,6 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   /* to close dialog if study change */
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
 
-  /* Move widget on the botton right corner of main widget */
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show(); /* displays Dialog */
 
   resize(0,0);
@@ -285,6 +290,8 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
 
   // Init Mesh field from selection
   SelectionIntoArgument();
+
+  myHelpFileName = "/files/merging_nodes.htm";
 }
 
 //=================================================================================
@@ -366,6 +373,23 @@ void SMESHGUI_MergeNodesDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MergeNodesDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

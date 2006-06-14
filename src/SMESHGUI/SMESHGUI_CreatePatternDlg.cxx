@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -40,8 +40,11 @@
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_FileDlg.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SalomeApp_Study.h"
+#include "LightApp_Application.h"
 #include "LightApp_DataOwner.h"
 #include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Tools.h"
@@ -104,6 +107,8 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
 
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
+
+  myHelpFileName = "pattern_mapping.htm";
 
   Init(theType);
 }
@@ -185,6 +190,7 @@ QFrame* SMESHGUI_CreatePatternDlg::createButtonFrame (QWidget* theParent)
   myOkBtn    = new QPushButton(tr("SMESH_BUT_OK"    ), aFrame);
   mySaveBtn  = new QPushButton(tr("SAVE"            ), aFrame);
   myCloseBtn = new QPushButton(tr("SMESH_BUT_CANCEL"), aFrame);
+  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -194,10 +200,12 @@ QFrame* SMESHGUI_CreatePatternDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(mySaveBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(mySaveBtn, SIGNAL(clicked()), SLOT(onSave()));
+  connect(myHelpBtn, SIGNAL(clicked()), SLOT(onHelp()));
 
   return aFrame;
 }
@@ -269,9 +277,6 @@ void SMESHGUI_CreatePatternDlg::Init( const int theType )
   activateSelection();
   onSelectionDone();
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 }
 
@@ -466,6 +471,23 @@ void SMESHGUI_CreatePatternDlg::onClose()
   emit Close();
 }
 
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CreatePatternDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
+}
+
 //=======================================================================
 // function : loadFromObject()
 // purpose  : Load pattern from geom object corresponding to the mesh/submesh
@@ -494,6 +516,7 @@ bool SMESHGUI_CreatePatternDlg::loadFromObject (const bool theMess)
       if      (aCode == SMESH::SMESH_Pattern::ERR_LOAD_EMPTY_SUBMESH  ) aMess = tr("ERR_LOAD_EMPTY_SUBMESH");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADF_NARROW_FACE   ) aMess = tr("ERR_LOADF_NARROW_FACE");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADF_CLOSED_FACE   ) aMess = tr("ERR_LOADF_CLOSED_FACE");
+      else if (aCode == SMESH::SMESH_Pattern::ERR_LOADF_CANT_PROJECT   ) aMess = tr("ERR_LOADF_CANT_PROJECT");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADV_BAD_SHAPE     ) aMess = tr("ERR_LOADV_BAD_SHAPE");
       else if (aCode == SMESH::SMESH_Pattern::ERR_LOADV_COMPUTE_PARAMS) aMess = tr("ERR_LOADV_COMPUTE_PARAMS");
       else                                                              aMess = tr("ERROR_OF_CREATION");

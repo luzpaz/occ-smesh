@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #include "SMESHGUI_HypothesesUtils.h"
 
@@ -266,17 +266,50 @@ namespace SMESH{
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    if (myHypothesesMap.find(aHypType) == myHypothesesMap.end()) {
-      if (myAlgorithmsMap.find(aHypType) != myAlgorithmsMap.end()) {
-	aHypData = myAlgorithmsMap[aHypType];
-      }
+    THypothesisDataMap::iterator type_data = myHypothesesMap.find(aHypType);
+    if (type_data != myHypothesesMap.end()) {
+      aHypData = type_data->second;
     }
     else {
-      aHypData = myHypothesesMap[aHypType];
+      type_data = myAlgorithmsMap.find(aHypType);
+      if (type_data != myAlgorithmsMap.end())
+        aHypData = type_data->second;
     }
     return aHypData;
   }
 
+  bool IsAvailableHypothesis(const HypothesisData* algoData,
+                             const QString&        hypType,
+                             bool&                 isAuxiliary)
+  {
+    isAuxiliary = false;
+    if ( !algoData )
+      return false;
+    if ( algoData->NeededHypos.contains( hypType ))
+      return true;
+    if ( algoData->OptionalHypos.contains( hypType)) {
+      isAuxiliary = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool IsCompatibleAlgorithm(const HypothesisData* algo1Data,
+                             const HypothesisData* algo2Data)
+  {
+    if ( !algo1Data || !algo2Data )
+      return false;
+    const HypothesisData* algoIn = algo1Data, *algoMain = algo2Data;
+    if ( algoIn->Dim.first() > algoMain->Dim.first() ) {
+      algoIn = algo2Data; algoMain = algo1Data;
+    }
+    // look for any output type of algoIn between input types of algoMain
+    QStringList::const_iterator inElemType = algoIn->OutputTypes.begin();
+    for ( ; inElemType != algoIn->OutputTypes.end(); ++inElemType )
+      if ( algoMain->InputTypes.contains( *inElemType ))
+        return true;
+    return false;
+  }
 
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType)
   {
@@ -398,8 +431,8 @@ namespace SMESH{
       try {
 	res = aMesh->AddHypothesis(aShapeObject, aHyp);
 	if (res < SMESH::HYP_UNKNOWN_FATAL) {
-	  _PTR(SObject) SH = SMESH::FindSObject(aHyp);
-	  if (SM && SH) {
+	  _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
+	  if (SM && aSH) {
 	    SMESH::ModifiedMesh(SM, false);
 	  }
 	}

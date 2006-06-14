@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -38,6 +38,12 @@
 class SMESHDS_EXPORT SMESHDS_Script
 {
   public:
+	SMESHDS_Script(bool theIsEmbeddedMode);
+	~SMESHDS_Script();
+  
+        void SetModified(bool theModified);
+        bool IsModified();
+
 	void AddNode(int NewNodeID, double x, double y, double z);
 	void AddEdge(int NewEdgeID, int idnode1, int idnode2);
 	void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3);
@@ -58,6 +64,27 @@ class SMESHDS_EXPORT SMESHDS_Script
                                   std::vector<int> nodes_ids,
                                   std::vector<int> quantities);
 
+        // special methods for quadratic elements
+	void AddEdge(int NewEdgeID, int n1, int n2, int n12);
+        void AddFace(int NewFaceID, int n1, int n2, int n3,
+                     int n12, int n23, int n31);
+        void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
+                     int n12, int n23, int n34, int n41);
+        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
+                       int n12, int n23, int n31, int n14, int n24, int n34);
+        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4, int n5,
+                       int n12, int n23, int n34, int n41,
+                       int n15, int n25, int n35, int n45);
+        void AddVolume(int NewVolID, int n1, int n2, int n3,
+                       int n4, int n5, int n6,
+                       int n12, int n23, int n31,
+                       int n45, int n56, int n64,
+                       int n14, int n25, int n36);
+        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
+                       int n5, int n6, int n7, int n8,
+                       int n12, int n23, int n34, int n41,
+                       int n56, int n67, int n78, int n85,
+                       int n15, int n26, int n37, int n48);
         void MoveNode(int NewNodeID, double x, double y, double z);
 	void RemoveNode(int NodeID);
 	void RemoveElement(int ElementID);
@@ -68,12 +95,14 @@ class SMESHDS_EXPORT SMESHDS_Script
 	void Renumber (const bool isNodes, const int startID, const int deltaID);
 	void Clear();
 	const std::list<SMESHDS_Command*> & GetCommands();
-	~SMESHDS_Script();
-  
+
   private:
 	SMESHDS_Command* getCommand(const SMESHDS_CommandType aType);
 
 	std::list<SMESHDS_Command*> myCommands;
+
+        bool myIsEmbeddedMode;
+        bool myIsModified;
 };
 
 #endif

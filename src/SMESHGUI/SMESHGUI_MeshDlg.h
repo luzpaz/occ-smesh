@@ -15,7 +15,7 @@
 // License along with this library; if not, write to the Free Software 
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 /**
 *  SMESH SMESHGUI
@@ -131,6 +131,8 @@ signals:
   //!< Emited when "Create hypothesis" button clicked
   void                         editHyp( const int theHypType, const int theIndex );
   //!< Emited when "Edit hypothesis" button clicked
+  void                         selectAlgo( const int theIndex );
+  //!< Emited when an algorithm is selected
   
 private slots:  
 
@@ -152,7 +154,3 @@ private:
 };
 
 #endif
-
-
-
-

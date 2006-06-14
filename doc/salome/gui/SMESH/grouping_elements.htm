@@ -51,41 +51,46 @@ onerror = null;
 <style type="text/css">
 <!--
 div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
 -->
 </style><script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
-</head>
-<body><script type="text/javascript" language="javascript1.2">
+<script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
-	if (window.addTocInfo)
+	if (window.setRelStartPage)
 	{
 	addTocInfo("MESH module\nTUI Scripts\nGrouping Elements");
-addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+addButton("show",BTN_IMG,"Show","","","","",0,0,"whd_show0.gif","whd_show2.gif","whd_show1.gif");
+addButton("hide",BTN_IMG,"Hide","","","","",0,0,"whd_hide0.gif","whd_hide2.gif","whd_hide1.gif");
 
 	}
-	if (window.writeBtnStyle)
-		writeBtnStyle();
 
-	if (window.writeIntopicBar)
-		writeIntopicBar(1);
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("smesh.htm");
+	setRelStartPage("index.htm");
 
 		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
+
 }
 else
 	if (window.gbIE4)
 		document.location.reload();
+//-->
+</script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(4);
 //-->
 </script>
 <h1>Grouping Elements</h1>
@@ -174,7 +179,7 @@ else
 
 <p class="whs2"><img src="pics/create_group.png" x-maintain-ratio="TRUE" width="430px" height="391px" border="0" class="img_whs3"></p>
 
-<h4><a name=bookmark5>Create a Group on Geometry</a></h4>
+<h3><a name=bookmark5>Create a Group on Geometry</a></h3>
 
 <p class="whs1">import salome</p>
 
@@ -182,18 +187,14 @@ else
 
 <p class="whs1">&nbsp;</p>
 
+<p class="whs1">import SMESH</p>
+
 <p class="whs1">import StdMeshers</p>
 
 <p class="whs1">&nbsp;</p>
 
 <p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
  &quot;SMESH&quot;)</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
-
-<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
 
 <p class="whs2">&nbsp;</p>
 
@@ -229,121 +230,23 @@ else
 
 <p class="whs2"># create a hypothesis</p>
 
-<p class="whs1">print &quot;-------------------------- 
- create Hypothesis&quot;</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- NumberOfSegments&quot;</p>
-
 <p class="whs1">numberOfSegments 
  = 7</p>
-
-<p class="whs1">&nbsp;</p>
 
 <p class="whs1">hypNbSeg = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
  &quot;libStdMeshersEngine.so&quot;)</p>
 
 <p class="whs1">hypNbSeg.SetNumberOfSegments(numberOfSegments)</p>
 
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print hypNbSeg.GetName()</p>
-
-<p class="whs1">print hypNbSeg.GetId()</p>
-
-<p class="whs1">print hypNbSeg.GetNumberOfSegments()</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypNbSeg), 
- &quot;NumberOfSegments_10&quot;)</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MaxElementArea&quot;</p>
-
-<p class="whs1">maxElementArea = 
- 800</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">hypArea = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypArea.SetMaxElementArea(maxElementArea)</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print hypArea.GetName()</p>
-
-<p class="whs1">print hypArea.GetId()</p>
-
-<p class="whs1">print hypArea.GetMaxElementArea()</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypArea), 
- &quot;MaxElementArea_500&quot;)</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MaxElementVolume&quot;</p>
-
-<p class="whs1">maxElementVolume 
- = 900</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">hypVolume = smesh.CreateHypothesis(&quot;MaxElementVolume&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypVolume.SetMaxElementVolume(maxElementVolume)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs1">print hypVolume.GetName()</p>
-
-<p class="whs1">print hypVolume.GetId()</p>
-
-<p class="whs1">print hypVolume.GetMaxElementVolume()</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypVolume), 
- &quot;MaxElementVolume_500&quot;)</p>
-
 <p class="whs2">&nbsp;</p>
 
 <p class="whs2"># create algorithms</p>
 
-<p class="whs1">print &quot;-------------------------- 
- create Algorithms&quot;</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- Regular_1D&quot;</p>
-
 <p class="whs1">regular1D = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
  &quot;libStdMeshersEngine.so&quot;)</p>
 
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(regular1D), 
- &quot;Wire Discretisation&quot;)</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- Quadrangle_2D&quot;</p>
-
 <p class="whs1">quad2D = smesh.CreateHypothesis(&quot;Quadrangle_2D&quot;, 
  &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(quad2D), 
- &quot;Quadrangle_2D&quot;)</p>
 
 <p class="whs2">&nbsp;</p>
 
@@ -352,22 +255,12 @@ else
 
 <p class="whs1">mesh = smesh.CreateMesh(box)</p>
 
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(mesh), 
- &quot;MeshBox&quot;)</p>
-
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># add a hypothesis to the 
- box</p>
-
-<p class="whs1">print &quot;-------------------------- 
- add hypothesis to the box&quot;</p>
+<p class="whs2"># add hypotheses and algorithms 
+ to the box</p>
 
 <p class="whs1">mesh.AddHypothesis(box,hypNbSeg)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,hypArea)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,hypVolume)</p>
 
 <p class="whs1">mesh.AddHypothesis(box,regular1D)</p>
 
@@ -377,35 +270,33 @@ else
 
 <p class="whs2"># compute the mesh</p>
 
-<p class="whs1">print &quot;-------------------------- 
- compute the mesh of the box&quot;</p>
-
 <p class="whs1">ret = smesh.Compute(mesh,box)</p>
-
-<p class="whs1">print ret</p>
 
 <p class="whs1">if ret == 0:</p>
 
 <p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;probleme when computing the mesh&quot;</p>
 
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Computation succeded&quot;</p>
+
 <p class="whs2">&nbsp;</p>
 
 <p class="whs2"># create geometry groups 
- on the plane:</p>
+ on the face</p>
 
-<p class="whs1">aGeomGroup1 = geompy.CreateGroup(face 
- , geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs1">aGeomGroup1 = geompy.CreateGroup(face, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
 
 <p class="whs1">geompy.AddObject(aGeomGroup1, 
  1)</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1">aGeomGroup2 = geompy.CreateGroup(face 
- , geompy.ShapeType[&quot;EDGE&quot;])</p>
-
-<p class="whs1">&nbsp;</p>
+<p class="whs1">aGeomGroup2 = geompy.CreateGroup(face, 
+ geompy.ShapeType[&quot;EDGE&quot;])</p>
 
 <p class="whs1">geompy.AddObject(aGeomGroup2, 
  3)</p>
@@ -427,10 +318,14 @@ else
 <p class="whs1">geompy.addToStudy(aGeomGroup2, 
  &quot;Group on Edges&quot;)</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create SMESH groups</p>
 
 <p class="whs1">aSmeshGroup1 = mesh.CreateGroupFromGEOM(SMESH.FACE, 
- &quot;SMESHGroup1&quot;, aGeomGroup1)</p>
+ &quot;SMESHGroup1&quot;,</p>
+
+<p class="whs1">aGeomGroup1)</p>
 
 <p class="whs1">aSmeshGroup2 = mesh.CreateGroupFromGEOM(SMESH.EDGE, 
  &quot;SMESHGroup2&quot;, aGeomGroup2)</p>
@@ -438,7 +333,7 @@ else
 <p class="whs1">&nbsp;</p>
 
 <p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
+ &nbsp;</p>
 
 <p class="whs2">&nbsp;</p>
 

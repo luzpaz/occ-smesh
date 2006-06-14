@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -38,7 +38,7 @@ class SMESHDS_EXPORT SMESHDS_Document
 {
   public:
 	SMESHDS_Document(int UserID);
-	int NewMesh();
+	int NewMesh(bool theIsEmbeddedMode);
 	void RemoveMesh(int MeshID);
 	SMESHDS_Mesh * GetMesh(int MeshID);
 	void AddHypothesis(SMESHDS_Hypothesis * H);

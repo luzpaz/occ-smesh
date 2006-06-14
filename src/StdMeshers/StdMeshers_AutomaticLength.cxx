@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -300,7 +300,10 @@ bool StdMeshers_AutomaticLength::SetParametersByMesh(const SMESH_Mesh*   theMesh
     SMESHDS_SubMesh * eSubMesh = aMeshDS->MeshElements( edge );
     if ( !eSubMesh )
       return false;
-    double segLen = L / eSubMesh->NbElements();
+    int nbSeg = eSubMesh->NbElements();
+    if ( nbSeg < 1 )
+      continue;
+    double segLen = L / nbSeg;
 
     // get segment length from _TShapeToLength
     map<const TopoDS_TShape*, double>::iterator tshape_length =

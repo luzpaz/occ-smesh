@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -74,6 +74,9 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   SMESH_Mesh_i* GetMeshServant() const { return myMeshServant; }
   SMESH_Group* GetSmeshGroup() const;
   SMESHDS_GroupBase* GetGroupDS() const;
+
+   void SetColorNumber(CORBA::Long color);
+   CORBA::Long GetColorNumber();
 
 private:
   SMESH_Mesh_i* myMeshServant;

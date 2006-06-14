@@ -15,7 +15,7 @@
 // License along with this library; if not, write to the Free Software 
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 #ifndef DIALOGBOX_GETMESH_H
@@ -82,6 +82,7 @@ class SMESHGUI_EXPORT SMESHGUI_EditMeshDlg : public QDialog
   QPushButton* buttonOk;
   QPushButton* buttonCancel;
   QPushButton* buttonApply;
+  QPushButton* buttonHelp;
 
   QGroupBox* GroupMesh;
   QLabel* TextLabelMesh;
@@ -94,10 +95,13 @@ class SMESHGUI_EXPORT SMESHGUI_EditMeshDlg : public QDialog
   QGridLayout* GroupButtonsLayout;
   QGridLayout* GroupMeshLayout;
 
+  QString myHelpFileName;
+
  private slots:
   void ClickOnOk();
   void ClickOnCancel();
   void ClickOnApply();
+  void ClickOnHelp();
   void SelectionIntoArgument();
   void DeactivateActiveDialog();
   void ActivateThisDialog();

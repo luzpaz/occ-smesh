@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef SMESH_ACTORUTILS_H
 #define SMESH_ACTORUTILS_H
@@ -25,19 +25,51 @@
 #include <qcolor.h>
 #include <qstring.h>
 
+#include "VTKViewer.h"
+
 class vtkUnstructuredGrid;
 
-namespace SMESH{
-  
-  float SMESHOBJECT_EXPORT GetFloat( const QString& theValue, float theDefault = 0 );
-  float SMESHOBJECT_EXPORT GetFloat( const QString& theName, const QString& theSection, float theDefault = 0 );
+namespace SMESH
+{
+SMESHOBJECT_EXPORT  
+  vtkFloatingPointType 
+  GetFloat( const QString& theValue, 
+	    vtkFloatingPointType theDefault = 0 );
 
-  QColor SMESHOBJECT_EXPORT GetColor( const QString& theSect, const QString& theName, const QColor&t = QColor() );
-  void   SMESHOBJECT_EXPORT GetColor( const QString& theSect, const QString& theName, int&, int&, int&, const QColor&t = QColor() );
-  void   SMESHOBJECT_EXPORT GetColor( const QString& theSect, const QString& theName, float&, float&, float&, const QColor&t = QColor() );
+SMESHOBJECT_EXPORT
+  vtkFloatingPointType 
+  GetFloat( const QString& theName, 
+	    const QString& theSection, 
+	    vtkFloatingPointType theDefault = 0 );
 
-  void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName);
+SMESHOBJECT_EXPORT
+  QColor 
+  GetColor( const QString& theSect, 
+	    const QString& theName, 
+	    const QColor&t = QColor() );
 
+SMESHOBJECT_EXPORT
+  void
+  GetColor( const QString& theSect, 
+	    const QString& theName, 
+	    int&, 
+	    int&, 
+	    int&, 
+	    const QColor&t = QColor() );
+
+SMESHOBJECT_EXPORT
+  void
+  GetColor( const QString& theSect, 
+	    const QString& theName, 
+	    vtkFloatingPointType&, 
+	    vtkFloatingPointType&, 
+	    vtkFloatingPointType&, 
+	    const QColor&t = QColor() );
+
+SMESHOBJECT_EXPORT
+  void 
+  WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 
+			const char* theFileName);
 }
 
 #endif

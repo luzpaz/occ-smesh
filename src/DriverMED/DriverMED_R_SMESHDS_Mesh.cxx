@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -41,6 +41,7 @@
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
+//#define _DEXCEPT_
 #else
 static int MYDEBUG = 0;
 #endif
@@ -69,10 +70,12 @@ DriverMED_R_SMESHDS_Mesh
 ::Perform()
 {
   Status aResult = DRS_FAIL;
+#ifndef _DEXCEPT_
   try{
+#endif
     myFamilies.clear();
     if(MYDEBUG) MESSAGE("Perform - myFile : "<<myFile);
-    PWrapper aMed = CrWrapper(myFile);
+    PWrapper aMed = CrWrapper(myFile,true);
 
     aResult = DRS_EMPTY;
     if(TInt aNbMeshes = aMed->GetNbMeshes()){
@@ -80,6 +83,7 @@ DriverMED_R_SMESHDS_Mesh
 	// Reading the MED mesh
 	//---------------------
 	PMeshInfo aMeshInfo = aMed->GetPMeshInfo(iMesh+1);
+
         string aMeshName;
         if (myMeshId != -1) {
           ostringstream aMeshNameStr;
@@ -91,6 +95,7 @@ DriverMED_R_SMESHDS_Mesh
 	if(MYDEBUG) MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
         aResult = DRS_OK;
+
 	//TInt aMeshDim = aMeshInfo->GetDim();
 	
         // Reading MED families to the temporary structure
@@ -118,9 +123,16 @@ DriverMED_R_SMESHDS_Mesh
 	  }
         }
 
+	if (aMeshInfo->GetType() == MED::eSTRUCTURE){
+	  bool aRes = buildMeshGrille(aMed,aMeshInfo);
+	  continue;
+	}
+
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
-	PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
+      PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
+	if(!aNodeInfo)
+	  continue;
 
 	PCoordHelper aCoordHelper = GetCoordHelper(aNodeInfo);
 
@@ -195,7 +207,9 @@ DriverMED_R_SMESHDS_Mesh
                 SMDS_MeshElement* anElement = NULL;
                 TInt aFamNum = aPolygoneInfo->GetFamNum(iElem);
 
+#ifndef _DEXCEPT_
                 try{
+#endif
                   if(anIsElemNum){
 		    TInt anElemId = aPolygoneInfo->GetElemNum(iElem);
                     anElement = myMesh->AddPolygonalFaceWithID(aNodeIds,anElemId);
@@ -207,12 +221,13 @@ DriverMED_R_SMESHDS_Mesh
                     anElement = myMesh->AddPolygonalFace(aNodes);
                     isRenum = anIsElemNum;
                   }
+#ifndef _DEXCEPT_
                 }catch(const std::exception& exc){
                   aResult = DRS_FAIL;
                 }catch (...){
                   aResult = DRS_FAIL;
                 }
-
+#endif
                 if(!anElement){
                   aResult = DRS_WARN_SKIP_ELEM;
                 }else{
@@ -265,7 +280,9 @@ DriverMED_R_SMESHDS_Mesh
 		SMDS_MeshElement* anElement = NULL;
 		TInt aFamNum = aPolyedreInfo->GetFamNum(iElem);
 		
+#ifndef _DEXCEPT_
 		try{
+#endif
 		  if(anIsElemNum){
 		    TInt anElemId = aPolyedreInfo->GetElemNum(iElem);
 		    anElement = myMesh->AddPolyhedralVolumeWithID(aNodeIds,aQuantities,anElemId);
@@ -277,12 +294,13 @@ DriverMED_R_SMESHDS_Mesh
 		    anElement = myMesh->AddPolyhedralVolume(aNodes,aQuantities);
 		    isRenum = anIsElemNum;
 		  }
+#ifndef _DEXCEPT_
 		}catch(const std::exception& exc){
 		  aResult = DRS_FAIL;
 		}catch(...){
 		  aResult = DRS_FAIL;
 		}
-		
+#endif		
 		if(!anElement){
 		  aResult = DRS_WARN_SKIP_ELEM;
 		}else{
@@ -302,238 +320,388 @@ DriverMED_R_SMESHDS_Mesh
               break;
             }
 	    default: {
-	      PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
-	      EBooleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : eFAUX;
-	      TInt aNbElems = aCellInfo->GetNbElem();
-	      if(MYDEBUG) MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
-	      if(MYDEBUG) MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
-	      
-	      for(int iElem = 0; iElem < aNbElems; iElem++){
-		TInt aNbNodes = -1;
-		switch(aGeom){
-		case eSEG2:
-		case eSEG3:
-		  aNbNodes = 2;
-		  break;
-		case eTRIA3:
-		case eTRIA6:
-		  aNbNodes = 3;
-		  break;
-		  break;
-		case eQUAD4:
-		case eQUAD8:
-		  aNbNodes = 4;
-		  break;
-		case eTETRA4:
-		case eTETRA10:
-		  aNbNodes = 4;
-		  break;
-		case ePYRA5:
-		case ePYRA13:
-		  aNbNodes = 5;
-		  break;
-		case ePENTA6:
-		case ePENTA15:
-		  aNbNodes = 6;
-		  break;
-		case eHEXA8:
-		case eHEXA20:
-		  aNbNodes = 8;
-		  break;
-		}
-		TNodeIds aNodeIds(aNbNodes);
-		bool anIsValidConnect = false;
-		TCConnSlice aConnSlice = aCellInfo->GetConnSlice(iElem);
-		try{
-#ifdef _EDF_NODE_IDS_
-		  if(anIsNodeNum)
-		    for(int iNode = 0; iNode < aNbNodes; iNode++)
-		      aNodeIds[iNode] = aNodeInfo->GetElemNum(aConnSlice[iNode] - 1);
-		  else
-		    for(int iNode = 0; iNode < aNbNodes; iNode++)
-		      aNodeIds[iNode] = aConnSlice[iNode];
-#else
-		  for(int iNode = 0; iNode < aNbNodes; iNode++)
-		    aNodeIds[iNode] = aConnSlice[iNode];
+              PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
+              EBooleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : eFAUX;
+              TInt aNbElems = aCellInfo->GetNbElem();
+              if(MYDEBUG) MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
+              if(MYDEBUG) MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
+
+              for(int iElem = 0; iElem < aNbElems; iElem++){
+                TInt aNbNodes = -1;
+                switch(aGeom){
+                case eSEG2:    aNbNodes = 2;  break;
+                case eSEG3:    aNbNodes = 3;  break;
+                case eTRIA3:   aNbNodes = 3;  break;
+                case eTRIA6:   aNbNodes = 6;  break;
+                case eQUAD4:   aNbNodes = 4;  break;
+                case eQUAD8:   aNbNodes = 8;  break;
+                case eTETRA4:  aNbNodes = 4;  break;
+                case eTETRA10: aNbNodes = 10; break;
+                case ePYRA5:   aNbNodes = 5;  break;
+                case ePYRA13:  aNbNodes = 13; break;
+                case ePENTA6:  aNbNodes = 6;  break;
+                case ePENTA15: aNbNodes = 15; break;
+                case eHEXA8:   aNbNodes = 8;  break;
+                case eHEXA20:  aNbNodes = 20; break;
+                default:;
+                }
+                vector<TInt> aNodeIds(aNbNodes);
+                bool anIsValidConnect = false;
+                TCConnSlice aConnSlice = aCellInfo->GetConnSlice(iElem);
+#ifndef _DEXCEPT_
+                try{
 #endif
-		  anIsValidConnect = true;
-		}catch(const std::exception& exc){
-		  //INFOS("Follow exception was cought:\n\t"<<exc.what());
-		  aResult = DRS_FAIL;
-		}catch(...){
-		  //INFOS("Unknown exception was cought !!!");
-		  aResult = DRS_FAIL;
-		}
-		
-		if(!anIsValidConnect)
-		  continue;
-		
-		bool isRenum = false;
-		SMDS_MeshElement* anElement = NULL;
-		TInt aFamNum = aCellInfo->GetFamNum(iElem);
-		try{
-		  //MESSAGE("Try to create element # " << iElem << " with id = "
-		  //        << aCellInfo->GetElemNum(iElem));
-		  switch(aGeom){
-		  case eSEG2:
-		  case eSEG3:
-		    if(anIsElemNum)
-		      anElement = myMesh->AddEdgeWithID(aNodeIds[0],
-							aNodeIds[1],
-							aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddEdge(FindNode(myMesh,aNodeIds[0]),
-						  FindNode(myMesh,aNodeIds[1]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  case eTRIA3:
-		  case eTRIA6:
-		    aNbNodes = 3;
-		    if(anIsElemNum)
-		      anElement = myMesh->AddFaceWithID(aNodeIds[0],
-							aNodeIds[1],
-							aNodeIds[2],
-							aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
-						  FindNode(myMesh,aNodeIds[1]),
-						  FindNode(myMesh,aNodeIds[2]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  case eQUAD4:
-		  case eQUAD8:
-		    aNbNodes = 4;
-		    // There is some differnce between SMDS and MED
-		    if(anIsElemNum)
-		      anElement = myMesh->AddFaceWithID(aNodeIds[0],
-							aNodeIds[1],
-							aNodeIds[2],
-							aNodeIds[3],
-							aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
-						  FindNode(myMesh,aNodeIds[1]),
-						  FindNode(myMesh,aNodeIds[2]),
-						  FindNode(myMesh,aNodeIds[3]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  case eTETRA4:
-		  case eTETRA10:
-		    aNbNodes = 4;
-		    if(anIsElemNum)
-		      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
-							  aNodeIds[1],
-							  aNodeIds[2],
-							  aNodeIds[3],
-							  aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
-						    FindNode(myMesh,aNodeIds[1]),
-						    FindNode(myMesh,aNodeIds[2]),
-						    FindNode(myMesh,aNodeIds[3]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  case ePYRA5:
-		  case ePYRA13:
-		    aNbNodes = 5;
-		    // There is some differnce between SMDS and MED
-		    if(anIsElemNum)
-		      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
-							  aNodeIds[1],
-							  aNodeIds[2],
-							  aNodeIds[3],
-							  aNodeIds[4],
-							  aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
-						    FindNode(myMesh,aNodeIds[1]),
-						    FindNode(myMesh,aNodeIds[2]),
-						    FindNode(myMesh,aNodeIds[3]),
-						    FindNode(myMesh,aNodeIds[4]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  case ePENTA6:
-		  case ePENTA15:
-		    aNbNodes = 6;
-		    if(anIsElemNum)
-		      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
-							  aNodeIds[1],
-							  aNodeIds[2],
-							  aNodeIds[3],
-							  aNodeIds[4],
-							  aNodeIds[5],
-							  aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
-						    FindNode(myMesh,aNodeIds[1]),
-						    FindNode(myMesh,aNodeIds[2]),
-						    FindNode(myMesh,aNodeIds[3]),
-						    FindNode(myMesh,aNodeIds[4]),
-						    FindNode(myMesh,aNodeIds[5]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  case eHEXA8:
-		  case eHEXA20:
-		    aNbNodes = 8;
-		    if(anIsElemNum)
-		      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
-							  aNodeIds[1],
-							  aNodeIds[2],
-							  aNodeIds[3],
-							  aNodeIds[4],
-							  aNodeIds[5],
-							  aNodeIds[6],
-							  aNodeIds[7],
-							  aCellInfo->GetElemNum(iElem));
-		    if (!anElement) {
-		      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
-						    FindNode(myMesh,aNodeIds[1]),
-						    FindNode(myMesh,aNodeIds[2]),
-						    FindNode(myMesh,aNodeIds[3]),
-						    FindNode(myMesh,aNodeIds[4]),
-						    FindNode(myMesh,aNodeIds[5]),
-						    FindNode(myMesh,aNodeIds[6]),
-						    FindNode(myMesh,aNodeIds[7]));
-		      isRenum = anIsElemNum;
-		    }
-		    break;
-		  }
-		}catch(const std::exception& exc){
-		  //INFOS("Follow exception was cought:\n\t"<<exc.what());
-		  aResult = DRS_FAIL;
-		}catch(...){
-		  //INFOS("Unknown exception was cought !!!");
-		  aResult = DRS_FAIL;
-		}
-		
-		if (!anElement) {
-		  aResult = DRS_WARN_SKIP_ELEM;
-		}
-		else {
-		  if (isRenum) {
-		    anIsElemNum = eFAUX;
-		    takeNumbers = false;
-		    if (aResult < DRS_WARN_RENUMBER)
-		      aResult = DRS_WARN_RENUMBER;
-		  }
-		  if ( checkFamilyID ( aFamily, aFamNum )) {
-		    // Save reference to this element from its family
-		    myFamilies[aFamNum]->AddElement(anElement);
-		    myFamilies[aFamNum]->SetType(anElement->GetType());
-		  }
-		}
-	      }
-	    }}
-	  }
-	}
+#ifdef _EDF_NODE_IDS_
+                  if(anIsNodeNum)
+                    for(int iNode = 0; iNode < aNbNodes; iNode++)
+                      aNodeIds[iNode] = aNodeInfo->GetElemNum(aConnSlice[iNode] - 1);
+                  else
+                    for(int iNode = 0; iNode < aNbNodes; iNode++)
+                      aNodeIds[iNode] = aConnSlice[iNode];
+#else
+                  for(int iNode = 0; iNode < aNbNodes; iNode++)
+                    aNodeIds[iNode] = aConnSlice[iNode];
+#endif
+                  anIsValidConnect = true;
+#ifndef _DEXCEPT_
+                }catch(const std::exception& exc){
+                  //INFOS("Follow exception was cought:\n\t"<<exc.what());
+                  aResult = DRS_FAIL;
+                }catch(...){
+                  //INFOS("Unknown exception was cought !!!");
+                  aResult = DRS_FAIL;
+                }
+#endif          
+                if(!anIsValidConnect)
+                  continue;
+
+                bool isRenum = false;
+                SMDS_MeshElement* anElement = NULL;
+                TInt aFamNum = aCellInfo->GetFamNum(iElem);
+#ifndef _DEXCEPT_
+                try{
+#endif
+                  //MESSAGE("Try to create element # " << iElem << " with id = "
+                  //        << aCellInfo->GetElemNum(iElem));
+                  switch(aGeom){
+                  case eSEG2:
+                    if(anIsElemNum)
+                      anElement = myMesh->AddEdgeWithID(aNodeIds[0],
+                                                        aNodeIds[1],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddEdge(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eSEG3:
+                    if(anIsElemNum)
+                      anElement = myMesh->AddEdgeWithID(aNodeIds[0],
+                                                        aNodeIds[1],
+                                                        aNodeIds[2],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddEdge(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eTRIA3:
+                    aNbNodes = 3;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddFaceWithID(aNodeIds[0],
+                                                        aNodeIds[1],
+                                                        aNodeIds[2],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eTRIA6:
+                    aNbNodes = 6;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddFaceWithID(aNodeIds[0], aNodeIds[1],
+                                                        aNodeIds[2], aNodeIds[3],
+                                                        aNodeIds[4], aNodeIds[5],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]),
+                                                  FindNode(myMesh,aNodeIds[3]),
+                                                  FindNode(myMesh,aNodeIds[4]),
+                                                  FindNode(myMesh,aNodeIds[5]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eQUAD4:
+                    aNbNodes = 4;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddFaceWithID(aNodeIds[0], aNodeIds[1],
+                                                        aNodeIds[2], aNodeIds[3],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]),
+                                                  FindNode(myMesh,aNodeIds[3]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eQUAD8:
+                    aNbNodes = 8;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddFaceWithID(aNodeIds[0], aNodeIds[1],
+                                                        aNodeIds[2], aNodeIds[3],
+                                                        aNodeIds[4], aNodeIds[5],
+                                                        aNodeIds[6], aNodeIds[7],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]),
+                                                  FindNode(myMesh,aNodeIds[3]),
+                                                  FindNode(myMesh,aNodeIds[4]),
+                                                  FindNode(myMesh,aNodeIds[5]),
+                                                  FindNode(myMesh,aNodeIds[6]),
+                                                  FindNode(myMesh,aNodeIds[7]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eTETRA4:
+                    aNbNodes = 4;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                          aNodeIds[2], aNodeIds[3],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eTETRA10:
+                    aNbNodes = 10;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                          aNodeIds[2], aNodeIds[3],
+                                                          aNodeIds[4], aNodeIds[5],
+                                                          aNodeIds[6], aNodeIds[7],
+                                                          aNodeIds[8], aNodeIds[9],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                    FindNode(myMesh,aNodeIds[4]),
+                                                    FindNode(myMesh,aNodeIds[5]),
+                                                    FindNode(myMesh,aNodeIds[6]),
+                                                    FindNode(myMesh,aNodeIds[7]),
+                                                    FindNode(myMesh,aNodeIds[8]),
+                                                    FindNode(myMesh,aNodeIds[9]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case ePYRA5:
+                    aNbNodes = 5;
+                    // There is some differnce between SMDS and MED
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                          aNodeIds[2], aNodeIds[3],
+                                                          aNodeIds[4],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                    FindNode(myMesh,aNodeIds[4]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case ePYRA13:
+                    aNbNodes = 13;
+                    // There is some differnce between SMDS and MED
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                          aNodeIds[2], aNodeIds[3],
+                                                          aNodeIds[4], aNodeIds[5],
+                                                          aNodeIds[6], aNodeIds[7],
+                                                          aNodeIds[8], aNodeIds[9],
+                                                          aNodeIds[10], aNodeIds[11],
+                                                          aNodeIds[12],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                    FindNode(myMesh,aNodeIds[4]),
+                                                    FindNode(myMesh,aNodeIds[5]),
+                                                    FindNode(myMesh,aNodeIds[6]),
+                                                    FindNode(myMesh,aNodeIds[7]),
+                                                    FindNode(myMesh,aNodeIds[8]),
+                                                    FindNode(myMesh,aNodeIds[9]),
+                                                    FindNode(myMesh,aNodeIds[10]),
+                                                    FindNode(myMesh,aNodeIds[11]),
+                                                    FindNode(myMesh,aNodeIds[12]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case ePENTA6:
+                    aNbNodes = 6;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+                                                          aNodeIds[1],
+                                                          aNodeIds[2],
+                                                          aNodeIds[3],
+                                                          aNodeIds[4],
+                                                          aNodeIds[5],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                    FindNode(myMesh,aNodeIds[4]),
+                                                    FindNode(myMesh,aNodeIds[5]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case ePENTA15:
+                    aNbNodes = 15;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                          aNodeIds[2], aNodeIds[3],
+                                                          aNodeIds[4], aNodeIds[5],
+                                                          aNodeIds[6], aNodeIds[7],
+                                                          aNodeIds[8], aNodeIds[9],
+                                                          aNodeIds[10], aNodeIds[11],
+                                                          aNodeIds[12], aNodeIds[13],
+                                                          aNodeIds[14],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                  FindNode(myMesh,aNodeIds[4]),
+                                                    FindNode(myMesh,aNodeIds[5]),
+                                                    FindNode(myMesh,aNodeIds[6]),
+                                                    FindNode(myMesh,aNodeIds[7]),
+                                                    FindNode(myMesh,aNodeIds[8]),
+                                                    FindNode(myMesh,aNodeIds[9]),
+                                                    FindNode(myMesh,aNodeIds[10]),
+                                                    FindNode(myMesh,aNodeIds[11]),
+                                                    FindNode(myMesh,aNodeIds[12]),
+                                                    FindNode(myMesh,aNodeIds[13]),
+                                                    FindNode(myMesh,aNodeIds[14]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eHEXA8:
+                    aNbNodes = 8;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+                                                          aNodeIds[1],
+                                                          aNodeIds[2],
+                                                          aNodeIds[3],
+                                                          aNodeIds[4],
+                                                          aNodeIds[5],
+                                                          aNodeIds[6],
+                                                          aNodeIds[7],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                    FindNode(myMesh,aNodeIds[4]),
+                                                    FindNode(myMesh,aNodeIds[5]),
+                                                    FindNode(myMesh,aNodeIds[6]),
+                                                    FindNode(myMesh,aNodeIds[7]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eHEXA20:
+                    aNbNodes = 20;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                          aNodeIds[2], aNodeIds[3],
+                                                          aNodeIds[4], aNodeIds[5],
+                                                          aNodeIds[6], aNodeIds[7],
+                                                          aNodeIds[8], aNodeIds[9],
+                                                          aNodeIds[10], aNodeIds[11],
+                                                          aNodeIds[12], aNodeIds[13],
+                                                          aNodeIds[14], aNodeIds[15],
+                                                          aNodeIds[16], aNodeIds[17],
+                                                          aNodeIds[18], aNodeIds[19],
+                                                          aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                    FindNode(myMesh,aNodeIds[1]),
+                                                    FindNode(myMesh,aNodeIds[2]),
+                                                    FindNode(myMesh,aNodeIds[3]),
+                                                    FindNode(myMesh,aNodeIds[4]),
+                                                    FindNode(myMesh,aNodeIds[5]),
+                                                    FindNode(myMesh,aNodeIds[6]),
+                                                    FindNode(myMesh,aNodeIds[7]),
+                                                    FindNode(myMesh,aNodeIds[8]),
+                                                    FindNode(myMesh,aNodeIds[9]),
+                                                    FindNode(myMesh,aNodeIds[10]),
+                                                    FindNode(myMesh,aNodeIds[11]),
+                                                    FindNode(myMesh,aNodeIds[12]),
+                                                    FindNode(myMesh,aNodeIds[13]),
+                                                    FindNode(myMesh,aNodeIds[14]),
+                                                    FindNode(myMesh,aNodeIds[15]),
+                                                    FindNode(myMesh,aNodeIds[16]),
+                                                    FindNode(myMesh,aNodeIds[17]),
+                                                    FindNode(myMesh,aNodeIds[18]),
+                                                    FindNode(myMesh,aNodeIds[19]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  }
+#ifndef _DEXCEPT_
+                }catch(const std::exception& exc){
+                  //INFOS("Follow exception was cought:\n\t"<<exc.what());
+                  aResult = DRS_FAIL;
+                }catch(...){
+                  //INFOS("Unknown exception was cought !!!");
+                  aResult = DRS_FAIL;
+                }
+#endif          
+                if (!anElement) {
+                  aResult = DRS_WARN_SKIP_ELEM;
+                }
+                else {
+                  if (isRenum) {
+                    anIsElemNum = eFAUX;
+                    takeNumbers = false;
+                    if (aResult < DRS_WARN_RENUMBER)
+                      aResult = DRS_WARN_RENUMBER;
+                  }
+                  if ( checkFamilyID ( aFamily, aFamNum )) {
+                    // Save reference to this element from its family
+                    myFamilies[aFamNum]->AddElement(anElement);
+                    myFamilies[aFamNum]->SetType(anElement->GetType());
+                  }
+                }
+              }
+            }}
+          }
+        }
       }
     }
+#ifndef _DEXCEPT_
   }catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
     aResult = DRS_FAIL;
@@ -541,6 +709,7 @@ DriverMED_R_SMESHDS_Mesh
     INFOS("Unknown exception was cought !!!");
     aResult = DRS_FAIL;
   }
+#endif
   if(MYDEBUG) MESSAGE("Perform - aResult status = "<<aResult);
   return aResult;
 }
@@ -723,3 +892,86 @@ bool DriverMED_R_SMESHDS_Mesh::checkFamilyID(DriverMED_FamilyPtr & aFamily, int 
   return ( aFamily->GetId() == anID );
 }
 
+
+/*! \brief Reading the structured mesh and convert to non structured (by filling of smesh structure for non structured mesh)
+ * \param theWrapper  - PWrapper const pointer
+ * \param theMeshInfo - PMeshInfo const pointer
+ * \return TRUE, if successfully. Else FALSE
+ */
+bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
+					       const MED::PMeshInfo& theMeshInfo)
+{
+  bool res = true;
+
+  MED::PGrilleInfo aGrilleInfo = theWrapper->GetPGrilleInfo(theMeshInfo);
+  MED::TInt aNbNodes = aGrilleInfo->GetNbNodes();
+  MED::TInt aNbCells = aGrilleInfo->GetNbCells();
+  MED::TInt aMeshDim = theMeshInfo->GetDim();
+  DriverMED_FamilyPtr aFamily;
+  for(MED::TInt iNode=0;iNode < aNbNodes; iNode++){
+    double aCoords[3] = {0.0, 0.0, 0.0};
+    const SMDS_MeshNode* aNode;
+    MED::TNodeCoord aMEDNodeCoord = aGrilleInfo->GetCoord(iNode);
+    for(MED::TInt iDim=0;iDim<aMeshDim;iDim++)
+      aCoords[(int)iDim] = aMEDNodeCoord[(int)iDim];
+    aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],(int)iNode);
+  }
+
+  /* not implemented FAMILY
+     
+  TInt aFamNum = aNodeInfo->GetFamNum(iElem);
+  if ( checkFamilyID ( aFamily, aFamNum ))
+    {
+      aFamily->AddElement(aNode);
+      aFamily->SetType(SMDSAbs_Node);
+    }
+    
+  */
+
+  SMDS_MeshElement* anElement = NULL;
+  MED::TIntVector aNodeIds;
+  for(MED::TInt iCell=0;iCell < aNbCells; iCell++){
+    aNodeIds = aGrilleInfo->GetConn(iCell);
+    switch(aGrilleInfo->GetGeom()){
+    case MED::eSEG2:
+      if(aNodeIds.size() != 2){
+	res = false;
+	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 2!="<<aNodeIds.size());
+      }
+      anElement = myMesh->AddEdgeWithID(aNodeIds[0],
+					aNodeIds[1],
+					iCell);
+      break;
+    case MED::eQUAD4:
+      if(aNodeIds.size() != 4){
+	res = false;
+	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 4!="<<aNodeIds.size());
+      }
+      anElement = myMesh->AddFaceWithID(aNodeIds[0],
+					aNodeIds[2],
+					aNodeIds[3],
+					aNodeIds[1],
+					iCell);
+      break;
+    case MED::eHEXA8:
+      if(aNodeIds.size() != 8){
+	res = false;
+	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 8!="<<aNodeIds.size());
+      }
+      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+					  aNodeIds[2],
+					  aNodeIds[3],
+					  aNodeIds[1],
+					  aNodeIds[4],
+					  aNodeIds[6],
+					  aNodeIds[7],
+					  aNodeIds[5],
+					  iCell);
+      break;
+    default:
+      break;
+    }
+  }
+
+  return res;
+}

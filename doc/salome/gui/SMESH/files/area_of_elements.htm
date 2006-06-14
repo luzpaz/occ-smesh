@@ -48,48 +48,53 @@ onerror = null;
 <style type="text/css">
 <!--
 div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
 -->
 </style><script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="../whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
-</head>
-<body><script type="text/javascript" language="javascript1.2">
+<script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
-	if (window.addTocInfo)
+	if (window.setRelStartPage)
 	{
 	addTocInfo("MESH module\nQuality controls\nArea");
-addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+addButton("show",BTN_IMG,"Show","","","","",0,0,"../whd_show0.gif","../whd_show2.gif","../whd_show1.gif");
+addButton("hide",BTN_IMG,"Hide","","","","",0,0,"../whd_hide0.gif","../whd_hide2.gif","../whd_hide1.gif");
 
 	}
-	if (window.writeBtnStyle)
-		writeBtnStyle();
 
-	if (window.writeIntopicBar)
-		writeIntopicBar(1);
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.htm");
+	setRelStartPage("../index.htm");
 
 		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
+
 }
 else
 	if (window.gbIE4)
 		document.location.reload();
 //-->
 </script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(4);
+//-->
+</script>
 <h1>Area</h1>
 
 <p><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> <span style="font-weight: bold;"><B>Area </B></span>mesh quality 
  control is based on the algorithm of area calculation of &nbsp;meshing 
- elements . It can be applied to meshes consisting of 2D meshing elements 
+ elements. It can be applied to meshes consisting of 2D meshing elements 
  with 3 and 4 nodes (triangles and quadrangles). &nbsp;&nbsp;&nbsp;</p>
 
 <p>&nbsp;</p>
@@ -116,7 +121,7 @@ else
 <p class="whs5">&nbsp;</p>
 
 <p class="whs5"><span style="font-weight: bold;"><B>See Also</B></span> 
- a sample TUI Script of an <a href="../quality_controls.htm#bookmark7">Area 
+ a sample TUI Script of an <a href="../quality_controls.htm#bookmark6">Area 
  quality control</a> operation. &nbsp;</p>
 
 <p>&nbsp;</p>

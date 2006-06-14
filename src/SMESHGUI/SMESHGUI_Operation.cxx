@@ -1,8 +1,22 @@
-//  SALOME SMESHGUI
+//  SMESH SMDS : implementaion of Salome mesh data structure
 //
-//  Copyright (C) 2005  CEA/DEN, EDF R&D
-//
-//
+//  Copyright (C) 2003  OPEN CASCADE
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  File   : SMESHGUI_Operation.h
 //  Author : Sergey LITONIN
@@ -13,7 +27,9 @@
 #include <SMESHGUI_Dialog.h>
 
 #include <SalomeApp_Study.h>
+#include <LightApp_Application.h>
 
+#include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_Desktop.h>
 
@@ -31,6 +47,7 @@
 SMESHGUI_Operation::SMESHGUI_Operation()
 : LightApp_Operation()
 {
+  myHelpFileName = "";
 }
 
 //=======================================================================
@@ -62,6 +79,7 @@ void SMESHGUI_Operation::startOperation()
     disconnect( dlg(), SIGNAL( dlgApply() ), this, SLOT( onApply() ) );
     disconnect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
+    disconnect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
     
     if( dlg()->testButtonFlags( QtxDialog::OK ) )
       connect( dlg(), SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
@@ -71,6 +89,9 @@ void SMESHGUI_Operation::startOperation()
       
     if( dlg()->testButtonFlags( QtxDialog::Cancel ) )
       connect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
+
+    if( dlg()->testButtonFlags( QtxDialog::Help ) )
+      connect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
       
     //if( dlg()->testButtonFlags( QtxDialog::Close ) )
     //if dialog hasn't close, cancel, no and etc buttons, dlgClose will be emitted when dialog is closed not by OK
@@ -134,8 +155,8 @@ void SMESHGUI_Operation::onOk()
 {
   if( onApply() )
     commit();
-  else
-    abort();
+  //else
+  //  abort();
 }
 
 //=======================================================================
@@ -154,6 +175,23 @@ bool SMESHGUI_Operation::onApply()
 void SMESHGUI_Operation::onCancel()
 {
   abort();
+}
+
+//=======================================================================
+// name    : onHelp
+// Purpose :
+//=======================================================================
+void SMESHGUI_Operation::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(getSMESHGUI() ? app->moduleName(getSMESHGUI()->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

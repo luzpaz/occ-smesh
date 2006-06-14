@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
@@ -154,4 +154,30 @@ SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
 	return set1<set2;	
 
 }*/
+
+
+int SMDS_FaceOfEdges::NbNodes() const
+{
+  return myEdges[0]->NbNodes() + myEdges[1]->NbNodes() + myEdges[2]->NbNodes() +
+    ( myNbEdges == 4 ? myEdges[3]->NbNodes() : 0 ) - myNbEdges;
+}
+
+/*!
+ * \brief Return node by its index
+ * \param ind - node index
+ * \retval const SMDS_MeshNode* - the node
+ * 
+ * Index is wrapped if it is out of a valid range
+ */
+const SMDS_MeshNode* SMDS_FaceOfEdges::GetNode(const int ind) const
+{
+  int index = WrappedIndex( ind );
+  for ( int i = 0; i < myNbEdges; ++i ) {
+    if ( index >= myEdges[ i ]->NbNodes() )
+      index -= myEdges[ i ]->NbNodes();
+    else
+      return myEdges[ i ]->GetNode( index );
+  }
+  return 0;
+}
 

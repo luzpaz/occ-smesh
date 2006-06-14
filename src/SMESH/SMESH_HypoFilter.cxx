@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -73,6 +73,17 @@ bool SMESH_HypoFilter::ApplicablePredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                  const TopoDS_Shape&     /*aShape*/) const
 {
   return SMESH_subMesh::IsApplicableHypotesis( aHyp, (TopAbs_ShapeEnum)_shapeType );
+};
+
+//=======================================================================
+//function : IsAuxiliaryPredicate::IsOk
+//purpose  : 
+//=======================================================================
+
+bool SMESH_HypoFilter::IsAuxiliaryPredicate::IsOk(const SMESH_Hypothesis* aHyp,
+                                                  const TopoDS_Shape&     /*aShape*/) const
+{
+  return aHyp->IsAuxiliary();
 };
 
 //=======================================================================
@@ -191,6 +202,17 @@ SMESH_HypoPredicate* SMESH_HypoFilter::IsAlgo()
 }
 
 //=======================================================================
+//function : IsAuxiliary
+//purpose  : 
+//=======================================================================
+
+SMESH_HypoPredicate* SMESH_HypoFilter::IsAuxiliary()
+{
+  return new IsAuxiliaryPredicate();
+}
+
+
+//=======================================================================
 //function : IsGlobal
 //purpose  : 
 //=======================================================================
@@ -287,6 +309,7 @@ SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bo
   list<SMESH_HypoPredicate*>::const_iterator pred = myPredicates.begin();
   for ( ; pred != myPredicates.end(); ++pred )
     delete *pred;
+  myPredicates.clear();
 
   add( notNagate ? AND : AND_NOT, aPredicate );
   return *this;

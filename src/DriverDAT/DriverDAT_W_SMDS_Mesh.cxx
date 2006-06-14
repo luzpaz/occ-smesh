@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #include <stdio.h>
 
@@ -32,7 +32,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   Status aResult = DRS_OK;
 
   int nbNodes, nbCells;
-  int i;
+  //int i;
   
   char *file2Read = (char *)myFile.c_str();
   FILE* aFileId = fopen(file2Read, "w+");
@@ -52,7 +52,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   nbNodes = myMesh->NbNodes();
   
   /* Combien de mailles, faces ou aretes ? */
-  int nb_of_nodes, nb_of_edges, nb_of_faces, nb_of_volumes;
+  int /*nb_of_nodes,*/ nb_of_edges, nb_of_faces, nb_of_volumes;
   nb_of_edges = myMesh->NbEdges();
   nb_of_faces = myMesh->NbFaces();
   nb_of_volumes = myMesh->NbVolumes();

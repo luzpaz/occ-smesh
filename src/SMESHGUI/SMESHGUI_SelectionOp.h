@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -92,7 +92,7 @@ protected:
   virtual SUIT_SelectionFilter* createFilter( const int ) const;
 
   //! Remove only filters set by this operation (they are in map myFilters )
-  void removeCustomFilters() const;
+  void removeCustomFilters();
 
   //! Return what selection mode is set in VTK viewer
   Selection_Mode    selectionMode() const;

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -43,8 +43,11 @@
 
 #include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SalomeApp_Tools.h"
+#include "LightApp_Application.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
@@ -72,6 +75,8 @@
 #include <qpixmap.h>
 #include <qmemarray.h>
 #include <qwidgetstack.h>
+
+#include <QtxIntSpinBox.h>
 
 // STL includes
 #include <vector>
@@ -103,12 +108,6 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     myGeomGroupBtn->setEnabled(false);
     myGeomGroupLine->setEnabled(false);
   }
-
-
-  /* Move widget on the botton right corner of main widget */
-  int x, y ;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
 }
 
 //=================================================================================
@@ -116,7 +115,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
 // purpose  :
 //=================================================================================
 SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
-				      SMESH::SMESH_Group_ptr theGroup, bool modal, WFlags fl)
+				      SMESH::SMESH_GroupBase_ptr theGroup, bool modal, WFlags fl)
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | WDestructiveClose),
      mySMESHGUI( theModule ),
@@ -136,11 +135,6 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     myCurrentLineEdit = myMeshGroupLine;
     setSelectionMode(5);
   }
-  
-  /* Move widget on the botton right corner of main widget */
-  int x, y ;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
 }
 
 //=================================================================================
@@ -155,10 +149,14 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
 
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  if (create)
+  if (create) {
     setCaption(tr("SMESH_CREATE_GROUP_TITLE"));
-  else
+    myHelpFileName = "/files/creating_groups.htm";
+  }
+  else {
     setCaption(tr("SMESH_EDIT_GROUP_TITLE"));
+    myHelpFileName = "/files/editing_groups.htm";
+  }
 
   setSizeGripEnabled(TRUE);
 
@@ -270,7 +268,7 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   myGroupLine = new QLineEdit(aSelectBox, "group line");
   myGroupLine->setReadOnly(true);
   onSelectGroup(false);
-
+  
   /***************************************************************/
   QGridLayout* wg1Layout = new QGridLayout( wg1, 3, 1, 0, 6 );
   wg1Layout->addWidget(aContentBox, 0, 0);
@@ -287,6 +285,12 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   myGeomGroupLine->setReadOnly(true); //VSR ???
   onSelectGeomGroup(false);
 
+  if (!create)
+    {
+      myGeomGroupBtn->setEnabled(false);
+      myGeomGroupLine->setEnabled(false);
+    }
+
   /***************************************************************/
   QGridLayout* wg2Layout = new QGridLayout( wg2, 2, 3, 0, 6 );
   wg2Layout->addWidget(geomObject,     0, 0);
@@ -302,6 +306,21 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   myWGStack->addWidget( wg2, myGrpTypeGroup->id(rb2) );
 
   /***************************************************************/
+  QGroupBox* aColorBox = new QGroupBox(2, Qt::Horizontal, this, "color box");
+  aColorBox->setTitle(tr("SMESH_SET_COLOR"));
+
+  mySelectColorGroup = new QCheckBox(aColorBox, "color checkbox");
+  mySelectColorGroup->setText(tr("SMESH_CHECK_COLOR"));
+  
+  myColorSpinBox = new QtxIntSpinBox( aColorBox );
+  myColorSpinBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+  myColorSpinBox->setMinValue( 0 );
+  myColorSpinBox->setMaxValue( 9999 );
+  
+  onSelectColorGroup(false);
+  
+  /***************************************************************/
+  
   QFrame* aButtons = new QFrame(this, "button box");
   aButtons->setFrameStyle(QFrame::Box | QFrame::Sunken);
   QHBoxLayout* aBtnLayout = new QHBoxLayout(aButtons, 11, 6);
@@ -317,11 +336,15 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   QPushButton* aCloseBtn = new QPushButton(aButtons, "close");
   aCloseBtn->setText(tr("SMESH_BUT_CLOSE"));
   aCloseBtn->setAutoDefault(true);
+  QPushButton* aHelpBtn = new QPushButton(aButtons, "help");
+  aHelpBtn->setText(tr("SMESH_BUT_HELP"));
+  aHelpBtn->setAutoDefault(true);
 
   aBtnLayout->addWidget(aOKBtn);
   aBtnLayout->addWidget(aApplyBtn);
   aBtnLayout->addStretch();
   aBtnLayout->addWidget(aCloseBtn);
+  aBtnLayout->addWidget(aHelpBtn);
 
   /***************************************************************/
   aMainLayout->addWidget(meshGroupLab,    0, 0);
@@ -333,7 +356,8 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   aMainLayout->addMultiCellWidget(myGrpTypeGroup, 3, 3, 0, 2);
   aMainLayout->addMultiCellWidget(myWGStack,      4, 4, 0, 2);
   aMainLayout->setRowStretch( 5, 5 );
-  aMainLayout->addMultiCellWidget(aButtons,       6, 6, 0, 2);
+  aMainLayout->addMultiCellWidget(aColorBox,   6, 6, 0, 2);
+  aMainLayout->addMultiCellWidget(aButtons,       7, 7, 0, 2);
 
   /* signals and slots connections */
   connect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
@@ -355,10 +379,13 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   connect(mySubMeshBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
   connect(myGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
   connect(myGeomGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
-
+  connect(mySelectColorGroup, SIGNAL(toggled(bool)), this, SLOT(onSelectColorGroup(bool)));
+  connect(myColorSpinBox, SIGNAL(valueChanged(const QString&)), this, SLOT(onNbColorsChanged(const QString&)));
+  
   connect(aOKBtn, SIGNAL(clicked()), this, SLOT(onOK()));
   connect(aApplyBtn, SIGNAL(clicked()), this, SLOT(onApply()));
   connect(aCloseBtn, SIGNAL(clicked()), this, SLOT(onClose()));
+  connect(aHelpBtn, SIGNAL(clicked()), this, SLOT(onHelp()));
 
   /* Init selection */
   mySMESHGUI->SetActiveDialogBox(this);
@@ -407,6 +434,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
   /* init data from current selection */
   myMesh = SMESH::SMESH_Mesh::_duplicate(theMesh);
   myGroup = SMESH::SMESH_Group::_nil();
+  myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
 
   myActor = SMESH::FindActorByObject(myMesh);
   SMESH::SetPickable(myActor);
@@ -430,15 +458,16 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 // function : Init()
 // purpose  :
 //=================================================================================
-void SMESHGUI_GroupDlg::init (SMESH::SMESH_Group_ptr theGroup)
+void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 {
   myMesh = theGroup->GetMesh();
-  myGroup = SMESH::SMESH_Group::_duplicate(theGroup);
+  
+  myName->setText(theGroup->GetName());
+  myName->home(false);
 
-  myActor = SMESH::FindActorByObject(myMesh);
-  if ( !myActor )
-    myActor = SMESH::FindActorByObject(myGroup);
-  SMESH::SetPickable(myActor);
+  myColorSpinBox->setValue( theGroup->GetColorNumber() );
+  
+  myMeshGroupLine->setText(theGroup->GetName());
 
   int aType = 0;
   switch(theGroup->GetType()) {
@@ -447,27 +476,61 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Group_ptr theGroup)
   case SMESH::FACE: aType = 2; break;
   case SMESH::VOLUME: aType = 3; break;
   }
-
-  myName->setText(myGroup->GetName());
-  myName->home(false);
-  myMeshGroupLine->setText(myGroup->GetName());
-
-  myCurrentLineEdit = 0;
   myTypeGroup->setButton(aType);
-  myElements->clear();
-  setSelectionMode(aType);
-  myTypeId = aType;
+  
+  myGroup = SMESH::SMESH_Group::_narrow( theGroup );
 
-  myIdList.clear();
-  if (!theGroup->IsEmpty()) {
-    SMESH::long_array_var anElements = myGroup->GetListOfID();
-    int k = anElements->length();
-    for (int i = 0; i < k; i++) {
-      myIdList.append(anElements[i]);
-      myElements->insertItem(QString::number(anElements[i]));
+  if ( !myGroup->_is_nil() )
+    {
+      myGrpTypeGroup->setButton(0);
+      onGrpTypeChanged(0);
+
+      myActor = SMESH::FindActorByObject(myMesh);
+      if ( !myActor )
+	myActor = SMESH::FindActorByObject(myGroup);
+      SMESH::SetPickable(myActor);
+      
+      myCurrentLineEdit = 0;
+      myElements->clear();
+      setSelectionMode(aType);
+      myTypeId = aType;
+      
+      myIdList.clear();
+      if (!myGroup->IsEmpty()) {
+	SMESH::long_array_var anElements = myGroup->GetListOfID();
+	int k = anElements->length();
+	for (int i = 0; i < k; i++) {
+	  myIdList.append(anElements[i]);
+	  myElements->insertItem(QString::number(anElements[i]));
+	}
+	myElements->selectAll(true);
+      }
     }
-    myElements->selectAll(true);
-  }
+  else
+    {
+      myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_narrow( theGroup );
+      
+      if ( !myGroupOnGeom->_is_nil() )
+	{
+	  myGrpTypeGroup->setButton(1);
+	  onGrpTypeChanged(1);
+
+	  myActor = SMESH::FindActorByObject(myMesh);
+	  if ( !myActor )
+	    myActor = SMESH::FindActorByObject(myGroup);
+	  SMESH::SetPickable(myActor);
+	  
+	  QString aShapeName("");
+	  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+	  GEOM::GEOM_Object_var aGroupShape = myGroupOnGeom->GetShape();
+	  if (!aGroupShape->_is_nil())
+	    {
+	      _PTR(SObject) aGroupShapeSO = aStudy->FindObjectID(aGroupShape->GetStudyEntry());
+	      aShapeName = aGroupShapeSO->GetName().c_str();
+	    }
+	  myGeomGroupLine->setText( aShapeName );
+	}
+    }
 }
 
 //=================================================================================
@@ -481,7 +544,10 @@ void SMESHGUI_GroupDlg::updateButtons()
   if (myGrpTypeId == 0)
     enable = !myName->text().stripWhiteSpace().isEmpty() && myElements->count() > 0;
   else if (myGrpTypeId == 1)
-    enable = !myName->text().stripWhiteSpace().isEmpty() && !CORBA::is_nil( myGeomGroup );
+    {
+      bool isEditMode = !CORBA::is_nil( myGroupOnGeom );
+      enable = !myName->text().stripWhiteSpace().isEmpty() && (!CORBA::is_nil( myGeomGroup ) || isEditMode);
+    }
   QPushButton* aBtn;
   aBtn = (QPushButton*) child("ok", "QPushButton");
   if (aBtn) aBtn->setEnabled(enable);
@@ -494,6 +560,15 @@ void SMESHGUI_GroupDlg::updateButtons()
 // purpose  :
 //=================================================================================
 void SMESHGUI_GroupDlg::onNameChanged (const QString& text)
+{
+  updateButtons();
+}
+
+//=================================================================================
+// function : onNbColorsChanged()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onNbColorsChanged (const QString& text)
 {
   updateButtons();
 }
@@ -606,14 +681,27 @@ bool SMESHGUI_GroupDlg::onApply()
 
       myGroup = SMESH::AddGroup(myMesh, aType, myName->text());
       myGroup->Add(anIdList.inout());
+      
+      int aColorNumber = myColorSpinBox->value();
+      myGroup->SetColorNumber(aColorNumber);
+      
+      _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
 
+      SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
+      
+      SMESH::setFileType ( aMeshGroupSO,"COULEURGROUP" );
+      
       /* init for next operation */
       myName->setText("");
+      myColorSpinBox->setValue(0);
       myElements->clear();
       myGroup = SMESH::SMESH_Group::_nil();
 
     } else {
       myGroup->SetName(myName->text());
+        
+      int aColorNumber = myColorSpinBox->value();
+      myGroup->SetColorNumber(aColorNumber);
 
       QValueList<int> aAddList;
       QValueList<int>::iterator anIt;
@@ -654,30 +742,50 @@ bool SMESHGUI_GroupDlg::onApply()
     return true;
   } else if (myGrpTypeId == 1 &&
              !myName->text().stripWhiteSpace().isEmpty() &&
-             !CORBA::is_nil(myGeomGroup))
+             (!CORBA::is_nil(myGeomGroup) || !CORBA::is_nil(myGroupOnGeom)))
   {
-    SMESH::ElementType aType = SMESH::ALL;
-    switch (myTypeId) {
-    case 0: aType = SMESH::NODE; break;
-    case 1: aType = SMESH::EDGE; break;
-    case 2: aType = SMESH::FACE; break;
-    case 3: aType = SMESH::VOLUME; break;
+    if (myGroupOnGeom->_is_nil()) {
+      SMESH::ElementType aType = SMESH::ALL;
+      switch (myTypeId) {
+      case 0: aType = SMESH::NODE; break;
+      case 1: aType = SMESH::EDGE; break;
+      case 2: aType = SMESH::FACE; break;
+      case 3: aType = SMESH::VOLUME; break;
+      }
+      
+      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+      GEOM::GEOM_IGroupOperations_var aGroupOp =
+	SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+      
+      myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType, myName->text(),myGeomGroup);
+      
+      int aColorNumber = myColorSpinBox->value();
+      myGroupOnGeom->SetColorNumber(aColorNumber);
+      
+      _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
+      
+      SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
+      
+      SMESH::setFileType ( aMeshGroupSO,"COULEURGROUP" );
+      
+      /* init for next operation */
+      myName->setText("");
+      myColorSpinBox->setValue(0);
+      myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
     }
-
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    GEOM::GEOM_IGroupOperations_var aGroupOp =
-      SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
-
-    SMESH::SMESH_GroupOnGeom_var aGroupOnGeom =
-      myMesh->CreateGroupFromGEOM(aType, myName->text(),myGeomGroup);
-
+    else
+      {
+	myGroupOnGeom->SetName(myName->text());
+        
+	int aColorNumber = myColorSpinBox->value();
+	myGroupOnGeom->SetColorNumber(aColorNumber);
+      }
+    
     mySMESHGUI->updateObjBrowser(true);
     mySelectionMgr->clearSelected();
-    /* init for next operation */
-    myName->setText("");
     return true;
   }
-
+  
   return false;
 }
 
@@ -754,6 +862,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       if (aNbSel != 1 ) {
         myGroup = SMESH::SMESH_Group::_nil();
+	myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil(); 
         myMesh = SMESH::SMESH_Mesh::_nil();
         myIsBusy = false;
         return;
@@ -782,7 +891,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
         myGeomGroupLine->setEnabled(true);
         updateButtons();
       } else {
-        SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(IO);
+        SMESH::SMESH_GroupBase_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
         if (aGroup->_is_nil())
 	{
 	  myIsBusy = false;
@@ -790,12 +899,14 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	}
         myIsBusy = false;
         myCurrentLineEdit = 0;
+
+	myGroup = SMESH::SMESH_Group::_nil();
+	myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
+	
         init(aGroup);
         myIsBusy = true;
         mySelectSubMesh->setEnabled(true);
         mySelectGroup->setEnabled(true);
-        myGeomGroupBtn->setEnabled(true);
-        myGeomGroupLine->setEnabled(true);
       }
       myCurrentLineEdit = 0;
       myIsBusy = false;
@@ -915,6 +1026,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
   if (!myActor) {
     if (!myGroup->_is_nil())
       myActor = SMESH::FindActorByObject(myGroup);
+    else if(!myGroupOnGeom->_is_nil())
+      myActor = SMESH::FindActorByObject(myGroupOnGeom);
     else
       myActor = SMESH::FindActorByObject(myMesh);
   }
@@ -997,6 +1110,17 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
   }
 }
 
+//=================================================================================
+// function : (onSelectColorGroup)
+// purpose  : Called when setting a color on group
+//=================================================================================
+void SMESHGUI_GroupDlg::onSelectColorGroup(bool on)
+{
+  if (!on)
+    myColorSpinBox->setValue(0);
+  
+  myColorSpinBox->setEnabled(on);
+}
 
 //=================================================================================
 // function : setCurrentSelection()
@@ -1420,6 +1544,23 @@ void SMESHGUI_GroupDlg::onClose()
   mySMESHGUI->ResetState();
 
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

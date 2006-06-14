@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -205,11 +205,6 @@ SMESHGUI_Preferences_SelectionDlg::SMESHGUI_Preferences_SelectionDlg( SMESHGUI* 
 
   connect(aOKBtn, SIGNAL(clicked()), this, SLOT(accept()));
   connect(aCloseBtn, SIGNAL(clicked()), this, SLOT(reject()));
-
-  /* Move widget on the botton right corner of main widget */
-  int x, y ;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
 }
 
 //=================================================================================

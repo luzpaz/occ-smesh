@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 // File      : SMESH_Pattern.hxx
 // Created   : Mon Aug  2 10:30:00 2004
@@ -159,6 +159,7 @@ class SMESH_EXPORT SMESH_Pattern {
     // Load(face)
     ERR_LOADF_NARROW_FACE, // too narrow face
     ERR_LOADF_CLOSED_FACE, // closed face
+    ERR_LOADF_CANT_PROJECT, // impossible to project nodes
     // Load(volume)
     ERR_LOADV_BAD_SHAPE, // volume is not a brick of 6 faces
     ERR_LOADV_COMPUTE_PARAMS, // cant compute point parameters

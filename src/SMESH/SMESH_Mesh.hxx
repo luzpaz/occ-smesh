@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -81,8 +81,11 @@ class SMESH_EXPORT SMESH_Mesh
   SMESH_Mesh();
   SMESH_Mesh(const SMESH_Mesh&);
 public:
-  SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen,
-	     SMESHDS_Document * myDocument);
+  SMESH_Mesh(int theLocalId, 
+	     int theStudyId, 
+	     SMESH_Gen* theGen,
+	     bool theIsEmbeddedMode,
+	     SMESHDS_Document* theDocument);
   
   virtual ~SMESH_Mesh();
   
@@ -112,10 +115,10 @@ public:
                                          const SMESH_HypoFilter& aFilter,
                                          const bool              andAncestors) const;
   
-  bool GetHypotheses(const TopoDS_Shape &                aSubShape,
-                     const SMESH_HypoFilter&             aFilter,
-                     list <const SMESHDS_Hypothesis * >& aHypList,
-                     const bool                          andAncestors) const;
+  int GetHypotheses(const TopoDS_Shape &                aSubShape,
+                    const SMESH_HypoFilter&             aFilter,
+                    list <const SMESHDS_Hypothesis * >& aHypList,
+                    const bool                          andAncestors) const;
 
   const list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);
   
@@ -136,12 +139,15 @@ public:
   SMESH_subMesh *GetSubMeshContaining(const int aShapeID)
     throw(SALOME_Exception);
   
+  void NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* theChangedHyp);
+  // Say all submeshes that theChangedHyp has been modified
+
   const list < SMESH_subMesh * >&
   GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
     throw(SALOME_Exception);
   
-  bool IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
-			const TopoDS_Shape & aSubShape);
+  bool IsUsedHypothesis(SMESHDS_Hypothesis *  anHyp,
+			const SMESH_subMesh * aSubMesh);
   // Return True if anHyp is used to mesh aSubShape
   
   bool IsNotConformAllowed() const;
@@ -152,7 +158,12 @@ public:
   const TopTools_ListOfShape& GetAncestors(const TopoDS_Shape& theSubShape) const;
   // return list of ancestors of theSubShape in the order
   // that lower dimention shapes come first.
-  
+
+  /*! Check group names for duplications.
+   *  Consider maximum group name length stored in MED file.
+   */
+  bool HasDuplicatedGroupNamesMED();
+
   void ExportMED(const char *file, 
 		 const char* theMeshName = NULL, 
 		 bool theAutoGroups = true, 
@@ -165,25 +176,34 @@ public:
   
   int NbNodes() throw(SALOME_Exception);
   
-  int NbEdges() throw(SALOME_Exception);
+  /*!
+   * ElementOrder points out entities of what order are requested
+   */
+  enum ElementOrder {
+    ORDER_ANY,          /*! entities of any order */
+    ORDER_LINEAR,       /*! entities of 1st order */
+    ORDER_QUADRATIC     /*! entities of 2nd order */
+  };
+
+  int NbEdges(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbFaces() throw(SALOME_Exception);
+  int NbFaces(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbTriangles() throw(SALOME_Exception);
+  int NbTriangles(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbQuadrangles() throw(SALOME_Exception);
+  int NbQuadrangles(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
 
   int NbPolygons() throw(SALOME_Exception);
   
-  int NbVolumes() throw(SALOME_Exception);
+  int NbVolumes(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbTetras() throw(SALOME_Exception);
+  int NbTetras(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbHexas() throw(SALOME_Exception);
+  int NbHexas(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbPyramids() throw(SALOME_Exception);
+  int NbPyramids(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
 
-  int NbPrisms() throw(SALOME_Exception);
+  int NbPrisms(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
   int NbPolyhedrons() throw(SALOME_Exception);
   

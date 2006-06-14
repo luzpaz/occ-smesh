@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -50,6 +50,7 @@ class QListBox;
 class QPushButton;
 class QCheckBox;
 class QWidgetStack;
+class QtxIntSpinBox;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
@@ -71,7 +72,7 @@ public:
 		       bool modal = FALSE, WFlags fl = 0 );
     SMESHGUI_GroupDlg( SMESHGUI*,
 		       const char* name, 
-		       SMESH::SMESH_Group_ptr theGroup,
+		       SMESH::SMESH_GroupBase_ptr theGroup,
 		       bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_GroupDlg();
 
@@ -89,6 +90,7 @@ private slots:
     void onOK();
     void onClose();
     bool onApply();
+    void onHelp();
     void onDeactivate();
 
     void onListSelectionChanged();
@@ -97,18 +99,20 @@ private slots:
     void onSelectSubMesh(bool on);
     void onSelectGroup(bool on);
     void onSelectGeomGroup(bool on);
+    void onSelectColorGroup(bool on);
     void setCurrentSelection();
 
     void setFilters();
     void onSort();
 
     void onNameChanged(const QString& text);
+    void onNbColorsChanged(const QString& text);
     void onFilterAccepted();
 
 private:
     void initDialog(bool create);
     void init(SMESH::SMESH_Mesh_ptr theMesh);
-    void init(SMESH::SMESH_Group_ptr theGroup);
+    void init(SMESH::SMESH_GroupBase_ptr theGroup);
     void closeEvent(QCloseEvent* e);
     void enterEvent (QEvent*);
     void hideEvent (QHideEvent*);                          /* ESC key */
@@ -143,12 +147,16 @@ private:
     QPushButton*                  myGroupBtn;
     QLineEdit*                    myGroupLine;
 
+    QCheckBox*                    mySelectColorGroup;
+    QtxIntSpinBox*                myColorSpinBox;
+
     QCheckBox*                    mySelectGeomGroup;
     QPushButton*                  myGeomGroupBtn;
     QLineEdit*                    myGeomGroupLine;
 
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH::SMESH_Group_var        myGroup;
+    SMESH::SMESH_GroupOnGeom_var  myGroupOnGeom;
     QValueList<int>               myIdList;
     GEOM::GEOM_Object_var         myGeomGroup;
 
@@ -163,6 +171,8 @@ private:
     SMESHGUI_FilterDlg*           myFilterDlg;
 
     bool                          myCreate, myIsBusy;
+
+    QString                       myHelpFileName;
 };
 
 #endif // DIALOGBOX_GROUP_H

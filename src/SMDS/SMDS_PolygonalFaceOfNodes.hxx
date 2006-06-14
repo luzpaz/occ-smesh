@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef _SMDS_PolygonalFaceOfNodes_HeaderFile
 #define _SMDS_PolygonalFaceOfNodes_HeaderFile
@@ -51,6 +51,15 @@ class SMDS_EXPORT SMDS_PolygonalFaceOfNodes:public SMDS_MeshFace
   virtual int NbFaces() const;
 
   virtual void Print (std::ostream & OS) const;
+
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
+   * 
+   * Index is wrapped if it is out of a valid range
+   */
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
  protected:
   virtual SMDS_ElemIteratorPtr elementsIterator (SMDSAbs_ElementType type) const;

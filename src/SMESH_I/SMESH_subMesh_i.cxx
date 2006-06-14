@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -129,9 +129,8 @@ bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
     list<TopoDS_Shape>::iterator sh = shapeList.begin();
     for ( ; sh != shapeList.end(); ++sh ) {
       for ( TopoDS_Iterator it( *sh ); it.More(); it.Next() ) {
-        ::SMESH_subMesh* aSubMesh = aMesh->GetSubMeshContaining( it.Value() );
-        if ( aSubMesh )
-          getSubMeshes( aSubMesh, theSubMeshList );
+        if ( ::SMESH_subMesh* aSubMesh = aMesh->GetSubMeshContaining( it.Value() ))
+          getSubMeshes( aSubMesh, theSubMeshList ); // add found submesh or explore deeper
         else
           // no submesh for a compound inside compound
           shapeList.push_back( it.Value() );
@@ -148,6 +147,9 @@ bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
     }
     break;
   }
+  default:
+    if ( aSubMeshDS )
+      theSubMeshList.push_back( aSubMeshDS );
   }
   return size < theSubMeshList.size();
 }
@@ -275,7 +277,7 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
     for ( int i = 0; sm != smList.end(); sm++ )
     {
       SMDS_ElemIteratorPtr anIt = (*sm)->GetElements();
-      for ( int n = aSubMeshDS->NbElements(); i < n && anIt->more(); i++ )
+      for ( ; i < nbElems && anIt->more(); i++ )
         aResult[i] = anIt->next()->GetID();
     }
   }

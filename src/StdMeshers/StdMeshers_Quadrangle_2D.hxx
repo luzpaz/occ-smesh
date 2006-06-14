@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -36,7 +36,11 @@
 #include "SMESH_Mesh.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class SMDS_MeshNode;
+#include "gp_XY.hxx"
+
+#include "SMESH_MesherHelper.hxx"
+
+//class SMDS_MeshNode;
 
 typedef struct uvPtStruct
 {
@@ -77,10 +81,16 @@ public:
     throw (SALOME_Exception);
 
   FaceQuadStruct* CheckAnd2Dcompute(SMESH_Mesh& aMesh,
-				    const TopoDS_Shape& aShape)
+				    const TopoDS_Shape& aShape,
+                                    const bool CreateQuadratic)
     throw (SALOME_Exception);
 
   static void QuadDelete(FaceQuadStruct* quad);
+
+  /**
+   * Returns NLinkNodeMap from myTool
+   */
+  const NLinkNodeMap& GetNLinkNodeMap() { return myTool->GetNLinkNodeMap(); }
 
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);
@@ -122,6 +132,8 @@ protected:
   // construction of quadrangles if the number of nodes on opposite edges
   // is not the same in the case where the global number of nodes on edges is even
   bool myQuadranglePreference;
+
+  SMESH_MesherHelper* myTool; // toll for working with quadratic elements
 };
 
 #endif

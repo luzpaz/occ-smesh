@@ -1,40 +1,34 @@
-
 <html>
-<head><script language="javascript">
-<!--
-var sIcon="whstart.ico";
-var sPath=document.location.href;
-if (sPath.indexOf("http")!= -1)
-	document.write("<link REL=\"SHORTCUT ICON\" href=\""+ sIcon +"\">");
-//-->
-</script>
- <title>SMESH reference manual</title>
- <meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
- <meta name="description" content="WebHelp 5.50">
-</head>
-<script type="text/javascript" language="javascript" src="whver.js"></script>
-<script type="text/javascript" language="javascript" src="whutils.js"></script>
-<script type="text/javascript" language="javascript" src="whmsg.js"></script>
-<script type="text/javascript" language="javascript" >
-<!--
-if (!window.gbWhVer||!window.gbWhUtil||!window.gbWhMsg)
-	document.location.reload();
-//-->
-</script>
+<head>
+<title>Mesh Module Reference Manual</title>
 
-<script type="text/javascript" language="javascript" src="whstub.js"></script>
+<meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
+<meta name="description" content="WebHelp 5.50">
+</head>
+<script language="javascript1.2" src="whutils.js"></script>
+<script language="javascript1.2" src="whmsg.js"></script>
+<script language="javascript" src="whver.js"></script>
+<script language="javascript1.2" src="whstub.js"></script><script language="javascript1.2" src="whstart.js"></script>
 <script language="javascript">
 <!--
-var nWebhelpNavPaneMode = 1;			//1: DHTML 2:Applet 3:PureHTML 4:NoframeAt all
-var strPaneDHTML  = "whskin_pdhtml.htm";		//whd_nvp10.htm  if tab enabled, whnframe.htm if tab disabled.
-var strPaneApplet = "whskin_papplet.htm";
-var strPaneList   = "whskin_plist.htm";
+var strDefaultTopic = "about:blank";
+var nWebhelpNavPaneMode = 1;			//1: DHTML 2:Applet 3:PureHTML 4:Noframeset
 var bNoApplet  = false;
+var strPaneDHTML  = "whd_nvp10.htm";		//whd_nvp10.htm  if tab enabled, whnframe.htm if tab disabled.
+var strPaneApplet = "whd_nvp20.htm";
+var strPaneList   = "whgdata/whnvp30.htm";
 
+var strHTML = "";
 var strPane = "";
-
 var nViewFrameType = -1;
 
+function CMRServer()
+{
+  this.m_cAgents = new Array;
+}
+var cMRServer = new CMRServer;
+
+//figure out which mode is the best
 if (!window.gAgent)
 {
 	// low end browser, we don't even try to determine it.
@@ -42,14 +36,14 @@ if (!window.gAgent)
 }
 else
 {
-	if (!gbNav4&&!gbIE4&&!gbOpera7&&!gbSafari)				
+	if (!gbNav4&&!gbIE4&&!gbOpera7&&!gbSafari)
 		document.location = "whnjs.htm";
 	else if (gbNav4 && !gbNav6 && ((gnVerMinor <= 4.06)))
 		document.location = "whnjs.htm";
-	else if (gbMac && gbIE4 && !gbIE5)		
+	else if (gbMac && gbIE4 && !gbIE5)
 		document.location = "whnjs.htm";
 	//figure out which mode is the best
-	else
+	else 
 	{
 		nViewFrameType=nWebhelpNavPaneMode;
 		if (nWebhelpNavPaneMode==1||nWebhelpNavPaneMode == 2)
@@ -60,7 +54,6 @@ else
 			if (gbNav4&&(gnVerMinor == 4.6))					nViewFrameType = 3;
 			if (gbIE4&&gbDHTML)									nViewFrameType = 1;
 			if (gbIE4&&gbSunOS&&nWebhelpNavPaneMode==2)			nViewFrameType = 3;
-			if (gbNav4&&gbSunOS&&nViewFrameType==2)			nViewFrameType = 3;
 			if (gbNav6&&gbDHTML)								nViewFrameType = 1;
 			if (gbNav6&&!gbNav61&&nWebhelpNavPaneMode == 2)		nViewFrameType = 3;
 			if (gbMac)											nViewFrameType = 3;
@@ -81,59 +74,107 @@ if (nViewFrameType!=-1)
 	}
 
 	//figure out which one is navpane
-	// ReplaceMark:nViewFrameType = 1
 	if (nViewFrameType == 1)
-	{
-		if (gbNav4 && !gbNav6)
-			strPane = strPaneList;
-		else
-			strPane = strPaneDHTML;
-	}
+		strPane = strPaneDHTML;
 	else if (nViewFrameType == 2)
 		strPane = strPaneApplet;
-	else
+	else 
 		strPane = strPaneList;
-}
-//-->
-</script>
-<script type="text/javascript" language="javascript" src="whstart.js"></script>
-<script type="text/javascript" language="javascript">
-<!--
-if (!gbIE4&&!gbNav4&&!gbOpera7&&!gbSafari)
-	document.location = "whnjs.htm";
 
-function CMRAgent( strID, strURL, strLabel, strFrameAttr )
-{
-  this.m_strID = strID;
-  this.m_strURL = strURL;
-  this.m_strLabel = strLabel;
-  this.m_strFrameAttr = strFrameAttr;
-}
+	var oParam = new Object();
+	oParam.sTopic = "";
+	var oMsg = new whMessage(WH_MSG_GETDEFAULTTOPIC, window, 1, oParam);
+	if (SendMessage(oMsg) && oParam.sTopic != "")
+		strDefaultTopic =  oParam.sTopic;
 
-function CMRServer()
-{
-  this.m_cAgents = new Array;
-}
-var cMRServer = new CMRServer;
-// GetServerInfo
-// Registry the agent array handled by webhelp
-// ReplaceMark:MRServer.strServerData
-//-->
-</script>
 
-<script type="text/javascript" language="javascript">
-<!--
-if (nViewFrameType!=-1)
-{
-	var strHTML = "<frameset rows=\"32,*\" hostof=\"parent:toolbar!startpage:yes\" frameborder=\"0\" border=\"0\"><frame src=\"whskin_tbars.htm\" id=\"toolbar\" frameborder=\"0\" border=\"0\" scrolling=\"no\" noresize marginheight=\"0\" marginwidth=\"0\" title=\"Toolbar\"></frame><frame src=\"whskin_frmset01.htm\"  frameborder=\"1\" border=\"1\" scrolling=\"auto\" marginheight=\"0\" marginwidth=\"0\"></frame></frameset>";
+	if (nViewFrameType == 1)
+	{
+		//DHTML (iframe or xml based)
+		strHTML += "<frameset  id=\"whPfset\" cols=\"260,*\" frameborder=\"1\">";
+		strHTML += "<frame name=\"bsscleft\" title=\"navigation frame\" src=\"" + strPane + "\" scrolling=\"no\"></frame>";
+		strHTML += "<frame name=\"bsscright\" title=\"topic frame\" src=\"" + strDefaultTopic + "\" scrolling=\"auto\"></frame></frameset>";
+	}
+	else if (nViewFrameType == 2)
+	{
+		//applet (xml based)
+		strHTML += "<frameset  id=\"whPfset\" cols=\"260,*\" framespacing=\"0\" frameborder=\"0\" border=\"0\">";
+		strHTML += "<frame name=\"bsscleft\" title=\"navigation frame\" src=\"" + strPane+ "\" scrolling=\"no\" marginwidth=\"0\" marginheight=\"0\"></frame>";
+		strHTML += "<frame name=\"bsscright\" title=\"topic frame\" src=\"" + strDefaultTopic + "\" scrolling=\"auto\"></frame></frameset>";
+	}
+	else if (nViewFrameType == 3)
+	{
+		//generic html (pure html based)
+		strHTML += "<frameset  id=\"whPfset\" cols=\"260,*\">";
+		strHTML += "<frame title=\"navigation frame\" src=\"" + strPane + "\" name=\"bsscleft\"  scrolling=\"no\"></frame>";
+		strHTML += "<frame title=\"topic frame\" src=\"" + strDefaultTopic + "\" name=\"bsscright\" scrolling=\"auto\"></frame>";
+		strHTML += "</frameset>";
+	} 
+	else if (nViewFrameType == 4)
+	{
+		//no navipane at all
+		strHTML += "<frameset  id=\"whPfset\" border=\"0\" cols=\"100%,*\">";
+		strHTML += "<frame title=\"topic frame\" src=\"" + strDefaultTopic + "\" name=\"bsscright\" framespacing=\"0\" frameborder=\"0\" border=\"0\" scrolling=\"auto\">";
+		strHTML += "</frameset>";
+	}
+
 	document.write(strHTML);
+
+	RegisterListener2(window, WH_MSG_SHOWPANE);
+	RegisterListener2(window, WH_MSG_HIDEPANE);
+	RegisterListener2(window, WH_MSG_ISPANEVISIBLE);
+	window.onunload = window_unload;
+}
+
+function window_unload()
+{
+	UnRegisterListener2(window, WH_MSG_SHOWPANE);
+	UnRegisterListener2(window, WH_MSG_HIDEPANE);
+	UnRegisterListener2(window, WH_MSG_ISPANEVISIBLE);
+}
+
+
+function onSendMessage(oMsg)
+{
+	var nMsgId = oMsg.nMessageId;
+	if (nMsgId == WH_MSG_SHOWPANE)
+	{
+		getElement("whPfset").cols = "260,*";
+		var onMsg = new whMessage(WH_MSG_PANESTATUE, this, 1, "visible");
+		SendMessage(onMsg);
+		onMsg = new whMessage(WH_MSG_GETPANEINFO, this, 1, "");
+		if (SendMessage(onMsg))
+		{
+			onMsg = new whMessage(WH_MSG_PANEINFO, this, 1, onMsg.oParam);
+			SendMessage(onMsg);
+		}
+		return false;
+	}
+	else if (nMsgId == WH_MSG_HIDEPANE)
+	{
+		getElement("whPfset").cols = "0,*";
+		var onMsg = new whMessage(WH_MSG_PANESTATUE, this, 1, "invisible");
+		SendMessage(onMsg);
+		onMsg = new whMessage(WH_MSG_PANEINFO, this, 1, "");
+		SendMessage(onMsg);
+		return false;
+	}
+	else if (nMsgId == WH_MSG_ISPANEVISIBLE)
+	{
+		var n = parseInt(getElement("whPfset").cols);
+		if (n > 0)
+		{
+			oMsg.oParam.bVisible = true;
+		}
+		return false;
+	}
+	return true;
 }
 //-->
 </script>
-
-<frameset cols="100%,*" frameborder=no border=0>
-  <frame src="whnjs.htm">
-  <frame src="whskin_blank.htm" noresize>
-</frameset>
-
+<body>
+<noscript>
+	<p> It seems javascript is disabled in your browser, please enable it and reload again, or click <a href="whnjs.htm">here</a> to view without javascript</p>
+</noscript>
+</body>
 </html>

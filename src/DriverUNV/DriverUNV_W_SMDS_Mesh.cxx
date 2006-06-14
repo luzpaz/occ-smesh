@@ -15,18 +15,23 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #include <algorithm>
 
 #include "DriverUNV_W_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
+#include "SMESHDS_GroupBase.hxx"
+//#include "SMESH_Group.hxx"
+#include "SMDS_QuadraticEdge.hxx"
+#include "SMDS_QuadraticFaceOfNodes.hxx"
 
 #include "utilities.h"
 
 #include "UNV2411_Structure.hxx"
 #include "UNV2412_Structure.hxx"
+#include "UNV2417_Structure.hxx"
 #include "UNV_Utilities.hxx"
 
 using namespace std;
@@ -86,12 +91,19 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	  int aNbNodes = anElem->NbNodes();
 	  TRecord aRec;
 	  aRec.node_labels.reserve(aNbNodes);
-	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+	  SMDS_ElemIteratorPtr aNodesIter;
+          if( anElem->IsQuadratic() ) {
+            aNodesIter = static_cast<const SMDS_QuadraticEdge* >
+              ( anElem )->interlacedNodesElemIterator();
+            aRec.fe_descriptor_id = 22;
+          } else {
+            aNodesIter = anElem->nodesIterator();
+            aRec.fe_descriptor_id = 11;
+          }
 	  for(; aNodesIter->more();){
 	    const SMDS_MeshElement* aNode = aNodesIter->next();
 	    aRec.node_labels.push_back(aNode->GetID());
 	  }
-	  aRec.fe_descriptor_id = 11;
 	  aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
 	}
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
@@ -106,7 +118,12 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	  int aNbNodes = anElem->NbNodes();
 	  TRecord aRec;
 	  aRec.node_labels.reserve(aNbNodes);
-	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+	  SMDS_ElemIteratorPtr aNodesIter;
+          if( anElem->IsQuadratic() )
+            aNodesIter = static_cast<const SMDS_QuadraticFaceOfNodes* >
+              ( anElem )->interlacedNodesElemIterator();
+          else
+            aNodesIter = anElem->nodesIterator();
 	  for(; aNodesIter->more();){
 	    const SMDS_MeshElement* aNode = aNodesIter->next();
 	    aRec.node_labels.push_back(aNode->GetID());
@@ -117,6 +134,12 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	    break;
 	  case 4:
 	    aRec.fe_descriptor_id = 44;
+	    break;
+	  case 6:
+	    aRec.fe_descriptor_id = 42;
+	    break;
+	  case 8:
+	    aRec.fe_descriptor_id = 45;
 	    break;
 	  default:
 	    continue;
@@ -160,6 +183,30 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	    anId = 115;
 	    break;
 	  }
+	  case 10: {
+	    static int anIds[] = {0,4,2,9,5,3, 1,6,8, 7};
+	    aConn = anIds;
+	    anId = 118;
+	    break;
+	  }
+	  case 13: {
+	    static int anIds[] = {0,6,4,2,7,5,3,1,8,11,10,9,12};
+	    aConn = anIds;
+	    anId = 114;
+	    break;
+	  }
+	  case 15: {
+	    static int anIds[] = {0,4,2,9,13,11,5,3,1,14,12,10,6,8,7};
+	    aConn = anIds;
+	    anId = 113;
+	    break;
+	  }
+	  case 20: {
+	    static int anIds[] = {0,6, 4,2, 12,18,16,14,7, 5, 3, 1, 19,17,15,13,8, 11,10,9};
+	    aConn = anIds;
+	    anId = 116;
+	    break;
+	  }
 	  default:
 	    continue;
 	  }
@@ -177,9 +224,79 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       }
       UNV2412::Write(out_stream,aDataSet2412);
     }
-  }catch(const std::exception& exc){
+    {
+      using namespace UNV2417;
+      if (myGroups.size() > 0) {
+	TDataSet aDataSet2417;
+	TGroupList::const_iterator aIter = myGroups.begin();
+	for (; aIter != myGroups.end(); aIter++) {
+	  SMESHDS_GroupBase* aGroupDS = *aIter;
+	  TRecord aRec;
+	  aRec.GroupName = aGroupDS->GetStoreName();
+
+	  int i;
+	  SMDS_ElemIteratorPtr aIter = aGroupDS->GetElements();
+	  if (aGroupDS->GetType() == SMDSAbs_Node) {
+	    aRec.NodeList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.NodeList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  } else {
+	    aRec.ElementList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.ElementList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  }
+	  aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
+	}
+	UNV2417::Write(out_stream,aDataSet2417);
+	myGroups.clear();
+      }
+    }
+    /*    {
+      using namespace UNV2417;
+      TDataSet aDataSet2417;
+      for ( TGroupsMap::iterator it = myGroupsMap.begin(); it != myGroupsMap.end(); it++ ) {
+	SMESH_Group*       aGroup   = it->second;
+	SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+	if ( aGroupDS ) {
+	  TRecord aRec;
+	  aRec.GroupName = aGroup->GetName();
+	  int i;
+	  SMDS_ElemIteratorPtr aIter = aGroupDS->GetElements();
+	  if (aGroupDS->GetType() == SMDSAbs_Node) {
+	    aRec.NodeList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.NodeList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  } else {
+	    aRec.ElementList.resize(aGroupDS->Extent());
+	    i = 0;
+	    while (aIter->more()) {
+	      const SMDS_MeshElement* aElem = aIter->next();
+	      aRec.ElementList[i] = aElem->GetID(); 
+	      i++;
+	    }
+	  }
+	  aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
+	}
+      }
+      UNV2417::Write(out_stream,aDataSet2417);
+      }*/
+  }
+  catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
-  }catch(...){
+  }
+  catch(...){
     INFOS("Unknown exception was cought !!!");
   }
   return aResult;

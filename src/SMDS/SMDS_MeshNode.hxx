@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -53,6 +53,15 @@ class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 	int NbNodes() const;
 	void setXYZ(double x, double y, double z);
 	friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
+
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
+   * 
+   * Index is wrapped if it is out of a valid range
+   */
+  virtual const SMDS_MeshNode* GetNode(const int) const { return this; }
 
   protected:
 	SMDS_ElemIteratorPtr

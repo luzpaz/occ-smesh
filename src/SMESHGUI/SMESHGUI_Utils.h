@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef SMESHGUI_Utils_HeaderFile
 #define SMESHGUI_Utils_HeaderFile
@@ -96,6 +96,8 @@ SMESHGUI_EXPORT
 
 SMESHGUI_EXPORT
   void SetValue (_PTR(SObject) theSObject, const char* theValue);
+  void setFileType (_PTR(SObject) theSObject, const char* theValue);
+  void setFileName (_PTR(SObject) theSObject, const char* theValue);
 
 SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,

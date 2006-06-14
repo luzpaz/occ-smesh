@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -1081,7 +1081,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 
 			int nb_of_nodes = elem->NbNodes();
 			medElement = SALOME_MED::MED_HEXA8;
-			ASSERT(nb_of_nodes = 8);
+			ASSERT(nb_of_nodes == 8);
 
 			if (trouveHexa8 == 0)
 			{
@@ -1121,7 +1121,7 @@ void SMESH_MEDMesh_i::createFamilies() throw(SALOME::SALOME_Exception)
 	if (_creeFamily == false)
 	{
 		_creeFamily = true;
-		SMESH_subMesh_i *subMeshServant;
+		//SMESH_subMesh_i *subMeshServant;
 
 		map < int, SMESH_subMesh_i * >::iterator it;
 		for (it = _mesh_i->_mapSubMesh_i.begin();

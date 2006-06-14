@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #include <stdio.h>
 
@@ -228,7 +228,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
   }
 
   // write number of triangles
-  unsigned int NBT = nbTri;
+  //unsigned int NBT = nbTri;
   aFile.Write((Standard_Address)sval,LABEL_SIZE);
   writeInteger(nbTri,aFile);  
 

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -144,6 +144,9 @@ private:
   QPushButton*      OkButton;
   QPushButton*      ApplyButton;
   QPushButton*      CloseButton;
+  QPushButton*      HelpButton;
+
+  QString           myHelpFileName;
 
 protected slots:
   void reject();
@@ -152,6 +155,7 @@ private slots:
   void ConstructorsClicked (int);
   void ClickOnOk();
   bool ClickOnApply();
+  void ClickOnHelp();
   void SetEditCurrentArgument();
   void SelectionIntoArgument();
   void DeactivateActiveDialog();

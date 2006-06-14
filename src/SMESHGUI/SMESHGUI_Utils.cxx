@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 
 #include <qstring.h>
@@ -152,6 +152,32 @@ namespace SMESH{
     _PTR(AttributeComment) aComment = anAttr;
     if (aComment)
       aComment->SetValue(theValue);
+  }
+  
+  void setFileName (_PTR(SObject) theSObject, const char* theValue)
+  {
+    _PTR(Study) aStudy = GetActiveStudyDocument();
+    if (aStudy->GetProperties()->IsLocked())
+      return;
+    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+    _PTR(GenericAttribute) anAttr =
+      aBuilder->FindOrCreateAttribute(theSObject, "AttributeExternalFileDef");
+    _PTR(AttributeExternalFileDef) aFileName = anAttr;
+    if (aFileName)
+      aFileName->SetValue(theValue);
+  }
+  
+  void setFileType (_PTR(SObject) theSObject, const char* theValue)
+  {
+    _PTR(Study) aStudy = GetActiveStudyDocument();
+    if (aStudy->GetProperties()->IsLocked())
+      return;
+    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+    _PTR(GenericAttribute) anAttr =
+      aBuilder->FindOrCreateAttribute(theSObject, "AttributeFileType");
+    _PTR(AttributeFileType) aFileType = anAttr;
+    if (aFileType)
+      aFileType->SetValue(theValue);
   }
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,

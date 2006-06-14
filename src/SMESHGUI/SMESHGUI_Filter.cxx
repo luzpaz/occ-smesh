@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -225,7 +225,8 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 8 : 4 ));
 }
 
 //=======================================================================
@@ -244,7 +245,8 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 8  : 4 ));
 }
 
 //=======================================================================
@@ -302,7 +304,8 @@ bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 3;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 6  : 3 ));
 }
 
 //=======================================================================
@@ -321,7 +324,8 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 3;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 6  : 3 ));
 }
 
 //=======================================================================

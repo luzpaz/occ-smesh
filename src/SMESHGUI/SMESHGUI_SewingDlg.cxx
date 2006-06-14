@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -36,9 +36,12 @@
 #include "SMESH_Actor.h"
 #include "SMDS_Mesh.hxx"
 
+#include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
@@ -141,6 +144,10 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE"));
   buttonCancel->setAutoDefault(TRUE);
@@ -286,12 +293,15 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
+  myHelpFileName = "/files/sewing_meshes.htm";
+
   Init();
 
   /* signals and slots connections */
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectButton1, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
@@ -313,10 +323,6 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
   connect(LineEdit5, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
   connect(LineEdit6, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
 
-  /* Move widget on the botton right corner of main widget */
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show(); /* displays Dialog */
 
   ConstructorsClicked(0);
@@ -603,6 +609,23 @@ void SMESHGUI_SewingDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SewingDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -40,7 +40,7 @@ StdMeshers_Propagation::StdMeshers_Propagation (int hypId, int studyId,
      : SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = GetName();
-  _param_algo_dim = -2;
+  _param_algo_dim = -1; // 1D auxiliary
 }
 
 //=============================================================================

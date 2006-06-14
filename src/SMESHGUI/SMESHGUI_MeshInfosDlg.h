@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -63,6 +63,7 @@ private slots:
     void DeactivateActiveDialog() ;
     void ActivateThisDialog();
     void onStartSelection();
+    void onHelp();
 
 private:
     SMESHGUI*               mySMESHGUI;
@@ -79,17 +80,35 @@ private:
     QLabel*       myMeshName;
     QLabel*       myMeshNbNodes;
     QLabel*       myMeshNbEdges;
+    QLabel*       myMeshNbEdges1;
+    QLabel*       myMeshNbEdges2;
     QGroupBox*    myMeshFacesGroup;
     QLabel*       myMeshNbFaces;
+    QLabel*       myMeshNbFaces1;
+    QLabel*       myMeshNbFaces2;
     QLabel*       myMeshNbTriangles;
+    QLabel*       myMeshNbTriangles1;
+    QLabel*       myMeshNbTriangles2;
     QLabel*       myMeshNbQuadrangles;
+    QLabel*       myMeshNbQuadrangles1;
+    QLabel*       myMeshNbQuadrangles2;
     QLabel*       myMeshNbPolygones;
     QGroupBox*    myMeshVolumesGroup;
     QLabel*       myMeshNbVolumes;
+    QLabel*       myMeshNbVolumes1;
+    QLabel*       myMeshNbVolumes2;
     QLabel*       myMeshNbTetra;
+    QLabel*       myMeshNbTetra1;
+    QLabel*       myMeshNbTetra2;
     QLabel*       myMeshNbHexa;
+    QLabel*       myMeshNbHexa1;
+    QLabel*       myMeshNbHexa2;
     QLabel*       myMeshNbPyra;
+    QLabel*       myMeshNbPyra1;
+    QLabel*       myMeshNbPyra2;
     QLabel*       myMeshNbPrism;
+    QLabel*       myMeshNbPrism1;
+    QLabel*       myMeshNbPrism2;
     QLabel*       myMeshNbPolyhedrones;
 
     QWidget*      mySubMeshWidget;
@@ -106,8 +125,11 @@ private:
     QLabel*       myGroupType;
     QLabel*       myGroupNb;
 
-    QGroupBox*   myButtonsGroup;
-    QPushButton* myOkBtn;
+    QGroupBox*    myButtonsGroup;
+    QPushButton*  myOkBtn;
+    QPushButton*  myHelpBtn;
+
+    QString       myHelpFileName;
 };
 
 #endif // SMESHGUI_MESHINFOSDLG_H

@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -92,6 +92,7 @@ private slots:
   void                     onOk();
   void                     onSave();
   void                     onClose();
+  void                     onHelp();
 
   void                     onDeactivate();
 
@@ -118,6 +119,7 @@ private:
   QPushButton*             myOkBtn;
   QPushButton*             mySaveBtn;
   QPushButton*             myCloseBtn;
+  QPushButton*             myHelpBtn;
 
   QButtonGroup*            myTypeGrp;
   QRadioButton*            mySwitch2d;
@@ -143,6 +145,8 @@ private:
 
   SMESH::SMESH_Pattern_var myPattern;
   bool                     myIsLoaded;
+
+  QString                  myHelpFileName;
 };
 
 #endif

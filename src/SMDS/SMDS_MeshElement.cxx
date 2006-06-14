@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
@@ -191,4 +191,47 @@ bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)
 	default : MESSAGE("Internal Error");
 	}
         return false;
+}
+
+bool SMDS_MeshElement::IsValidIndex(const int ind) const
+{
+  return ( ind>-1 && ind<NbNodes() );
+}
+
+const SMDS_MeshNode* SMDS_MeshElement::GetNode(const int ind) const
+{
+  SMDS_ElemIteratorPtr it = nodesIterator();
+  int i = 0, index = WrappedIndex( ind );
+  while ( index != i++ )
+    it->next();
+  if ( it->more() )
+    return static_cast<const SMDS_MeshNode*> (it->next());
+  return 0;
+}
+
+bool SMDS_MeshElement::IsQuadratic() const
+{
+  return false;
+}
+
+bool SMDS_MeshElement::IsMediumNode(const SMDS_MeshNode* node) const
+{
+  return false;
+}
+
+//================================================================================
+  /*!
+   * \brief Check if a node belongs to the element
+    * \param node - the node to check
+    * \retval int - node index within the element, -1 if not found
+   */
+//================================================================================
+
+int SMDS_MeshElement::GetNodeIndex( const SMDS_MeshNode* node ) const
+{
+  SMDS_ElemIteratorPtr nIt = nodesIterator();
+  for ( int i = 0; nIt->more(); ++i )
+    if ( nIt->next() == node )
+      return i;
+  return -1;
 }

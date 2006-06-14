@@ -26,6 +26,8 @@
 #ifndef SMESH_MesherHelper_HeaderFile
 #define SMESH_MesherHelper_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <SMESH_Mesh.hxx>
 #include <TopoDS_Shape.hxx>
 #include <SMDS_MeshNode.hxx>
@@ -48,7 +50,7 @@ typedef map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
  * is called.
  */
 
-class SMESH_MesherHelper
+class SMESH_EXPORT SMESH_MesherHelper
 {
  public:
   // ---------- PUBLIC METHODS ----------

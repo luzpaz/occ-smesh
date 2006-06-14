@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #include <fstream>	
 #include <iomanip>
@@ -63,7 +63,7 @@ void UNV2412::Read(std::ifstream& in_stream, TDataSet& theDataSet)
       // end of dataset is reached
       break;
     }
-
+    
     int n_nodes;
     TRecord aRec;
     in_stream>>aRec.fe_descriptor_id;
@@ -142,9 +142,10 @@ void UNV2412::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
 
 bool UNV2412::IsBeam(int theFeDescriptorId){
   switch (theFeDescriptorId){
-  case 11:
-  case 21:
-  case 22:
+  case 11: // edge with 2 nodes
+  case 21: 
+  case 22: // edge with 3 nodes
+  case 23: // curved beam
   case 24:
   case 25:
     return true;
@@ -197,6 +198,8 @@ bool UNV2412::IsVolume(int theFeDescriptorId){
   case 116: // Solid Quadratic Brick - HEX20
 
   case 117: // Solid Cubic Brick
+
+  case 114: // pyramid of 13 nodes (quadratic)
     return true;
   }
   return false;

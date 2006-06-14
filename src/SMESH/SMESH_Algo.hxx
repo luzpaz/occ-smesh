@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -35,16 +35,20 @@
 
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Edge.hxx>
+#include <gp_XY.hxx>
 
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
 
 class SMESH_Gen;
 class SMESH_Mesh;
+class SMESH_HypoFilter;
 class TopoDS_Face;
 class TopoDS_Shape;
 class SMESHDS_Mesh;
+class SMDS_MeshNode;
 
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
@@ -60,12 +64,26 @@ class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 	virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
 
 	virtual const std::list <const SMESHDS_Hypothesis *> &
-		GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+		GetUsedHypothesis(SMESH_Mesh &         aMesh,
+                                  const TopoDS_Shape & aShape,
+                                  const bool           ignoreAuxiliary=true);
 
 	const list <const SMESHDS_Hypothesis *> &
-		GetAppliedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+		GetAppliedHypothesis(SMESH_Mesh &         aMesh,
+                                     const TopoDS_Shape & aShape,
+                                     const bool           ignoreAuxiliary=true);
 
 	static double EdgeLength(const TopoDS_Edge & E);
+
+
+  /*!
+   * \brief Make filter recognize only compatible hypotheses
+    * \param theFilter - the filter to initialize
+    * \param ignoreAuxiliary - make filter ignore compatible auxiliary hypotheses
+    * \retval bool - true if the algo has compatible hypotheses
+   */
+  bool InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
+                                 const bool         ignoreAuxiliary) const;
 
   /*!
    * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
@@ -123,6 +141,9 @@ class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
         std::vector<std::string> _compatibleHypothesis;
         std::list<const SMESHDS_Hypothesis *> _appliedHypList;
         std::list<const SMESHDS_Hypothesis *> _usedHypList;
+
+  // quadratic mesh creation required
+  bool _quadraticMesh;
 };
 
 #endif

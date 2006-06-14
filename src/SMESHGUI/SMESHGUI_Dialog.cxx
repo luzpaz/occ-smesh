@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -62,10 +62,6 @@ SMESHGUI_Dialog::~SMESHGUI_Dialog()
 void SMESHGUI_Dialog::show()
 {
   adjustSize();
-  SUIT_Desktop *PP = desktop();
-  int x = abs( PP->x() + PP->size().width() - size().width() - 10 ),
-      y = abs( PP->y() + PP->size().height() - size().height() - 10 );
-  move(x, y);
   LightApp_Dialog::show();
 }
 

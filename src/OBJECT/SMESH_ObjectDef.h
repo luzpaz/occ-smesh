@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -29,6 +29,10 @@
 #ifndef SMESH_OBJECTDEF_H
 #define SMESH_OBJECTDEF_H
 
+#include "SMESH_Controls.hxx"
+#include "SMESH_Object.h"
+#include "SMESH_Client.hxx"
+
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -36,9 +40,6 @@
 
 #include <map>
 #include <list>
-
-#include "SMESH_Controls.hxx"
-#include "SMESH_Object.h"
 
 class vtkPoints;
 class SALOME_ExtractUnstructuredGrid;
@@ -121,13 +122,11 @@ public:
 
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   
-  SMESH::SMESH_Mesh_ptr     GetMeshServer() { return myMeshServer.in(); }
-  SMDS_Mesh*                GetMesh() const { return myMesh; }
+  SMESH::SMESH_Mesh_ptr     GetMeshServer() { return myClient.GetMeshServer(); }
+  SMDS_Mesh*                GetMesh() const { return myClient.GetMesh(); }
 
 protected:
-
-  SMESH::SMESH_Mesh_var     myMeshServer;
-  SMDS_Mesh*                myMesh;
+  SMESH_Client              myClient;
 };
 
 

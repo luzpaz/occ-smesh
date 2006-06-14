@@ -23,7 +23,7 @@ td.whs6 { width:50%; padding-right:10px; padding-left:10px; border-top-style:non
 img_whs7 { border:none; width:350px; height:323px; border-style:none; }
 p.whs8 { margin-left:40px; }
 img_whs9 { border:none; width:27px; height:24px; border-style:none; }
-img_whs10 { border:none; width:434px; height:541px; border-style:none; float:none; }
+img_whs10 { border:none; width:434px; height:541px; float:none; border-style:none; }
 ul.whs11 { list-style:disc; }
 p.whs12 { margin-left:84px; }
 img_whs13 { border:none; width:26px; height:25px; border-style:none; }
@@ -46,41 +46,46 @@ onerror = null;
 <style type="text/css">
 <!--
 div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
 -->
 </style><script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
-</head>
-<body><script type="text/javascript" language="javascript1.2">
+<script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
-	if (window.addTocInfo)
+	if (window.setRelStartPage)
 	{
 	addTocInfo("MESH module\nModifying meshes\nExtrusion along a path");
-addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+addButton("show",BTN_IMG,"Show","","","","",0,0,"whd_show0.gif","whd_show2.gif","whd_show1.gif");
+addButton("hide",BTN_IMG,"Hide","","","","",0,0,"whd_hide0.gif","whd_hide2.gif","whd_hide1.gif");
 
 	}
-	if (window.writeBtnStyle)
-		writeBtnStyle();
 
-	if (window.writeIntopicBar)
-		writeIntopicBar(1);
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("smesh.htm");
+	setRelStartPage("index.htm");
 
 		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
+
 }
 else
 	if (window.gbIE4)
 		document.location.reload();
+//-->
+</script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(4);
 //-->
 </script>
 <h1>Extrusion along a path</h1>
@@ -121,7 +126,8 @@ else
 
 <p class="whs8">&nbsp;</p>
 
-<p class=TODO><img src="pics/a-extusionalongapath2.png" x-maintain-ratio="TRUE" width="434px" height="541px" border="0" class="img_whs10"></p>
+<p class=TODO
+	style="margin-left: 80px;"><img src="pics/a-extusionalongapath2.png" x-maintain-ratio="TRUE" width="434px" height="541px" border="0" class="img_whs10"></p>
 
 <p class="whs8">&nbsp;</p>
 

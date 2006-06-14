@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -55,6 +55,9 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
+  void SetColorNumber (int theColorNumber) { myColorNumber = theColorNumber; }
+  int GetColorNumber() const { return myColorNumber; }
+
  private:
   SMESH_Group (const SMESH_Group& theOther);
   // prohibited copy constructor
@@ -63,7 +66,7 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * myGroupDS;
   std::string         myName;
-
+  int                 myColorNumber;
 };
 
 #endif

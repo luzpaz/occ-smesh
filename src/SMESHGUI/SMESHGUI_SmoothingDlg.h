@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -102,6 +102,7 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupArguments;
     QLabel* TextLabelElements;
     QPushButton* SelectElementsButton;
@@ -117,6 +118,8 @@ private:
     QLabel* TextLabelAspectRatio;
     SMESHGUI_SpinBox* SpinBox_AspectRatio;
     QCheckBox       * CheckBoxParametric;
+
+    QString myHelpFileName;
     
 private slots:
 
@@ -124,6 +127,7 @@ private slots:
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;

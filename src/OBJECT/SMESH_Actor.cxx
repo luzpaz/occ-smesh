@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -122,15 +122,15 @@ SMESH_ActorDef::SMESH_ActorDef()
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
     myControlsPrecision = (long)SMESH::GetFloat( "SMESH", "controls_precision", -1 );
 
-  float aPointSize = SMESH::GetFloat("SMESH:node_size",3);
-  float aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
+  vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
+  vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
 
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
 
   //Definition 2D and 3D divices of the actor
   //-----------------------------------------
-  float anRGB[3] = {1,1,1};
+  vtkFloatingPointType anRGB[3] = {1,1,1};
   mySurfaceProp = vtkProperty::New();
   SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   mySurfaceProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
@@ -150,6 +150,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_POLYGON);
   aFilter->RegisterCellsWithType(VTK_QUAD);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
 
   my3DActor = SMESH_DeviceActor::New();
   my3DActor->SetUserMatrix(aMatrix);
@@ -164,6 +166,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_WEDGE);
   aFilter->RegisterCellsWithType(VTK_PYRAMID);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 
   //Definition 1D divice of the actor
@@ -185,6 +189,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter = my1DActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_LINE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
 
   my1DProp = vtkProperty::New();
   my1DProp->DeepCopy(myEdgeProp);
@@ -210,6 +215,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter = my1DExtActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_LINE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
 
 
   //Definition 0D divice of the actor
@@ -262,8 +268,6 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->SetUserMatrix(aMatrix);
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
-
-  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 0.75 ) );
 
   myName = "";
   myIO = NULL;
@@ -744,16 +748,18 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   my2DActor->GetMapper()->SetLookupTable(myLookupTable);
   my3DActor->GetMapper()->SetLookupTable(myLookupTable);
     
-  float aFactor, aUnits;
+  vtkFloatingPointType aFactor, aUnits;
   my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
   my2DActor->SetPolygonOffsetParameters(aFactor,aUnits*0.75);
-
-  //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
-  SetIsShrunkable(true);
 
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
     return false;
+
+  //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
+  SetIsShrunkable(true);
+
+  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 0.75 ) );
 
   int aMode = mgr->integerValue( "SMESH", "display_mode" );
   SetRepresentation(-1);
@@ -776,7 +782,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
 }
 
 
-float* SMESH_ActorDef::GetBounds(){
+vtkFloatingPointType* SMESH_ActorDef::GetBounds(){
   return myNodeActor->GetBounds();
 }
 
@@ -835,15 +841,17 @@ bool SMESH_ActorDef::IsInfinitive(){
 
 
 void SMESH_ActorDef::SetIsShrunkable(bool theShrunkable){
+  if ( myIsShrinkable == theShrunkable )
+    return;
   myIsShrinkable = theShrunkable;
   Modified();
 }
 
-float SMESH_ActorDef::GetShrinkFactor(){
+vtkFloatingPointType SMESH_ActorDef::GetShrinkFactor(){
   return myBaseActor->GetShrinkFactor();
 }
 
-void SMESH_ActorDef::SetShrinkFactor(float theValue){
+void SMESH_ActorDef::SetShrinkFactor(vtkFloatingPointType theValue){
   myBaseActor->SetShrinkFactor(theValue);
 
   my1DActor->SetShrinkFactor(theValue);
@@ -890,7 +898,7 @@ int SMESH_ActorDef::GetNodeObjId(int theVtkID){
   return myPickableActor->GetNodeObjId(theVtkID);
 }
 
-float* SMESH_ActorDef::GetNodeCoord(int theObjID){
+vtkFloatingPointType* SMESH_ActorDef::GetNodeCoord(int theObjID){
   return myPickableActor->GetNodeCoord(theObjID);
 }
 
@@ -1015,6 +1023,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
   if(myEntityMode & eEdges){
     if (MYDEBUG) MESSAGE("EDGES");
     aFilter->RegisterCellsWithType(VTK_LINE);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
   }
 
   if(myEntityMode & eFaces){
@@ -1022,6 +1031,8 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     aFilter->RegisterCellsWithType(VTK_TRIANGLE);
     aFilter->RegisterCellsWithType(VTK_POLYGON);
     aFilter->RegisterCellsWithType(VTK_QUAD);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
   }
 
   if(myEntityMode & eVolumes){
@@ -1031,6 +1042,8 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_WEDGE);
     aFilter->RegisterCellsWithType(VTK_PYRAMID);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   }
   aFilter->Update();
@@ -1135,6 +1148,8 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
 
 
 void SMESH_ActorDef::SetPointRepresentation(bool theIsPointsVisible){
+  if ( myIsPointsVisible == theIsPointsVisible )
+    return;
   myIsPointsVisible = theIsPointsVisible;
   SetRepresentation(GetRepresentation());
 }
@@ -1175,12 +1190,16 @@ void SMESH_ActorDef::UpdateHighlight(){
 
 
 void SMESH_ActorDef::highlight(bool theHighlight){
+  if ( myIsHighlighted == theHighlight )
+    return;
   myIsHighlighted = theHighlight;
   UpdateHighlight();
 }
 
 
 void SMESH_ActorDef::SetPreSelected(bool thePreselect){ 
+  if ( myIsPreselected == thePreselect )
+    return;
   myIsPreselected = thePreselect; 
   UpdateHighlight();
 }
@@ -1250,15 +1269,15 @@ void SMESH_ActorDef::ReleaseGraphicsResources(vtkWindow *renWin){
 }
 
 
-static void GetColor(vtkProperty *theProperty, float& r,float& g,float& b){
-  float* aColor = theProperty->GetColor();
+static void GetColor(vtkProperty *theProperty, vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
+  vtkFloatingPointType* aColor = theProperty->GetColor();
   r = aColor[0];
   g = aColor[1];
   b = aColor[2];
 }
 
 
-void SMESH_ActorDef::SetOpacity(float theValue){
+void SMESH_ActorDef::SetOpacity(vtkFloatingPointType theValue){
   mySurfaceProp->SetOpacity(theValue);
   myBackSurfaceProp->SetOpacity(theValue);
   myEdgeProp->SetOpacity(theValue);
@@ -1268,74 +1287,74 @@ void SMESH_ActorDef::SetOpacity(float theValue){
 }
 
 
-float SMESH_ActorDef::GetOpacity(){
+vtkFloatingPointType SMESH_ActorDef::GetOpacity(){
   return mySurfaceProp->GetOpacity();
 }
 
 
-void SMESH_ActorDef::SetSufaceColor(float r,float g,float b){
+void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   mySurfaceProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetSufaceColor(float& r,float& g,float& b){
+void SMESH_ActorDef::GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(mySurfaceProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetBackSufaceColor(float r,float g,float b){
+void SMESH_ActorDef::SetBackSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   myBackSurfaceProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetBackSufaceColor(float& r,float& g,float& b){
+void SMESH_ActorDef::GetBackSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myBackSurfaceProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetEdgeColor(float r,float g,float b){
+void SMESH_ActorDef::SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   myEdgeProp->SetColor(r,g,b);
   my1DProp->SetColor(r,g,b);
   my1DExtProp->SetColor(1.0-r,1.0-g,1.0-b);
   Modified();
 }
 
-void SMESH_ActorDef::GetEdgeColor(float& r,float& g,float& b){
+void SMESH_ActorDef::GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myEdgeProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetNodeColor(float r,float g,float b){ 
+void SMESH_ActorDef::SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myNodeProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetNodeColor(float& r,float& g,float& b){ 
+void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
   ::GetColor(myNodeProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetHighlightColor(float r,float g,float b){ 
+void SMESH_ActorDef::SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myHighlightProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetHighlightColor(float& r,float& g,float& b){ 
+void SMESH_ActorDef::GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
   ::GetColor(myHighlightProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetPreHighlightColor(float r,float g,float b){ 
+void SMESH_ActorDef::SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myPreselectProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetPreHighlightColor(float& r,float& g,float& b){ 
+void SMESH_ActorDef::GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
   ::GetColor(myPreselectProp,r,g,b);
 }
 
 
-float SMESH_ActorDef::GetLineWidth(){
+vtkFloatingPointType SMESH_ActorDef::GetLineWidth(){
   return myEdgeProp->GetLineWidth();
 }
 
 
-void SMESH_ActorDef::SetLineWidth(float theVal){
+void SMESH_ActorDef::SetLineWidth(vtkFloatingPointType theVal){
   myEdgeProp->SetLineWidth(theVal);
 
   my1DProp->SetLineWidth(theVal + aLineWidthInc);
@@ -1345,7 +1364,7 @@ void SMESH_ActorDef::SetLineWidth(float theVal){
 }
 
 
-void SMESH_ActorDef::SetNodeSize(float theVal){
+void SMESH_ActorDef::SetNodeSize(vtkFloatingPointType theVal){
   myNodeProp->SetPointSize(theVal);
   myHighlightProp->SetPointSize(theVal);
   myPreselectProp->SetPointSize(theVal);
@@ -1356,7 +1375,7 @@ void SMESH_ActorDef::SetNodeSize(float theVal){
   Modified();
 }
 
-float SMESH_ActorDef::GetNodeSize(){
+vtkFloatingPointType SMESH_ActorDef::GetNodeSize(){
   return myNodeProp->GetPointSize();
 }
 
@@ -1429,21 +1448,21 @@ GetClippingPlane(vtkIdType theID)
 
 
 static void ComputeBoundsParam(vtkDataSet* theDataSet,
-			       float theDirection[3], float theMinPnt[3],
-			       float& theMaxBoundPrj, float& theMinBoundPrj)
+			       vtkFloatingPointType theDirection[3], vtkFloatingPointType theMinPnt[3],
+			       vtkFloatingPointType& theMaxBoundPrj, vtkFloatingPointType& theMinBoundPrj)
 {
-  float aBounds[6];
+  vtkFloatingPointType aBounds[6];
   theDataSet->GetBounds(aBounds);
 
   //Enlarge bounds in order to avoid conflicts of precision
   for(int i = 0; i < 6; i += 2){
     static double EPS = 1.0E-3;
-    float aDelta = (aBounds[i+1] - aBounds[i])*EPS;
+    vtkFloatingPointType aDelta = (aBounds[i+1] - aBounds[i])*EPS;
     aBounds[i] -= aDelta;
     aBounds[i+1] += aDelta;
   }
 
-  float aBoundPoints[8][3] = { {aBounds[0],aBounds[2],aBounds[4]},
+  vtkFloatingPointType aBoundPoints[8][3] = { {aBounds[0],aBounds[2],aBounds[4]},
 			       {aBounds[1],aBounds[2],aBounds[4]},
 			       {aBounds[0],aBounds[3],aBounds[4]},
 			       {aBounds[1],aBounds[3],aBounds[4]},
@@ -1456,7 +1475,7 @@ static void ComputeBoundsParam(vtkDataSet* theDataSet,
   theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
   theMinBoundPrj = theMaxBoundPrj;
   for(int i = 1; i < 8; i++){
-    float aTmp = vtkMath::Dot(theDirection,aBoundPoints[i]);
+    vtkFloatingPointType aTmp = vtkMath::Dot(theDirection,aBoundPoints[i]);
     if(theMaxBoundPrj < aTmp){
       theMaxBoundPrj = aTmp;
       aMaxId = i;
@@ -1466,7 +1485,7 @@ static void ComputeBoundsParam(vtkDataSet* theDataSet,
       aMinId = i;
     }
   }
-  float *aMinPnt = aBoundPoints[aMaxId];
+  vtkFloatingPointType *aMinPnt = aBoundPoints[aMaxId];
   theMinPnt[0] = aMinPnt[0];
   theMinPnt[1] = aMinPnt[1];
   theMinPnt[2] = aMinPnt[2];
@@ -1474,11 +1493,11 @@ static void ComputeBoundsParam(vtkDataSet* theDataSet,
 
 
 static void DistanceToPosition(vtkDataSet* theDataSet,
-			       float theDirection[3], float theDist, float thePos[3])
+			       vtkFloatingPointType theDirection[3], vtkFloatingPointType theDist, vtkFloatingPointType thePos[3])
 {
-  float aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
+  vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
   ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
-  float aLength = (aMaxBoundPrj-aMinBoundPrj)*theDist;
+  vtkFloatingPointType aLength = (aMaxBoundPrj-aMinBoundPrj)*theDist;
   thePos[0] = aMinPnt[0]-theDirection[0]*aLength;
   thePos[1] = aMinPnt[1]-theDirection[1]*aLength;
   thePos[2] = aMinPnt[2]-theDirection[2]*aLength;
@@ -1486,29 +1505,29 @@ static void DistanceToPosition(vtkDataSet* theDataSet,
 
 
 static void PositionToDistance(vtkDataSet* theDataSet, 
-			       float theDirection[3], float thePos[3], float& theDist)
+			       vtkFloatingPointType theDirection[3], vtkFloatingPointType thePos[3], vtkFloatingPointType& theDist)
 {
-  float aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
+  vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
   ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
-  float aPrj = vtkMath::Dot(theDirection,thePos);
+  vtkFloatingPointType aPrj = vtkMath::Dot(theDirection,thePos);
   theDist = (aPrj-aMinBoundPrj)/(aMaxBoundPrj-aMinBoundPrj);
 }
 
 
-void SMESH_ActorDef::SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane)
+void SMESH_ActorDef::SetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType theDist, vtkPlane* thePlane)
 {
   thePlane->SetNormal(theDir);
-  float anOrigin[3];
+  vtkFloatingPointType anOrigin[3];
   ::DistanceToPosition(GetUnstructuredGrid(),theDir,theDist,anOrigin);
   thePlane->SetOrigin(anOrigin);
 }
 
 
-void SMESH_ActorDef::GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane)
+void SMESH_ActorDef::GetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType& theDist, vtkPlane* thePlane)
 {
   thePlane->GetNormal(theDir);
 
-  float anOrigin[3];
+  vtkFloatingPointType anOrigin[3];
   thePlane->GetOrigin(anOrigin);
   ::PositionToDistance(GetUnstructuredGrid(),theDir,anOrigin,theDist);
 }
@@ -1598,21 +1617,21 @@ void SMESH_ActorDef::UpdateScalarBar()
     myScalarBarActor->SetOrientationToVertical();
 
 
-  float aXVal = horiz ? 0.20 : 0.01;
+  vtkFloatingPointType aXVal = horiz ? 0.20 : 0.01;
   if( mgr->hasValue( "SMESH", name + "x" ) )
     aXVal = mgr->doubleValue( "SMESH", name + "x", aXVal );
 
-  float aYVal = horiz ? 0.01 : 0.1;
+  vtkFloatingPointType aYVal = horiz ? 0.01 : 0.1;
   if( mgr->hasValue( "SMESH", name + "y" ) )
     aYVal = mgr->doubleValue( "SMESH", name + "y", aYVal );
   myScalarBarActor->SetPosition( aXVal, aYVal );
 
-  float aWVal = horiz ? 0.60 : 0.10;
+  vtkFloatingPointType aWVal = horiz ? 0.60 : 0.10;
   if( mgr->hasValue( "SMESH", name + "width" ) )
     aWVal = mgr->doubleValue( "SMESH", name + "width", aWVal );
   myScalarBarActor->SetWidth( aWVal );
 
-  float aHVal = horiz ? 0.12 : 0.80;
+  vtkFloatingPointType aHVal = horiz ? 0.12 : 0.80;
   if( mgr->hasValue( "SMESH", name + "height" ) )
     aHVal = mgr->doubleValue( "SMESH", name + "height", aHVal );
   myScalarBarActor->SetHeight( aHVal );

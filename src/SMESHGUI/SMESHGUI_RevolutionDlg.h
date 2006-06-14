@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -102,6 +102,7 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupArguments;
     QGroupBox* GroupAxis;
     QLabel* TextLabelElements;
@@ -133,12 +134,15 @@ private:
     QLabel* TextLabelTolerance;
     SMESHGUI_SpinBox* SpinBox_Tolerance;
 
+    QString myHelpFileName;
+
 private slots:
 
     void ConstructorsClicked (int constructorId);
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument();
     void SelectionIntoArgument();
     void DeactivateActiveDialog();

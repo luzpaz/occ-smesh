@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -49,10 +49,12 @@
 #include "SUIT_Desktop.h"
 
 #include "SalomeApp_Study.h"
+#include "LightApp_Application.h"
 #include "LightApp_SelectionMgr.h"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 #include "SALOME_Actor.h"
 #include "SALOME_ListIO.hxx"
@@ -62,7 +64,6 @@
 // VTK Includes
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -147,7 +148,7 @@ namespace SMESH {
       aCells->InsertNextCell(anIdList);
       aCellTypesArray->InsertNextValue(VTK_VERTEX);
 
-      vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+      VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
       aCellLocationsArray->SetNumberOfComponents(1);
       aCellLocationsArray->SetNumberOfTuples(1);
 
@@ -178,11 +179,11 @@ namespace SMESH {
       vtkProperty* aProp = vtkProperty::New();
       aProp->SetRepresentationToPoints();
 
-      float anRGB[3];
+      vtkFloatingPointType anRGB[3];
       GetColor( "SMESH", "node_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 0 ) );
       aProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
-      float aPointSize = GetFloat( "SMESH:node_size", 3 );
+      vtkFloatingPointType aPointSize = GetFloat( "SMESH:node_size", 3 );
       aProp->SetPointSize( aPointSize );
 
       myPreviewActor->SetProperty( aProp );
@@ -256,6 +257,10 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -325,6 +330,8 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 
   SMESHGUI_NodesDlgLayout->addWidget(GroupCoordinates, 1, 0);
 
+  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_nodes";
+
   /* Initialisation and display */
   Init();
 }
@@ -364,6 +371,7 @@ void SMESHGUI_NodesDlg::Init ()
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
   connect(SpinBox_X, SIGNAL (valueChanged(double)), SLOT(ValueChangedInSpinBox(double)));
   connect(SpinBox_Y, SIGNAL (valueChanged(double)), SLOT(ValueChangedInSpinBox(double)));
@@ -374,10 +382,6 @@ void SMESHGUI_NodesDlg::Init ()
   /* to close dialog if study frame change */
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
 
-  /* Move widget on the botton right corner of main widget */
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   // set selection mode
@@ -477,6 +481,23 @@ void SMESHGUI_NodesDlg::ClickOnCancel()
   mySMESHGUI->ResetState();
 
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_NodesDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

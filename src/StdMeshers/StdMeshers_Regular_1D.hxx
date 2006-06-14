@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -51,7 +51,7 @@ public:
 		       const TopoDS_Shape& aShape);
 
   virtual const std::list <const SMESHDS_Hypothesis *> &
-    GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+    GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, const bool=true);
 
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);

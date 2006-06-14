@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -46,6 +46,7 @@
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <OSD.hxx>
 
 #include "Utils_CorbaException.hxx"
 
@@ -109,7 +110,6 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <map>
-#include <boost/filesystem/path.hpp>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -261,8 +261,12 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   _thisObj = this ;
   _id = myPoa->activate_object( _thisObj );
   
+  myIsEmbeddedMode = false;
   myShapeReader = NULL;  // shape reader
   mySMESHGen = this;
+
+  // set it in standalone mode only
+  //OSD::SetSignal( true );
 }
 
 //=============================================================================
@@ -421,7 +425,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     // create a new mesh object servant, store it in a map in study context
     SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID() );
     // create a new mesh object
-    meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID() ));
+    meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID(), myIsEmbeddedMode ));
 
     // activate the CORBA servant of Mesh
     SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( meshServant->_this() );
@@ -453,6 +457,46 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
 
 //=============================================================================
 /*!
+ *  SMESH_Gen_i::SetEmbeddedMode
+ *
+ *  Set current mode
+ */
+//=============================================================================
+
+void SMESH_Gen_i::SetEmbeddedMode( CORBA::Boolean theMode )
+{
+  myIsEmbeddedMode = theMode;
+
+  if ( !myIsEmbeddedMode ) {
+    bool raiseFPE;
+#ifdef _DEBUG_
+    raiseFPE = true;
+    char* envDisableFPE = getenv("DISABLE_FPE");
+    if (envDisableFPE && atoi(envDisableFPE))
+      raiseFPE = false;
+#else
+    raiseFPE = false;
+#endif
+    OSD::SetSignal( raiseFPE );
+  }
+  // else OSD::SetSignal() is called in GUI
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::IsEmbeddedMode
+ *
+ *  Get current mode
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Gen_i::IsEmbeddedMode()
+{
+  return myIsEmbeddedMode;
+}
+
+//=============================================================================
+/*!
  *  SMESH_Gen_i::SetCurrentStudy
  *
  *  Set current study
@@ -471,13 +515,16 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
     myStudyContextMap[ studyId ] = new StudyContext;      
   }
 
-  SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder(); 
-  if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
-    aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
+  // myCurrentStudy may be nil
+  if ( !CORBA::is_nil( myCurrentStudy ) ) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder(); 
+    if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
+      aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
 
   // set current study for geom engine
   //if ( !CORBA::is_nil( GetGeomEngine() ) )
   //  GetGeomEngine()->GetCurrentStudy( myCurrentStudy->StudyId() );
+  }
 }
 
 //=============================================================================
@@ -654,6 +701,37 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
 
 //=============================================================================
 /*!
+ *  SMESH_Gen_i::CreateEmptyMesh
+ *
+ *  Create empty mesh
+ */
+//=============================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
+     throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMesh" );
+  // create mesh
+  SMESH::SMESH_Mesh_var mesh = this->createMesh();
+
+  // publish mesh in the study
+  if ( CanPublishInStudy( mesh ) ) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::SObject_var aSO = PublishMesh( myCurrentStudy, mesh.in() );
+    aStudyBuilder->CommitCommand();
+    if ( !aSO->_is_nil() ) {
+      // Update Python script
+      TPythonDump() << aSO << " = " << this << ".CreateEmptyMesh()";
+    }
+  }
+
+  return mesh._retn();
+}
+
+//=============================================================================
+/*!
  *  SMESH_Gen_i::CreateMeshFromUNV
  *
  *  Create mesh and import data from UNV file
@@ -667,7 +745,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromUNV" );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  string aFileName; // = boost::filesystem::path(theFileName).leaf();
+  string aFileName;
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
@@ -683,6 +761,10 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
   aServant->ImportUNVFile( theFileName );
+
+  // Dump creation of groups
+  aServant->GetGroups();
+
   return aMesh._retn();
 }
 
@@ -701,11 +783,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
 
-  // Python Dump
-  TPythonDump aPythonDump;
-  aPythonDump << "([";
-  //TCollection_AsciiString aStr ("([");
-
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( theFileName );
@@ -714,6 +791,14 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   list<string> aNames = myReader.GetMeshNames(aStatus);
   SMESH::mesh_array_var aResult = new SMESH::mesh_array();
   theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+
+  { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
+
+  // Python Dump
+  TPythonDump aPythonDump;
+  aPythonDump << "([";
+  //TCollection_AsciiString aStr ("([");
+
   if (theStatus == SMESH::DRS_OK) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
@@ -759,6 +844,10 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
 
   // Update Python script
   aPythonDump << "], status) = " << this << ".CreateMeshesFromMED('" << theFileName << "')";
+  }
+  // Dump creation of groups
+  for ( int i = 0; i < aResult->length(); ++i )
+    aResult[ i ]->GetGroups();
 
   return aResult._retn();
 }
@@ -778,7 +867,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  string aFileName; // = boost::filesystem::path(theFileName).leaf();
+  string aFileName;
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();

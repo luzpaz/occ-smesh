@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -71,8 +71,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_Swig.cxx \
 		SMESHGUI_MoveNodesDlg.cxx \
 		SMESHGUI_AddMeshElementDlg.cxx \
-		SMESHGUI_EditHypothesesDlg.cxx \
-		SMESHGUI_CreateHypothesesDlg.cxx \
 		SMESHGUI_XmlHandler.cxx \
 		SMESHGUI_Filter.cxx \
 		SMESHGUI_FilterDlg.cxx \
@@ -99,7 +97,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_FilterUtils.cxx \
 		SMESHGUI_PatternUtils.cxx \
 		SMESHGUI_HypothesesUtils.cxx \
-		SMESHGUI_PrecisionDlg.cxx \
 		SMESHGUI_VTKUtils.cxx \
 		SMESHGUI_Selection.cxx \
 		SMESHGUI_CreatePolyhedralVolumeDlg.cxx \
@@ -110,7 +107,10 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_MeshOp.cxx \
 		SMESHGUI_Displayer.cxx \
 		SMESHGUI_Hypotheses.cxx \
-		SMESHGUI_ShapeByMeshDlg.cxx
+		SMESHGUI_ShapeByMeshDlg.cxx \
+		SMESHGUI_AddQuadraticElementDlg.cxx \
+		SMESHGUI_ConvToQuadDlg.cxx \
+		SMESHGUI_ConvToQuadOp.cxx
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -131,8 +131,6 @@ LIB_MOC = \
 		SMESHGUI_Preferences_SelectionDlg.h \
 		SMESHGUI_MoveNodesDlg.h \
 		SMESHGUI_AddMeshElementDlg.h \
-		SMESHGUI_EditHypothesesDlg.h \
-		SMESHGUI_CreateHypothesesDlg.h \
 		SMESHGUI_FilterDlg.h \
 		SMESHGUI_FilterLibraryDlg.h \
 		SMESHGUI_SingleEditDlg.h \
@@ -148,7 +146,6 @@ LIB_MOC = \
 		SMESHGUI_TranslationDlg.h \
 		SMESHGUI_SymmetryDlg.h \
 		SMESHGUI_SewingDlg.h \
-		SMESHGUI_PrecisionDlg.h \
 		SMESHGUI_MergeNodesDlg.h \
 		SMESHGUI_EditMeshDlg.h \
 		SMESHGUI_CreatePolyhedralVolumeDlg.h \
@@ -158,7 +155,10 @@ LIB_MOC = \
 		SMESHGUI_MeshDlg.h \
 		SMESHGUI_MeshOp.h \
 		SMESHGUI_Hypotheses.h \
-		SMESHGUI_ShapeByMeshDlg.h
+		SMESHGUI_ShapeByMeshDlg.h \
+		SMESHGUI_AddQuadraticElementDlg.h \
+		SMESHGUI_ConvToQuadDlg.h \
+		SMESHGUI_ConvToQuadOp.h
 
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
@@ -184,17 +184,17 @@ LIB_SERVER_IDL =
 #BIN = SMESHBin
 
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
-            -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+            $(KERNEL_CXXFLAGS)  $(GUI_CXXFLAGS) \
+            $(GEOM_CXXFLAGS) $(BOOST_CPPFLAGS)
 
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome
+CXXFLAGS += $(KERNEL_CXXFLAGS) $(GUI_CXXFLAGS) \
+            $(GEOM_CXXFLAGS)
 
 LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef \
-	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome \
-	-lVTKViewer -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject \
-	-lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient  \
-	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection
+	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools $(KERNEL_LDFLAGS) $(GUI_LDFLAGS) \
+	-lVTKViewer -lSalomeDSClient -lSalomeDS -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject \
+	-lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer $(GEOM_LDFLAGS) -lGEOM -lGEOMClient  \
+	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection -lSalomeSession
 
 LDFLAGSFORBIN += $(LDFLAGS)
 

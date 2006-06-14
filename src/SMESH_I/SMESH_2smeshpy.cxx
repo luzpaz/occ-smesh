@@ -1,3 +1,31 @@
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+//
+//
+//  File   : SMESH_2D_Algo_i.hxx
+//  Author : Paul RASCLE, EDF
+//  Module : SMESH
+//  $Header$
+
 // File      : SMESH_2smeshpy.cxx
 // Created   : Fri Nov 18 13:20:10 2005
 // Author    : Edward AGAPOV (eap)
@@ -77,10 +105,20 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 #ifdef DUMP_CONVERSION
   cout << endl << " ######## RESULT ######## " << endl<< endl;
 #endif
+  // reorder commands after conversion
+  list< Handle(_pyCommand) >::iterator cmd;
+  bool orderChanges;
+  do {
+    orderChanges = false;
+    for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
+      if ( (*cmd)->SetDependentCmdsAfter() )
+        orderChanges = true;
+  } while ( orderChanges );
+  
   // concat commands back into a script
   TCollection_AsciiString aScript;
-  list< Handle(_pyCommand) >::iterator cmd = theGen->GetCommands().begin();
-  for ( ; cmd != theGen->GetCommands().end(); ++cmd ) {
+  for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
+  {
 #ifdef DUMP_CONVERSION
     cout << "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << endl;
 #endif
@@ -107,6 +145,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
     myID2AccessorMethod( theEntry2AccessorMethod )
 {
   myNbCommands = 0;
+  myHasPattern = false;
   // make that GetID() to return TPythonDump::SMESHGenName()
   GetCreationCmd()->GetString() += "=";
 }
@@ -115,7 +154,6 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
 /*!
  * \brief Convert a command using a specific converter
   * \param theCommand - the command to convert
-  * \retval bool - convertion result
  */
 //================================================================================
 
@@ -145,19 +183,44 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
     id_mesh->second->Process( aCommand );
     return;
   }
-  // SMESH_Hypothesis method
+  // SMESH_Hypothesis method?
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp )
-    if ( !(*hyp)->IsAlgo() && objID == (*hyp)->GetID() )
+    if ( !(*hyp)->IsAlgo() && objID == (*hyp)->GetID() ) {
       (*hyp)->Process( aCommand );
+      return;
+    }
 
-  // Mesh provides SMESH_IDSource interface used in SMESH_MeshEditor.
-  // Add access to wrapped mesh
-  if ( objID == TPythonDump::MeshEditorName() ) {
-    // in all SMESH_MeshEditor's commands, a SMESH_IDSource is the first arg
-    id_mesh = myMeshes.find( aCommand->GetArg( 1 ));
-    if ( id_mesh != myMeshes.end() )
-      aCommand->SetArg( 1 , aCommand->GetArg( 1 ) + ".GetMesh()" );
+  // Add access to a wrapped mesh
+  for ( id_mesh = myMeshes.begin(); id_mesh != myMeshes.end(); ++id_mesh ) {
+    if ( aCommand->AddAccessorMethod( id_mesh->first, id_mesh->second->AccessorMethod() ))
+      break;
+  }
+
+  // Add access to a wrapped algorithm
+  for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp ) {
+    if ( (*hyp)->IsAlgo() &&
+         aCommand->AddAccessorMethod( (*hyp)->GetID(), (*hyp)->AccessorMethod() ))
+      break;
+  }
+
+  // PAL12227. PythonDump was not updated at proper time; result is
+  //     aCriteria.append(SMESH.Filter.Criterion(17,26,0,'L1',26,25,1e-07,SMESH.EDGE,-1))
+  // TypeError: __init__() takes exactly 11 arguments (10 given)
+  char wrongCommand[] = "SMESH.Filter.Criterion(";
+  if ( int beg = theCommand.Location( wrongCommand, 1, theCommand.Length() ))
+  {
+    _pyCommand tmpCmd( theCommand.SubString( beg, theCommand.Length() ), -1);
+    // there must be 10 arguments, 5-th arg ThresholdID is missing,
+    const int wrongNbArgs = 9, missingArg = 5;
+    if ( tmpCmd.GetNbArgs() == wrongNbArgs )
+    {
+      for ( int i = wrongNbArgs; i > missingArg; --i )
+        tmpCmd.SetArg( i + 1, tmpCmd.GetArg( i ));
+      tmpCmd.SetArg(  missingArg, "''");
+      aCommand->GetString().Trunc( beg - 1 );
+      aCommand->GetString() += tmpCmd.GetString();
+    }
   }
 }
 
@@ -202,6 +265,15 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     }
   }
 
+  // leave only one smeshgen.GetPattern() in the script
+  if ( theCommand->GetMethod() == "GetPattern" ) {
+    if ( myHasPattern ) {
+      theCommand->Clear();
+      return;
+    }
+    myHasPattern = true;
+  }
+
   // smeshgen.Method() --> smesh.smesh.Method()
   theCommand->SetObject( SMESH_2smeshpy::GenName() );
 }
@@ -224,7 +296,7 @@ void _pyGen::Flush()
     if ( !hyp->IsNull() ) {
       (*hyp)->Flush();
       // smeshgen.CreateHypothesis() --> smesh.smesh.CreateHypothesis()
-      if ( !(*hyp)->GetCreationCmd()->IsEmpty() )
+      if ( !(*hyp)->IsWrapped() )
         (*hyp)->GetCreationCmd()->SetObject( SMESH_2smeshpy::GenName() );
     }
 }
@@ -291,7 +363,10 @@ void _pyGen::ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) th
   int nb1 = theCmd1->GetOrderNb();
   theCmd1->SetOrderNb( theCmd2->GetOrderNb() );
   theCmd2->SetOrderNb( nb1 );
+//   cout << "BECOME " << theCmd1->GetOrderNb() << "\t" << theCmd1->GetString() << endl
+//        << "BECOME " << theCmd2->GetOrderNb() << "\t" << theCmd2->GetString() << endl << endl;
 }
+
 //================================================================================
 /*!
  * \brief Set one command after the other
@@ -302,6 +377,7 @@ void _pyGen::ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) th
 
 void _pyGen::SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd )
 {
+//   cout << "SET\t" << theCmd->GetString() << endl << "AFTER\t" << theAfterCmd->GetString() << endl << endl;
   list< Handle(_pyCommand) >::iterator pos;
   pos = find( myCommands.begin(), myCommands.end(), theCmd );
   myCommands.erase( pos );
@@ -394,7 +470,8 @@ static bool sameGroupType( const _pyID&                   grpID,
  */
 //================================================================================
 
-_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd): _pyObject(theCreationCmd)
+_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd):
+  _pyObject(theCreationCmd), myHasEditor(false)
 {
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
@@ -406,8 +483,7 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd): _pyObject(theCreation
 
 //================================================================================
 /*!
-            case brief:
-            default:
+ * \brief Convert a IDL API command of SMESH::Mesh to a method call of python Mesh
   * \param theCommand - Engine method called for this mesh
  */
 //================================================================================
@@ -442,8 +518,11 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     // set mesh to hypo
     const _pyID& hypID = theCommand->GetArg( 2 );
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
-    if ( !hyp.IsNull() && hyp->GetMesh().IsEmpty() )
-      hyp->SetMesh( this->GetID() );
+    if ( !hyp.IsNull() ) {
+      myHypos.push_back( hyp );
+      if ( hyp->GetMesh().IsEmpty() )
+        hyp->SetMesh( this->GetID() );
+    }
   }
   else if ( method == "CreateGroupFromGEOM" ) {// (type, name, grp)
     _pyID grp = theCommand->GetArg( 3 );
@@ -473,7 +552,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     while ( cmd != myAddHypCmds.end() )
     {
       // AddHypothesis(geom, hyp)
-      if ( hypID == (*cmd)->GetArg( 2 )) { // erase both commands
+      if ( hypID == (*cmd)->GetArg( 2 )) { // erase both (add and remove) commands
         theCommand->Clear();
         (*cmd)->Clear();
         cmd = myAddHypCmds.erase( cmd );
@@ -483,16 +562,31 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         ++cmd;
       }
     }
-    if ( ! hasAddCmd ) {
+    Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
+    if ( ! hasAddCmd ) { // hypo addition already wrapped
       // access to wrapped mesh
       AddMeshAccess( theCommand );
       // access to wrapped algo
-      Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
       if ( !hyp.IsNull() && hyp->IsAlgo() && hyp->IsWrapped() )
         theCommand->SetArg( 2, theCommand->GetArg( 2 ) + ".GetAlgorithm()" );
     }
+    // remove hyp from myHypos
+    myHypos.remove( hyp );
   }
-  else { // apply theCommand to the mesh wrapped by smeshpy mesh
+
+  // leave only one "  mesh_editor_<nb> = mesh.GetMeshEditor()"
+  else if ( theCommand->GetMethod() == "GetMeshEditor")
+  {
+    if ( myHasEditor )
+      theCommand->Clear();
+    else
+      AddMeshAccess( theCommand );
+    myHasEditor = true;
+  }
+
+  // apply theCommand to the mesh wrapped by smeshpy mesh
+  else
+  {
     AddMeshAccess( theCommand );
   }
 }
@@ -506,7 +600,6 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
 void _pyMesh::Flush()
 {
   list < Handle(_pyCommand) >::iterator cmd, cmd2;
-  map< _pyID, Handle(_pyCommand) > algo2additionCmd;
 
   // try to convert algo addition like this:
   // mesh.AddHypothesis(geom, ALGO ) --> ALGO = mesh.Algo()
@@ -521,7 +614,8 @@ void _pyMesh::Flush()
     _pyID geom = addCmd->GetArg( 1 );
     if ( algo->Addition2Creation( addCmd, this->GetID() )) // OK
     {
-      algo2additionCmd[ algo->GetID() ] = addCmd;
+      // wrapped algo is created atfer mesh creation
+      GetCreationCmd()->AddDependantCmd( addCmd );
 
       if ( geom != GetGeom() ) // local algo
       {
@@ -534,8 +628,7 @@ void _pyMesh::Flush()
           if ( geom == subCmd->GetArg( 1 )) {
             subCmd->SetObject( algo->GetID() );
             subCmd->RemoveArgs();
-            if ( addCmd->GetOrderNb() > subCmd->GetOrderNb() )
-              theGen->SetCommandAfter( subCmd, addCmd );
+            addCmd->AddDependantCmd( subCmd );
           }
         }
       }
@@ -566,10 +659,7 @@ void _pyMesh::Flush()
     if ( !algo.IsNull() && hyp->Addition2Creation( addCmd, this->GetID() )) // OK
     {
       addCmd->SetObject( algo->GetID() );
-      Handle(_pyCommand) algoCmd = algo2additionCmd[ algo->GetID() ];
-      if ( !algoCmd.IsNull() && algoCmd->GetOrderNb() > addCmd->GetOrderNb() )
-        // algo was created later than hyp
-        theGen->ExchangeCommands( algoCmd, addCmd );
+      algo->GetCreationCmd()->AddDependantCmd( addCmd );
     }
     else
     {
@@ -585,6 +675,11 @@ void _pyMesh::Flush()
   }
   myAddHypCmds.clear();
   mySubmeshes.clear();
+
+  // flush hypotheses
+  list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
+  for ( ; hyp != myHypos.end(); ++hyp )
+    (*hyp)->Flush();
 }
 
 //================================================================================
@@ -666,6 +761,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   else if ( hypType == "Propagation" ) {
     hyp->myDim = 1;
     hyp->myCreationMethod = "Propagation";
+    hyp->myType = "Regular_1D";
+  }
+  else if ( hypType == "QuadraticMesh" ) {
+    hyp->myDim = 1;
+    hyp->myCreationMethod = "QuadraticMesh";
     hyp->myType = "Regular_1D";
   }
   else if ( hypType == "AutomaticLength" ) {
@@ -774,6 +874,9 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
       else
         theCmd->SetArg( i, "[]");
     }
+    // set a new creation command
+    GetCreationCmd()->Clear();
+    SetCreationCmd( theCmd );
 
     // clear commands setting arg values
     list < Handle(_pyCommand) >::iterator argCmd = myArgCommands.begin();
@@ -793,13 +896,8 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
   Handle(_pyCommand) afterCmd = myIsWrapped ? theCmd : GetCreationCmd();
   list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
   for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
-    if ( !(*cmd)->IsEmpty() && afterCmd->GetOrderNb() > (*cmd)->GetOrderNb() ) {
-      theGen->SetCommandAfter( *cmd, afterCmd );
-      afterCmd = *cmd;
-    }
+    afterCmd->AddDependantCmd( *cmd );
   }
-  myArgCommands.clear();
-  myUnknownCommands.clear();
 
   return myIsWrapped;
 }
@@ -835,8 +933,11 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 
 void _pyHypothesis::Flush()
 {
-  if ( IsWrapped() )
-    GetCreationCmd()->Clear();
+  if ( IsWrapped() ) {
+    // forget previous hypothesis modifications
+    myArgCommands.clear();
+    myUnknownCommands.clear();
+  }
 }
 
 //================================================================================
@@ -872,11 +973,21 @@ bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd
                                                 const _pyID&              theMesh)
 {
   if ( IsWrappable( theMesh ) && myArgs.Length() > 1 ) {
-    list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
-    for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
-      // clear SetDistrType()
-      if ( (*cmd)->GetString().Location( "SetDistrType", 1, (*cmd)->Length() ))
-        (*cmd)->Clear();
+    // scale factor (2-nd arg) is provided: clear SetDistrType(1) command
+    bool scaleDistrType = false;
+    list<Handle(_pyCommand)>::reverse_iterator cmd = myUnknownCommands.rbegin();
+    for ( ; cmd != myUnknownCommands.rend(); ++cmd ) {
+      if ( (*cmd)->GetMethod() == "SetDistrType" ) {
+        if ( (*cmd)->GetArg( 1 ) == "1" ) {
+          scaleDistrType = true;
+          (*cmd)->Clear();
+        }
+        else if ( !scaleDistrType ) {
+          // distribution type changed: remove scale factor from args
+          myArgs.Remove( 2, myArgs.Length() );
+          break;
+        }
+      }
     }
   }
   return _pyHypothesis::Addition2Creation( theCmd, theMesh );
@@ -884,8 +995,31 @@ bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd
 
 //================================================================================
 /*!
+ * \brief remove repeated commands defining distribution
+ */
+//================================================================================
+
+void _pyNumberOfSegmentsHyp::Flush()
+{
+  const int nbCmdLists = 2;
+  list<Handle(_pyCommand)> * cmds[nbCmdLists] = { &myArgCommands, &myUnknownCommands };
+  for ( int i = 0; i < nbCmdLists; ++i ) {
+    set<TCollection_AsciiString> uniqueMethods;
+    list<Handle(_pyCommand)> & cmdList = *cmds[i];
+    list<Handle(_pyCommand)>::reverse_iterator cmd = cmdList.rbegin();
+    for ( ; cmd != cmdList.rend(); ++cmd ) {
+      bool isNewInSet = uniqueMethods.insert( (*cmd)->GetMethod() ).second;
+      if ( ! isNewInSet )
+        (*cmd)->Clear();
+    }
+    cmdList.clear();
+  }
+}
+
+//================================================================================
+/*!
  * \brief _pyAlgorithm constructor
-  * \param theCreationCmd - The command like "algo = smeshgen.CreateHypothesis(type,lib)"
+ * \param theCreationCmd - The command like "algo = smeshgen.CreateHypothesis(type,lib)"
  */
 //================================================================================
 
@@ -1199,10 +1333,17 @@ void _pyCommand::SetArg( int index, const TCollection_AsciiString& theArg)
   if ( pos < 1 ) // no index-th arg exist, append inexistent args
   {
     // find a closing parenthesis
-    pos = Length();
-    while ( pos > 0 && myString.Value( pos ) != ')' )
-      --pos;
-    if ( pos == 0 ) { // no parentheses at all
+    if ( int lastArgInd = GetNbArgs() ) {
+      pos = GetBegPos( ARG1_IND + lastArgInd  - 1 ) + GetArg( lastArgInd ).Length();
+      while ( pos > 0 && pos <= Length() && myString.Value( pos ) != ')' )
+        ++pos;
+    }
+    else {
+      pos = Length();
+      while ( pos > 0 && myString.Value( pos ) != ')' )
+        --pos;
+    }
+    if ( pos < 1 || myString.Value( pos ) != ')' ) { // no parentheses at all
       myString += "()";
       pos = Length();
     }
@@ -1232,4 +1373,76 @@ void _pyCommand::RemoveArgs()
   myArgs.Clear();
   if ( myBegPos.Length() >= ARG1_IND )
     myBegPos.Remove( ARG1_IND, myBegPos.Length() );
+}
+
+//================================================================================
+/*!
+ * \brief Set dependent commands after this one
+ */
+//================================================================================
+
+bool _pyCommand::SetDependentCmdsAfter() const
+{
+  bool orderChanged = false;
+  list< Handle(_pyCommand)>::const_reverse_iterator cmd = myDependentCmds.rbegin();
+  for ( ; cmd != myDependentCmds.rend(); ++cmd ) {
+    if ( (*cmd)->GetOrderNb() < GetOrderNb() ) {
+      orderChanged = true;
+      theGen->SetCommandAfter( *cmd, this );
+      (*cmd)->SetDependentCmdsAfter();
+    }
+  }
+  return orderChanged;
+}
+//================================================================================
+/*!
+ * \brief Insert accessor method after theObjectID
+  * \param theObjectID - id of the accessed object
+  * \param theAcsMethod - name of the method giving access to the object
+  * \retval bool - false if theObjectID is not found in the command string
+ */
+//================================================================================
+
+bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod )
+{
+  if ( !theAcsMethod )
+    return false;
+  // start object search from the object, i.e. ignore result
+  GetObject();
+  int beg = GetBegPos( OBJECT_IND );
+  if ( beg < 1 || beg > Length() )
+    return false;
+  while (( beg = myString.Location( theObjectID, beg, Length() )))
+  {
+    // check that theObjectID is not just a part of a longer ID
+    int afterEnd = beg + theObjectID.Length();
+    Standard_Character c = myString.Value( afterEnd );
+    if ( !isalnum( c ) && c != ':' ) {
+      // insertion
+      int oldLen = Length();
+      myString.Insert( afterEnd, (char*) theAcsMethod );
+      myString.Insert( afterEnd, "." );
+      // update starting positions of the parts following the modified one
+      int posDelta = Length() - oldLen;
+      for ( int i = 1; i <= myBegPos.Length(); ++i ) {
+        if ( myBegPos( i ) > afterEnd )
+          myBegPos( i ) += posDelta;
+      }
+      return true;
+    }
+    beg = afterEnd; // is a part - next search
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Return method name giving access to an interaface object wrapped by python class
+  * \retval const char* - method name
+ */
+//================================================================================
+
+const char* _pyObject::AccessorMethod() const
+{
+  return 0;
 }

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -223,7 +223,7 @@ class SMESHGUI_FilterDlg : public QDialog
   enum { Mesh, Selection, Dialog, None };
 
   // Buttons
-  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close };
+  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close, BTN_Help };
 
 public:
                             SMESHGUI_FilterDlg( SMESHGUI*,
@@ -253,6 +253,7 @@ private slots:
   void                      onOk();
   bool                      onApply();
   void                      onClose();
+  void                      onHelp();
   void                      onDeactivate();
   void                      onSelectionDone();
   void                      onCriterionChanged (const int, const int);
@@ -311,6 +312,8 @@ private:
   QMap< int, SMESH::Filter_var > myFilter;
   QMap< int, bool >              myInsertState;
   QMap< int, int  >              myApplyToState;
+
+  QString                   myHelpFileName;
 };
 
 #endif

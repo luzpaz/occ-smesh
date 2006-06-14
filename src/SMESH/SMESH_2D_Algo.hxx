@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -32,7 +32,8 @@
 #include "SMESH_SMESH.hxx"
 
 #include "SMESH_Algo.hxx"
-#include <TopoDS_Wire.hxx>
+#include "SMESH_subMesh.hxx"
+#include "TopoDS_Wire.hxx"
 
 class SMESH_EXPORT SMESH_2D_Algo:
   public SMESH_Algo
@@ -43,6 +44,7 @@ public:
 
   int NumberOfWires(const TopoDS_Shape& S);
   int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
+
 };
 
 #endif

@@ -19,8 +19,9 @@ ul.whs2 { list-style:disc; }
 p.whs3 { margin-left:40px; }
 img_whs4 { border:none; width:27px; height:25px; border-style:none; }
 p.whs5 { margin-left:80px; }
-img_whs6 { border:none; width:332px; height:300px; float:none; border-style:none; }
-img_whs7 { border:none; width:224px; height:212px; border-style:none; }
+img_whs6 { border:none; border-style:none; width:355px; height:326px; float:none; }
+p.whs7 { margin-left:38px; }
+img_whs8 { border:none; width:224px; height:212px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -50,41 +51,46 @@ onerror = null;
 <style type="text/css">
 <!--
 div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
 -->
 </style><script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="../whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
-</head>
-<body><script type="text/javascript" language="javascript1.2">
+<script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
-	if (window.addTocInfo)
+	if (window.setRelStartPage)
 	{
 	addTocInfo("MESH module\nCreating meshes\nConstructing submeshes");
-addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+addButton("show",BTN_IMG,"Show","","","","",0,0,"../whd_show0.gif","../whd_show2.gif","../whd_show1.gif");
+addButton("hide",BTN_IMG,"Hide","","","","",0,0,"../whd_hide0.gif","../whd_hide2.gif","../whd_hide1.gif");
 
 	}
-	if (window.writeBtnStyle)
-		writeBtnStyle();
 
-	if (window.writeIntopicBar)
-		writeIntopicBar(1);
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.htm");
+	setRelStartPage("../index.htm");
 
 		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
+
 }
 else
 	if (window.gbIE4)
 		document.location.reload();
+//-->
+</script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(4);
 //-->
 </script>
 <h1>Constructing submeshes</h1>
@@ -119,9 +125,16 @@ else
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs5"><img src="../pics/submeshconstruction.png" x-maintain-ratio="TRUE" width="332px" height="300px" border="0" class="img_whs6"></p>
+<p class="whs5"><img src="../pics/createmesh-inv2.png" x-maintain-ratio="TRUE" width="355px" height="326px" border="0" class="img_whs6"></p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">It allows to define the <span style="font-weight: bold;"><B>Name</B></span>, 
+ the parent <span style="font-weight: bold;"><B>Mesh</B></span> and the <span 
+ style="font-weight: bold;"><B>Geometry</B></span> (e.g. a face if the parent 
+ mesh has been built on box) of the submesh. You can define algorithms 
+ and hypotheses in the same way as in <a href="constructing_meshes.htm">Create 
+ mesh</a> menu. &nbsp;</p>
 
 <p class="whs5">&nbsp;</p>
 
@@ -130,7 +143,7 @@ else
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3"><img src="../image10.jpg" width="224px" height="212px" border="0" class="img_whs7"></p>
+<p class="whs3"><img src="../image10.jpg" width="224px" height="212px" border="0" class="img_whs8"></p>
 
 <p class="whs3">&nbsp;</p>
 

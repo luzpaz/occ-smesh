@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -79,8 +79,10 @@ StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i()
  *  Builds point distribution according to passed function
  */
 //=============================================================================
-SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, long nbSeg, long conv )
-throw ( SALOME::SALOME_Exception )
+SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, 
+									   CORBA::Long nbSeg, 
+									   CORBA::Long conv )
+  throw ( SALOME::SALOME_Exception )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
   ASSERT( myBaseImpl );
@@ -100,8 +102,9 @@ throw ( SALOME::SALOME_Exception )
 }
 
 SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
-									  long nbSeg, long conv )
-throw ( SALOME::SALOME_Exception )
+									  CORBA::Long nbSeg, 
+									  CORBA::Long conv )
+  throw ( SALOME::SALOME_Exception )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
   ASSERT( myBaseImpl );
@@ -309,7 +312,7 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   try {
     this->GetImpl()->SetExpressionFunction( expr );
     // Update Python script
-    SMESH::TPythonDump() << _this() << ".SetExpressionFunction( " << expr << " )";
+    SMESH::TPythonDump() << _this() << ".SetExpressionFunction( '" << expr << "' )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),

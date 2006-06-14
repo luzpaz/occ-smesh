@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -35,14 +35,19 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Controls.hxx"
 #include "SMESH_SequenceOfNode.hxx"
+#include "SMESH_SequenceOfElemPtr.hxx"
 #include "gp_Dir.hxx"
 #include "TColStd_HSequenceOfReal.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 #include <list>
 #include <map>
 
 typedef map<const SMDS_MeshElement*,
             list<const SMDS_MeshElement*> > TElemOfElemListMap;
+
+typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*> RemoveQuadNodeMap;
+typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>::iterator ItRemoveQuadNodeMap;
 
 class SMDS_MeshElement;
 class SMDS_MeshFace;
@@ -90,7 +95,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
    *                       is still performed; theMaxAngle is mesured in radians.
    * \retval bool - Success or not.
    */
-  bool TriToQuad (std::set<const SMDS_MeshElement*> &  theElems,
+  bool TriToQuad (std::map<int,const SMDS_MeshElement*> & theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion,
                   const double                         theMaxAngle);
 
@@ -100,7 +105,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
    * \param theCriterion - Is used to choose a diagonal for splitting.
    * \retval bool - Success or not.
    */
-  bool QuadToTri (std::set<const SMDS_MeshElement*> &  theElems,
+  bool QuadToTri (std::map<int,const SMDS_MeshElement*> &  theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion);
 
   /*!
@@ -109,7 +114,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
    * \param the13Diag - Is used to choose a diagonal for splitting.
    * \retval bool - Success or not.
    */
-  bool QuadToTri (std::set<const SMDS_MeshElement*> & theElems,
+  bool QuadToTri (std::map<int,const SMDS_MeshElement*> & theElems,
                   const bool                          the13Diag);
 
   /*!
@@ -124,7 +129,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
 
-  void Smooth (std::set<const SMDS_MeshElement*> & theElements,
+  void Smooth (std::map<int,const SMDS_MeshElement*> & theElements,
                std::set<const SMDS_MeshNode*> &    theFixedNodes,
                const SmoothMethod                  theSmoothMethod,
                const int                           theNbIterations,
@@ -140,7 +145,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
   // on geometrical faces
 
 
-  void RotationSweep (std::set<const SMDS_MeshElement*> & theElements,
+  void RotationSweep (std::map<int,const SMDS_MeshElement*> & theElements,
                       const gp_Ax1&                       theAxis,
                       const double                        theAngle,
                       const int                           theNbSteps,
@@ -190,7 +195,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
    *   EXTRUSION_FLAG_SEW is set
    */
   void ExtrusionSweep
-           (set<const SMDS_MeshElement*> & theElems,
+           (map<int,const SMDS_MeshElement*> & theElems,
             const gp_Vec&                  theStep,
             const int                      theNbSteps,
             TElemOfElemListMap&            newElemsMap,
@@ -207,7 +212,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
    *   EXTRUSION_FLAG_SEW is set
    * param theParams - special structure for manage of extrusion
    */
-  void ExtrusionSweep (set<const SMDS_MeshElement*> & theElems,
+  void ExtrusionSweep (map<int,const SMDS_MeshElement*> & theElems,
                        ExtrusParam&                   theParams,
                        TElemOfElemListMap&            newElemsMap,
                        const int                      theFlags,
@@ -227,7 +232,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
     EXTR_CANT_GET_TANGENT
     };
   
-  Extrusion_Error ExtrusionAlongTrack (std::set<const SMDS_MeshElement*> & theElements,
+  Extrusion_Error ExtrusionAlongTrack (std::map<int,const SMDS_MeshElement*> & theElements,
                                        SMESH_subMesh*                      theTrackPattern,
                                        const SMDS_MeshNode*                theNodeStart,
                                        const bool                          theHasAngles,
@@ -237,7 +242,7 @@ class SMESH_EXPORT SMESH_MeshEditor {
   // Generate new elements by extrusion of theElements along path given by theTrackPattern,
   // theHasAngles are the rotation angles, base point can be given by theRefPoint
 
-  void Transform (std::set<const SMDS_MeshElement*> & theElements,
+  void Transform (std::map<int,const SMDS_MeshElement*> & theElements,
                   const gp_Trsf&                      theTrsf,
                   const bool                          theCopy);
   // Move or copy theElements applying theTrsf to their nodes
@@ -314,8 +319,8 @@ class SMESH_EXPORT SMESH_MeshEditor {
   // nodes are inserted.
   // Return false, if sewing failed.
 
-  Sew_Error SewSideElements (std::set<const SMDS_MeshElement*>& theSide1,
-                             std::set<const SMDS_MeshElement*>& theSide2,
+  Sew_Error SewSideElements (std::map<int,const SMDS_MeshElement*>& theSide1,
+                             std::map<int,const SMDS_MeshElement*>& theSide2,
                              const SMDS_MeshNode*               theFirstNode1ToMerge,
                              const SMDS_MeshNode*               theFirstNode2ToMerge,
                              const SMDS_MeshNode*               theSecondNode1ToMerge,
@@ -341,6 +346,15 @@ class SMESH_EXPORT SMESH_MeshEditor {
   // insert theNodesToInsert into all volumes, containing link
   // theBetweenNode1 - theBetweenNode2, between theBetweenNode1 and theBetweenNode2.
 
+  void ConvertToQuadratic(const bool theForce3d);
+  //converts all mesh to quadratic one, deletes old elements, replacing 
+  //them with quadratic ones with the same id.
+
+  bool ConvertFromQuadratic();
+  //converts all mesh from quadratic to ordinary ones, deletes old quadratic elements, replacing 
+  //them with ordinary mesh elements with the same id.
+
+
 //  static int SortQuadNodes (const SMDS_Mesh * theMesh,
 //                            int               theNodeIds[] );
 //  // Set 4 nodes of a quadrangle face in a good order.
@@ -357,27 +371,67 @@ class SMESH_EXPORT SMESH_MeshEditor {
                                SMESHDS_Mesh *          aMesh);
   // Add elemToAdd to the groups the elemInGroups belongs to
 
+  static void RemoveElemFromGroups (const SMDS_MeshElement* removeelem,
+                                    SMESHDS_Mesh *          aMesh);
+  // remove elemToAdd from the groups 
+
   static const SMDS_MeshElement*
     FindFaceInSet(const SMDS_MeshNode*                     n1,
                   const SMDS_MeshNode*                     n2,
-                  const std::set<const SMDS_MeshElement*>& elemSet,
-                  const std::set<const SMDS_MeshElement*>& avoidSet);
+                  const std::map<int,const SMDS_MeshElement*>& elemSet,
+                  const std::map<int,const SMDS_MeshElement*>& avoidSet);
   // Return a face having linked nodes n1 and n2 and which is
   // - not in avoidSet,
   // - in elemSet provided that !elemSet.empty()
+
+  /*!
+   * \brief Returns true if given node is medium
+    * \param n - node to check
+    * \param typeToCheck - type of elements containing the node to ask about node status
+    * \retval bool - check result
+   */
+  static bool IsMedium(const SMDS_MeshNode*      node,
+                       const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
 
   int FindShape (const SMDS_MeshElement * theElem);
   // Return an index of the shape theElem is on
   // or zero if a shape not found
 
-
   SMESH_Mesh * GetMesh() { return myMesh; }
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
- private:
+  SMESH_SequenceOfElemPtr GetLastCreatedNodes() { return myLastCreatedNodes; }
+
+  SMESH_SequenceOfElemPtr GetLastCreatedElems() { return myLastCreatedElems; }
+
+private:
+
+  void ConvertElemToQuadratic(SMESHDS_SubMesh *theSm,
+                              SMESH_MesherHelper* theHelper,
+			      const bool theForce3d);
+  //Auxiliary function for "ConvertToQuadratic" is intended to convert
+  //elements contained in submesh to quadratic
+
+  void RemoveQuadElem( SMESHDS_SubMesh *theSm,
+		       SMDS_ElemIteratorPtr theItr,
+		       RemoveQuadNodeMap& theRemoveNodeMap);
+  //Auxiliary function for "ConvertFromQuadratic" is intended to convert quadratic
+  //element to ordinary and for removing quadratic nodes
+
+private:
 
   SMESH_Mesh * myMesh;
+
+  /*!
+   * Sequence for keeping nodes created during last operation
+   */
+  SMESH_SequenceOfElemPtr myLastCreatedNodes;
+
+  /*!
+   * Sequence for keeping elements created during last operation
+   */
+  SMESH_SequenceOfElemPtr myLastCreatedElems;
 
 };
 

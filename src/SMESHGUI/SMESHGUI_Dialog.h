@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -46,7 +46,7 @@ class SMESHGUI_EXPORT SMESHGUI_Dialog : public LightApp_Dialog
   Q_OBJECT
   
 public:
-  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, const int = OK | Close | Apply );
+  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, const int = OK | Close | Apply | Help );
   virtual ~SMESHGUI_Dialog();
 
   virtual void show();

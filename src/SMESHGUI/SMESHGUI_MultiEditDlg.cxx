@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -43,14 +43,18 @@
 
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
+#include "LightApp_Application.h"
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 // OCCT Includes
 #include <Precision.hxx>
@@ -65,7 +69,6 @@
 #include <vtkPolygon.h>
 #include <vtkConvexPointSet.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -233,6 +236,7 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
   myOkBtn     = new QPushButton (tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton (tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton (tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem (0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -242,6 +246,7 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   return aFrame;
 }
@@ -333,6 +338,7 @@ void SMESHGUI_MultiEditDlg::Init()
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+  connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
@@ -388,6 +394,35 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
       anActor = myActor;
     if (anActor != 0)
     {
+      // skl 07.02.2006
+      SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
+      if( myFilterType == SMESHGUI_TriaFilter || 
+	  myFilterType == SMESHGUI_QuadFilter ||
+	  myFilterType == SMESHGUI_FaceFilter ) {
+	SMDS_FaceIteratorPtr it = aMesh->facesIterator();
+	while(it->more()) {
+	  const SMDS_MeshFace* f = it->next();
+	  if(myFilterType == SMESHGUI_FaceFilter) {
+	    myIds.Add(f->GetID());
+	  }
+	  else if( myFilterType==SMESHGUI_TriaFilter &&
+		   ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
+	    myIds.Add(f->GetID());
+	  }
+	  else if( myFilterType==SMESHGUI_QuadFilter &&
+		   ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
+	    myIds.Add(f->GetID());
+	  }
+	}
+      }
+      else if(myFilterType == SMESHGUI_VolumeFilter) {
+	SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
+	while(it->more()) {
+	  const SMDS_MeshVolume* f = it->next();
+	  myIds.Add(f->GetID());
+	}
+      }
+      /* commented by skl 07.02.2006
       TVisualObjPtr aVisualObj = anActor->GetObject();
       vtkUnstructuredGrid* aGrid = aVisualObj->GetUnstructuredGrid();
       if (aGrid != 0) {
@@ -411,6 +446,7 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
           }
         }
       }
+      */
     }
   }
 
@@ -442,6 +478,23 @@ void SMESHGUI_MultiEditDlg::onClose()
   mySelectionMgr->clearFilters();
 
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================
@@ -1004,6 +1057,7 @@ SMESHGUI_ChangeOrientationDlg
   SMESHGUI_MultiEditDlg(theModule, SMESHGUI_FaceFilter, true, theName)
 {
   setCaption(tr("CAPTION"));
+  myHelpFileName = "/files/changing_orientation_of_elements.htm";
 }
 
 SMESHGUI_ChangeOrientationDlg::~SMESHGUI_ChangeOrientationDlg()
@@ -1042,6 +1096,8 @@ SMESHGUI_UnionOfTrianglesDlg
   myMaxAngleSpin->SetValue(30.0);
 
   myCriterionGrp->show();
+
+  myHelpFileName = "/files/uniting_a_set_of_triangles.htm";
 }
 
 SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
@@ -1080,6 +1136,8 @@ SMESHGUI_CuttingOfQuadsDlg
   connect(myGroupChoice    , SIGNAL(clicked(int))        , this, SLOT(onCriterionRB()));
   connect(myComboBoxFunctor, SIGNAL(activated(int))      , this, SLOT(onPreviewChk()));
   connect(this             , SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
+
+  myHelpFileName = "/files/cutting_quadrangles.htm";
 }
 
 SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()
@@ -1262,7 +1320,7 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
     }
   }
 
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
   aCellLocationsArray->SetNumberOfComponents(1);
   aCellLocationsArray->SetNumberOfTuples(aNbCells);
 

@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef _INCLUDE_DRIVERUNV_R_SMDS_MESH
 #define _INCLUDE_DRIVERUNV_R_SMDS_MESH
@@ -23,13 +23,33 @@
 #include "SMESH_DriverUNV.hxx"
 
 #include "Driver_SMDS_Mesh.h"
+#include <map>
+#include <string>
+
 
 class SMDS_Mesh;
+class SMDS_MeshGroup;
+
+
+typedef std::map<SMDS_MeshGroup*, std::string> TGroupNamesMap;
+typedef std::map<SMDS_MeshGroup*, int> TGroupIdMap;
 
 class MESHDRIVERUNV_EXPORT DriverUNV_R_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
+  DriverUNV_R_SMDS_Mesh():Driver_SMDS_Mesh(),myGroup(0) {};
+  ~DriverUNV_R_SMDS_Mesh();
+ 
   virtual Status Perform();
+
+  const SMDS_MeshGroup* GetGroup()         const { return myGroup;}
+  const TGroupNamesMap& GetGroupNamesMap() const { return myGroupNames; }
+  const TGroupIdMap&    GetGroupIdMap() const { return myGroupId; }
+
+ private:
+  SMDS_MeshGroup* myGroup;
+  TGroupNamesMap myGroupNames;
+  TGroupIdMap    myGroupId;
 };
 
 #endif

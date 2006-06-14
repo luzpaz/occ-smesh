@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -53,7 +53,7 @@ class SMESH_EXPORT SMESH_HypoPredicate {
   friend class SMESH_HypoFilter;
 };
 
-class SMESH_HypoFilter: public SMESH_HypoPredicate
+class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
 {
  public:
   // Create and add predicates.
@@ -69,6 +69,7 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
 
   // Create predicates
   static SMESH_HypoPredicate* IsAlgo();
+  static SMESH_HypoPredicate* IsAuxiliary();
   static SMESH_HypoPredicate* IsApplicableTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* IsAssignedTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* Is(const SMESH_Hypothesis* theHypo);
@@ -156,6 +157,11 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
   struct IsAssignedToPredicate : public SMESH_HypoPredicate {
     TopoDS_Shape _mainShape;
     IsAssignedToPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
+    bool IsOk(const SMESH_Hypothesis* aHyp,
+              const TopoDS_Shape&     aShape) const;
+  };
+        
+  struct IsAuxiliaryPredicate : public SMESH_HypoPredicate {
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
   };

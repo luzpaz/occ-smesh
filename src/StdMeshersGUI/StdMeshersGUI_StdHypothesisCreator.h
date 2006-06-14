@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -57,8 +57,7 @@ protected:
   virtual QWidget* getCustomWidget( const StdParam&, QWidget* ) const;
   virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
 
-private:
-          QString hypTypeName( const QString& ) const;
+  virtual QString hypTypeName( const QString& ) const;
 };
 
 #endif

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -41,8 +41,11 @@
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
+#include <TColStd_MapOfInteger.hxx>
 
 #include "SMESH_Block.hxx"
+
+#include "SMESH_MesherHelper.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 
@@ -167,7 +170,7 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
   public: // methods
     StdMeshers_Penta_3D();
     
-    //~StdMeshers_Penta_3D();
+    ~StdMeshers_Penta_3D();
     
     bool Compute(SMESH_Mesh& , const TopoDS_Shape& );
     
@@ -183,10 +186,10 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
       return myTol3D;
     }
 
-    static bool LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
-                            const TopoDS_Face&     theFace,
-                            const TopoDS_Edge&     theBaseEdge,
-                            SMESHDS_Mesh*          theMesh);
+    bool LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
+                     const TopoDS_Face&     theFace,
+                     const TopoDS_Edge&     theBaseEdge,
+                     SMESHDS_Mesh*          theMesh);
     // Load nodes bound to theFace into column (vectors) and rows
     // of theIJNodes.
     // The value of theIJNodes map is a vector of ordered nodes so
@@ -253,6 +256,9 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     //
     vector<StdMeshers_IJNodeMap> myWallNodesMaps; // nodes on a face
     vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+
+    bool myCreateQuadratic;
+    SMESH_MesherHelper* myTool; // toll for working with quadratic elements
 };
 
 #endif

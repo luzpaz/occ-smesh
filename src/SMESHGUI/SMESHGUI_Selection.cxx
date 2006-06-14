@@ -15,7 +15,7 @@
 // License along with this library; if not, write to the Free Software 
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 #include "SMESHGUI_Selection.h"
@@ -110,7 +110,7 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
   else if ( p=="hasReference" )  val = QtxValue( hasReference( ind ) );
 //  else if ( p=="isVisible" )     val = QtxValue( isVisible( ind ) );
 
-  // printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
+       // printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
   //if ( val.type() == QVariant::List )
   //cout << "size: " << val.toList().count() << endl;
 
@@ -293,7 +293,7 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
     if ( !io.IsNull() ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io) ; // m,sm,gr->m
       if ( !mesh->_is_nil() ) {*/
-        _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ) );
+        _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
 	//FindSObject( mesh );
         if ( so ) {
           GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
@@ -401,6 +401,8 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
     }
     if( aFTag>10 )
       res = GROUP;
+    else
+      res = SUBMESH;
 
     break;
   }

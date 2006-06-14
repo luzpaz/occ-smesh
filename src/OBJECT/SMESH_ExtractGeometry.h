@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef SALOME_ExtractGeometry_HeaderFile
 #define SALOME_ExtractGeometry_HeaderFile
@@ -25,6 +25,7 @@
 #include <vtkExtractGeometry.h>
 #include <vector>
 
+#include "VTKViewer.h"
 
 class SMESHOBJECT_EXPORT SMESH_ExtractGeometry : public vtkExtractGeometry{
 public:

@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -51,7 +51,8 @@ class algo_error_array;
 
 namespace SMESH{
 
-  SMESHGUI_EXPORT void InitAvailableHypotheses();
+  SMESHGUI_EXPORT
+  void InitAvailableHypotheses();
 
   SMESHGUI_EXPORT
   QStringList GetAvailableHypotheses( const bool isAlgo, 
@@ -65,6 +66,15 @@ namespace SMESH{
 
   SMESHGUI_EXPORT
   HypothesisData* GetHypothesisData(const char* aHypType);
+
+  SMESHGUI_EXPORT
+  bool IsAvailableHypothesis(const HypothesisData* algoData,
+                             const QString&        hypType,
+                             bool&                 isOptional);
+
+  SMESHGUI_EXPORT
+  bool IsCompatibleAlgorithm(const HypothesisData* algo1Data,
+                             const HypothesisData* algo2Data);
 
   SMESHGUI_EXPORT
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType);

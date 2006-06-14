@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -58,20 +58,11 @@
 
 #include <vtkTextProperty.h>
 #include <vtkScalarBarActor.h>
-#include <vtkScalarsToColors.h>
+#include <vtkLookupTable.h>
 
 #define MINIMUM_WIDTH 70
 #define MARGIN_SIZE   11
 #define SPACING_SIZE   6
-
-#define DEF_VER_X  0.01
-#define DEF_VER_Y  0.10
-#define DEF_VER_H  0.80
-#define DEF_VER_W  0.10
-#define DEF_HOR_X  0.20
-#define DEF_HOR_Y  0.01
-#define DEF_HOR_H  0.12
-#define DEF_HOR_W  0.60
 
 using namespace std;
 
@@ -125,6 +116,14 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
        mySMESHGUI( theModule ),
        mySelectionMgr( property ? SMESH::GetSelectionMgr( theModule ) : 0 )
 {
+  DEF_VER_X = 0.01;
+  DEF_VER_Y = 0.10;
+  DEF_VER_H = 0.80;
+  DEF_VER_W = 0.10;
+  DEF_HOR_X = 0.20;
+  DEF_HOR_Y = 0.01;
+  DEF_HOR_H = 0.12;
+  DEF_HOR_W = 0.60;
   setName("SMESHGUI_Preferences_ScalarBarDlg");
   setCaption( property ? tr("SMESH_PROPERTIES_SCALARBAR") : tr("SMESH_PREFERENCES_SCALARBAR"));
   setSizeGripEnabled(TRUE);
@@ -521,7 +520,11 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
 
     double aMin = myMinEdit->text().toDouble();
     double aMax = myMaxEdit->text().toDouble();
-    myScalarBarActor->GetLookupTable()->SetRange( aMin, aMax );
+    vtkLookupTable* myLookupTable =
+      static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+    myLookupTable->SetRange( aMin, aMax );
+    myLookupTable->SetNumberOfTableValues(myColorsSpin->value());
+    myLookupTable->Build();
     SMESH::RepaintCurrentView();
   } else {
     // Scalar Bar preferences
@@ -637,13 +640,13 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
 	  vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
 
 	  if ( myScalarBarActor->GetLookupTable() ) {
-	    float *range = myScalarBarActor->GetLookupTable()->GetRange();
-	    myMinEdit->setText( QString::number( range[0] ) );
-	    myMaxEdit->setText( QString::number( range[1] ) );
+	    vtkFloatingPointType *range = myScalarBarActor->GetLookupTable()->GetRange();
+	    myMinEdit->setText( QString::number( range[0],'g',12 ) );
+	    myMaxEdit->setText( QString::number( range[1],'g',12 ) );
 	  }
 
 	  vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
-	  float aTColor[3];
+	  vtkFloatingPointType aTColor[3];
 	  aTitleTextPrp->GetColor( aTColor );
 	  myTitleColorBtn->setPaletteBackgroundColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
 	  myTitleFontCombo->setCurrentItem( aTitleTextPrp->GetFontFamily() );
@@ -652,7 +655,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
 	  myTitleShadowCheck->setChecked( aTitleTextPrp->GetShadow() );
 
 	  vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
-	  float aLColor[3];
+	  vtkFloatingPointType aLColor[3];
 	  aLabelsTextPrp->GetColor( aLColor );
 	  myLabelsColorBtn->setPaletteBackgroundColor( QColor( (int)( aLColor[0]*255 ), (int)( aLColor[1]*255 ), (int)( aLColor[2]*255 ) ) );
 	  myLabelsFontCombo->setCurrentItem( aLabelsTextPrp->GetFontFamily() );
@@ -756,6 +759,8 @@ void SMESHGUI_Preferences_ScalarBarDlg::setOriginAndSize( const double x,
 //=================================================================================================
 void SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged()
 {
+  this->initScalarBarFromResources();
+
   int aOrientation = myVertRadioBtn->isChecked();
   if ( aOrientation == myIniOrientation )
     setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
@@ -764,4 +769,42 @@ void SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged()
 		      aOrientation ? DEF_VER_Y : DEF_HOR_Y,
 		      aOrientation ? DEF_VER_W : DEF_HOR_W,
 		      aOrientation ? DEF_VER_H : DEF_HOR_H );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
+ *
+ *  Rereading vertical and horizontal default positions from resources.
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
+{
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QString name;
+  if (mgr){
+    // initialize from resoources
+    
+    // horizontal
+    name = QString("scalar_bar_horizontal_%1");
+    if (mgr->hasValue("SMESH", name.arg( "x" )))
+      DEF_HOR_X = mgr->doubleValue("SMESH", name.arg( "x" ));
+    if (mgr->hasValue("SMESH", name.arg( "y" )))
+      DEF_HOR_Y = mgr->doubleValue("SMESH", name.arg( "y" ));
+    if (mgr->hasValue("SMESH", name.arg( "width" )))
+      DEF_HOR_W = mgr->doubleValue("SMESH", name.arg( "width" ));
+    if (mgr->hasValue("SMESH", name.arg( "height" )))
+      DEF_HOR_H = mgr->doubleValue("SMESH", name.arg( "height" ));
+
+    // vertical
+    name = QString("scalar_bar_vertical_%1");
+    if (mgr->hasValue("SMESH", name.arg( "x" )))
+      DEF_VER_X = mgr->doubleValue("SMESH", name.arg( "x" ));
+    if (mgr->hasValue("SMESH", name.arg( "y" )))
+      DEF_VER_Y = mgr->doubleValue("SMESH", name.arg( "y" ));
+    if (mgr->hasValue("SMESH", name.arg( "width" )))
+      DEF_VER_W = mgr->doubleValue("SMESH", name.arg( "width" ));
+    if (mgr->hasValue("SMESH", name.arg( "height" )))
+      DEF_VER_H = mgr->doubleValue("SMESH", name.arg( "height" ));
+  }
 }

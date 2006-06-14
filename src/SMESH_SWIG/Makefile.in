@@ -15,7 +15,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -72,9 +72,11 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_mechanic.py \
 		   SMESH_mechanic_tetra.py \
 		   SMESH_mechanic_editor.py \
+		   SMESH_mechanic_netgen.py \
 		   SMESH_fixation.py \
 		   SMESH_fixation_hexa.py \
 		   SMESH_fixation_tetra.py \
+		   SMESH_fixation_netgen.py \
 		   SMESH_box_tetra.py \
 		   SMESH_box2_tetra.py \
 		   SMESH_box3_tetra.py \
@@ -113,8 +115,8 @@ LIB_CLIENT_IDL = SALOMEDS.idl \
 
 EXPORT_SHAREDPYSCRIPTS=SMESH_shared_modules.py
 
-CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -DHAVE_CONFIG_H
+CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(KERNEL_CXXFLAGS) -DHAVE_CONFIG_H
 LIBS+= $(PYTHON_LIBS)
-LDFLAGS+= -lSMESH -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeGenericObj
+LDFLAGS+= -lSMESH $(KERNEL_LDFLAGS) -lSalomeGenericObj
 
 @CONCLUDE@

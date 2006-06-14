@@ -16,7 +16,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -258,6 +258,10 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget( QWidget* w, const int 
     sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
   }
   else if( hypType()=="Deflection1D" && sb )
+  {
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+  }
+  else if ( sb ) // default validator for possible ancestors
   {
     sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
   }

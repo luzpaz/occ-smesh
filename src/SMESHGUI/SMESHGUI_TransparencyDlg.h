@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -65,14 +65,18 @@ private :
   SVTK_ViewWindow*        myViewWindow;
 
   QPushButton*      buttonOk;
+  QPushButton*      buttonHelp;
   QLabel*           TextLabelOpaque;
   QLabel*           ValueLab;
   QLabel*           TextLabelTransparent;
   QSlider*          Slider1;
 
+  QString           myHelpFileName;
+
 public slots:
       
     void ClickOnOk();
+    void ClickOnHelp();
     void ValueHasChanged();
     void SetTransparency();
     void onSelectionChanged();

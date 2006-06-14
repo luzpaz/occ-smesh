@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -169,6 +169,11 @@ public:
   // *****************************************
 
   // Set current study
+  void SetEmbeddedMode( CORBA::Boolean theMode );
+  // Get current study
+  CORBA::Boolean IsEmbeddedMode();
+
+  // Set current study
   void SetCurrentStudy( SALOMEDS::Study_ptr theStudy );
   // Get current study
   SALOMEDS::Study_ptr GetCurrentStudy();
@@ -187,6 +192,10 @@ public:
   
   // Create empty mesh on a shape
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
+    throw ( SALOME::SALOME_Exception );
+
+  // Create empty mesh
+  SMESH::SMESH_Mesh_ptr CreateEmptyMesh()
     throw ( SALOME::SALOME_Exception );
 
   //  Create mesh(es) and import data from UNV file
@@ -419,6 +428,7 @@ private:
 
   GEOM_Client*              myShapeReader;      // Shape reader
   SALOMEDS::Study_var       myCurrentStudy;     // Current study
+  CORBA::Boolean            myIsEmbeddedMode;   // Current mode
 
   // Dump Python: trace of API methods calls
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;

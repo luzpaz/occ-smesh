@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -72,7 +72,7 @@ class SMESH_EXPORT SMESH_subMesh
   const map < int, SMESH_subMesh * >&DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
 
-  const TopoDS_Shape & GetSubShape();
+  const TopoDS_Shape & GetSubShape() const;
 
 //  bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
 
@@ -95,7 +95,7 @@ class SMESH_EXPORT SMESH_subMesh
   enum compute_event
   {
     MODIF_HYP, MODIF_ALGO_STATE, COMPUTE,
-    CLEAN, CLEANDEP, SUBMESH_COMPUTED, SUBMESH_RESTORED,
+    CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
     };
 
@@ -105,16 +105,12 @@ class SMESH_EXPORT SMESH_subMesh
   SMESH_Hypothesis::Hypothesis_Status
     SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
 
-  int GetAlgoState() { return _algoState; }
+  int GetAlgoState() const { return _algoState; }
+  int GetComputeState() const { return _computeState; };
 
   void DumpAlgoState(bool isMain);
 
   bool ComputeStateEngine(int event);
-
-  int GetComputeState()
-  {
-    return _computeState;
-  };
 
   bool IsConform(const SMESH_Algo* theAlgo);
   // check if a conform mesh will be produced by the Algo
