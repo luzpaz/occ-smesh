@@ -1784,7 +1784,8 @@ GetElementsId( Predicate_i* thePredicate,
                const SMDS_Mesh* theMesh,
                Controls::Filter::TIdSequence& theSequence )
 {
-  Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
+  if (thePredicate)
+    Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
 }
 
 void
@@ -1793,8 +1794,9 @@ GetElementsId( Predicate_i* thePredicate,
                SMESH_Mesh_ptr theMesh,
                Controls::Filter::TIdSequence& theSequence )
 {
-  if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
-    Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
+  if (thePredicate) 
+    if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
+      Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
 }
 
 SMESH::long_array*
@@ -1802,7 +1804,7 @@ Filter_i::
 GetElementsId( SMESH_Mesh_ptr theMesh )
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
-  if(!CORBA::is_nil(theMesh)){
+  if(!CORBA::is_nil(theMesh) && myPredicate){
     Controls::Filter::TIdSequence aSequence;
     GetElementsId(myPredicate,theMesh,aSequence);
     long i = 0, iEnd = aSequence.size();
