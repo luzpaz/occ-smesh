@@ -1266,17 +1266,22 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
   if ( IsFaceExternal( faceIndex ))
     intNormal = XYZ( -intNormal.x, -intNormal.y, -intNormal.z );
   XYZ p0 ( nodes[0] ), baryCenter;
-  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); vNbIt++ ) {
+  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); ) {
     int nbShared = (*vNbIt).second;
     if ( nbShared >= 3 ) {
       SMDS_VolumeTool volume( (*vNbIt).first );
       volume.GetBaryCenter( baryCenter.x, baryCenter.y, baryCenter.z );
       XYZ intNormal2( baryCenter - p0 );
       if ( intNormal.Dot( intNormal2 ) < 0 )
+      {
+        vNbIt++;
         continue; // opposite side
+      }
     }
     // remove a volume from volNbShared map
-    volNbShared.erase( vNbIt );
+    TElemIntMap::iterator vErIt = vNbIt;
+    vNbIt++;
+    volNbShared.erase( vErIt );
   }
 
   // here volNbShared contains only volumes laying on the
