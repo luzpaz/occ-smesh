@@ -70,7 +70,6 @@ SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
   _gen_i = gen_i;
   _mesh_i = mesh_i;
   _localId = localId;
-  thePOA->activate_object( this );
   // ****
 }
 //=============================================================================

@@ -2788,7 +2788,7 @@ QString SMESHGUI::engineIOR() const
 {
   CORBA::ORB_var anORB = getApp()->orb();
   CORBA::String_var anIOR = anORB->object_to_string(GetSMESHGen());
-  return anIOR.in();
+  return QString( anIOR.in() );
 }
 
 void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QString& /*title*/ )

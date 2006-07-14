@@ -452,11 +452,6 @@ static char* getShapeNameByID ( const char* theID )
 Functor_i::Functor_i():
   SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  // registration moved from constructor of abstract class 
-  // to each ::Create* (creation of specific fucntor instance)
-  // to register fully declared this instance.
-  //PortableServer::ObjectId_var anObjectId =
-  //  SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
 Functor_i::~Functor_i()
@@ -1420,11 +1415,6 @@ FunctorType LogicalOR_i::GetFunctorType()
 FilterManager_i::FilterManager_i()
 : SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  // registration moved from constructor of abstract class 
-  // to each ::Create* (creation of specific fucntor instance)
-  // to register fully declared this instance.
-  //PortableServer::ObjectId_var anObjectId =
-  //  SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
 
@@ -1437,7 +1427,6 @@ FilterManager_i::~FilterManager_i()
 MinimumAngle_ptr FilterManager_i::CreateMinimumAngle()
 {
   SMESH::MinimumAngle_i* aServant = new SMESH::MinimumAngle_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::MinimumAngle_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateMinimumAngle()";
   return anObj._retn();
@@ -1447,7 +1436,6 @@ MinimumAngle_ptr FilterManager_i::CreateMinimumAngle()
 AspectRatio_ptr FilterManager_i::CreateAspectRatio()
 {
   SMESH::AspectRatio_i* aServant = new SMESH::AspectRatio_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::AspectRatio_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateAspectRatio()";
   return anObj._retn();
@@ -1457,7 +1445,6 @@ AspectRatio_ptr FilterManager_i::CreateAspectRatio()
 AspectRatio3D_ptr FilterManager_i::CreateAspectRatio3D()
 {
   SMESH::AspectRatio3D_i* aServant = new SMESH::AspectRatio3D_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::AspectRatio3D_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateAspectRatio3D()";
   return anObj._retn();
@@ -1467,7 +1454,6 @@ AspectRatio3D_ptr FilterManager_i::CreateAspectRatio3D()
 Warping_ptr FilterManager_i::CreateWarping()
 {
   SMESH::Warping_i* aServant = new SMESH::Warping_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Warping_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateWarping()";
   return anObj._retn();
@@ -1477,7 +1463,6 @@ Warping_ptr FilterManager_i::CreateWarping()
 Taper_ptr FilterManager_i::CreateTaper()
 {
   SMESH::Taper_i* aServant = new SMESH::Taper_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Taper_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateTaper()";
   return anObj._retn();
@@ -1487,7 +1472,6 @@ Taper_ptr FilterManager_i::CreateTaper()
 Skew_ptr FilterManager_i::CreateSkew()
 {
   SMESH::Skew_i* aServant = new SMESH::Skew_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Skew_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateSkew()";
   return anObj._retn();
@@ -1497,7 +1481,6 @@ Skew_ptr FilterManager_i::CreateSkew()
 Area_ptr FilterManager_i::CreateArea()
 {
   SMESH::Area_i* aServant = new SMESH::Area_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Area_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateArea()";
   return anObj._retn();
@@ -1507,7 +1490,6 @@ Area_ptr FilterManager_i::CreateArea()
 Volume3D_ptr FilterManager_i::CreateVolume3D()
 {
   SMESH::Volume3D_i* aServant = new SMESH::Volume3D_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Volume3D_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateVolume3D()";
   return anObj._retn();
@@ -1517,7 +1499,6 @@ Volume3D_ptr FilterManager_i::CreateVolume3D()
 Length_ptr FilterManager_i::CreateLength()
 {
   SMESH::Length_i* aServant = new SMESH::Length_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Length_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLength()";
   return anObj._retn();
@@ -1526,7 +1507,6 @@ Length_ptr FilterManager_i::CreateLength()
 Length2D_ptr FilterManager_i::CreateLength2D()
 {
   SMESH::Length2D_i* aServant = new SMESH::Length2D_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Length2D_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLength2D()";
   return anObj._retn();
@@ -1535,7 +1515,6 @@ Length2D_ptr FilterManager_i::CreateLength2D()
 MultiConnection_ptr FilterManager_i::CreateMultiConnection()
 {
   SMESH::MultiConnection_i* aServant = new SMESH::MultiConnection_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::MultiConnection_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateMultiConnection()";
   return anObj._retn();
@@ -1544,7 +1523,6 @@ MultiConnection_ptr FilterManager_i::CreateMultiConnection()
 MultiConnection2D_ptr FilterManager_i::CreateMultiConnection2D()
 {
   SMESH::MultiConnection2D_i* aServant = new SMESH::MultiConnection2D_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::MultiConnection2D_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateMultiConnection2D()";
   return anObj._retn();
@@ -1553,7 +1531,6 @@ MultiConnection2D_ptr FilterManager_i::CreateMultiConnection2D()
 BelongToGeom_ptr FilterManager_i::CreateBelongToGeom()
 {
   SMESH::BelongToGeom_i* aServant = new SMESH::BelongToGeom_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::BelongToGeom_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToGeom()";
   return anObj._retn();
@@ -1562,7 +1539,6 @@ BelongToGeom_ptr FilterManager_i::CreateBelongToGeom()
 BelongToPlane_ptr FilterManager_i::CreateBelongToPlane()
 {
   SMESH::BelongToPlane_i* aServant = new SMESH::BelongToPlane_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::BelongToPlane_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToPlane()";
   return anObj._retn();
@@ -1571,7 +1547,6 @@ BelongToPlane_ptr FilterManager_i::CreateBelongToPlane()
 BelongToCylinder_ptr FilterManager_i::CreateBelongToCylinder()
 {
   SMESH::BelongToCylinder_i* aServant = new SMESH::BelongToCylinder_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::BelongToCylinder_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToCylinder()";
   return anObj._retn();
@@ -1580,7 +1555,6 @@ BelongToCylinder_ptr FilterManager_i::CreateBelongToCylinder()
 LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
 {
   SMESH::LyingOnGeom_i* aServant = new SMESH::LyingOnGeom_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::LyingOnGeom_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLyingOnGeom()";
   return anObj._retn();
@@ -1589,7 +1563,6 @@ LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
 FreeBorders_ptr FilterManager_i::CreateFreeBorders()
 {
   SMESH::FreeBorders_i* aServant = new SMESH::FreeBorders_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::FreeBorders_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateFreeBorders()";
   return anObj._retn();
@@ -1598,7 +1571,6 @@ FreeBorders_ptr FilterManager_i::CreateFreeBorders()
 FreeEdges_ptr FilterManager_i::CreateFreeEdges()
 {
   SMESH::FreeEdges_i* aServant = new SMESH::FreeEdges_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::FreeEdges_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateFreeEdges()";
   return anObj._retn();
@@ -1607,7 +1579,6 @@ FreeEdges_ptr FilterManager_i::CreateFreeEdges()
 RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
 {
   SMESH::RangeOfIds_i* aServant = new SMESH::RangeOfIds_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::RangeOfIds_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateRangeOfIds()";
   return anObj._retn();
@@ -1616,7 +1587,6 @@ RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
 BadOrientedVolume_ptr FilterManager_i::CreateBadOrientedVolume()
 {
   SMESH::BadOrientedVolume_i* aServant = new SMESH::BadOrientedVolume_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::BadOrientedVolume_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBadOrientedVolume()";
   return anObj._retn();
@@ -1625,7 +1595,6 @@ BadOrientedVolume_ptr FilterManager_i::CreateBadOrientedVolume()
 LessThan_ptr FilterManager_i::CreateLessThan()
 {
   SMESH::LessThan_i* aServant = new SMESH::LessThan_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::LessThan_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLessThan()";
   return anObj._retn();
@@ -1635,7 +1604,6 @@ LessThan_ptr FilterManager_i::CreateLessThan()
 MoreThan_ptr FilterManager_i::CreateMoreThan()
 {
   SMESH::MoreThan_i* aServant = new SMESH::MoreThan_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::MoreThan_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateMoreThan()";
   return anObj._retn();
@@ -1644,7 +1612,6 @@ MoreThan_ptr FilterManager_i::CreateMoreThan()
 EqualTo_ptr FilterManager_i::CreateEqualTo()
 {
   SMESH::EqualTo_i* aServant = new SMESH::EqualTo_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::EqualTo_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateEqualTo()";
   return anObj._retn();
@@ -1654,7 +1621,6 @@ EqualTo_ptr FilterManager_i::CreateEqualTo()
 LogicalNOT_ptr FilterManager_i::CreateLogicalNOT()
 {
   SMESH::LogicalNOT_i* aServant = new SMESH::LogicalNOT_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::LogicalNOT_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalNOT()";
   return anObj._retn();
@@ -1664,7 +1630,6 @@ LogicalNOT_ptr FilterManager_i::CreateLogicalNOT()
 LogicalAND_ptr FilterManager_i::CreateLogicalAND()
 {
   SMESH::LogicalAND_i* aServant = new SMESH::LogicalAND_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::LogicalAND_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalAND()";
   return anObj._retn();
@@ -1674,7 +1639,6 @@ LogicalAND_ptr FilterManager_i::CreateLogicalAND()
 LogicalOR_ptr FilterManager_i::CreateLogicalOR()
 {
   SMESH::LogicalOR_i* aServant = new SMESH::LogicalOR_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::LogicalOR_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalOR()";
   return anObj._retn();
@@ -1683,7 +1647,6 @@ LogicalOR_ptr FilterManager_i::CreateLogicalOR()
 Filter_ptr FilterManager_i::CreateFilter()
 {
   SMESH::Filter_i* aServant = new SMESH::Filter_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::Filter_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateFilter()";
   return anObj._retn();
@@ -1692,7 +1655,6 @@ Filter_ptr FilterManager_i::CreateFilter()
 FilterLibrary_ptr FilterManager_i::LoadLibrary( const char* aFileName )
 {
   SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i( aFileName );
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::FilterLibrary_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".LoadLibrary("<<aFileName<<")";
   return anObj._retn();
@@ -1701,7 +1663,6 @@ FilterLibrary_ptr FilterManager_i::LoadLibrary( const char* aFileName )
 FilterLibrary_ptr FilterManager_i::CreateLibrary()
 {
   SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aServant );
   SMESH::FilterLibrary_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLibrary()";
   return anObj._retn();
@@ -1724,7 +1685,6 @@ CORBA::Boolean FilterManager_i::DeleteLibrary( const char* aFileName )
 SMESH::FilterManager_ptr SMESH_Gen_i::CreateFilterManager()
 {
   SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aFilter );
   SMESH::FilterManager_var anObj = aFilter->_this();
   return anObj._retn();
 }
@@ -2023,7 +1983,6 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     myPredicate->Destroy();
 
   SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aFilter );
   FilterManager_ptr aFilterMgr = aFilter->_this();
 
   // CREATE two lists ( PREDICATES  and LOG OP )
@@ -2575,7 +2534,6 @@ FilterLibrary_i::FilterLibrary_i( const char* theFileName )
 {
   myFileName = strdup( theFileName );
   SMESH::FilterManager_i* aFilterMgr = new SMESH::FilterManager_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aFilterMgr );
   myFilterMgr = aFilterMgr->_this();
 
   LDOMParser aParser;
@@ -2608,7 +2566,6 @@ FilterLibrary_i::FilterLibrary_i()
 {
   myFileName = 0;
   SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
-  SMESH_Gen_i::GetPOA()->activate_object( aFilter );
   myFilterMgr = aFilter->_this();
 
   myDoc = LDOM_Document::createDocument( LDOMString() );

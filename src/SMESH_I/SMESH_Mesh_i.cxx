@@ -94,7 +94,6 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
   _gen_i = gen_i;
   _id = myIdGenerator++;
   _studyId = studyId;
-  thePOA->activate_object( this );
 }
 
 //=============================================================================

@@ -863,8 +863,8 @@ void SMESH_MEDMesh_i::addInStudy(SALOMEDS::Study_ptr myStudy,
 	 * ORB_INIT &init = *SINGLETON_<ORB_INIT>::Instance() ;
 	 * ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting()) ;
 	 * CORBA::ORB_var &orb = init(0,0);
-	 * string iorStr = orb->object_to_string(myIor);
-	 * //myBuilder->AddAttribute(newObj,SALOMEDS::IOR,iorStr.c_str());
+	 * CORBA::String_var iorStr = orb->object_to_string(myIor);
+	 * //myBuilder->AddAttribute(newObj,SALOMEDS::IOR,iorStr.in());
 	 * SALOMEDS::AttributeIOR_var aIOR = SALOMEDS::AttributeIOR::_narrow(
 	 * myBuilder->FindOrCreateAttribute(newObj, "AttributeIOR"));
 	 * aIOR->SetValue(iorStr.c_str());
