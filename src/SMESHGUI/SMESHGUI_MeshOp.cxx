@@ -1011,10 +1011,17 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       // set new available algoritms
       availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], prevAlgo );
       HypothesisData* soleCompatible = 0;
-      if ( anAvailable.count() == 1 )
+
+      // bug SWP13024 need save following state
+      bool onlyOne = ( anAvailable.count() == 1 );
+      if ( onlyOne )
         soleCompatible = myAvailableHypData[dim][Algo][0];
       if ( dim == aTopDim && prevAlgo ) // all available algoritms should be selectable any way
+      {
         availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], 0 );
+        if ( onlyOne )
+          soleCompatible = 0;
+      }
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
       noCompatible = anAvailable.isEmpty();
 
