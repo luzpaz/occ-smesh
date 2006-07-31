@@ -1261,7 +1261,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
 
   //Remove the files if they exist: BugID: 11225
+#ifndef WNT /* unix functionality */
   TCollection_AsciiString cmd("rm -f \"");
+#else /* windows */
+  TCollection_AsciiString cmd("del /F \"");
+#endif
+
   cmd+=filename;
   cmd+="\" \"";
   cmd+=meshfile;
