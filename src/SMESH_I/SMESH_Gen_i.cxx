@@ -1299,7 +1299,18 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
 	    if ( myImpl ) {
 	      string hypname = string( myHyp->GetName() );
-	      string libname = string( myHyp->GetLibName() );
+        string libname = string( myHyp->GetLibName() );
+// BUG SWP13062
+// Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
+// WNT and ".so" for X-system) must be deleted
+	      int libname_len = libname.length();
+#ifdef WNT
+        if( libname_len > 4 )
+          libname.resize( libname_len - 4 );
+#else
+        if( libname_len > 3 )
+          libname.resize( libname_len - 3 );
+#endif
         CORBA::String_var objStr = GetORB()->object_to_string( anObject );
 	      int    id      = myStudyContext->findId( string( objStr.in() ) );
 	      string hypdata = string( myImpl->SaveTo() );
@@ -1354,6 +1365,17 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	    if ( myImpl ) {
 	      string hypname = string( myHyp->GetName() );
 	      string libname = string( myHyp->GetLibName() );
+// BUG SWP13062
+// Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
+// WNT and ".so" for X-system) must be deleted
+	      int libname_len = libname.length();
+#ifdef WNT
+        if( libname_len > 4 )
+          libname.resize( libname_len - 4 );
+#else
+        if( libname_len > 3 )
+          libname.resize( libname_len - 3 );
+#endif
         CORBA::String_var objStr = GetORB()->object_to_string( anObject );
 	      int    id      = myStudyContext->findId( string( objStr.in() ) );
 	      string hypdata = string( myImpl->SaveTo() );
