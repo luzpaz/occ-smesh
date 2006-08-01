@@ -801,13 +801,13 @@ SMDSAbs_ElementType Warping::GetType() const
 double Taper::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 4 )
-    return 0;
+    return 0.;
 
   // Compute taper
-  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2;
-  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2;
-  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2;
-  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2;
+  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2.;
+  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2.;
+  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2.;
+  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2.;
 
   double JA = 0.25 * ( J1 + J2 + J3 + J4 );
   if ( JA <= Precision::Confusion() )
@@ -841,42 +841,46 @@ SMDSAbs_ElementType Taper::GetType() const
 */
 static inline double skewAngle( const gp_XYZ& p1, const gp_XYZ& p2, const gp_XYZ& p3 )
 {
-  gp_XYZ p12 = ( p2 + p1 ) / 2;
-  gp_XYZ p23 = ( p3 + p2 ) / 2;
-  gp_XYZ p31 = ( p3 + p1 ) / 2;
+  gp_XYZ p12 = ( p2 + p1 ) / 2.;
+  gp_XYZ p23 = ( p3 + p2 ) / 2.;
+  gp_XYZ p31 = ( p3 + p1 ) / 2.;
 
   gp_Vec v1( p31 - p2 ), v2( p12 - p23 );
 
-  return v1.Magnitude() < gp::Resolution() || v2.Magnitude() < gp::Resolution() ? 0 : v1.Angle( v2 );
+  return v1.Magnitude() < gp::Resolution() || v2.Magnitude() < gp::Resolution() ? 0. : v1.Angle( v2 );
 }
 
 double Skew::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 3 && P.size() != 4 )
-    return 0;
+    return 0.;
 
   // Compute skew
-  static double PI2 = PI / 2;
+  static double PI2 = PI / 2.;
   if ( P.size() == 3 )
   {
     double A0 = fabs( PI2 - skewAngle( P( 3 ), P( 1 ), P( 2 ) ) );
     double A1 = fabs( PI2 - skewAngle( P( 1 ), P( 2 ), P( 3 ) ) );
     double A2 = fabs( PI2 - skewAngle( P( 2 ), P( 3 ), P( 1 ) ) );
 
-    return Max( A0, Max( A1, A2 ) ) * 180 / PI;
+    return Max( A0, Max( A1, A2 ) ) * 180. / PI;
   }
   else
   {
-    gp_XYZ p12 = ( P( 1 ) + P( 2 ) ) / 2;
-    gp_XYZ p23 = ( P( 2 ) + P( 3 ) ) / 2;
-    gp_XYZ p34 = ( P( 3 ) + P( 4 ) ) / 2;
-    gp_XYZ p41 = ( P( 4 ) + P( 1 ) ) / 2;
+    gp_XYZ p12 = ( P( 1 ) + P( 2 ) ) / 2.;
+    gp_XYZ p23 = ( P( 2 ) + P( 3 ) ) / 2.;
+    gp_XYZ p34 = ( P( 3 ) + P( 4 ) ) / 2.;
+    gp_XYZ p41 = ( P( 4 ) + P( 1 ) ) / 2.;
 
     gp_Vec v1( p34 - p12 ), v2( p23 - p41 );
     double A = v1.Magnitude() <= gp::Resolution() || v2.Magnitude() <= gp::Resolution()
-      ? 0 : fabs( PI2 - v1.Angle( v2 ) );
+      ? 0. : fabs( PI2 - v1.Angle( v2 ) );
 
-    return A * 180 / PI;
+    //BUG SWP12743
+    if ( A < Precision::Angular() )
+      return 0.;
+
+    return A * 180. / PI;
   }
 }
 
