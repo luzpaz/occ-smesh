@@ -746,7 +746,7 @@ double Warping::GetValue( const TSequenceOfXYZ& P )
   if ( P.size() != 4 )
     return 0;
 
-  gp_XYZ G = ( P( 1 ) + P( 2 ) + P( 3 ) + P( 4 ) ) / 4;
+  gp_XYZ G = ( P( 1 ) + P( 2 ) + P( 3 ) + P( 4 ) ) / 4.;
 
   double A1 = ComputeA( P( 1 ), P( 2 ), P( 3 ), G );
   double A2 = ComputeA( P( 2 ), P( 3 ), P( 4 ), G );
@@ -777,7 +777,7 @@ double Warping::ComputeA( const gp_XYZ& thePnt1,
   N.Normalize();
 
   double H = ( thePnt2 - theG ).Dot( N );
-  return asin( fabs( H / L ) ) * 180 / PI;
+  return asin( fabs( H / L ) ) * 180. / PI;
 }
 
 double Warping::GetBadRate( double Value, int /*nbNodes*/ ) const
