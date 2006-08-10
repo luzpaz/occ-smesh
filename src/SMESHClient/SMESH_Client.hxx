@@ -39,7 +39,7 @@
 #  define SMESHCLIENT_EXPORT __declspec( dllimport )
 # endif
 #else
-# define SMESHCLIENTEXPORT
+# define SMESHCLIENT_EXPORT
 #endif
 
 class SMESHDS_Mesh;
