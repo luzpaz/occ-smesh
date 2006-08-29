@@ -1214,21 +1214,21 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 {
   INFOS( "SMESH_Gen_i::Save" );
 
-//  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
+  //  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
   // san -- in case <myCurrentStudy> differs from theComponent's study,
   // use that of the component
   if ( myCurrentStudy->_is_nil() || 
-       theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
+    theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
     SetCurrentStudy( theComponent->GetStudy() );
 
   // Store study contents as a set of python commands
   SavePython(myCurrentStudy);
 
   StudyContext* myStudyContext = GetCurrentStudyContext();
-  
+
   // Declare a byte stream
   SALOMEDS::TMPFile_var aStreamFile;
-  
+
   // Obtain a temporary dir
   TCollection_AsciiString tmpDir =
     ( isMultiFile ) ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
@@ -1297,57 +1297,57 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
       SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( gotBranch );
       for ( ; it->More(); it->Next() ) {
         SALOMEDS::SObject_var mySObject = it->Value();
-	CORBA::Object_var anObject = SObjectToObject( mySObject );
-	if ( !CORBA::is_nil( anObject ) ) {
+        CORBA::Object_var anObject = SObjectToObject( mySObject );
+        if ( !CORBA::is_nil( anObject ) ) {
           SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
           if ( !myHyp->_is_nil() ) {
-	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
-	    if ( myImpl ) {
-	      string hypname = string( myHyp->GetName() );
-        string libname = string( myHyp->GetLibName() );
-// BUG SWP13062
-// Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
-// WNT and ".so" for X-system) must be deleted
-	      int libname_len = libname.length();
+            SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
+            if ( myImpl ) {
+              string hypname = string( myHyp->GetName() );
+              string libname = string( myHyp->GetLibName() );
+              // BUG SWP13062
+              // Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
+              // WNT and ".so" for X-system) must be deleted
+              int libname_len = libname.length();
 #ifdef WNT
-        if( libname_len > 4 )
-          libname.resize( libname_len - 4 );
+              if( libname_len > 4 )
+                libname.resize( libname_len - 4 );
 #else
-        if( libname_len > 3 )
-          libname.resize( libname_len - 3 );
+              if( libname_len > 3 )
+                libname.resize( libname_len - 3 );
 #endif
-        CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-	      int    id      = myStudyContext->findId( string( objStr.in() ) );
-	      string hypdata = string( myImpl->SaveTo() );
+              CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+              int    id      = myStudyContext->findId( string( objStr.in() ) );
+              string hypdata = string( myImpl->SaveTo() );
 
-	      // for each hypothesis create HDF group basing on its id
-	      char hypGrpName[30];
-	      sprintf( hypGrpName, "Hypothesis %d", id );
-	      aGroup = new HDFgroup( hypGrpName, aTopGroup );
-	      aGroup->CreateOnDisk();
-	      // --> type name of hypothesis
-	      aSize[ 0 ] = hypname.length() + 1;
-	      aDataset = new HDFdataset( "Name", aGroup, HDF_STRING, aSize, 1 );
-	      aDataset->CreateOnDisk();
-	      aDataset->WriteOnDisk( ( char* )( hypname.c_str() ) );
-	      aDataset->CloseOnDisk();
-	      // --> server plugin library name of hypothesis
-	      aSize[ 0 ] = libname.length() + 1;
-	      aDataset = new HDFdataset( "LibName", aGroup, HDF_STRING, aSize, 1 );
-	      aDataset->CreateOnDisk();
-	      aDataset->WriteOnDisk( ( char* )( libname.c_str() ) );
-	      aDataset->CloseOnDisk();
-	      // --> persistent data of hypothesis
-	      aSize[ 0 ] = hypdata.length() + 1;
-	      aDataset = new HDFdataset( "Data", aGroup, HDF_STRING, aSize, 1 );
-	      aDataset->CreateOnDisk();
-	      aDataset->WriteOnDisk( ( char* )( hypdata.c_str() ) );
-	      aDataset->CloseOnDisk();
-	      // close hypothesis HDF group
-	      aGroup->CloseOnDisk();
-	    }
-	  }
-	}
+              // for each hypothesis create HDF group basing on its id
+              char hypGrpName[30];
+              sprintf( hypGrpName, "Hypothesis %d", id );
+              aGroup = new HDFgroup( hypGrpName, aTopGroup );
+              aGroup->CreateOnDisk();
+              // --> type name of hypothesis
+              aSize[ 0 ] = hypname.length() + 1;
+              aDataset = new HDFdataset( "Name", aGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( ( char* )( hypname.c_str() ) );
+              aDataset->CloseOnDisk();
+              // --> server plugin library name of hypothesis
+              aSize[ 0 ] = libname.length() + 1;
+              aDataset = new HDFdataset( "LibName", aGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( ( char* )( libname.c_str() ) );
+              aDataset->CloseOnDisk();
+              // --> persistent data of hypothesis
+              aSize[ 0 ] = hypdata.length() + 1;
+              aDataset = new HDFdataset( "Data", aGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( ( char* )( hypdata.c_str() ) );
+              aDataset->CloseOnDisk();
+              // close hypothesis HDF group
+              aGroup->CloseOnDisk();
+            }
+          }
+        }
       }
       // close hypotheses root HDF group
       aTopGroup->CloseOnDisk();
@@ -1362,57 +1362,57 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
       SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( gotBranch );
       for ( ; it->More(); it->Next() ) {
         SALOMEDS::SObject_var mySObject = it->Value();
-	CORBA::Object_var anObject = SObjectToObject( mySObject );
-	if ( !CORBA::is_nil( anObject ) ) {
+        CORBA::Object_var anObject = SObjectToObject( mySObject );
+        if ( !CORBA::is_nil( anObject ) ) {
           SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
           if ( !myHyp->_is_nil() ) {
-	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
-	    if ( myImpl ) {
-	      string hypname = string( myHyp->GetName() );
-	      string libname = string( myHyp->GetLibName() );
-// BUG SWP13062
-// Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
-// WNT and ".so" for X-system) must be deleted
-	      int libname_len = libname.length();
+            SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
+            if ( myImpl ) {
+              string hypname = string( myHyp->GetName() );
+              string libname = string( myHyp->GetLibName() );
+              // BUG SWP13062
+              // Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
+              // WNT and ".so" for X-system) must be deleted
+              int libname_len = libname.length();
 #ifdef WNT
-        if( libname_len > 4 )
-          libname.resize( libname_len - 4 );
+              if( libname_len > 4 )
+                libname.resize( libname_len - 4 );
 #else
-        if( libname_len > 3 )
-          libname.resize( libname_len - 3 );
+              if( libname_len > 3 )
+                libname.resize( libname_len - 3 );
 #endif
-        CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-	      int    id      = myStudyContext->findId( string( objStr.in() ) );
-	      string hypdata = string( myImpl->SaveTo() );
+              CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+              int    id      = myStudyContext->findId( string( objStr.in() ) );
+              string hypdata = string( myImpl->SaveTo() );
 
-	      // for each algorithm create HDF group basing on its id
-	      char hypGrpName[30];
-	      sprintf( hypGrpName, "Algorithm %d", id );
-	      aGroup = new HDFgroup( hypGrpName, aTopGroup );
-	      aGroup->CreateOnDisk();
-	      // --> type name of algorithm
-	      aSize[0] = hypname.length() + 1;
-	      aDataset = new HDFdataset( "Name", aGroup, HDF_STRING, aSize, 1 );
-	      aDataset->CreateOnDisk();
-	      aDataset->WriteOnDisk( ( char* )( hypname.c_str() ) );
-	      aDataset->CloseOnDisk();
-	      // --> server plugin library name of hypothesis
-	      aSize[0] = libname.length() + 1;
-	      aDataset = new HDFdataset( "LibName", aGroup, HDF_STRING, aSize, 1 );
-	      aDataset->CreateOnDisk();
-	      aDataset->WriteOnDisk( ( char* )( libname.c_str() ) );
-	      aDataset->CloseOnDisk();
-	      // --> persistent data of algorithm
-	      aSize[0] = hypdata.length() + 1;
-	      aDataset = new HDFdataset( "Data", aGroup, HDF_STRING, aSize, 1 );
-	      aDataset->CreateOnDisk();
-	      aDataset->WriteOnDisk( ( char* )( hypdata.c_str() ) );
-	      aDataset->CloseOnDisk();
-	      // close algorithm HDF group
-	      aGroup->CloseOnDisk();
-	    }
-	  }
-	}
+              // for each algorithm create HDF group basing on its id
+              char hypGrpName[30];
+              sprintf( hypGrpName, "Algorithm %d", id );
+              aGroup = new HDFgroup( hypGrpName, aTopGroup );
+              aGroup->CreateOnDisk();
+              // --> type name of algorithm
+              aSize[0] = hypname.length() + 1;
+              aDataset = new HDFdataset( "Name", aGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( ( char* )( hypname.c_str() ) );
+              aDataset->CloseOnDisk();
+              // --> server plugin library name of hypothesis
+              aSize[0] = libname.length() + 1;
+              aDataset = new HDFdataset( "LibName", aGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( ( char* )( libname.c_str() ) );
+              aDataset->CloseOnDisk();
+              // --> persistent data of algorithm
+              aSize[0] = hypdata.length() + 1;
+              aDataset = new HDFdataset( "Data", aGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( ( char* )( hypdata.c_str() ) );
+              aDataset->CloseOnDisk();
+              // close algorithm HDF group
+              aGroup->CloseOnDisk();
+            }
+          }
+        }
       }
       // close algorithms root HDF group
       aTopGroup->CloseOnDisk();
@@ -1421,155 +1421,155 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
     else if ( gotBranch->Tag() > GetAlgorithmsRootTag() ) {
       CORBA::Object_var anObject = SObjectToObject( gotBranch );
       if ( !CORBA::is_nil( anObject ) ) {
-	SMESH::SMESH_Mesh_var myMesh = SMESH::SMESH_Mesh::_narrow( anObject ) ;
+        SMESH::SMESH_Mesh_var myMesh = SMESH::SMESH_Mesh::_narrow( anObject ) ;
         if ( !myMesh->_is_nil() ) {
-	  SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( myMesh ).in() );
-	  if ( myImpl ) {
-      CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-      int id = myStudyContext->findId( string( objStr.in() ) );
-	    ::SMESH_Mesh& myLocMesh = myImpl->GetImpl();
-	    SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
+          SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( myMesh ).in() );
+          if ( myImpl ) {
+            CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+            int id = myStudyContext->findId( string( objStr.in() ) );
+            ::SMESH_Mesh& myLocMesh = myImpl->GetImpl();
+            SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 
-	    // for each mesh open the HDF group basing on its id
-	    char meshGrpName[ 30 ];
-	    sprintf( meshGrpName, "Mesh %d", id );
-	    aTopGroup = new HDFgroup( meshGrpName, aFile );
-	    aTopGroup->CreateOnDisk();
+            // for each mesh open the HDF group basing on its id
+            char meshGrpName[ 30 ];
+            sprintf( meshGrpName, "Mesh %d", id );
+            aTopGroup = new HDFgroup( meshGrpName, aFile );
+            aTopGroup->CreateOnDisk();
 
-	    // --> put dataset to hdf file which is a flag that mesh has data
-	    string strHasData = "0";
-	    // check if the mesh is not empty
-	    if ( mySMESHDSMesh->NbNodes() > 0 ) {
-	      // write mesh data to med file
-	      myWriter.SetMesh( mySMESHDSMesh );
-	      myWriter.SetMeshId( id );
-	      strHasData = "1";
-	    }
-	    aSize[ 0 ] = strHasData.length() + 1;
-	    aDataset = new HDFdataset( "Has data", aTopGroup, HDF_STRING, aSize, 1 );
-	    aDataset->CreateOnDisk();
-	    aDataset->WriteOnDisk( ( char* )( strHasData.c_str() ) );
-	    aDataset->CloseOnDisk();
-	    
-	    // write reference on a shape if exists
-	    SALOMEDS::SObject_var myRef;
+            // --> put dataset to hdf file which is a flag that mesh has data
+            string strHasData = "0";
+            // check if the mesh is not empty
+            if ( mySMESHDSMesh->NbNodes() > 0 ) {
+              // write mesh data to med file
+              myWriter.SetMesh( mySMESHDSMesh );
+              myWriter.SetMeshId( id );
+              strHasData = "1";
+            }
+            aSize[ 0 ] = strHasData.length() + 1;
+            aDataset = new HDFdataset( "Has data", aTopGroup, HDF_STRING, aSize, 1 );
+            aDataset->CreateOnDisk();
+            aDataset->WriteOnDisk( ( char* )( strHasData.c_str() ) );
+            aDataset->CloseOnDisk();
+
+            // write reference on a shape if exists
+            SALOMEDS::SObject_var myRef;
             bool shapeRefFound = false;
-	    bool found = gotBranch->FindSubObject( GetRefOnShapeTag(), myRef );
-	    if ( found ) {
-	      SALOMEDS::SObject_var myShape;
-	      bool ok = myRef->ReferencedObject( myShape );
-	      if ( ok ) {
+            bool found = gotBranch->FindSubObject( GetRefOnShapeTag(), myRef );
+            if ( found ) {
+              SALOMEDS::SObject_var myShape;
+              bool ok = myRef->ReferencedObject( myShape );
+              if ( ok ) {
                 shapeRefFound = (! CORBA::is_nil( myShape->GetObject() ));
-		string myRefOnObject = myShape->GetID();
-		if ( shapeRefFound && myRefOnObject.length() > 0 ) {
-		  aSize[ 0 ] = myRefOnObject.length() + 1;
-		  aDataset = new HDFdataset( "Ref on shape", aTopGroup, HDF_STRING, aSize, 1 );
-		  aDataset->CreateOnDisk();
-		  aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-		  aDataset->CloseOnDisk();
-		}
-	      }
-	    }
+                string myRefOnObject = myShape->GetID();
+                if ( shapeRefFound && myRefOnObject.length() > 0 ) {
+                  aSize[ 0 ] = myRefOnObject.length() + 1;
+                  aDataset = new HDFdataset( "Ref on shape", aTopGroup, HDF_STRING, aSize, 1 );
+                  aDataset->CreateOnDisk();
+                  aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                  aDataset->CloseOnDisk();
+                }
+              }
+            }
 
-	    // write applied hypotheses if exist
-	    SALOMEDS::SObject_var myHypBranch;
-	    found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch );
-	    if ( found && !shapeRefFound ) { // remove applied hyps
+            // write applied hypotheses if exist
+            SALOMEDS::SObject_var myHypBranch;
+            found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch );
+            if ( found && !shapeRefFound ) { // remove applied hyps
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myHypBranch );
             }
-	    if ( found && shapeRefFound ) {
-	      aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
-	      aGroup->CreateOnDisk();
+            if ( found && shapeRefFound ) {
+              aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
+              aGroup->CreateOnDisk();
 
-	      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myHypBranch );
-	      int hypNb = 0;
-	      for ( ; it->More(); it->Next() ) {
-		SALOMEDS::SObject_var mySObject = it->Value();
-		SALOMEDS::SObject_var myRefOnHyp;
-		bool ok = mySObject->ReferencedObject( myRefOnHyp );
-		if ( ok ) {
-		  // san - it is impossible to recover applied hypotheses
+              SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myHypBranch );
+              int hypNb = 0;
+              for ( ; it->More(); it->Next() ) {
+                SALOMEDS::SObject_var mySObject = it->Value();
+                SALOMEDS::SObject_var myRefOnHyp;
+                bool ok = mySObject->ReferencedObject( myRefOnHyp );
+                if ( ok ) {
+                  // san - it is impossible to recover applied hypotheses
                   //       using their entries within Load() method,
-		  // for there are no AttributeIORs in the study when Load() is working. 
-		  // Hence, it is better to store persistent IDs of hypotheses as references to them
+                  // for there are no AttributeIORs in the study when Load() is working. 
+                  // Hence, it is better to store persistent IDs of hypotheses as references to them
 
-		  //string myRefOnObject = myRefOnHyp->GetID();
-		  CORBA::Object_var anObject = SObjectToObject( myRefOnHyp );
-      CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-      int id = myStudyContext->findId( string( objStr.in() ) );
-		  //if ( myRefOnObject.length() > 0 ) {
-		  //aSize[ 0 ] = myRefOnObject.length() + 1;
-		  char hypName[ 30 ], hypId[ 30 ];
-		  sprintf( hypName, "Hyp %d", ++hypNb );
-		  sprintf( hypId, "%d", id );
-		  aSize[ 0 ] = strlen( hypId ) + 1;
-		  aDataset = new HDFdataset( hypName, aGroup, HDF_STRING, aSize, 1 );
-		  aDataset->CreateOnDisk();
-		  //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-		  aDataset->WriteOnDisk( hypId );
-		  aDataset->CloseOnDisk();
-		  //}
-		}
-	      }
-	      aGroup->CloseOnDisk();
-	    }
+                  //string myRefOnObject = myRefOnHyp->GetID();
+                  CORBA::Object_var anObject = SObjectToObject( myRefOnHyp );
+                  CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+                  int id = myStudyContext->findId( string( objStr.in() ) );
+                  //if ( myRefOnObject.length() > 0 ) {
+                  //aSize[ 0 ] = myRefOnObject.length() + 1;
+                  char hypName[ 30 ], hypId[ 30 ];
+                  sprintf( hypName, "Hyp %d", ++hypNb );
+                  sprintf( hypId, "%d", id );
+                  aSize[ 0 ] = strlen( hypId ) + 1;
+                  aDataset = new HDFdataset( hypName, aGroup, HDF_STRING, aSize, 1 );
+                  aDataset->CreateOnDisk();
+                  //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                  aDataset->WriteOnDisk( hypId );
+                  aDataset->CloseOnDisk();
+                  //}
+                }
+              }
+              aGroup->CloseOnDisk();
+            }
 
-	    // write applied algorithms if exist
-	    SALOMEDS::SObject_var myAlgoBranch;
-	    found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(), myAlgoBranch );
-	    if ( found && !shapeRefFound ) { // remove applied algos
+            // write applied algorithms if exist
+            SALOMEDS::SObject_var myAlgoBranch;
+            found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(), myAlgoBranch );
+            if ( found && !shapeRefFound ) { // remove applied algos
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myAlgoBranch );
             }
-	    if ( found && shapeRefFound ) {
-	      aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
-	      aGroup->CreateOnDisk();
+            if ( found && shapeRefFound ) {
+              aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
+              aGroup->CreateOnDisk();
 
-	      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myAlgoBranch );
-	      int algoNb = 0;
-	      for ( ; it->More(); it->Next() ) {
-		SALOMEDS::SObject_var mySObject = it->Value();
-		SALOMEDS::SObject_var myRefOnAlgo;
-		bool ok = mySObject->ReferencedObject( myRefOnAlgo );
-		if ( ok ) {
-		  // san - it is impossible to recover applied algorithms
+              SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myAlgoBranch );
+              int algoNb = 0;
+              for ( ; it->More(); it->Next() ) {
+                SALOMEDS::SObject_var mySObject = it->Value();
+                SALOMEDS::SObject_var myRefOnAlgo;
+                bool ok = mySObject->ReferencedObject( myRefOnAlgo );
+                if ( ok ) {
+                  // san - it is impossible to recover applied algorithms
                   //       using their entries within Load() method,
-		  // for there are no AttributeIORs in the study when Load() is working. 
-		  // Hence, it is better to store persistent IDs of algorithms as references to them
+                  // for there are no AttributeIORs in the study when Load() is working. 
+                  // Hence, it is better to store persistent IDs of algorithms as references to them
 
-		  //string myRefOnObject = myRefOnAlgo->GetID();
-		  CORBA::Object_var anObject = SObjectToObject( myRefOnAlgo );
-      CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-      int id = myStudyContext->findId( string( objStr.in() ) );
-		  //if ( myRefOnObject.length() > 0 ) {
-		  //aSize[ 0 ] = myRefOnObject.length() + 1;
-		  char algoName[ 30 ], algoId[ 30 ];
-		  sprintf( algoName, "Algo %d", ++algoNb );
-		  sprintf( algoId, "%d", id );
-		  aSize[ 0 ] = strlen( algoId ) + 1;
-		  aDataset = new HDFdataset( algoName, aGroup, HDF_STRING, aSize, 1 );
-		  aDataset->CreateOnDisk();
-		  //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-		  aDataset->WriteOnDisk( algoId );
-		  aDataset->CloseOnDisk();
-		  //}
-		}
-	      }
-	      aGroup->CloseOnDisk();
-	    }
+                  //string myRefOnObject = myRefOnAlgo->GetID();
+                  CORBA::Object_var anObject = SObjectToObject( myRefOnAlgo );
+                  CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+                  int id = myStudyContext->findId( string( objStr.in() ) );
+                  //if ( myRefOnObject.length() > 0 ) {
+                  //aSize[ 0 ] = myRefOnObject.length() + 1;
+                  char algoName[ 30 ], algoId[ 30 ];
+                  sprintf( algoName, "Algo %d", ++algoNb );
+                  sprintf( algoId, "%d", id );
+                  aSize[ 0 ] = strlen( algoId ) + 1;
+                  aDataset = new HDFdataset( algoName, aGroup, HDF_STRING, aSize, 1 );
+                  aDataset->CreateOnDisk();
+                  //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                  aDataset->WriteOnDisk( algoId );
+                  aDataset->CloseOnDisk();
+                  //}
+                }
+              }
+              aGroup->CloseOnDisk();
+            }
 
-	    // --> submesh objects sub-branches
+            // --> submesh objects sub-branches
 
-	    for ( int i = GetSubMeshOnVertexTag(); i <= GetSubMeshOnCompoundTag(); i++ ) {
-	      SALOMEDS::SObject_var mySubmeshBranch;
-	      found = gotBranch->FindSubObject( i, mySubmeshBranch );
+            for ( int i = GetSubMeshOnVertexTag(); i <= GetSubMeshOnCompoundTag(); i++ ) {
+              SALOMEDS::SObject_var mySubmeshBranch;
+              found = gotBranch->FindSubObject( i, mySubmeshBranch );
 
               if ( found ) // check if there is shape reference in submeshes
               {
                 bool hasShapeRef = false;
-		SALOMEDS::ChildIterator_var itSM =
+                SALOMEDS::ChildIterator_var itSM =
                   myCurrentStudy->NewChildIterator( mySubmeshBranch );
-		for ( ; itSM->More(); itSM->Next() ) {
-		  SALOMEDS::SObject_var mySubRef, myShape, mySObject = itSM->Value();
+                for ( ; itSM->More(); itSM->Next() ) {
+                  SALOMEDS::SObject_var mySubRef, myShape, mySObject = itSM->Value();
                   if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ))
                     mySubRef->ReferencedObject( myShape );
                   if ( !CORBA::is_nil( myShape ) && !CORBA::is_nil( myShape->GetObject() ))
@@ -1600,45 +1600,45 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   found = false;
                 }
               }  // end check if there is shape reference in submeshes
-	      if ( found ) {
-		char name_meshgroup[ 30 ];
-		if ( i == GetSubMeshOnVertexTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Vertex" );
-		else if ( i == GetSubMeshOnEdgeTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Edge" );
-		else if ( i == GetSubMeshOnWireTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Wire" );
-		else if ( i == GetSubMeshOnFaceTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Face" );
-		else if ( i == GetSubMeshOnShellTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Shell" );
-		else if ( i == GetSubMeshOnSolidTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Solid" );
-		else if ( i == GetSubMeshOnCompoundTag() )
-		  strcpy( name_meshgroup, "SubMeshes On Compound" );
-		
-		// for each type of submeshes create container HDF group
-		aGroup = new HDFgroup( name_meshgroup, aTopGroup );
-		aGroup->CreateOnDisk();
-	    
-		// iterator for all submeshes of given type
-		SALOMEDS::ChildIterator_var itSM = myCurrentStudy->NewChildIterator( mySubmeshBranch );
-		for ( ; itSM->More(); itSM->Next() ) {
-		  SALOMEDS::SObject_var mySObject = itSM->Value();
-		  CORBA::Object_var anSubObject = SObjectToObject( mySObject );
-		  if ( !CORBA::is_nil( anSubObject ))
-                  {
-		    SMESH::SMESH_subMesh_var mySubMesh = SMESH::SMESH_subMesh::_narrow( anSubObject ) ;
-        CORBA::String_var objStr = GetORB()->object_to_string( anSubObject );
-        int subid = myStudyContext->findId( string( objStr.in() ) );
-		      
-		    // for each mesh open the HDF group basing on its id
-		    char submeshGrpName[ 30 ];
-		    sprintf( submeshGrpName, "SubMesh %d", subid );
-		    aSubGroup = new HDFgroup( submeshGrpName, aGroup );
-		    aSubGroup->CreateOnDisk();
+              if ( found ) {
+                char name_meshgroup[ 30 ];
+                if ( i == GetSubMeshOnVertexTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Vertex" );
+                else if ( i == GetSubMeshOnEdgeTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Edge" );
+                else if ( i == GetSubMeshOnWireTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Wire" );
+                else if ( i == GetSubMeshOnFaceTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Face" );
+                else if ( i == GetSubMeshOnShellTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Shell" );
+                else if ( i == GetSubMeshOnSolidTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Solid" );
+                else if ( i == GetSubMeshOnCompoundTag() )
+                  strcpy( name_meshgroup, "SubMeshes On Compound" );
 
-		    // write reference on a shape, already checked if it exists
+                // for each type of submeshes create container HDF group
+                aGroup = new HDFgroup( name_meshgroup, aTopGroup );
+                aGroup->CreateOnDisk();
+
+                // iterator for all submeshes of given type
+                SALOMEDS::ChildIterator_var itSM = myCurrentStudy->NewChildIterator( mySubmeshBranch );
+                for ( ; itSM->More(); itSM->Next() ) {
+                  SALOMEDS::SObject_var mySObject = itSM->Value();
+                  CORBA::Object_var anSubObject = SObjectToObject( mySObject );
+                  if ( !CORBA::is_nil( anSubObject ))
+                  {
+                    SMESH::SMESH_subMesh_var mySubMesh = SMESH::SMESH_subMesh::_narrow( anSubObject ) ;
+                    CORBA::String_var objStr = GetORB()->object_to_string( anSubObject );
+                    int subid = myStudyContext->findId( string( objStr.in() ) );
+
+                    // for each mesh open the HDF group basing on its id
+                    char submeshGrpName[ 30 ];
+                    sprintf( submeshGrpName, "SubMesh %d", subid );
+                    aSubGroup = new HDFgroup( submeshGrpName, aGroup );
+                    aSubGroup->CreateOnDisk();
+
+                    // write reference on a shape, already checked if it exists
                     SALOMEDS::SObject_var mySubRef, myShape;
                     if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ))
                       mySubRef->ReferencedObject( myShape );
@@ -1651,141 +1651,141 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       aDataset->CloseOnDisk();
                     }
 
-		    // write applied hypotheses if exist
-		    SALOMEDS::SObject_var mySubHypBranch;
-		    found = mySObject->FindSubObject( GetRefOnAppliedHypothesisTag(), mySubHypBranch );
-		    if ( found ) {
-		      aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
-		      aSubSubGroup->CreateOnDisk();
+                    // write applied hypotheses if exist
+                    SALOMEDS::SObject_var mySubHypBranch;
+                    found = mySObject->FindSubObject( GetRefOnAppliedHypothesisTag(), mySubHypBranch );
+                    if ( found ) {
+                      aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
+                      aSubSubGroup->CreateOnDisk();
 
-		      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( mySubHypBranch );
-		      int hypNb = 0;
-		      for ( ; it->More(); it->Next() ) {
-			SALOMEDS::SObject_var mySubSObject = it->Value();
-			SALOMEDS::SObject_var myRefOnHyp;
-			bool ok = mySubSObject->ReferencedObject( myRefOnHyp );
-			if ( ok ) {
-			  //string myRefOnObject = myRefOnHyp->GetID();
-			  CORBA::Object_var anObject = SObjectToObject( myRefOnHyp );
-        CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-        int id = myStudyContext->findId( string( objStr.in() ) );
-			  //if ( myRefOnObject.length() > 0 ) {
-			  //aSize[ 0 ] = myRefOnObject.length() + 1;
-			  char hypName[ 30 ], hypId[ 30 ];
-			  sprintf( hypName, "Hyp %d", ++hypNb );
-			  sprintf( hypId, "%d", id );
-			  aSize[ 0 ] = strlen( hypId ) + 1;
-			  aDataset = new HDFdataset( hypName, aSubSubGroup, HDF_STRING, aSize, 1 );
-			  aDataset->CreateOnDisk();
-			  //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-			  aDataset->WriteOnDisk( hypId );
-			  aDataset->CloseOnDisk();
-			  //}
-			}
-		      }
-		      aSubSubGroup->CloseOnDisk();
-		    }
-		    
-		    // write applied algorithms if exist
-		    SALOMEDS::SObject_var mySubAlgoBranch;
-		    found = mySObject->FindSubObject( GetRefOnAppliedAlgorithmsTag(), mySubAlgoBranch );
-		    if ( found ) {
-		      aSubSubGroup = new HDFgroup( "Applied Algorithms", aSubGroup );
-		      aSubSubGroup->CreateOnDisk();
+                      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( mySubHypBranch );
+                      int hypNb = 0;
+                      for ( ; it->More(); it->Next() ) {
+                        SALOMEDS::SObject_var mySubSObject = it->Value();
+                        SALOMEDS::SObject_var myRefOnHyp;
+                        bool ok = mySubSObject->ReferencedObject( myRefOnHyp );
+                        if ( ok ) {
+                          //string myRefOnObject = myRefOnHyp->GetID();
+                          CORBA::Object_var anObject = SObjectToObject( myRefOnHyp );
+                          CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+                          int id = myStudyContext->findId( string( objStr.in() ) );
+                          //if ( myRefOnObject.length() > 0 ) {
+                          //aSize[ 0 ] = myRefOnObject.length() + 1;
+                          char hypName[ 30 ], hypId[ 30 ];
+                          sprintf( hypName, "Hyp %d", ++hypNb );
+                          sprintf( hypId, "%d", id );
+                          aSize[ 0 ] = strlen( hypId ) + 1;
+                          aDataset = new HDFdataset( hypName, aSubSubGroup, HDF_STRING, aSize, 1 );
+                          aDataset->CreateOnDisk();
+                          //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                          aDataset->WriteOnDisk( hypId );
+                          aDataset->CloseOnDisk();
+                          //}
+                        }
+                      }
+                      aSubSubGroup->CloseOnDisk();
+                    }
 
-		      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( mySubAlgoBranch );
-		      int algoNb = 0;
-		      for ( ; it->More(); it->Next() ) {
-			SALOMEDS::SObject_var mySubSObject = it->Value();
-			SALOMEDS::SObject_var myRefOnAlgo;
-			bool ok = mySubSObject->ReferencedObject( myRefOnAlgo );
-			if ( ok ) {
-			  //string myRefOnObject = myRefOnAlgo->GetID();
-			  CORBA::Object_var anObject = SObjectToObject( myRefOnAlgo );
-        CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-        int id = myStudyContext->findId( string( objStr.in() ) );
-			  //if ( myRefOnObject.length() > 0 ) {
-			  //aSize[ 0 ] = myRefOnObject.length() + 1;
-			  char algoName[ 30 ], algoId[ 30 ];
-			  sprintf( algoName, "Algo %d", ++algoNb );
-			  sprintf( algoId, "%d", id );
-			  aSize[ 0 ] = strlen( algoId ) + 1;
-			  aDataset = new HDFdataset( algoName, aSubSubGroup, HDF_STRING, aSize, 1 );
-			  aDataset->CreateOnDisk();
-			  //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-			  aDataset->WriteOnDisk( algoId );
-			  aDataset->CloseOnDisk();
-			  //}
-			}
-		      }
-		      aSubSubGroup->CloseOnDisk();
-		    }
-		    // close submesh HDF group
-		    aSubGroup->CloseOnDisk();
-		  }
-		}
-		// close container of submeshes by type HDF group
-		aGroup->CloseOnDisk();
-	      }
-	    }
+                    // write applied algorithms if exist
+                    SALOMEDS::SObject_var mySubAlgoBranch;
+                    found = mySObject->FindSubObject( GetRefOnAppliedAlgorithmsTag(), mySubAlgoBranch );
+                    if ( found ) {
+                      aSubSubGroup = new HDFgroup( "Applied Algorithms", aSubGroup );
+                      aSubSubGroup->CreateOnDisk();
+
+                      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( mySubAlgoBranch );
+                      int algoNb = 0;
+                      for ( ; it->More(); it->Next() ) {
+                        SALOMEDS::SObject_var mySubSObject = it->Value();
+                        SALOMEDS::SObject_var myRefOnAlgo;
+                        bool ok = mySubSObject->ReferencedObject( myRefOnAlgo );
+                        if ( ok ) {
+                          //string myRefOnObject = myRefOnAlgo->GetID();
+                          CORBA::Object_var anObject = SObjectToObject( myRefOnAlgo );
+                          CORBA::String_var objStr = GetORB()->object_to_string( anObject );
+                          int id = myStudyContext->findId( string( objStr.in() ) );
+                          //if ( myRefOnObject.length() > 0 ) {
+                          //aSize[ 0 ] = myRefOnObject.length() + 1;
+                          char algoName[ 30 ], algoId[ 30 ];
+                          sprintf( algoName, "Algo %d", ++algoNb );
+                          sprintf( algoId, "%d", id );
+                          aSize[ 0 ] = strlen( algoId ) + 1;
+                          aDataset = new HDFdataset( algoName, aSubSubGroup, HDF_STRING, aSize, 1 );
+                          aDataset->CreateOnDisk();
+                          //aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                          aDataset->WriteOnDisk( algoId );
+                          aDataset->CloseOnDisk();
+                          //}
+                        }
+                      }
+                      aSubSubGroup->CloseOnDisk();
+                    }
+                    // close submesh HDF group
+                    aSubGroup->CloseOnDisk();
+                  }
+                }
+                // close container of submeshes by type HDF group
+                aGroup->CloseOnDisk();
+              }
+            }
             // All sub-meshes will be stored in MED file
             if ( shapeRefFound )
               myWriter.AddAllSubMeshes();
 
-	    // groups root sub-branch
-	    SALOMEDS::SObject_var myGroupsBranch;
-	    for ( int i = GetNodeGroupsTag(); i <= GetVolumeGroupsTag(); i++ ) {
-	      found = gotBranch->FindSubObject( i, myGroupsBranch );
-	      if ( found ) {
-		char name_group[ 30 ];
-		if ( i == GetNodeGroupsTag() )
-		  strcpy( name_group, "Groups of Nodes" );
-		else if ( i == GetEdgeGroupsTag() )
-		  strcpy( name_group, "Groups of Edges" );
-		else if ( i == GetFaceGroupsTag() )
-		  strcpy( name_group, "Groups of Faces" );
-		else if ( i == GetVolumeGroupsTag() )
-		  strcpy( name_group, "Groups of Volumes" );
+            // groups root sub-branch
+            SALOMEDS::SObject_var myGroupsBranch;
+            for ( int i = GetNodeGroupsTag(); i <= GetVolumeGroupsTag(); i++ ) {
+              found = gotBranch->FindSubObject( i, myGroupsBranch );
+              if ( found ) {
+                char name_group[ 30 ];
+                if ( i == GetNodeGroupsTag() )
+                  strcpy( name_group, "Groups of Nodes" );
+                else if ( i == GetEdgeGroupsTag() )
+                  strcpy( name_group, "Groups of Edges" );
+                else if ( i == GetFaceGroupsTag() )
+                  strcpy( name_group, "Groups of Faces" );
+                else if ( i == GetVolumeGroupsTag() )
+                  strcpy( name_group, "Groups of Volumes" );
 
-		aGroup = new HDFgroup( name_group, aTopGroup );
-		aGroup->CreateOnDisk();
+                aGroup = new HDFgroup( name_group, aTopGroup );
+                aGroup->CreateOnDisk();
 
-		SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myGroupsBranch );
-		for ( ; it->More(); it->Next() ) {
-		  SALOMEDS::SObject_var mySObject = it->Value();
-		  CORBA::Object_var aSubObject = SObjectToObject( mySObject );
-		  if ( !CORBA::is_nil( aSubObject ) ) {
-		    SMESH_GroupBase_i* myGroupImpl =
+                SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myGroupsBranch );
+                for ( ; it->More(); it->Next() ) {
+                  SALOMEDS::SObject_var mySObject = it->Value();
+                  CORBA::Object_var aSubObject = SObjectToObject( mySObject );
+                  if ( !CORBA::is_nil( aSubObject ) ) {
+                    SMESH_GroupBase_i* myGroupImpl =
                       dynamic_cast<SMESH_GroupBase_i*>( GetServant( aSubObject ).in() );
-		    if ( !myGroupImpl )
-		      continue;
+                    if ( !myGroupImpl )
+                      continue;
 
-        CORBA::String_var objStr = GetORB()->object_to_string( aSubObject );
-        int anId = myStudyContext->findId( string( objStr.in() ) );
-		    
-		    // For each group, create a dataset named "Group <group_persistent_id>"
+                    CORBA::String_var objStr = GetORB()->object_to_string( aSubObject );
+                    int anId = myStudyContext->findId( string( objStr.in() ) );
+
+                    // For each group, create a dataset named "Group <group_persistent_id>"
                     // and store the group's user name into it
-		    char grpName[ 30 ];
-		    sprintf( grpName, "Group %d", anId );
-		    char* aUserName = myGroupImpl->GetName();
-		    aSize[ 0 ] = strlen( aUserName ) + 1;
+                    char grpName[ 30 ];
+                    sprintf( grpName, "Group %d", anId );
+                    char* aUserName = myGroupImpl->GetName();
+                    aSize[ 0 ] = strlen( aUserName ) + 1;
 
-		    aDataset = new HDFdataset( grpName, aGroup, HDF_STRING, aSize, 1 );
-		    aDataset->CreateOnDisk();
-		    aDataset->WriteOnDisk( aUserName );
-		    aDataset->CloseOnDisk();
+                    aDataset = new HDFdataset( grpName, aGroup, HDF_STRING, aSize, 1 );
+                    aDataset->CreateOnDisk();
+                    aDataset->WriteOnDisk( aUserName );
+                    aDataset->CloseOnDisk();
 
-		    // Store the group contents into MED file
-		    if ( myLocMesh.GetGroup( myGroupImpl->GetLocalID() ) ) {
+                    // Store the group contents into MED file
+                    if ( myLocMesh.GetGroup( myGroupImpl->GetLocalID() ) ) {
 
-		      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
-                              << grpName << " to MED file" );
-		      SMESHDS_GroupBase* aGrpBaseDS =
+                      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
+                        << grpName << " to MED file" );
+                      SMESHDS_GroupBase* aGrpBaseDS =
                         myLocMesh.GetGroup( myGroupImpl->GetLocalID() )->GetGroupDS();
-		      aGrpBaseDS->SetStoreName( grpName );
+                      aGrpBaseDS->SetStoreName( grpName );
 
-		      // Pass SMESHDS_Group to MED writer 
-		      SMESHDS_Group* aGrpDS = dynamic_cast<SMESHDS_Group*>( aGrpBaseDS );
+                      // Pass SMESHDS_Group to MED writer 
+                      SMESHDS_Group* aGrpDS = dynamic_cast<SMESHDS_Group*>( aGrpBaseDS );
                       if ( aGrpDS )
                         myWriter.AddGroup( aGrpDS );
 
@@ -1795,8 +1795,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       if ( aGeomGrp ) {
                         SALOMEDS::SObject_var mySubRef, myShape;
                         if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ) &&
-                            mySubRef->ReferencedObject( myShape ) &&
-                            !CORBA::is_nil( myShape->GetObject() ))
+                          mySubRef->ReferencedObject( myShape ) &&
+                          !CORBA::is_nil( myShape->GetObject() ))
                         {
                           string myRefOnObject = myShape->GetID();
                           if ( myRefOnObject.length() > 0 ) {
@@ -1815,17 +1815,17 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                           myWriter.AddGroup( aGeomGrp );
                         }
                       }
-		    }
-		  }
-		}
-		aGroup->CloseOnDisk();
-	      }
-	    } // loop on groups 
+                    }
+                  }
+                }
+                aGroup->CloseOnDisk();
+              }
+            } // loop on groups 
 
-	    if ( strcmp( strHasData.c_str(), "1" ) == 0 )
+            if ( strcmp( strHasData.c_str(), "1" ) == 0 )
             {
               // Flush current mesh information into MED file
-	      myWriter.Perform();
+              myWriter.Perform();
 
               // maybe a shape was deleted in the study
               if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() ) {
@@ -1969,10 +1969,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               } // if ( there are submeshes in SMESHDS_Mesh )
             } // if ( hasData )
 
-	    // close mesh HDF group
-	    aTopGroup->CloseOnDisk();
-	  }
-	}
+            // close mesh HDF group
+            aTopGroup->CloseOnDisk();
+          }
+        }
       }
     }
   }
@@ -1996,7 +1996,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 /*!
  *  SMESH_Gen_i::SaveASCII
  *
- *  Save SMESH module's data in ASCII format (not implemented yet)
+ *  Save SMESH module's data in ASCII format
  */
 //=============================================================================
 
@@ -2005,7 +2005,19 @@ SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent
 					   bool                     isMultiFile ) {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SaveASCII" );
   SALOMEDS::TMPFile_var aStreamFile = Save( theComponent, theURL, isMultiFile );
-  return aStreamFile._retn();
+
+  //after usual saving needs to encipher binary to text string
+  //Any binary symbol will be represent as "|xx" () hexadecimal format number
+  int size = aStreamFile.in().length();
+  _CORBA_Octet* buffer = new _CORBA_Octet[size*3+1];
+  for ( int i = 0; i < size; i++ )
+    sprintf( (char*)&(buffer[i*3]), "|%02x", (char*)(aStreamFile[i]) );
+
+  buffer[size * 3] = '\0';
+
+  SALOMEDS::TMPFile_var anAsciiStreamFile = new SALOMEDS::TMPFile(size*3, size*3, buffer, 1);
+  
+  return anAsciiStreamFile._retn();
 }
 
 //=============================================================================
@@ -2851,7 +2863,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 /*!
  *  SMESH_Gen_i::LoadASCII
  *
- *  Load SMESH module's data in ASCII format (not implemented yet)
+ *  Load SMESH module's data in ASCII format
  */
 //=============================================================================
 
@@ -2860,7 +2872,29 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
 			     const char*              theURL,
 			     bool                     isMultiFile ) {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::LoadASCII" );
-  return Load( theComponent, theStream, theURL, isMultiFile );
+
+  //before call main ::Load method it's need for decipher text format to
+  //binary ( "|xx" => x' )
+  int size = theStream.length();
+  if ( int((size / 3 )*3) != size ) //error size of buffer
+    return false;
+
+  int real_size = int(size / 3);
+
+  _CORBA_Octet* buffer = new _CORBA_Octet[real_size];
+  char tmp[3];
+  tmp[2]='\0';
+  int c = -1;
+  for ( int i = 0; i < real_size; i++ )
+  {
+    memcpy( &(tmp[0]), &(theStream[i*3+1]), 2 );
+    sscanf( tmp, "%x", &c );
+    sprintf( (char*)&(buffer[i]), "%c", (char)c );
+  }
+
+  SALOMEDS::TMPFile_var aRealStreamFile = new SALOMEDS::TMPFile(real_size, real_size, buffer, 1);
+  
+  return Load( theComponent, *(aRealStreamFile._retn()), theURL, isMultiFile );
 }
 
 //=============================================================================
