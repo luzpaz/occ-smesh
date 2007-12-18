@@ -3224,16 +3224,17 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
       list<const SMDS_MeshElement*> & newVolumes = itElem->second;
       int iVol, volNb, nbVolumesByStep = newVolumes.size() / nbSteps;
 
-      set<const SMDS_MeshNode*> initNodeSet, faceNodeSet;
-      for ( iNode = 0; iNode < nbNodes; iNode++ )
+      set<const SMDS_MeshNode*> initNodeSet, topNodeSet, faceNodeSet;
+      for ( iNode = 0; iNode < nbNodes; iNode++ ) {
         initNodeSet.insert( vecNewNodes[ iNode ]->first );
-
+        topNodeSet .insert( vecNewNodes[ iNode ]->second.back() );
+      }
       for ( volNb = 0; volNb < nbVolumesByStep; volNb++ ) {
         list<const SMDS_MeshElement*>::iterator v = newVolumes.begin();
         iVol = 0;
         while ( iVol++ < volNb ) v++;
-        // find indices of free faces of a volume
-        list< int > fInd;
+        // find indices of free faces of a volume and their source edges
+        list< int > freeInd;
         list< const SMDS_MeshElement* > srcEdges; // source edges of free faces
         SMDS_VolumeTool vTool( *v );
         int iF, nbF = vTool.NbFaces();
@@ -3242,31 +3243,29 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
               vTool.GetFaceNodes( iF, faceNodeSet ) &&
               initNodeSet != faceNodeSet) // except an initial face
           {
-            fInd.push_back( iF );
+            if ( nbSteps == 1 && faceNodeSet == topNodeSet )
+              continue;
+            freeInd.push_back( iF );
             // find source edge of a free face iF
             vector<const SMDS_MeshNode*> commonNodes; // shared by the initial and free faces
             commonNodes.resize( initNodeSet.size(), NULL ); // avoid spoiling memory
             std::set_intersection( faceNodeSet.begin(), faceNodeSet.end(),
                                    initNodeSet.begin(), initNodeSet.end(),
                                    commonNodes.begin());
-            if (!commonNodes[ 1 + int((*v)->IsQuadratic()) ]) {
-#ifdef _DEBUG_
-              throw SALOME_Exception(LOCALIZED("Common nodes not found"));
-#else
-              srcEdges.push_back( NULL );
-#endif
-            }
             if ( (*v)->IsQuadratic() )
-              srcEdges.push_back(aMesh-> FindEdge (commonNodes[0],commonNodes[1],commonNodes[2]));
+              srcEdges.push_back(aMesh->FindEdge (commonNodes[0],commonNodes[1],commonNodes[2]));
             else
-              srcEdges.push_back(aMesh-> FindEdge (commonNodes[0],commonNodes[1]));
+              srcEdges.push_back(aMesh->FindEdge (commonNodes[0],commonNodes[1]));
 #ifdef _DEBUG_
             if ( !srcEdges.back() )
-              throw SALOME_Exception(LOCALIZED("Source edge not found"));
+            {
+              cout << "SMESH_MeshEditor::makeWalls(), no source edge found for a free face #"
+                   << iF << " of volume #" << vTool.ID() << endl;
+            }
 #endif
           }
         }
-        if ( fInd.empty() )
+        if ( freeInd.empty() )
           continue;
 
         // create faces for all steps;
@@ -3275,9 +3274,9 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
         for ( int iStep = 0; iStep < nbSteps; iStep++ )  {
           vTool.Set( *v );
           vTool.SetExternalNormal();
-          list< int >::iterator ind = fInd.begin();
+          list< int >::iterator ind = freeInd.begin();
           list< const SMDS_MeshElement* >::iterator srcEdge = srcEdges.begin();
-          for ( ; ind != fInd.end(); ++ind, ++srcEdge ) // loop on free faces
+          for ( ; ind != freeInd.end(); ++ind, ++srcEdge ) // loop on free faces
           {
             const SMDS_MeshNode** nodes = vTool.GetFaceNodes( *ind );
             int nbn = vTool.NbFaceNodes( *ind );
