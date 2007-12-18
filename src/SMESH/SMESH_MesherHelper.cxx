@@ -1063,7 +1063,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
       allFaces.insert( e );
   }
   // Starting from 2 neighbour nodes on theBaseEdge, look for a face
-  // the nodes belong to, and between the nodes of the found face,
+  // the nodes belong to, and among the nodes of the found face,
   // look for a not loaded node considering this node to be the next
   // in a column of the starting second node. Repeat, starting
   // from nodes next to the previous starting nodes in their columns,
