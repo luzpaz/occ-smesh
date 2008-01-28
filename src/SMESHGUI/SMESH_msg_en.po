@@ -2855,7 +2855,7 @@ msgid "TOP_HIDE"
 msgstr "Hide"
 
 msgid "TOP_DISPLAY_ONLY"
-msgstr "Display only"
+msgstr "Show only"
 
 
 
@@ -3171,7 +3171,7 @@ msgid "STB_HIDE"
 msgstr "Hide"
 
 msgid "STB_DISPLAY_ONLY"
-msgstr "Display only"
+msgstr "Show only"
 
 msgid "TB_MESH"
 msgstr "Mesh Toolbar"
