@@ -1761,11 +1761,9 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
     if ( isAccessibleDim( dim ) && myObjHyps[ dim ][ Algo ].count() > 0 )
     {
       SMESH::SMESH_Hypothesis_var anOldAlgo = myObjHyps[ dim ][ Algo ].first().first;
-      CORBA::String_var anOldName = anOldAlgo->GetName();
       SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( dim );
-      CORBA::String_var anAlgoName = anAlgoVar->GetName();
       if ( anAlgoVar->_is_nil() || // no new algo selected or
-           strcmp(anOldName.in(), anAlgoName.in()) ) // algo change
+           strcmp(anOldAlgo->GetName(), anAlgoVar->GetName()) ) // algo change
       {
         // remove old algorithm
         SMESH::RemoveHypothesisOrAlgorithmOnMesh ( pObj, myObjHyps[ dim ][ Algo ].first().first );
