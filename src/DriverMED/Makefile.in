@@ -49,7 +49,8 @@ LIB_SRC = \
 	DriverMED_W_SMDS_Mesh.cxx \
 	DriverMED_W_SMESHDS_Document.cxx \
 	DriverMED_W_SMESHDS_Mesh.cxx \
-	DriverMED_Family.cxx
+	DriverMED_Family.cxx \
+	SMESH_DriverMED.hxx
 
 # Executables targets
 BIN = MED_Test
