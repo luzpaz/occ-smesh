@@ -2933,7 +2933,8 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
 
   if ( !myPreviewMode ) {
     TPythonDump() << "nodeID = " << this
-                  << ".MoveClosestNodeToPoint( "<< x << ", " << y << ", " << z << " )";
+                  << ".MoveClosestNodeToPoint( "<< x << ", " << y << ", " << z
+                  << ", " << nodeID << " )";
   }
 
   return nodeID;
