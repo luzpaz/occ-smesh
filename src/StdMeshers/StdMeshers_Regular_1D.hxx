@@ -71,12 +71,14 @@ public:
 
 protected:
 
-  virtual bool computeInternalParameters (Adaptor3d_Curve &     theC3d,
-                                          double                theLength,
-                                          double                theFirstU,
-                                          double                theLastU,
-                                          std::list< double > & theParameters,
-                                          const bool            theReverse);
+  virtual bool computeInternalParameters (SMESH_Mesh &        theMesh,
+                                          Adaptor3d_Curve &   theC3d,
+                                          double              theLength,
+                                          double              theFirstU,
+                                          double              theLastU,
+                                          std::list<double> & theParameters,
+                                          const bool          theReverse,
+                                          bool                theConsiderPropagation = false);
 
   virtual void redistributeNearVertices (SMESH_Mesh &          theMesh,
                                          Adaptor3d_Curve &     theC3d,

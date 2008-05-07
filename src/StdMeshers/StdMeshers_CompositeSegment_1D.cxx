@@ -333,7 +333,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
   auto_ptr< BRepAdaptor_CompCurve > C3d ( side->GetCurve3d() );
   double f = C3d->FirstParameter(), l = C3d->LastParameter();
   list< double > params;
-  if ( !computeInternalParameters ( *C3d, side->Length(), f, l, params, false ))
+  if ( !computeInternalParameters ( aMesh, *C3d, side->Length(), f, l, params, false ))
     return false;
 
   // Redistribute parameters near ends

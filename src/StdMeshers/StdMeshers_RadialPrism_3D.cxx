@@ -336,7 +336,7 @@ public:
     BRepAdaptor_Curve C3D(edge);
     double f = C3D.FirstParameter(), l = C3D.LastParameter();
     list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( C3D, len, f, l, params, false ))
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( aMesh, C3D, len, f, l, params, false ))
       return error("StdMeshers_Regular_1D failed to compute layers distribution");
 
     positions.clear();
