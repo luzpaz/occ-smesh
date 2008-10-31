@@ -35,11 +35,11 @@
 #include <utilities.h>
 
 // SALOME GUI includes
-#include <QtxIntSpinBox.h>
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
+#include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
 #include <QFrame>
@@ -206,7 +206,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       {
       case QVariant::Int:
         {
-          QtxIntSpinBox* sb = new QtxIntSpinBox( GroupC1 );
+          SalomeApp_IntSpinBox* sb = new SalomeApp_IntSpinBox( GroupC1 );
 	  sb->setObjectName( (*anIt).myName );
           attuneStdWidget( sb, i );
           sb->setValue( (*anIt).myValue.toInt() );
@@ -269,9 +269,9 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
   for( ; anIt!=aLast; anIt++ )
   {
     item.myName = (*anIt)->objectName();
-    if( (*anIt)->inherits( "QtxIntSpinBox" ) )
+    if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) )
     {
-      QtxIntSpinBox* sb = ( QtxIntSpinBox* )( *anIt );
+      SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
       item.myValue = sb->value();
       params.append( item );
     }

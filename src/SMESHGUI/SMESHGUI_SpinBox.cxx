@@ -35,7 +35,7 @@
 // purpose  : constructor of specific widget accepting floats in double precision.
 //=================================================================================
 SMESHGUI_SpinBox::SMESHGUI_SpinBox( QWidget* parent )
-  : QtxDoubleSpinBox( parent )
+  : SalomeApp_DoubleSpinBox( parent )
 {
 }
 
@@ -90,7 +90,7 @@ QString SMESHGUI_SpinBox::GetString() const
 //=================================================================================
 QLineEdit* SMESHGUI_SpinBox::editor() const
 {
-  return QtxDoubleSpinBox::lineEdit();
+  return SalomeApp_DoubleSpinBox::lineEdit();
 } 
 
 //=================================================================================

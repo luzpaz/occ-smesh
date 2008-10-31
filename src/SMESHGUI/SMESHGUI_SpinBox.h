@@ -30,7 +30,7 @@
 #include "SMESH_SMESHGUI.hxx"
 
 // SALOME GUI includes
-#include <QtxDoubleSpinBox.h>
+#include <SalomeApp_DoubleSpinBox.h>
 
 #define COORD_MIN -1e+15
 #define COORD_MAX +1e+15
@@ -43,7 +43,7 @@ class QDoubleValidator;
 // class    : SMESHGUI_SpinBox
 // purpose  : Derivated from QtxDoubleSpinBox class 
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_SpinBox : public QtxDoubleSpinBox
+class SMESHGUI_EXPORT SMESHGUI_SpinBox : public SalomeApp_DoubleSpinBox
 {
   Q_OBJECT
 
