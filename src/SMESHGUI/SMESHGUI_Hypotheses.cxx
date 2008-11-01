@@ -402,6 +402,27 @@ bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam&, QWi
   return false;
 }
 
+bool SMESHGUI_GenericHypothesisCreator::checkParams() const
+{
+  ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
+  for( ; anIt!=aLast; anIt++ )
+  {
+    if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) )
+    {
+      SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
+      if( !sb->isValid() )
+	return false;
+    }
+    else if( (*anIt)->inherits( "SalomeApp_DoubleSpinBox" ) )
+    {
+      SalomeApp_DoubleSpinBox* sb = ( SalomeApp_DoubleSpinBox* )( *anIt );
+      if( !sb->isValid() )
+	return false;
+    }
+  }
+  return true;
+}
+
 void SMESHGUI_GenericHypothesisCreator::onReject()
 {
 }
@@ -483,7 +504,10 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 void SMESHGUI_HypothesisDlg::accept()
 {
   if ( myCreator && !myCreator->checkParams() )
+  {
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), tr( "SMESH_INCORRECT_INPUT" ) );
     return;
+  }
   QtxDialog::accept();
 }
 

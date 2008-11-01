@@ -340,6 +340,9 @@ namespace {
 
 bool StdMeshersGUI_StdHypothesisCreator::checkParams() const
 {
+  if( !SMESHGUI_GenericHypothesisCreator::checkParams() )
+    return false;
+
   // check if object reference parameter is set, as it has no default value
   bool ok = true;
   if ( hypType().startsWith("ProjectionSource" ))

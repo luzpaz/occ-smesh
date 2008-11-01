@@ -1218,6 +1218,10 @@ Are you sure want to export to MED 2.1 ?</translation>
             <translation>Id Nodes</translation>
         </message>
         <message>
+            <source>SMESH_INCORRECT_INPUT</source>
+            <translation>Incorrect input data!</translation>
+        </message>
+        <message>
             <source>SMESH_INFORMATION</source>
             <translation>Information</translation>
         </message>

@@ -55,7 +55,7 @@ public:
   void                         edit( SMESH::SMESH_Hypothesis_ptr,
 				     const QString&, QWidget* );
 
-  virtual bool                 checkParams() const = 0;
+  virtual bool                 checkParams() const;
   virtual void                 onReject();
   virtual QString              helpPage() const;
 

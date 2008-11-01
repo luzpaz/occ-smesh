@@ -115,4 +115,5 @@ void SMESHGUI_SpinBox::RangeStepAndValidator( double min,
   //                        see QtxDoubleSpinBox::mapValueToText( double v )
   setRange( min, max );
   setSingleStep( step );
+  setDefaultValue( min );
 }

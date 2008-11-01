@@ -79,6 +79,9 @@ StdMeshersGUI_NbSegmentsCreator::~StdMeshersGUI_NbSegmentsCreator()
 
 bool StdMeshersGUI_NbSegmentsCreator::checkParams() const
 {
+  if( !SMESHGUI_GenericHypothesisCreator::checkParams() )
+    return false;
+
   NbSegmentsHypothesisData data_old, data_new;
   readParamsFromHypo( data_old );
   readParamsFromWidgets( data_new );
