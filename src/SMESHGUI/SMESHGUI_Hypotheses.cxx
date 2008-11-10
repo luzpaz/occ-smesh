@@ -216,7 +216,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
         break;
       case QVariant::Double:
         {
-          QtxDoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
+          SalomeApp_DoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
 	  sb->setObjectName( (*anIt).myName );
           attuneStdWidget( sb, i );
           sb->setValue( (*anIt).myValue.toDouble() );
@@ -276,9 +276,9 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
       params.append( item );
     }
     
-    else if( (*anIt)->inherits( "QtxDoubleSpinBox" ) )
+    else if( (*anIt)->inherits( "SalomeApp_DoubleSpinBox" ) )
     {
-      QtxDoubleSpinBox* sb = ( QtxDoubleSpinBox* )( *anIt );
+      SalomeApp_DoubleSpinBox* sb = ( SalomeApp_DoubleSpinBox* )( *anIt );
       item.myValue = sb->value();
       params.append( item );
     }
@@ -402,25 +402,24 @@ bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam&, QWi
   return false;
 }
 
-bool SMESHGUI_GenericHypothesisCreator::checkParams() const
+bool SMESHGUI_GenericHypothesisCreator::checkParams( QString& msg ) const
 {
+  bool ok = true;
   ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
   for( ; anIt!=aLast; anIt++ )
   {
     if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) )
     {
       SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
-      if( !sb->isValid() )
-	return false;
+      ok = sb->isValid( msg, true ) && ok;
     }
     else if( (*anIt)->inherits( "SalomeApp_DoubleSpinBox" ) )
     {
       SalomeApp_DoubleSpinBox* sb = ( SalomeApp_DoubleSpinBox* )( *anIt );
-      if( !sb->isValid() )
-	return false;
+      ok = sb->isValid( msg, true ) && ok;
     }
   }
-  return true;
+  return ok;
 }
 
 void SMESHGUI_GenericHypothesisCreator::onReject()
@@ -503,9 +502,13 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 
 void SMESHGUI_HypothesisDlg::accept()
 {
-  if ( myCreator && !myCreator->checkParams() )
+  QString msg;
+  if ( myCreator && !myCreator->checkParams( msg ) )
   {
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), tr( "SMESH_INCORRECT_INPUT" ) );
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
     return;
   }
   QtxDialog::accept();

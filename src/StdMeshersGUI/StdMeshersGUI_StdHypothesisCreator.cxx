@@ -338,9 +338,9 @@ namespace {
  */
 //================================================================================
 
-bool StdMeshersGUI_StdHypothesisCreator::checkParams() const
+bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
 {
-  if( !SMESHGUI_GenericHypothesisCreator::checkParams() )
+  if( !SMESHGUI_GenericHypothesisCreator::checkParams( msg ) )
     return false;
 
   // check if object reference parameter is set, as it has no default value
