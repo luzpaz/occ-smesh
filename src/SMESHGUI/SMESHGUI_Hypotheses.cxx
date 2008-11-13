@@ -226,12 +226,34 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
         break;
       case QVariant::String:
         {
-          QLineEdit* le = new QLineEdit( GroupC1 );
-	  le->setObjectName( (*anIt).myName );
-          attuneStdWidget( le, i );
-          le->setText( (*anIt).myValue.toString() );
-          connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
-          w = le;
+          if((*anIt).isVariable) {
+            _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+            QString aVar = (*anIt).myValue.toString();
+            if(aStudy->IsInteger(aVar.toLatin1().constData())){
+              SalomeApp_IntSpinBox* sb = new SalomeApp_IntSpinBox( GroupC1 );
+              sb->setObjectName( (*anIt).myName );
+              attuneStdWidget( sb, i );
+              sb->setText( aVar );
+              connect( sb, SIGNAL( valueChanged( int ) ), this, SLOT( onValueChanged() ) );
+              w = sb;
+            }
+            else if(aStudy->IsReal(aVar.toLatin1().constData())){
+              SalomeApp_DoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
+              sb->setObjectName( (*anIt).myName );
+              attuneStdWidget( sb, i );
+              sb->setText( aVar );
+              connect( sb, SIGNAL( valueChanged( double ) ), this, SLOT( onValueChanged() ) );
+              w = sb;
+            }
+          }
+          else {
+            QLineEdit* le = new QLineEdit( GroupC1 );
+            le->setObjectName( (*anIt).myName );
+            attuneStdWidget( le, i );
+            le->setText( (*anIt).myValue.toString() );
+            connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
+            w = le;
+          }
         }
         break;
       }
@@ -299,6 +321,42 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
       res = false;
   }
   return res;
+}
+
+
+QStringList SMESHGUI_GenericHypothesisCreator::getVariablesFromDlg() const
+{
+  QStringList aResult;
+  QString item;
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  if(aStudy) {
+    ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
+    for( ; anIt!=aLast; anIt++ ) {
+      if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) )
+        {
+          SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
+          item = sb->text();
+	  bool isVariable = aStudy->IsVariable(item.toLatin1().constData()); 
+          isVariable ? aResult.append( item ) : aResult.append(QString());
+        }
+      
+      else if( (*anIt)->inherits( "QtxDoubleSpinBox" ) )
+      {
+        QtxDoubleSpinBox* sb = ( QtxDoubleSpinBox* )( *anIt );
+        item = sb->text();
+        bool isVariable = aStudy->IsVariable(item.toLatin1().constData());
+	isVariable ? aResult.append( item ) : aResult.append(QString());
+      } 
+    }
+    bool hasVar = false;
+    for (int i = 0;i<aResult.size();i++)
+      if(!aResult[i].isEmpty())
+        hasVar = true;
+
+    if(!hasVar)
+      aResult.clear();
+  }
+  return aResult;
 }
 
 QString SMESHGUI_GenericHypothesisCreator::stdParamValues( const ListOfStdParams& params)

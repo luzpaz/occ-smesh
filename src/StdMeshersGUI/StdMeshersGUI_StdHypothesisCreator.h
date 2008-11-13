@@ -58,6 +58,7 @@ protected:
   virtual QWidget* getWidgetForParam( int paramIndex ) const;
   virtual ListOfWidgets* customWidgets() const;
   virtual void     onReject();
+  virtual QVariant parseParameter(const QStringList& theList, int theNbParam) const;
 
   template<class T>
     T* widget(int i) const {

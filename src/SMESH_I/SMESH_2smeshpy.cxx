@@ -34,6 +34,7 @@
 
 #include "utilities.h"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_NoteBook.hxx"
 #include "Resource_DataMapOfAsciiStringAsciiString.hxx"
 
 #include "SMESH_Gen_i.hxx"
@@ -123,14 +124,16 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod)
 {
   theGen = new _pyGen( theEntry2AccessorMethod );
-
+  
+  SMESH_NoteBook * aNoteBook = new SMESH_NoteBook();
+  
   // split theScript into separate commands
   int from = 1, end = theScript.Length(), to;
   while ( from < end && ( to = theScript.Location( "\n", from, end )))
   {
     if ( to != from )
       // cut out and store a command
-      theGen->AddCommand( theScript.SubString( from, to - 1 ));
+      theGen->AddCommand( aNoteBook->ReplaceVariables(theScript.SubString( from, to - 1 )));
     from = to + 1;
   }
   // finish conversion

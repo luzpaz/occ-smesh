@@ -64,12 +64,15 @@ public:
   bool                         isCreation() const;
 
 protected:
-  typedef struct
+  struct StdParam
   {
     QString   myName;
     QVariant  myValue;
-
-  } StdParam;
+    bool      isVariable;
+    StdParam(){
+      isVariable = false;
+    }
+  };
 
   typedef QList<StdParam>      ListOfStdParams;
   typedef QList<QWidget*>      ListOfWidgets;
@@ -86,6 +89,7 @@ protected:
   virtual QString              storeParams() const = 0;
   virtual bool                 stdParams( ListOfStdParams& ) const;
   bool                         getStdParamFromDlg( ListOfStdParams& ) const;
+  virtual QStringList          getVariablesFromDlg() const;
   static  QString              stdParamValues( const ListOfStdParams& );
   virtual void                 attuneStdWidget( QWidget*, const int ) const;
   virtual QWidget*             getCustomWidget( const StdParam&, 

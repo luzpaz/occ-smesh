@@ -66,6 +66,12 @@ public:
   // Get unique id of hypothesis
   CORBA::Long GetId();
 
+  // Set list of parameters  separated by ":" symbol, used for Hypothesis creation
+  void SetParameters (const char* theParameters);
+  
+  // Return list of notebook variables used for Hypothesis creation separated by ":" symbol
+  char* GetParameters();
+  
   // Get implementation
   ::SMESH_Hypothesis* GetImpl();
   

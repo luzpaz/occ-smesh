@@ -32,6 +32,7 @@
 #include <SMESH_NumberFilter.hxx>
 #include <StdMeshersGUI_ObjectReferenceParamWdg.h>
 #include <StdMeshersGUI_LayerDistributionParamWdg.h>
+#include <SALOMEDSClient_Study.hxx>
 
 // SALOME GUI includes
 #include <SUIT_ResourceMgr.h>
@@ -400,6 +401,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
   }
 
   QString valueStr = stdParamValues( params );
+  QStringList aVariablesList = getVariablesFromDlg();
 
   if( res && !params.isEmpty() )
   {
@@ -407,7 +409,13 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
     {
       StdMeshers::StdMeshers_LocalLength_var h =
 	StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
-
+      if(!aVariablesList.isEmpty()) {
+        QString aVariables = aVariablesList.join(":");
+        h->SetParameters(aVariables.toLatin1().constData());
+      }
+      else
+        h->SetParameters("");
+        
       h->SetLength( params[0].myValue.toDouble() );
       h->SetPrecision( params[1].myValue.toDouble() );
     }
@@ -546,7 +554,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     p.append( item );
     customWidgets()->append(0);
   }
-
+  
   SMESH::SMESH_Hypothesis_var hyp = initParamsHypothesis();
 
   if( hypType()=="LocalLength" )
@@ -554,12 +562,31 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     StdMeshers::StdMeshers_LocalLength_var h =
       StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
 
+    QString aParameters(h->GetParameters());
+    QStringList aParametersList;
+    if(aParameters.length())
+      aParametersList = aParameters.split(":");
+
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
-    item.myValue = h->GetLength();
+    QVariant aVariable = parseParameter(aParametersList,0);
+    if(aVariable.type() != QVariant::Invalid) {
+      item.myValue = aVariable;
+      item.isVariable = true;
+    }
+    else
+      item.myValue = h->GetLength();
     p.append( item );
+     
     item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
-    item.myValue = h->GetPrecision();
+    aVariable = parseParameter(aParametersList,1);
+    if(aVariable.type() !=  QVariant::Invalid) {
+      item.myValue = aVariable;
+      item.isVariable = true;
+    }
+    else
+      item.myValue = h->GetPrecision();
     p.append( item );
+    
   }
   else if( hypType()=="SegmentLengthAroundVertex" )
   {
@@ -914,4 +941,36 @@ void StdMeshersGUI_StdHypothesisCreator::onReject()
     // Uninstall filters of StdMeshersGUI_ObjectReferenceParamWdg
     deactivateObjRefParamWdg( customWidgets() );
   }
+}
+
+//================================================================================
+/*!
+ * \brief
+ */
+//================================================================================
+QVariant StdMeshersGUI_StdHypothesisCreator::
+parseParameter(const QStringList& theList, int theNbParam) const
+{
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  QVariant aResult;
+  if(theList.size() > theNbParam) {
+    QString aParameter =  theList[theNbParam];
+    if(QString::compare(QString(""),aParameter) !=0 ) {
+      if(aStudy->IsVariable(aParameter.toLatin1().constData())) {
+        aResult=aParameter;
+      }
+      else {
+        bool aResult = false;
+        int anIResult = aParameter.toInt(&aResult);
+        if(aResult)
+          aResult = anIResult;
+        else {
+          double aDResult = aParameter.toDouble(&aResult);
+          if(aResult)
+            aResult = aDResult;
+        } 
+      }
+    }
+  }
+  return aResult;
 }

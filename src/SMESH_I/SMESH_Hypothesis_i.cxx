@@ -29,6 +29,7 @@
 #include <iostream>
 #include <sstream>
 #include "SMESH_Hypothesis_i.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "utilities.h"
 
 using namespace std;
@@ -119,6 +120,27 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 {
   MESSAGE( "SMESH_Hypothesis_i::GetId" );
   return myBaseImpl->GetID();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::SetParameters()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
+{
+  string aNewParameters(theParameters);
+  string anOldParameters(GetParameters());
+  if(aNewParameters.compare(anOldParameters) != 0)
+    SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()), 
+                                                 theParameters);
+}
+
+char* SMESH_Hypothesis_i::GetParameters()
+{
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  return CORBA::string_dup(gen->GetParameters(SMESH::SMESH_Hypothesis::_narrow(_this())));
 }
 
 //=============================================================================

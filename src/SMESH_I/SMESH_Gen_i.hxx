@@ -469,6 +469,9 @@ public:
    * \brief Find SObject for an algo
    */
   SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
+
+  void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
+  char* GetParameters(CORBA::Object_ptr theObject);
  
 private:
   // Create hypothesis of given type

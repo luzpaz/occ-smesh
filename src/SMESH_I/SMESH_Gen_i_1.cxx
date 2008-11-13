@@ -863,3 +863,59 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
   return true;
 }
 
+//=======================================================================
+//function : UpdateSObject
+//purpose  : 
+//=======================================================================
+void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
+{
+  SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
+    return;
+
+  SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
+  if(aSObj->_is_nil())
+    return;
+
+  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( theObject );
+
+  if ( !aHyp->_is_nil() ) {
+    CORBA::String_var objStr = aHyp->GetParameters();
+    TCollection_AsciiString aParams(theParameters);
+    if(aParams.Length()) {
+      SALOMEDS::GenericAttribute_var anAttr;
+      anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
+      SALOMEDS::AttributeString::_narrow(anAttr)->SetValue( aParams.ToCString() );
+    }
+    else
+      aStudyBuilder->RemoveAttribute(aSObj,"AttributeString");
+  }
+}
+
+
+//=======================================================================
+//function : GetParameters
+//purpose  : 
+//=======================================================================
+char* SMESH_Gen_i::GetParameters(CORBA::Object_ptr theObject)
+{
+  TCollection_AsciiString aResult;
+
+  SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
+  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( theObject );
+
+  if(!aStudy->_is_nil() && 
+     !CORBA::is_nil(theObject) && 
+     !aSObj->_is_nil() && 
+     !aHyp->_is_nil()){
+    
+    SALOMEDS::GenericAttribute_var anAttr;
+    if ( aSObj->FindAttribute(anAttr, "AttributeString")) {
+      aResult = TCollection_AsciiString(SALOMEDS::AttributeString::_narrow(anAttr)->Value());
+    }
+  }
+  
+  return CORBA::string_dup( aResult.ToCString() );
+}

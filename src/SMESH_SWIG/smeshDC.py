@@ -174,6 +174,8 @@ def GetName(obj):
 
 ## Sets a name to the object
 def SetName(obj, name):
+    if isinstance(obj, BaseWrapper):
+        obj = obj.GetAlgorithm()
     ior  = salome.orb.object_to_string(obj)
     sobj = salome.myStudy.FindObjectIOR(ior)
     if not sobj is None:
@@ -942,7 +944,7 @@ class Mesh:
     #  @return SMESH.Hypothesis_Status
     #  @ingroup l2_hypotheses
     def AddHypothesis(self, hyp, geom=0):
-        if isinstance( hyp, Mesh_Algorithm ):
+        if isinstance( hyp, Mesh_Algorithm ) or isinstance( hyp, BaseWrapper):
             hyp = hyp.GetAlgorithm()
             pass
         if not geom:
@@ -961,7 +963,7 @@ class Mesh:
     #  @return SMESH.Hypothesis_Status
     #  @ingroup l2_hypotheses
     def RemoveHypothesis(self, hyp, geom=0):
-        if isinstance( hyp, Mesh_Algorithm ):
+        if isinstance( hyp, Mesh_Algorithm ) or isinstance( hyp, BaseWrapper):
             hyp = hyp.GetAlgorithm()
             pass
         if not geom:
@@ -2876,6 +2878,7 @@ class Mesh_Algorithm:
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
         TreatHypoStatus( status, GetName(hypo), GetName(self.geom), 0 )
+        hypo = WrapHypothesis(hypo,hyp)
         return hypo
 
 
@@ -4012,3 +4015,74 @@ class Mesh_UseExisting(Mesh_Algorithm):
             self.Create(mesh, geom, "UseExisting_1D")
         else:
             self.Create(mesh, geom, "UseExisting_2D")
+
+
+
+
+def WrapHypothesis(hypo, hyp):
+    if hyp == "LocalLength":
+        return LocalLength(hypo)
+    return hypo
+
+from salome_notebook import *
+
+##Base class for wrap all StdMeshers interfaces
+class BaseWrapper:
+    
+    ##Return instance of a _objref_StdMeshers hypothesis
+    def GetAlgorithm(self):
+        return self.hypo
+
+    ##Return values of the notebook variables
+    def ParseParameters(self, params ,nbParams, nbParam, arg):
+        result = None
+        strResult = ""
+        isVar = False
+        if isinstance(arg, str):
+            if notebook.isVariable(arg):
+                result = notebook.get(arg)
+                isVar = True
+        else:
+            result = arg
+
+        isEmpty = True
+        paramsList = []
+        if len(params) > 0:
+            paramsList = params.split(":")
+            isEmpty = False
+            
+        for n in range(1,nbParams+1):
+            if n != nbParam and not isEmpty and len(paramsList[n-1])> 0:
+                strResult = paramsList[n-1] + ":"
+                pass
+            if isVar and n == nbParam:
+                if len(strResult) == 0 and nbParam != 1:
+                    strResult = strResult + ":"
+                    pass
+                strResult = strResult+arg
+                if n != nbParams:
+                    strResult = strResult + ":"
+                    
+        return result, strResult
+            
+       
+#Wrapper class for StdMeshers_LocalLength hypothesis
+class LocalLength(BaseWrapper):
+    def __init__(self, hypo):
+        self.hypo = hypo
+
+    def SetLength(self, length):
+        length,parameters = self.ParseParameters(self.hypo.GetParameters(),2,1,length)
+        self.hypo.SetParameters(parameters)
+        self.hypo.SetLength(length)
+
+    def SetPrecision(self, precision):
+        precision,parameters = self.ParseParameters(self.hypo.GetParameters(),2,2,precision)
+        self.hypo.SetParameters(parameters)
+        self.hypo.SetPrecision(precision)
+
+    def GetLength(self):
+        return self.hypo.GetLength()
+
+    def GetPrecision(self):
+        return self.hypo.GetLength()

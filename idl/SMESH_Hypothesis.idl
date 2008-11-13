@@ -55,6 +55,18 @@ module SMESH
      * Get the internal Id 
      */
     long GetId();
+
+    /*!
+     *  Set list of parameters
+     *  \param theParameters is a string containing the notebook variables separated by ":" symbol,
+     *         used for Hypothesis creation
+     */
+    void SetParameters (in string theParameters);
+
+    /*!
+     *  Return list of notebook variables used for Hypothesis creation separated by ":" symbol
+     */
+    string GetParameters();
     
     /*!
      * Verify whether hypothesis supports given entity type 

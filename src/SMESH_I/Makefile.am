@@ -49,6 +49,7 @@ salomeinclude_HEADERS = \
 	SMESH_MEDSupport_i.hxx \
 	SMESH_Pattern_i.hxx \
 	SMESH_2smeshpy.hxx \
+	SMESH_NoteBook.hxx \
 	SMESH.hxx
 
 # Scripts to be installed.
@@ -78,7 +79,8 @@ dist_libSMESHEngine_la_SOURCES = \
 	SMESH_Filter_i.cxx \
 	SMESH_Group_i.cxx \
 	SMESH_Pattern_i.cxx \
-	SMESH_2smeshpy.cxx
+	SMESH_2smeshpy.cxx \
+	SMESH_NoteBook.cxx 
 
 # Executables targets
 bin_PROGRAMS = SMESHEngine
