@@ -164,6 +164,8 @@ NO_NAME = "NoName"
 
 ## Gets object name
 def GetName(obj):
+    if isinstance(obj, BaseWrapper):
+        obj = obj.GetAlgorithm()
     ior  = salome.orb.object_to_string(obj)
     sobj = salome.myStudy.FindObjectIOR(ior)
     if sobj is None:
@@ -345,6 +347,17 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aSmeshMesh = SMESH._objref_SMESH_Gen.CreateMeshesFromUNV(self,theFileName)
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
+
+    ## Create hyporthesis
+    #  @return an instance of hypothesis
+    #  @ingroup l2_impexp
+    def CreateHypothesis(self, hyp, so):
+        hypo = SMESH._objref_SMESH_Gen.CreateHypothesis(self, hyp, so)
+        if hyp == "LocalLength":
+            hypo = LocalLength(hypo)
+            
+        return hypo
+        
 
     ## Creates a Mesh object(s) importing data from the given MED file
     #  @return a list of Mesh class instances
@@ -2876,9 +2889,13 @@ class Mesh_Algorithm:
                 pass
             SetName(hypo, hyp + a)
             pass
-        status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
+        bhypo = None
+        if isinstance(hypo,BaseWrapper):
+            bhypo = hypo.GetAlgorithm()
+        else:
+            bhypo = hypo
+        status = self.mesh.mesh.AddHypothesis(self.geom, bhypo)
         TreatHypoStatus( status, GetName(hypo), GetName(self.geom), 0 )
-        hypo = WrapHypothesis(hypo,hyp)
         return hypo
 
 
@@ -4018,11 +4035,6 @@ class Mesh_UseExisting(Mesh_Algorithm):
 
 
 
-
-def WrapHypothesis(hypo, hyp):
-    if hyp == "LocalLength":
-        return LocalLength(hypo)
-    return hypo
 
 from salome_notebook import *
 
