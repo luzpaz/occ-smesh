@@ -2715,6 +2715,43 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
+    
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  @param theNodes identifiers of nodes to be doubled
+    #  @param theModifiedElems identifiers of elements to be updated by the new (doubled) 
+    #         nodes. If list of element identifiers is empty then nodes are doubled but 
+    #         they not assigned to elements
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodes(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodes(theNodes, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes identifiers of node to be doubled
+    #  @param theModifiedElems identifiers of elements to be updated
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNode(self, theNodeId, theModifiedElems):
+        return self.editor.DoubleNode(theNodeId, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes group of nodes to be doubled
+    #  @param theModifiedElems group of elements to be updated.
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroup(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroup(theNodes, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes list of groups of nodes to be doubled
+    #  @param theModifiedElems list of groups of elements to be updated.
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroups(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroups(theNodes, theModifiedElems)
 
 ## The mother class to define algorithm, it is not recommended to use it directly.
 #
