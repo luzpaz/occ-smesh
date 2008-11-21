@@ -506,6 +506,9 @@ public:
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
+  
+  bool DoubleNodes( const std::list< int >& theListOfNodes, 
+                    const std::list< int >& theListOfModifiedElems );
 
 private:
 
