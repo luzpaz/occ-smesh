@@ -419,7 +419,18 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
     * \retval int - mesh ID
    */
   int GetMeshId() const { return myMesh->GetId(); }
+  
+  CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
+                              const SMESH::long_array& theModifiedElems );
 
+  CORBA::Boolean DoubleNode( CORBA::Long theNodeId,
+                             const SMESH::long_array& theModifiedElems );
+
+  CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theNodes,
+                                  SMESH::SMESH_GroupBase_ptr theModifiedElems );
+
+  CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
+                                   const SMESH::ListOfGroups& theModifiedElems);
 
 private: //!< private methods
 

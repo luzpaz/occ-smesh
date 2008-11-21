@@ -3604,7 +3604,7 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::makeMesh(const char* theMeshName)
 
 //=======================================================================
 //function : DumpGroupsList
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESH_MeshEditor_i::DumpGroupsList(TPythonDump & theDumpPython, 
                                         const SMESH::ListOfGroups * theGroupList)
@@ -3613,4 +3613,140 @@ void SMESH_MeshEditor_i::DumpGroupsList(TPythonDump & theDumpPython,
   if(isDumpGroupList) {
     theDumpPython << theGroupList << " = ";
   }
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theNodes - identifiers of nodes to be doubled
+  \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
+         nodes. If list of element identifiers is empty then nodes are doubled but 
+         they not assigned to elements
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNode(), DoubleNodeGroup(), DoubleNodeGroups()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theNodes, 
+                                                const SMESH::long_array& theModifiedElems )
+{
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+  list< int > aListOfNodes;
+  int i, n;
+  for ( i = 0, n = theNodes.length(); i < n; i++ )
+    aListOfNodes.push_back( theNodes[ i ] );
+
+  list< int > aListOfElems;
+  for ( i = 0, n = theModifiedElems.length(); i < n; i++ )
+    aListOfElems.push_back( theModifiedElems[ i ] );
+
+  bool aResult = aMeshEditor.DoubleNodes( aListOfNodes, aListOfElems );
+
+  storeResult( aMeshEditor) ;
+
+  return aResult;
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  This method provided for convenience works as DoubleNodes() described above.
+  \param theNodeId - identifier of node to be doubled.
+  \param theModifiedElems - identifiers of elements to be updated.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNode( CORBA::Long theNodeId, 
+                           const SMESH::long_array& theModifiedElems )
+{
+  SMESH::long_array_var aNodes = new SMESH::long_array;
+  aNodes->length( 1 );
+  aNodes[ 0 ] = theNodeId;
+  return DoubleNodes( aNodes, theModifiedElems );
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  This method provided for convenience works as DoubleNodes() described above.
+  \param theNodes - group of nodes to be doubled.
+  \param theModifiedElems - group of elements to be updated.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup( 
+  SMESH::SMESH_GroupBase_ptr theNodes,
+  SMESH::SMESH_GroupBase_ptr theModifiedElems )
+{
+  if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
+    return false;
+
+  SMESH::long_array_var aNodes = theNodes->GetListOfID();
+  SMESH::long_array_var aModifiedElems;
+  if ( !CORBA::is_nil( theModifiedElems ) )
+    aModifiedElems = theModifiedElems->GetListOfID();
+  else 
+  {
+    aModifiedElems = new SMESH::long_array;
+    aModifiedElems->length( 0 );
+  }
+
+  return DoubleNodes( aNodes, aModifiedElems );
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  This method provided for convenience works as DoubleNodes() described above.
+  \param theNodes - list of groups of nodes to be doubled
+  \param theModifiedElems - list of groups of elements to be updated.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNode(), DoubleNodeGroup(), DoubleNodes()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups( 
+  const SMESH::ListOfGroups& theNodes,
+  const SMESH::ListOfGroups& theModifiedElems )
+{
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  std::list< int > aNodes;
+  int i, n, j, m;
+  for ( i = 0, n = theNodes.length(); i < n; i++ )
+  {
+    SMESH::SMESH_GroupBase_var aGrp = theNodes[ i ];
+    if ( !CORBA::is_nil( aGrp ) && aGrp->GetType() == SMESH::NODE )
+    {
+      SMESH::long_array_var aCurr = aGrp->GetListOfID();
+      for ( j = 0, m = aCurr->length(); j < m; j++ )
+        aNodes.push_back( aCurr[ j ] );
+    }
+  }
+
+  std::list< int > anElems;
+  for ( i = 0, n = theModifiedElems.length(); i < n; i++ )
+  {
+    SMESH::SMESH_GroupBase_var aGrp = theModifiedElems[ i ];
+    if ( !CORBA::is_nil( aGrp ) && aGrp->GetType() != SMESH::NODE )
+    {
+      SMESH::long_array_var aCurr = aGrp->GetListOfID();
+      for ( j = 0, m = aCurr->length(); j < m; j++ )
+        anElems.push_back( aCurr[ j ] );
+    }
+  }
+
+  bool aResult = aMeshEditor.DoubleNodes( aNodes, anElems );
+
+  storeResult( aMeshEditor) ;
+
+  return aResult;
 }
