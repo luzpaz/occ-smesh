@@ -30,6 +30,30 @@
 #include <vector>
 #include <string>
 
+typedef std::vector<TCollection_AsciiString>  TState;
+typedef std::vector<TState>                   TAllStates;
+
+class ObjectStates{
+  
+public:
+  
+  ObjectStates(TCollection_AsciiString theType);
+  ~ObjectStates();
+
+  void AddState(const TState &theState);
+
+  TState GetCurrectState() const;
+  TAllStates GetAllStates() const;
+  void IncrementState();
+  TCollection_AsciiString GetObjectType() const;
+
+  
+
+private:
+  TCollection_AsciiString                   _type;
+  TAllStates                                _states;
+  int                                       _dumpstate;
+};
 
 class SMESH_NoteBook
 {
@@ -38,11 +62,10 @@ public:
   ~SMESH_NoteBook();
   TCollection_AsciiString ReplaceVariables(const TCollection_AsciiString& theString) const;
 
-  typedef std::map<TCollection_AsciiString,std::vector<TCollection_AsciiString> > TVariablesMap;
+  typedef std::map<TCollection_AsciiString,ObjectStates*> TVariablesMap;
 
 private:
   void InitObjectMap();
-  std::vector<std::string> ParseVariables(const std::string& theVariables, const char sep) const;
   
 private:
   TVariablesMap _objectMap;

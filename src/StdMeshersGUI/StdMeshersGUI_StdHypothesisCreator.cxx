@@ -409,15 +409,11 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
     {
       StdMeshers::StdMeshers_LocalLength_var h =
 	StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
-      if(!aVariablesList.isEmpty()) {
-        QString aVariables = aVariablesList.join(":");
-        h->SetParameters(aVariables.toLatin1().constData());
-      }
-      else
-        h->SetParameters("");
-        
+
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetPrecision( params[1].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="SegmentLengthAroundVertex" )
     {
@@ -561,28 +557,23 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     StdMeshers::StdMeshers_LocalLength_var h =
       StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
-
-    QString aParameters(h->GetParameters());
-    QStringList aParametersList;
-    if(aParameters.length())
-      aParametersList = aParameters.split(":");
-
+    SMESH::ListOfParameters_var aParameters = hyp->GetLastParameters();
+    
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
-    QVariant aVariable = parseParameter(aParametersList,0);
-    if(aVariable.type() != QVariant::Invalid) {
-      item.myValue = aVariable;
-      item.isVariable = true;
-    }
+
+    QString aVaribaleName = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+    item.isVariable = !aVaribaleName.isEmpty();
+    if(item.isVariable) 
+      item.myValue = aVaribaleName;
     else
       item.myValue = h->GetLength();
     p.append( item );
      
     item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
-    aVariable = parseParameter(aParametersList,1);
-    if(aVariable.type() !=  QVariant::Invalid) {
-      item.myValue = aVariable;
-      item.isVariable = true;
-    }
+    aVaribaleName = (aParameters->length() > 1) ? QString(aParameters[1].in()) : QString("");
+    item.isVariable = !aVaribaleName.isEmpty();
+    if(item.isVariable)
+      item.myValue = aVaribaleName;
     else
       item.myValue = h->GetPrecision();
     p.append( item );
@@ -948,7 +939,7 @@ void StdMeshersGUI_StdHypothesisCreator::onReject()
  * \brief
  */
 //================================================================================
-QVariant StdMeshersGUI_StdHypothesisCreator::
+/*QVariant StdMeshersGUI_StdHypothesisCreator::
 parseParameter(const QStringList& theList, int theNbParam) const
 {
   _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
@@ -974,3 +965,4 @@ parseParameter(const QStringList& theList, int theNbParam) const
   }
   return aResult;
 }
+*/

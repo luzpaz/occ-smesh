@@ -71,6 +71,9 @@ public:
   
   // Return list of notebook variables used for Hypothesis creation separated by ":" symbol
   char* GetParameters();
+
+  //Return list of last notebook variables used for Hypothesis creation.
+  SMESH::ListOfParameters* GetLastParameters();
   
   // Get implementation
   ::SMESH_Hypothesis* GetImpl();

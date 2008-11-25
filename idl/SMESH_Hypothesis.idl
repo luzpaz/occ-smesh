@@ -39,8 +39,11 @@ module SMESH
     DIM_3D
   };
   
+  typedef sequence<string> ListOfParameters;
+
   interface SMESH_Hypothesis : SALOME::GenericObj
   {
+    
     /*!
      * Get the Hypothesis typeName 
      */
@@ -67,7 +70,12 @@ module SMESH
      *  Return list of notebook variables used for Hypothesis creation separated by ":" symbol
      */
     string GetParameters();
-    
+
+    /*!
+     *  Return list of last notebook variables used for Hypothesis creation.
+     */
+    ListOfParameters GetLastParameters();
+
     /*!
      * Verify whether hypothesis supports given entity type 
      */

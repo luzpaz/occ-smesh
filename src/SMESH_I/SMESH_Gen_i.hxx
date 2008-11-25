@@ -472,6 +472,7 @@ public:
 
   void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
   char* GetParameters(CORBA::Object_ptr theObject);
+  
  
 private:
   // Create hypothesis of given type

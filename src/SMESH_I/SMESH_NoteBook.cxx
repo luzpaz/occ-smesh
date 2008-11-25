@@ -39,6 +39,80 @@ static int MYDEBUG = 0;
 
 using namespace std;
 
+
+
+//================================================================================
+/*!
+ * \brief Constructor
+ */
+//================================================================================
+ObjectStates::ObjectStates(TCollection_AsciiString theType)
+{
+  _type = theType;
+  _dumpstate = 0;
+}
+
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+ObjectStates::~ObjectStates()
+{
+}
+
+//================================================================================
+/*!
+ * \brief Add new object state 
+ * \param theState - Object state (vector of notebook variable)
+ */
+//================================================================================
+void ObjectStates::AddState(const TState &theState)
+{
+  _states.push_back(theState);
+}
+
+//================================================================================
+/*!
+ * \brief Return current object state
+ * \\retval state - Object state (vector of notebook variable)
+ */
+//================================================================================
+TState ObjectStates::GetCurrectState() const
+{
+  return _states[_dumpstate];
+}
+
+
+//================================================================================
+/*!
+ *
+ */
+//================================================================================
+TAllStates ObjectStates::GetAllStates() const
+{
+  return _states;
+}
+
+//================================================================================
+/*!
+ *
+ */
+//================================================================================
+void ObjectStates::IncrementState()
+{
+  _dumpstate++;
+}
+
+//================================================================================
+/*!
+ *
+ */
+//================================================================================
+TCollection_AsciiString ObjectStates::GetObjectType() const{
+  return _type;
+}
+
 //================================================================================
 /*!
  * \brief Constructor
@@ -51,11 +125,16 @@ SMESH_NoteBook::SMESH_NoteBook()
 
 //================================================================================
 /*!
- * \brief Constructor
+ * \brief Destructor
  */
 //================================================================================
 SMESH_NoteBook::~SMESH_NoteBook()
 {
+  TVariablesMap::const_iterator it = _objectMap.begin();
+  for(;it!=_objectMap.end();it++) {
+    if((*it).second)
+      delete (*it).second;
+  }
 }
 
 //================================================================================
@@ -72,12 +151,21 @@ TCollection_AsciiString SMESH_NoteBook::ReplaceVariables(const TCollection_Ascii
   TCollection_AsciiString aObject = aCmd.GetObject();
   TVariablesMap::const_iterator it = _objectMap.find(aObject);
   if(!aMethod.IsEmpty() && it != _objectMap.end() ) {
-    
-    if(aMethod == "SetLength" && !(*it).second.at(0).IsEmpty() ) {
-      aCmd.SetArg(1,(*it).second.at(0));
-    }
-    else if(aMethod == "SetPrecision" && !(*it).second.at(1).IsEmpty() ){
-      aCmd.SetArg(1,(*it).second.at(1));
+    ObjectStates *aStates = (*it).second;
+    bool modified = false;
+    if(MYDEBUG)
+      cout<<"SMESH_NoteBook::ReplaceVariables :Object Type : "<<aStates->GetObjectType()<<endl;
+    if(aStates->GetObjectType().IsEqual("LocalLength")) {
+      if(aMethod == "SetLength") {
+        if(!aStates->GetCurrectState().at(0).IsEmpty() )
+          aCmd.SetArg(1,aStates->GetCurrectState().at(0));
+        aStates->IncrementState();
+      }
+      else if(aMethod == "SetPrecision") {
+        if(!aStates->GetCurrectState().at(1).IsEmpty() )
+          aCmd.SetArg(1,aStates->GetCurrectState().at(1));
+        aStates->IncrementState();
+      }
     }
     return aCmd.GetString();
   }
@@ -102,60 +190,49 @@ void SMESH_NoteBook::InitObjectMap()
   SALOMEDS::SObject_var aSO = aStudy->FindComponent(aGen->ComponentDataType());
   if(CORBA::is_nil(aSO))
     return;
-
+  
   SALOMEDS::ChildIterator_var Itr = aStudy->NewChildIterator(aSO);
-  TCollection_AsciiString aParameters;
+  char* aParameters;
   for(Itr->InitEx(true); Itr->More(); Itr->Next()) {
     SALOMEDS::SObject_var aSObject = Itr->Value();
     SALOMEDS::GenericAttribute_var anAttr;
     if ( aSObject->FindAttribute(anAttr, "AttributeString")) {
-      aParameters = TCollection_AsciiString(SALOMEDS::AttributeString::_narrow(anAttr)->Value());
-      vector<string> vect = ParseVariables(aParameters.ToCString(),':');
+      aParameters = SALOMEDS::AttributeString::_narrow(anAttr)->Value();
+      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
       if(MYDEBUG) {
         cout<<"Entry : "<< aSObject->GetID()<<endl;
         cout<<"aParameters : "<<aParameters<<endl;
+      }      
+      TCollection_AsciiString anObjType;
+      CORBA::Object_var anObject = SMESH_Gen_i::SObjectToObject(aSObject);
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow(anObject);
+      if(!aHyp->_is_nil()) {
+        anObjType = TCollection_AsciiString(aHyp->GetName());
       }
-      vector<TCollection_AsciiString> aVars;
-      for(int i = 0;i<vect.size();i++) {
-        TCollection_AsciiString aVar(vect[i].c_str());
-        if(!aVar.IsEmpty() && aStudy->IsVariable(vect[i].c_str())) {
-          aVar.InsertBefore(1,"\"");
-          aVar.InsertAfter(aVar.Length(),"\"");
-        }
-        aVars.push_back(aVar);
-        if(MYDEBUG) {
-          cout<<"Variable: "<<aVar<<endl;
-        }
+      else if(SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObject)) {
+        anObjType = TCollection_AsciiString("Mesh");
       }
-      _objectMap.insert(pair<TCollection_AsciiString,vector<TCollection_AsciiString> >(TCollection_AsciiString(aSObject->GetID()),aVars));
+      if(MYDEBUG)
+        cout<<"The object Type : "<<anObjType<<endl;
+      
+      ObjectStates *aState = new  ObjectStates(anObjType);
+      for(int i = 0; i < aSections->length(); i++) {
+        TState aVars;
+        SALOMEDS::ListOfStrings aListOfVars = aSections[i];
+        for(int j = 0;j<aListOfVars.length();j++) {
+          TCollection_AsciiString aVar(aListOfVars[j].in());
+          if(!aVar.IsEmpty() && aStudy->IsVariable(aVar.ToCString())) {
+            aVar.InsertBefore(1,"\"");
+            aVar.InsertAfter(aVar.Length(),"\"");
+          }
+          aVars.push_back(aVar);
+          if(MYDEBUG) {
+            cout<<"Variable: '"<<aVar<<"'"<<endl;
+          }
+        }
+        aState->AddState(aVars);
+      }
+      _objectMap.insert(pair<TCollection_AsciiString,ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
     }
   }
-}
-
-//================================================================================
-/*!
- * \brief Private method
- */
-//================================================================================
-vector<string> SMESH_NoteBook::ParseVariables(const string& theVariables, const char sep) const
-{
-  vector<string> aResult;
-  if(theVariables[0] == sep ) aResult.push_back(string());
-  int pos = theVariables.find(sep);
-  if(pos < 0) {
-    aResult.push_back(theVariables);
-    return aResult;
-  }
-
-  string s = theVariables;
-  if(s[0] == sep) s = s.substr(1, s.size());
-  while((pos = s.find(sep)) >= 0) {
-    aResult.push_back(s.substr(0, pos));
-    s = s.substr(pos+1, s.size());
-  }
-
-  if(!s.empty() && s[0] != sep) aResult.push_back(s);
-  if(theVariables[theVariables.size()-1] == sep) aResult.push_back(string());
-
-  return aResult;
 }

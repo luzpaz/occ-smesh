@@ -130,17 +130,46 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 //=============================================================================
 void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
 {
-  string aNewParameters(theParameters);
-  string anOldParameters(GetParameters());
-  if(aNewParameters.compare(anOldParameters) != 0)
-    SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()), 
-                                                 theParameters);
+  SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),
+                                               CORBA::string_dup(theParameters));
 }
 
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::GetParameters()
+ *
+ */
+//=============================================================================
 char* SMESH_Hypothesis_i::GetParameters()
 {
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   return CORBA::string_dup(gen->GetParameters(SMESH::SMESH_Hypothesis::_narrow(_this())));
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::GetLastParameters()
+ *
+ */
+//=============================================================================
+SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
+{
+  SMESH::ListOfParameters_var aResult = new SMESH::ListOfParameters();
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  if(gen) {
+    char *aParameters = GetParameters();
+    SALOMEDS::Study_ptr aStudy = gen->GetCurrentStudy();
+    if(!aStudy->_is_nil()) {
+      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
+      if(aSections->length() > 0) {
+        SALOMEDS::ListOfStrings aVars = aSections[aSections->length()-1];
+        aResult->length(aVars.length());
+        for(int i = 0;i < aVars.length();i++)
+          aResult[i] = CORBA::string_dup( aVars[i]);
+      }
+    }
+  }
+  return aResult._retn();
 }
 
 //=============================================================================

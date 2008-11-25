@@ -238,7 +238,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
               w = sb;
             }
             else if(aStudy->IsReal(aVar.toLatin1().constData())){
-              SalomeApp_DoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
+              SalomeApp_DoubleSpinBox* sb = new SalomeApp_DoubleSpinBox( GroupC1 );
               sb->setObjectName( (*anIt).myName );
               attuneStdWidget( sb, i );
               sb->setText( aVar );
@@ -327,34 +327,16 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
 QStringList SMESHGUI_GenericHypothesisCreator::getVariablesFromDlg() const
 {
   QStringList aResult;
-  QString item;
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-  if(aStudy) {
-    ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
-    for( ; anIt!=aLast; anIt++ ) {
-      if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) )
-        {
-          SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
-          item = sb->text();
-	  bool isVariable = aStudy->IsVariable(item.toLatin1().constData()); 
-          isVariable ? aResult.append( item ) : aResult.append(QString());
-        }
-      
-      else if( (*anIt)->inherits( "QtxDoubleSpinBox" ) )
-      {
-        QtxDoubleSpinBox* sb = ( QtxDoubleSpinBox* )( *anIt );
-        item = sb->text();
-        bool isVariable = aStudy->IsVariable(item.toLatin1().constData());
-	isVariable ? aResult.append( item ) : aResult.append(QString());
-      } 
-    }
-    bool hasVar = false;
-    for (int i = 0;i<aResult.size();i++)
-      if(!aResult[i].isEmpty())
-        hasVar = true;
-
-    if(!hasVar)
-      aResult.clear();
+  ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
+  for( ; anIt!=aLast; anIt++ ) {
+    if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) ) {
+      SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
+      aResult.append(sb->text());
+    } 
+    else if( (*anIt)->inherits( "QtxDoubleSpinBox" ) ) {
+      QtxDoubleSpinBox* sb = ( QtxDoubleSpinBox* )( *anIt );
+      aResult.append(sb->text());
+    } 
   }
   return aResult;
 }
