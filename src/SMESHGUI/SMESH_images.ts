@@ -402,5 +402,9 @@
             <source>ICON_CLEAR_MESH</source>
             <translation>mesh_clear.png</translation>
         </message>
+        <message>
+            <source>ICON_UNDERLYING_ELEMS</source>
+            <translation>mesh_extractGroup.png</translation>
+        </message>
     </context>
 </TS>

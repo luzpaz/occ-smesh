@@ -587,6 +587,10 @@
             <translation>Union Groups</translation>
         </message>
         <message>
+            <source>MEN_UNDERLYING_ELEMS</source>
+            <translation>Group of underlying entities</translation>
+        </message>
+        <message>
             <source>MEN_UPDATE</source>
             <translation>Update</translation>
         </message>
@@ -2277,6 +2281,10 @@ Consider saving your work before application crash</translation>
             <translation>Union Groups</translation>
         </message>
         <message>
+            <source>STB_UNDERLYING_ELEMS</source>
+            <translation>Create groups of entities from existing groups of superior dimensions</translation>
+        </message>
+        <message>
             <source>STB_UPDATE</source>
             <translation>Update</translation>
         </message>
@@ -2735,6 +2743,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_UN_GROUP</source>
             <translation>Union Groups</translation>
+        </message>
+        <message>
+            <source>TOP_UNDERLYING_ELEMS</source>
+            <translation>Create groups of entities from existing groups of superior dimensions</translation>
         </message>
         <message>
             <source>TOP_UPDATE</source>
@@ -3755,10 +3767,6 @@ Please enter correct value and try again</translation>
             <translation>Arguments</translation>
         </message>
         <message>
-            <source>CUT_OF_TWO_GROUPS</source>
-            <translation>Cut of two groups</translation>
-        </message>
-        <message>
             <source>DIFF_MESHES</source>
             <translation>Arguments of operation are not correctly specified
 Groups correspond to a different meshes
@@ -3779,14 +3787,6 @@ Please specify non-empty name and try again</translation>
             <source>INCORRECT_ARGUMENTS</source>
             <translation>Arguments of operation are not specified
 Please specify them and try again</translation>
-        </message>
-        <message>
-            <source>INTERSECTION_OF_TWO_GROUPS</source>
-            <translation>Intersection of two groups</translation>
-        </message>
-        <message>
-            <source>MAIN_OBJECT</source>
-            <translation>Main object</translation>
         </message>
         <message>
             <source>NAME</source>
@@ -3813,6 +3813,62 @@ Please specify them and try again</translation>
             <translation>Union of two groups</translation>
         </message>
     </context>
+    <context>
+        <name>SMESHGUI_UnionGroupsDlg</name>
+        <message>
+            <source>UNION_OF_GROUPS</source>
+            <translation>Union of groups</translation>
+        </message>
+    </context>    
+    <context>
+        <name>SMESHGUI_DimGroupDlg</name>
+        <message>
+            <source>CREATE_GROUP_OF_UNDERLYING_ELEMS</source>
+            <translation>Create group of underlying entities</translation>
+        </message>
+    <message>
+        <source>ELEMENTS_TYPE</source>
+        <translation>Elements type</translation>
+    </message>  
+    <message>
+        <source>NODE</source>
+        <translation>Node</translation>
+    </message>  
+    <message>
+        <source>EDGE</source>
+        <translation>Edge</translation>
+    </message>
+    <message>
+        <source>FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>VOLUME</source>
+        <translation>Volume</translation>
+    </message>
+    </context>
+    <context>
+        <name>SMESHGUI_IntersectGroupsDlg</name>
+        <message>
+            <source>INTERSECTION_OF_GROUPS</source>
+            <translation>Intersection of groups</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_CutGroupsDlg</name>
+        <message>
+            <source>CUT_OF_GROUPS</source>
+            <translation>Cut of groups</translation>
+        </message>
+        <message>
+            <source>MAIN_OBJECT</source>
+            <translation>Main object</translation>
+        </message>
+        <message>
+            <source>TOOL_OBJECT</source>
+            <translation>Tool object</translation>
+        </message>
+    </context>          
     <context>
         <name>SMESHGUI_MakeNodeAtPointDlg</name>
         <message>

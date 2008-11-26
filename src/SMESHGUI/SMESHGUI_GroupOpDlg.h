@@ -37,6 +37,10 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
 class QPushButton;
+class QtxColorButton;
+class QComboBox;
+class QListWidget;
+class QGroupBox;
 class QLineEdit;
 class SMESHGUI;
 class LightApp_SelectionMgr;
@@ -52,14 +56,37 @@ class SMESHGUI_EXPORT SMESHGUI_GroupOpDlg : public QDialog
   Q_OBJECT
     
 public:
-  enum { UNION, INTERSECT, CUT };
+  //enum { UNION, INTERSECT, CUT };
     
 public:
-  SMESHGUI_GroupOpDlg( SMESHGUI*, const int );
+  SMESHGUI_GroupOpDlg( SMESHGUI* );
   virtual ~SMESHGUI_GroupOpDlg();
 
   void                      Init();
-  
+
+protected slots:
+
+  virtual bool              onApply();
+  virtual void              onSelectionDone();
+  virtual void              setVisible ( bool visible );
+
+protected:
+
+  virtual void              reset();
+
+  QString                   getName() const;
+  void                      setName( const QString& theName );
+
+  QGroupBox*                getArgGrp() const;
+  void                      setHelpFileName( const QString& theFName );
+  SMESHGUI*                 getSMESHGUI() const;
+  bool                      isValid( const QList<SMESH::SMESH_GroupBase_var>& theListGrp );
+  bool                      getSelectedGroups( QList<SMESH::SMESH_GroupBase_var>& theOutList,
+                                               QStringList& theOutNames );
+  SMESH::ListOfGroups*      convert( const QList<SMESH::SMESH_GroupBase_var>& );
+
+  SALOMEDS::Color           getColor() const;
+
 private:
   void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent* );            
@@ -67,20 +94,15 @@ private:
   
 private slots:
   void                      onOk();
-  bool                      onApply();
   void                      onClose();
   void                      onHelp();
 
   void                      onDeactivate();
-  void                      onSelectionDone();
-  void                      onFocusChanged();
 
 private:
   QWidget*                  createButtonFrame( QWidget* );
   QWidget*                  createMainFrame  ( QWidget* );
-  bool                      isValid();
-  void                      reset();
-  
+    
 private:
   QPushButton*              myOkBtn;
   QPushButton*              myApplyBtn;
@@ -88,22 +110,129 @@ private:
   QPushButton*              myHelpBtn;
   
   QLineEdit*                myNameEdit;
-  QLineEdit*                myEdit1;
-  QLineEdit*                myEdit2;
-  QPushButton*              myBtn1;
-  QPushButton*              myBtn2;
+  QGroupBox*                myArgGrp;
+  QtxColorButton*           myColorBtn;
   
   SMESHGUI*                 mySMESHGUI;
   LightApp_SelectionMgr*    mySelectionMgr;
-  int                       myMode;
   SVTK_Selector*            mySelector;
-  
-  QLineEdit*                myFocusWg;
-  
-  SMESH::SMESH_GroupBase_var    myGroup1;
-  SMESH::SMESH_GroupBase_var    myGroup2;
   
   QString                   myHelpFileName;
 };
 
+/*
+  Class       : SMESHGUI_UnionGroupsDlg
+  Description : Perform union of several groups
+*/
+
+class SMESHGUI_EXPORT SMESHGUI_UnionGroupsDlg : public SMESHGUI_GroupOpDlg
+{ 
+  Q_OBJECT
+    
+public:
+
+  SMESHGUI_UnionGroupsDlg( SMESHGUI* );
+  virtual ~SMESHGUI_UnionGroupsDlg();
+
+protected slots:
+  virtual bool                      onApply();
+  virtual void                      onSelectionDone();
+
+protected:
+  virtual void                      reset();
+
+private:
+  QListWidget*                      myListWg;
+  QList<SMESH::SMESH_GroupBase_var> myGroups;
+};
+
+/*
+  Class       : SMESHGUI_IntersectGroupsDlg
+  Description : Perform intersection of several groups
+*/
+
+class SMESHGUI_EXPORT SMESHGUI_IntersectGroupsDlg : public SMESHGUI_GroupOpDlg
+{ 
+  Q_OBJECT
+    
+public:
+
+  SMESHGUI_IntersectGroupsDlg( SMESHGUI* );
+  virtual ~SMESHGUI_IntersectGroupsDlg();
+
+protected slots:
+  virtual bool                      onApply();
+  virtual void                      onSelectionDone();
+
+protected:
+  virtual void                      reset();
+    
+private:
+  QListWidget*                      myListWg;
+  QList<SMESH::SMESH_GroupBase_var> myGroups;
+};
+
+/*
+  Class       : SMESHGUI_CutGroupsDlg
+  Description : Perform cut of several groups
+*/
+
+class SMESHGUI_EXPORT SMESHGUI_CutGroupsDlg : public SMESHGUI_GroupOpDlg
+{ 
+  Q_OBJECT
+    
+public:
+
+  SMESHGUI_CutGroupsDlg( SMESHGUI* );
+  virtual ~SMESHGUI_CutGroupsDlg();
+
+protected slots:
+  virtual bool                      onApply();
+  virtual void                      onSelectionDone();
+
+protected:
+  virtual void                      reset();
+
+private:
+  QPushButton*                      myBtn1;
+  QPushButton*                      myBtn2;
+  QListWidget*                      myListWg1;
+  QListWidget*                      myListWg2;
+  QList<SMESH::SMESH_GroupBase_var> myGroups1;
+  QList<SMESH::SMESH_GroupBase_var> myGroups2;
+};
+
+/*
+  Class       : SMESHGUI_DimGroupDlg
+  Description : Dialog for creating groups of entities from existing 
+                groups of superior dimensions
+*/
+
+class SMESHGUI_EXPORT SMESHGUI_DimGroupDlg : public SMESHGUI_GroupOpDlg
+{ 
+  Q_OBJECT
+    
+public:
+
+  SMESHGUI_DimGroupDlg( SMESHGUI* );
+  virtual ~SMESHGUI_DimGroupDlg();
+
+  SMESH::ElementType                getElementType() const;
+  void                              setElementType( const SMESH::ElementType& theElemType );
+
+protected:
+  virtual void                      reset();
+
+protected slots:
+  virtual bool                      onApply();
+  virtual void                      onSelectionDone();
+
+private:
+  QComboBox*                        myCombo;
+  QListWidget*                      myListWg;
+  QList<SMESH::SMESH_GroupBase_var> myGroups;
+};
+
 #endif // SMESHGUI_GROUPOPDLG_H
+
+

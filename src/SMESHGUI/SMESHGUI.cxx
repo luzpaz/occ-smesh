@@ -1879,29 +1879,38 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-
+    
     case 810: // Union Groups
     case 811: // Intersect groups
     case 812: // Cut groups
     {
-      if ( !vtkwnd )
-      {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
-        break;
-      }
-
       if ( checkLock( aStudy ) )
         break;
 
       EmitSignalDeactivateDialog();
 
-      int aMode;
-      if      ( theCommandID == 810 ) aMode = SMESHGUI_GroupOpDlg::UNION;
-      else if ( theCommandID == 811 ) aMode = SMESHGUI_GroupOpDlg::INTERSECT;
-      else                            aMode = SMESHGUI_GroupOpDlg::CUT;
+      SMESHGUI_GroupOpDlg* aDlg = 0;
+      if ( theCommandID == 810 )
+        aDlg = new SMESHGUI_UnionGroupsDlg( this );
+      else if ( theCommandID == 811 )
+        aDlg = new SMESHGUI_IntersectGroupsDlg( this );
+      else
+        aDlg = new SMESHGUI_CutGroupsDlg( this );
 
-      ( new SMESHGUI_GroupOpDlg( this, aMode ) )->show();
+      aDlg->show();
+
+      break;
+    }
+
+    case 814: // Create groups of entities from existing groups of superior dimensions
+    {
+      if ( checkLock( aStudy ) )
+        break;
+
+      EmitSignalDeactivateDialog();
+      SMESHGUI_GroupOpDlg* aDlg = new SMESHGUI_DimGroupDlg( this );
+      aDlg->show();
+
       break;
     }
 
@@ -2605,6 +2614,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  810, "UN_GROUP",        "ICON_UNION" );
   createSMESHAction(  811, "INT_GROUP",       "ICON_INTERSECT" );
   createSMESHAction(  812, "CUT_GROUP",       "ICON_CUT" );
+  createSMESHAction(  814, "UNDERLYING_ELEMS","ICON_UNDERLYING_ELEMS" );
   createSMESHAction(  813, "DEL_GROUP",       "ICON_DEL_GROUP" );
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
   createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
@@ -2740,6 +2750,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 810, meshId, -1 );
   createMenu( 811, meshId, -1 );
   createMenu( 812, meshId, -1 );
+  createMenu( separator(), meshId, -1 );
+  createMenu( 814, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 813, meshId, -1 );
   createMenu( separator(), meshId, -1 );
