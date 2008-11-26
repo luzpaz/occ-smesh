@@ -1563,8 +1563,8 @@ void SMESHGUI_GroupDlg::onAdd()
 
     SALOME_ListIteratorOfListIO anIt (aList);
     for ( ; anIt.More(); anIt.Next()) {
-      SMESH::SMESH_Group_var aGroup =
-        SMESH::IObjectToInterface<SMESH::SMESH_Group>(anIt.Value());
+      SMESH::SMESH_GroupBase_var aGroup =
+        SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIt.Value());
       if (!aGroup->_is_nil()) {
 	// check if mesh is the same
 	if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
