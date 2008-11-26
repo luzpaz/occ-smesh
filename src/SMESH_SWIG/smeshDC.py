@@ -1242,7 +1242,15 @@ class Mesh:
     #  @ingroup l2_grps_operon
     def UnionGroups(self, group1, group2, name):
         return self.mesh.UnionGroups(group1, group2, name)
-
+        
+    ## Produces a union list of groups
+    #  New group is created. All mesh elements that are present in 
+    #  initial groups are added to the new one
+    #  @return an instance of SMESH_Group
+    #  @ingroup l2_grps_operon
+    def UnionListOfGroups(self, groups, name):
+      return self.mesh.UnionListOfGroups(groups, name)
+      
     ## Prodices an intersection of two groups
     #  A new group is created. All mesh elements that are common
     #  for the two initial groups are added to the new one.
@@ -1250,14 +1258,39 @@ class Mesh:
     #  @ingroup l2_grps_operon
     def IntersectGroups(self, group1, group2, name):
         return self.mesh.IntersectGroups(group1, group2, name)
+        
+    ## Produces an intersection of groups
+    #  New group is created. All mesh elements that are present in all 
+    #  initial groups simultaneously are added to the new one
+    #  @return an instance of SMESH_Group
+    #  @ingroup l2_grps_operon
+    def IntersectListOfGroups(self, groups, name):
+      return self.mesh.IntersectListOfGroups(groups, name)
 
     ## Produces a cut of two groups
     #  A new group is created. All mesh elements that are present in
     #  the main group but are not present in the tool group are added to the new one
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
-    def CutGroups(self, mainGroup, toolGroup, name):
-        return self.mesh.CutGroups(mainGroup, toolGroup, name)
+    def CutGroups(self, groups, name):
+        return self.mesh.CutGroups(groups, name)
+        
+    ## Produces a cut of groups
+    #  A new group is created. All mesh elements that are present in main groups 
+    #  but do not present in tool groups are added to the new one
+    #  @return an instance of SMESH_Group
+    #  @ingroup l2_grps_operon
+    def CutListOfGroups(self, main_groups, tool_groups, name):
+      return self.mesh.CutListOfGroups(main_groups, tool_groups, name)
+      
+    ## Produces a group of elements with specified element type using list of existing groups
+    #  A new group is created. System 
+    #  1) extract all nodes on which groups elements are built
+    #  2) combine all elements of specified dimension laying on these nodes
+    #  @return an instance of SMESH_Group
+    #  @ingroup l2_grps_operon
+    def CreateDimGroup(self, groups, elem_type, name):
+      return self.mesh.CreateDimGroup(groups, elem_type, name)
 
 
     # Get some info about mesh:
