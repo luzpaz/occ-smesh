@@ -118,16 +118,35 @@ public:
                                       SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
     throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr UnionListOfGroups( const SMESH::ListOfGroups& theGroups, 
+                                            const char* theName)
+    throw (SALOME::SALOME_Exception);
   
   SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                           SMESH::SMESH_GroupBase_ptr theGroup2, 
                                           const char* theName )
     throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr IntersectListOfGroups( const SMESH::ListOfGroups&  theGroups, 
+                                                const char* theName )
+    throw (SALOME::SALOME_Exception);
   
   SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                     SMESH::SMESH_GroupBase_ptr theGroup2, 
-                                   const char* theName )
+                                    const char* theName )
     throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr CutListOfGroups( const SMESH::ListOfGroups& theMainGroups, 
+                                          const SMESH::ListOfGroups& theToolGroups, 
+                                          const char* theName )
+  throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfGroups& theGroups, 
+                                         SMESH::ElementType theElemType, 
+                                         const char* theName )
+  throw (SALOME::SALOME_Exception);
+  
 
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
 //      throw (SALOME::SALOME_Exception);

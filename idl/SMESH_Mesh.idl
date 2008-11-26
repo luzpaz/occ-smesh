@@ -292,6 +292,15 @@ module SMESH
                              in SMESH_GroupBase aGroup2,
                              in string          name )
       raises (SALOME::SALOME_Exception);
+      
+    /*!
+     * Union of list of groups
+     * New group is created. All mesh elements that are
+     * present in initial groups are added to the new one
+     */
+    SMESH_Group UnionListOfGroups (in ListOfGroups aListOfGroups,
+                                   in string       name )
+      raises (SALOME::SALOME_Exception);
 
     /*!
      *  Intersection of two groups
@@ -302,6 +311,15 @@ module SMESH
                                  in SMESH_GroupBase aGroup2,
                                  in string          name )
       raises (SALOME::SALOME_Exception);
+      
+    /*!
+     *  Intersection of list of groups
+     *  New group is created. All mesh elements that are
+     *  present in all initial groups simultaneously are added to the new one.
+     */
+    SMESH_Group IntersectListOfGroups (in ListOfGroups aListOfGroups,
+                                       in string       name)
+      raises (SALOME::SALOME_Exception);
 
     /*!
      *  Cut of two groups
@@ -309,8 +327,29 @@ module SMESH
      *  main group but do not present in tool group are added to the new one
      */
     SMESH_Group CutGroups (in SMESH_GroupBase aMainGroup,
-			   in SMESH_GroupBase aToolGroup,
-			   in string          name )
+                           in SMESH_GroupBase aToolGroup,
+                           in string          name )
+      raises (SALOME::SALOME_Exception);
+      
+    /*!
+     *  Cut of lists of groups
+     *  New group is created. All mesh elements that are present in
+     *  main groups but do not present in tool groups are added to the new one
+     */
+    SMESH_Group CutListOfGroups (in ListOfGroups aMainGroups,
+                                 in ListOfGroups aToolGroups,
+                                 in string       name)
+      raises (SALOME::SALOME_Exception);
+      
+    /*!
+     *  Create groups of entities from existing groups of superior dimensions 
+     *  New group is created. System 
+     *  1) extract all nodes from each group,
+     *  2) combine all elements of specified dimension laying on these nodes.
+     */
+    SMESH_Group CreateDimGroup( in ListOfGroups aListOfGroups,
+                                in ElementType  anElemType,
+                                in string       name )
       raises (SALOME::SALOME_Exception);
 
     /*!

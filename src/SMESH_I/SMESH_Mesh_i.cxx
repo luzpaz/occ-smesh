@@ -923,6 +923,85 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_GroupBase_ptr the
 }
 
 //=============================================================================
+/*!
+  \brief Union list of groups. New group is created. All mesh elements that are
+   present in initial groups are added to the new one.
+  \param theGroups list of groups
+  \param theName name of group to be created
+  \return pointer on the group
+*/
+//=============================================================================
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionListOfGroups( 
+  const SMESH::ListOfGroups& theGroups, const char* theName )
+throw (SALOME::SALOME_Exception)
+{
+  if ( !theName )
+    return SMESH::SMESH_Group::_nil();
+
+  try
+  {
+    NCollection_Map< int > anIds;
+    SMESH::ElementType aType = SMESH::ALL;
+    for ( int g = 0, n = theGroups.length(); g < n; g++ )
+    {
+      SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+      if ( CORBA::is_nil( aGrp ) )
+        continue;
+
+      // check type
+      SMESH::ElementType aCurrType = aGrp->GetType();
+      if ( aType == SMESH::ALL )
+        aType = aCurrType;
+      else 
+      {
+        if ( aType != aCurrType )
+          return SMESH::SMESH_Group::_nil();
+      }
+
+      // unite ids
+      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+      {
+        int aCurrId = aCurrIds[ i ];
+        anIds.Add( aCurrId );
+      }
+    }
+
+    // Create group
+    SMESH::SMESH_Group_var aResGrp = CreateGroup( aType, theName );
+    if ( aResGrp->_is_nil() )
+      return SMESH::SMESH_Group::_nil();
+    
+    // Create array of identifiers
+    SMESH::long_array_var aResIds = new SMESH::long_array;
+    aResIds->length( anIds.Extent() );
+    
+    NCollection_Map< int >::Iterator anIter( anIds );
+    for ( int i = 0; anIter.More(); anIter.Next(), i++ )
+    {
+      aResIds[ i ] = anIter.Value();
+    }
+    aResGrp->Add( aResIds );
+
+    // Clear python lines, created by CreateGroup() and Add()
+    SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+
+    // Update Python script
+    
+    TPythonDump() << aResGrp << " = " << _this() << ".UnionListOfGroups( "
+                  << &theGroups << ", '" << theName << "' )";
+
+    return aResGrp._retn();
+  }
+  catch( ... )
+  {
+    return SMESH::SMESH_Group::_nil();
+  }
+}
+
+//=============================================================================
 /*! IntersectGroups
  *  New group is created. All mesh elements that are
  *  present in both initial groups are added to the new one.
@@ -977,6 +1056,100 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
 }
 
 //=============================================================================
+/*!
+  \brief Intersect list of groups. New group is created. All mesh elements that 
+  are present in all initial groups simultaneously are added to the new one.
+  \param theGroups list of groups
+  \param theName name of group to be created
+  \return pointer on the group
+*/
+//=============================================================================
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectListOfGroups( 
+  const SMESH::ListOfGroups& theGroups, const char* theName )
+throw (SALOME::SALOME_Exception)
+{
+  if ( !theName )
+    return SMESH::SMESH_Group::_nil();
+
+  try
+  {
+    NCollection_DataMap< int, int > anIdToCount;
+    SMESH::ElementType aType = SMESH::ALL;
+    for ( int g = 0, n = theGroups.length(); g < n; g++ )
+    {
+      SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+      if ( CORBA::is_nil( aGrp ) )
+        continue;
+
+      // check type
+      SMESH::ElementType aCurrType = aGrp->GetType();
+      if ( aType == SMESH::ALL )
+        aType = aCurrType;
+      else 
+      {
+        if ( aType != aCurrType )
+          return SMESH::SMESH_Group::_nil();
+      }
+
+      // calculates number of occurance ids in groups
+      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+      {
+        int aCurrId = aCurrIds[ i ];
+        if ( !anIdToCount.IsBound( aCurrId ) )
+          anIdToCount.Bind( aCurrId, 1 );
+        else 
+          anIdToCount( aCurrId ) = anIdToCount( aCurrId ) + 1;
+      }
+    }
+    
+    // create map of ids
+    int nbGrp = theGroups.length();
+    NCollection_Map< int > anIds;
+    NCollection_DataMap< int, int >::Iterator anIter( anIdToCount );
+    for ( ; anIter.More(); anIter.Next() )
+    {
+      int aCurrId = anIter.Key();
+      int aCurrNb = anIter.Value();
+      if ( aCurrNb == nbGrp )
+        anIds.Add( aCurrId );
+    }
+
+    // Create group
+    SMESH::SMESH_Group_var aResGrp = CreateGroup( aType, theName );
+    if ( aResGrp->_is_nil() )
+      return SMESH::SMESH_Group::_nil();
+    
+    // Create array of identifiers
+    SMESH::long_array_var aResIds = new SMESH::long_array;
+    aResIds->length( anIds.Extent() );
+    
+    NCollection_Map< int >::Iterator aListIter( anIds );
+    for ( int i = 0; aListIter.More(); aListIter.Next(), i++ )
+    {
+      aResIds[ i ] = aListIter.Value();
+    }
+    aResGrp->Add( aResIds );
+
+    // Clear python lines, created by CreateGroup() and Add()
+    SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+
+    // Update Python script
+    
+    TPythonDump() << aResGrp << " = " << _this() << ".IntersectListOfGroups( "
+                  << &theGroups << ", '" << theName << "' )";
+
+    return aResGrp._retn();
+  }
+  catch( ... )
+  {
+    return SMESH::SMESH_Group::_nil();
+  }
+}
+
+//=============================================================================
 /*! CutGroups
  *  New group is created. All mesh elements that are present in
  *  main group but do not present in tool group are added to the new one
@@ -1004,7 +1177,6 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
   for ( int i2 = 0, n2 = anIds2->length(); i2 < n2; i2++ )
     aMap2.Add( anIds2[ i2 ] );
 
-
   TColStd_SequenceOfInteger aSeq;
   for ( int i1 = 0, n1 = anIds1->length(); i1 < n1; i1++ )
     if ( !aMap2.Contains( anIds1[ i1 ] ) )
@@ -1029,6 +1201,281 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
                 << theName << "' )";
 
   return aResGrp._retn();
+}
+
+//=============================================================================
+/*!
+  \brief Cut lists of groups. New group is created. All mesh elements that are 
+  present in main groups but do not present in tool groups are added to the new one
+  \param theMainGroups list of main groups
+  \param theToolGroups list of tool groups
+  \param theName name of group to be created
+  \return pointer on the group
+*/
+//=============================================================================
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutListOfGroups( 
+  const SMESH::ListOfGroups& theMainGroups, 
+  const SMESH::ListOfGroups& theToolGroups, 
+  const char* theName )
+  throw (SALOME::SALOME_Exception)
+{
+  if ( !theName )
+    return SMESH::SMESH_Group::_nil();
+
+  try
+  {
+    NCollection_Map< int > aToolIds;
+    SMESH::ElementType aType = SMESH::ALL;
+    int g, n;
+    // iterate through tool groups
+    for ( g = 0, n = theToolGroups.length(); g < n; g++ )
+    {
+      SMESH::SMESH_GroupBase_var aGrp = theToolGroups[ g ];
+      if ( CORBA::is_nil( aGrp ) )
+        continue;
+
+      // check type
+      SMESH::ElementType aCurrType = aGrp->GetType();
+      if ( aType == SMESH::ALL )
+        aType = aCurrType;
+      else 
+      {
+        if ( aType != aCurrType )
+          return SMESH::SMESH_Group::_nil();
+      }
+
+      // unite tool ids
+      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+      {
+        int aCurrId = aCurrIds[ i ];
+        aToolIds.Add( aCurrId );
+      }
+    }
+
+    NCollection_Map< int > anIds; // result
+
+    // Iterate through main group 
+    for ( g = 0, n = theMainGroups.length(); g < n; g++ )
+    {
+      SMESH::SMESH_GroupBase_var aGrp = theMainGroups[ g ];
+      if ( CORBA::is_nil( aGrp ) )
+        continue;
+
+      // check type
+      SMESH::ElementType aCurrType = aGrp->GetType();
+      if ( aType == SMESH::ALL )
+        aType = aCurrType;
+      else 
+      {
+        if ( aType != aCurrType )
+          return SMESH::SMESH_Group::_nil();
+      }
+
+      // unite tool ids
+      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+      {
+        int aCurrId = aCurrIds[ i ];
+        if ( !aToolIds.Contains( aCurrId ) )
+          anIds.Add( aCurrId );
+      }
+    }
+
+    // Create group
+    SMESH::SMESH_Group_var aResGrp = CreateGroup( aType, theName );
+    if ( aResGrp->_is_nil() )
+      return SMESH::SMESH_Group::_nil();
+    
+    // Create array of identifiers
+    SMESH::long_array_var aResIds = new SMESH::long_array;
+    aResIds->length( anIds.Extent() );
+    
+    NCollection_Map< int >::Iterator anIter( anIds );
+    for ( int i = 0; anIter.More(); anIter.Next(), i++ )
+    {
+      aResIds[ i ] = anIter.Value();
+    }
+    aResGrp->Add( aResIds );
+
+    // Clear python lines, created by CreateGroup() and Add()
+    SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+
+    // Update Python script
+
+    TPythonDump() << aResGrp << " = " << _this() << ".CutListOfGroups( "
+                  << &theMainGroups << ", " << &theToolGroups << ", '"
+                  << theName << "' )";
+    
+    return aResGrp._retn();
+  }
+  catch( ... )
+  {
+    return SMESH::SMESH_Group::_nil();
+  }
+}
+
+//=============================================================================
+/*!
+  \brief Create groups of entities from existing groups of superior dimensions 
+  System 
+  1) extract all nodes from each group,
+  2) combine all elements of specified dimension laying on these nodes.
+  \param theGroups list of source groups 
+  \param theElemType dimension of elements 
+  \param theName name of new group
+  \return pointer on new group
+*/
+//=============================================================================
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup( 
+  const SMESH::ListOfGroups& theGroups, 
+  SMESH::ElementType         theElemType, 
+  const char*                theName )
+  throw (SALOME::SALOME_Exception)
+{
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+
+  if ( !theName || !aMeshDS )
+    return SMESH::SMESH_Group::_nil();
+
+  SMDSAbs_ElementType anElemType = (SMDSAbs_ElementType)theElemType;
+
+  try
+  {
+    // Create map of nodes from all groups 
+
+    NCollection_Map< int > aNodeMap;
+    
+    for ( int g = 0, n = theGroups.length(); g < n; g++ )
+    {
+      SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+      if ( CORBA::is_nil( aGrp ) )
+        continue;
+
+      SMESH::ElementType aType = aGrp->GetType();
+      if ( aType == SMESH::ALL )
+        continue;
+      else if ( aType == SMESH::NODE )
+      {
+        SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+        for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+        {
+          int aCurrId = aCurrIds[ i ];
+          const SMDS_MeshNode* aNode = aMeshDS->FindNode( aCurrId );
+          if ( aNode )
+            aNodeMap.Add( aNode->GetID() );
+        }
+      }
+      else 
+      {
+        SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+        for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+        {
+          int aCurrId = aCurrIds[ i ];
+          const SMDS_MeshElement* anElem = aMeshDS->FindElement( aCurrId );
+          if ( !anElem )
+            continue;
+          SMDS_ElemIteratorPtr aNodeIter = anElem->nodesIterator();
+          while( aNodeIter->more() )
+          {
+            const SMDS_MeshNode* aNode = 
+              dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() );
+            if ( aNode )
+              aNodeMap.Add( aNode->GetID() );
+          }
+        }
+      }
+    }
+
+    // Get result identifiers 
+
+    NCollection_Map< int > aResultIds;
+    if ( theElemType == SMESH::NODE )
+    {
+      NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
+      for ( ; aNodeIter.More(); aNodeIter.Next() )
+        aResultIds.Add( aNodeIter.Value() );
+    }
+    else
+    {
+      // Create list of elements of given dimension constructed on the nodes
+      NCollection_Map< int > anElemList;
+      NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
+      for ( ; aNodeIter.More(); aNodeIter.Next() )
+      {
+        const SMDS_MeshElement* aNode = 
+          dynamic_cast<const SMDS_MeshElement*>( aMeshDS->FindNode( aNodeIter.Value() ) );
+        if ( !aNode )
+          continue;
+
+         SMDS_ElemIteratorPtr anElemIter = aNode->elementsIterator( anElemType );
+        while( anElemIter->more() )
+        {
+          const SMDS_MeshElement* anElem = 
+            dynamic_cast<const SMDS_MeshElement*>( anElemIter->next() );
+          if ( anElem && anElem->GetType() == anElemType )
+            anElemList.Add( anElem->GetID() );
+        }
+      }
+
+      // check whether all nodes of elements are present in nodes map
+      NCollection_Map< int >::Iterator anIter( anElemList );
+      for ( ; anIter.More(); anIter.Next() )
+      {
+        const SMDS_MeshElement* anElem = aMeshDS->FindElement( anIter.Value() );
+        if ( !anElem )
+          continue;
+
+        bool isOk = true;
+        SMDS_ElemIteratorPtr aNodeIter = anElem->nodesIterator();
+        while( aNodeIter->more() )
+        {
+          const SMDS_MeshNode* aNode = 
+            dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() );
+          if ( !aNode || !aNodeMap.Contains( aNode->GetID() ) )
+          {
+            isOk = false;
+            break;
+          }
+        } 
+        if ( isOk )
+          aResultIds.Add( anElem->GetID() );
+      }
+    }
+
+    // Create group
+
+    SMESH::SMESH_Group_var aResGrp = CreateGroup( theElemType, theName );
+    if ( aResGrp->_is_nil() )
+      return SMESH::SMESH_Group::_nil();
+    
+    // Create array of identifiers
+    SMESH::long_array_var aResIds = new SMESH::long_array;
+    aResIds->length( aResultIds.Extent() );
+    
+    NCollection_Map< int >::Iterator aResIter( aResultIds );
+    for ( int i = 0; aResIter.More(); aResIter.Next(), i++ )
+      aResIds[ i ] = aResIter.Value();
+    aResGrp->Add( aResIds );
+
+    // Remove strings corresponding to group creation
+    SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+    _gen_i->RemoveLastFromPythonScript( aStudy->StudyId() );
+
+    // Update Python script
+    
+    TPythonDump() << aResGrp << " = " << _this() << ".CreateDimGroup( "
+                  << &theGroups << ", " << theElemType << ", '" << theName << "' )";
+
+    return aResGrp._retn();
+  }
+  catch( ... )
+  {
+    return SMESH::SMESH_Group::_nil();
+  }
 }
 
 //================================================================================
