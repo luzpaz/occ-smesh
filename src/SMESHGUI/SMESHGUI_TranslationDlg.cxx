@@ -409,10 +409,13 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_TranslationDlg::ClickOnApply()
+bool SMESHGUI_TranslationDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
-    return;
+    return false;
+
+  if( !isValid() )
+    return false;
 
   if (myNbOkElements) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
@@ -434,6 +437,11 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
       aVector.PS.z = SpinBox1_3->GetValue();
     }
 
+    QStringList aParameters;
+    aParameters << SpinBox1_1->text();
+    aParameters << SpinBox1_2->text();
+    aParameters << SpinBox1_3->text();
+
     int actionButton = ActionGroup->checkedId();
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
     try {
@@ -442,6 +450,8 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         aMeshEditor->Translate(anElementsId, aVector, false);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups )
@@ -449,11 +459,15 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
             aMeshEditor->TranslateMakeGroups(anElementsId, aVector);
         else
           aMeshEditor->Translate(anElementsId, aVector, true);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh = 
           aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
                                          LineEditNewMesh->text().toLatin1().data());
+	if( !mesh->_is_nil())
+	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
       }
     } catch (...) {
     }
@@ -466,6 +480,8 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
   }
+
+  return true;
 }
 
 //=================================================================================
@@ -474,8 +490,8 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_TranslationDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if( ClickOnApply() )
+    ClickOnCancel();
 }
 
 //=================================================================================
@@ -943,3 +959,32 @@ void SMESHGUI_TranslationDlg::keyPressEvent( QKeyEvent* e )
     ClickOnHelp();
   }
 }
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_TranslationDlg::isValid()
+{
+  bool ok = true;
+  QString msg;
+
+  ok = SpinBox1_1->isValid( msg, true ) && ok;
+  ok = SpinBox1_2->isValid( msg, true ) && ok;
+  ok = SpinBox1_3->isValid( msg, true ) && ok;
+  if (GetConstructorId() == 0) {
+    ok = SpinBox2_1->isValid( msg, true ) && ok;
+    ok = SpinBox2_2->isValid( msg, true ) && ok;
+    ok = SpinBox2_3->isValid( msg, true ) && ok;
+  }
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
+}
+
