@@ -649,6 +649,22 @@ module SMESH
 
     /*! Gets information about imported MED file */
     SALOME_MED::MedFileInfo GetMEDFileInfo();
+
+    /*!
+     *  Sets list of notebook variables used for Mesh operations separated by ":" symbol
+     *  \param theParameters is a string containing the notebook variables
+     */
+    void SetParameters (in string theParameters);
+
+    /*!
+     *  Returns list of notebook variables used for Mesh operations separated by ":" symbol
+     */
+    string GetParameters();
+
+    /*!
+     *  Returns list of notebook variables used for last Mesh operation
+     */
+    string_array GetLastParameters();
   };
 
   interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource
