@@ -446,6 +446,21 @@ public:
    */
   virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
+  /*!
+   * Sets list of notebook variables used for Mesh operations separated by ":" symbol
+   */
+  void SetParameters (const char* theParameters);
+  
+  /*!
+   * Returns list of notebook variables used for Mesh operations separated by ":" symbol
+   */
+  char* GetParameters();
+
+  /*!
+   * Returns list of notebook variables used for last Mesh operation
+   */
+  SMESH::string_array* GetLastParameters();
+  
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 

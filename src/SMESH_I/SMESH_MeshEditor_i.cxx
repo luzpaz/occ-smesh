@@ -2452,10 +2452,9 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
                                    CORBA::Boolean            theCopy)
 {
   if ( !myPreviewMode ) {
-    TPythonDump() << "vector = " << theVector;
     TPythonDump() << this << ".Translate( "
-                  << theIDsOfElements
-                  << ", vector, "
+                  << theIDsOfElements << ", "
+                  << theVector << ", "
                   << theCopy << " )";
   }
   translate(theIDsOfElements,
@@ -2475,8 +2474,8 @@ void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
 {
   if ( !myPreviewMode ) {
     TPythonDump() << this << ".TranslateObject( "
-                  << theObject
-                  << ", vector, "
+                  << theObject << ", "
+                  << theVector << ", "
                   << theCopy << " )";
   }
   SMESH::long_array_var anElementsId = theObject->GetIDs();
@@ -2497,12 +2496,11 @@ SMESH_MeshEditor_i::TranslateMakeGroups(const SMESH::long_array& theIDsOfElement
 {
   SMESH::ListOfGroups * aGroups = translate(theIDsOfElements,theVector,true,true);
   if ( !myPreviewMode ) {
-    TPythonDump() << "vector = " << theVector;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".TranslateMakeGroups( "
-                << theIDsOfElements
-                << ", vector )";
+                << theIDsOfElements << ", "
+                << theVector << " )";
   }
   return aGroups;
 }
@@ -2521,12 +2519,11 @@ SMESH_MeshEditor_i::TranslateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObjec
   
   if ( !myPreviewMode ) {
 
-    TPythonDump() << "vector = " << theVector;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".TranslateObjectMakeGroups( "
-                << theObject
-                << ", vector )";
+                << theObject << ", "
+                << theVector << " )";
   }
   return aGroups;
 }

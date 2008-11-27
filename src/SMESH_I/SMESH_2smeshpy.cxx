@@ -125,7 +125,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 {
   theGen = new _pyGen( theEntry2AccessorMethod );
   
-  SMESH_NoteBook * aNoteBook = new SMESH_NoteBook();
+  SMESH_NoteBook * aNoteBook = new SMESH_NoteBook( theGen );
   
   // split theScript into separate commands
   int from = 1, end = theScript.Length(), to;
@@ -1916,7 +1916,8 @@ void _pyCommand::SetArg( int index, const TCollection_AsciiString& theArg)
   if ( pos < 1 ) // no index-th arg exist, append inexistent args
   {
     // find a closing parenthesis
-    if ( int lastArgInd = GetNbArgs() ) {
+    if ( GetNbArgs() != 0 && index <= GetNbArgs() ) {
+      int lastArgInd = GetNbArgs();
       pos = GetBegPos( ARG1_IND + lastArgInd  - 1 ) + GetArg( lastArgInd ).Length();
       while ( pos > 0 && pos <= Length() && myString.Value( pos ) != ')' )
         ++pos;

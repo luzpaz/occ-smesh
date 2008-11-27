@@ -58,7 +58,7 @@ private:
 class SMESH_NoteBook
 {
 public:
-  SMESH_NoteBook();
+  SMESH_NoteBook(Handle(_pyGen) theGen);
   ~SMESH_NoteBook();
   TCollection_AsciiString ReplaceVariables(const TCollection_AsciiString& theString) const;
 
@@ -69,6 +69,7 @@ private:
   
 private:
   TVariablesMap _objectMap;
+  Handle(_pyGen) myGen;
 };
 
 #endif //SMESH_NoteBook_HeaderFile

@@ -23,6 +23,7 @@
 #include "SMESH_2smeshpy.hxx"
 #include "SMESH_NoteBook.hxx"
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
@@ -118,7 +119,8 @@ TCollection_AsciiString ObjectStates::GetObjectType() const{
  * \brief Constructor
  */
 //================================================================================
-SMESH_NoteBook::SMESH_NoteBook()
+SMESH_NoteBook::SMESH_NoteBook(Handle(_pyGen) theGen):
+  myGen( theGen )
 {
   InitObjectMap();
 }
@@ -149,22 +151,71 @@ TCollection_AsciiString SMESH_NoteBook::ReplaceVariables(const TCollection_Ascii
   _pyCommand aCmd( theString, -1);
   TCollection_AsciiString aMethod = aCmd.GetMethod();
   TCollection_AsciiString aObject = aCmd.GetObject();
+  TCollection_AsciiString aResultValue = aCmd.GetResultValue();
+  if(aMethod.IsEmpty())
+    return theString;
+
+  // check if method modifies the object itself
   TVariablesMap::const_iterator it = _objectMap.find(aObject);
-  if(!aMethod.IsEmpty() && it != _objectMap.end() ) {
+  if(it == _objectMap.end()) // check if method returns a new object
+    it = _objectMap.find(aResultValue);
+
+  if(it == _objectMap.end()) { // check if method modifies a mesh using mesh editor
+    const std::map< _pyID, Handle(_pyMeshEditor) >& aMeshEditors = myGen->getMeshEditors();
+    std::map< _pyID, Handle(_pyMeshEditor) >::const_iterator meIt = aMeshEditors.find(aObject);
+    if(meIt != aMeshEditors.end()) {
+      Handle(_pyMeshEditor) aMeshEditor = (*meIt).second;
+      if(!aMeshEditor.IsNull()) {
+	Handle(_pyCommand) aCreationCommand = aMeshEditor->GetCreationCmd();
+	if(!aCreationCommand.IsNull()) {
+	  TCollection_AsciiString aMesh = aCreationCommand->GetObject();
+	  it = _objectMap.find(aMesh);
+	}
+      }
+    }
+  }
+
+  if(it != _objectMap.end()) {
     ObjectStates *aStates = (*it).second;
-    bool modified = false;
     if(MYDEBUG)
       cout<<"SMESH_NoteBook::ReplaceVariables :Object Type : "<<aStates->GetObjectType()<<endl;
     if(aStates->GetObjectType().IsEqual("LocalLength")) {
-      if(aMethod == "SetLength") {
+      if(aMethod.IsEqual("SetLength")) {
         if(!aStates->GetCurrectState().at(0).IsEmpty() )
           aCmd.SetArg(1,aStates->GetCurrectState().at(0));
         aStates->IncrementState();
       }
-      else if(aMethod == "SetPrecision") {
+      else if(aMethod.IsEqual("SetPrecision")) {
         if(!aStates->GetCurrectState().at(1).IsEmpty() )
           aCmd.SetArg(1,aStates->GetCurrectState().at(1));
         aStates->IncrementState();
+      }
+    }
+    else if(aStates->GetObjectType().IsEqual("Mesh")) {
+      if(aMethod.IsEqual("Translate") ||
+	 aMethod.IsEqual("TranslateMakeGroups") ||
+	 aMethod.IsEqual("TranslateMakeMesh")) {
+	bool isVariableFound = false;
+	int anArgIndex = 0;
+	for(int i = 1, n = aCmd.GetNbArgs(); i <= n; i++) {
+	  if(aCmd.GetArg(i).IsEqual("SMESH.PointStruct")) {
+	    anArgIndex = i+1;
+	    break;
+	  }
+	}
+	if(anArgIndex > 0) {
+	  for(int j = 0; j <= 2; j++) {
+	    if(!aStates->GetCurrectState().at(j).IsEmpty()) {
+	      isVariableFound = true;
+	      aCmd.SetArg(anArgIndex+j, aStates->GetCurrectState().at(j));
+	    }
+	  }
+	}
+	if(isVariableFound) {
+	  aCmd.SetArg(anArgIndex - 1, TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".PointStructStr");
+	  aCmd.SetArg(anArgIndex - 2, TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".DirStructStr");
+	}
+	aStates->IncrementState();
       }
     }
     return aCmd.GetString();

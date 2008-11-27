@@ -158,6 +158,47 @@ PrecisionConfusion = 1e-07
 # Salome notebook variable separator
 variable_separator = ":"
 
+# Parametrized substitute for PointStruct
+class PointStructStr:
+
+    x = 0
+    y = 0
+    z = 0
+    xStr = ""
+    yStr = ""
+    zStr = ""
+
+    def __init__(self, xStr, yStr, zStr):
+        self.xStr = xStr
+        self.yStr = yStr
+        self.zStr = zStr
+        if isinstance(xStr, str) and notebook.isVariable(xStr):
+            self.x = notebook.get(xStr)
+        else:
+            self.x = xStr
+        if isinstance(yStr, str) and notebook.isVariable(yStr):
+            self.y = notebook.get(yStr)
+        else:
+            self.y = yStr
+        if isinstance(zStr, str) and notebook.isVariable(zStr):
+            self.z = notebook.get(zStr)
+        else:
+            self.z = zStr
+
+# Parametrized substitute for DirStruct
+class DirStructStr:
+
+    def __init__(self, pointStruct):
+        self.pointStruct = pointStruct
+
+# Returns list of variable values from salome notebook
+def ParseDirStruct(Vector):
+    pntStr = Vector.pointStruct
+    pnt = PointStruct(pntStr.x, pntStr.y, pntStr.z)
+    Vector = DirStruct(pnt)
+    Parameters = str(pntStr.xStr) + ":" + str(pntStr.yStr) + ":" + str(pntStr.zStr)
+    return Vector, Parameters
+
 def IsEqual(val1, val2, tol=PrecisionConfusion):
     if abs(val1 - val2) < tol:
         return True
@@ -2463,13 +2504,17 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
     def Translate(self, IDsOfElements, Vector, Copy, MakeGroups=False):
+        Parameters = ""
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        elif ( isinstance( Vector, DirStructStr ) ):
+            Vector,Parameters = ParseDirStruct(Vector)
         if Copy and MakeGroups:
             return self.editor.TranslateMakeGroups(IDsOfElements, Vector)
         self.editor.Translate(IDsOfElements, Vector, Copy)
+        self.mesh.SetParameters(Parameters)
         return []
 
     ## Creates a new mesh of translated elements
@@ -2480,11 +2525,15 @@ class Mesh:
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def TranslateMakeMesh(self, IDsOfElements, Vector, MakeGroups=False, NewMeshName=""):
+        Parameters = ""
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        elif ( isinstance( Vector, DirStructStr ) ):
+            Vector,Parameters = ParseDirStruct(Vector)
         mesh = self.editor.TranslateMakeMesh(IDsOfElements, Vector, MakeGroups, NewMeshName)
+        mesh.SetParameters(Parameters)
         return Mesh ( self.smeshpyD, self.geompyD, mesh )
 
     ## Translates the object
