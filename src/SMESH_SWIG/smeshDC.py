@@ -4142,5 +4142,35 @@ class Arithmetic1D(StdMeshers._objref_StdMeshers_Arithmetic1D):
         StdMeshers._objref_StdMeshers_Arithmetic1D.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_Arithmetic1D.SetLength(self,length,isStart)
         
-#Registering the new proxy for LocalLength
+#Registering the new proxy for Arithmetic1D
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_Arithmetic1D._NP_RepositoryId, Arithmetic1D)
+
+#Wrapper class for StdMeshers_Deflection1D hypothesis
+class Deflection1D(StdMeshers._objref_StdMeshers_Deflection1D):
+    
+    ## Set deflection parameter value
+    #  @param deflection numerical value or name of variable from notebook    
+    def SetDeflection(self, deflection):
+        deflection,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Deflection1D.GetLastParameters(self),1,1,deflection)
+        StdMeshers._objref_StdMeshers_Deflection1D.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_Deflection1D.SetDeflection(self,deflection)
+
+#Registering the new proxy for Deflection1D
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_StartEndLength._NP_RepositoryId, Deflection1D)
+
+#Wrapper class for StdMeshers_StartEndLength hypothesis
+class StartEndLength(StdMeshers._objref_StdMeshers_StartEndLength):
+    
+    ## Set length parameter value
+    #  @param length   numerical value or name of variable from notebook
+    #  @param isStart  true is length is Start Length, otherwise false
+    def SetLength(self, length, isStart):
+        nb = 2
+        if isStart:
+            nb = 1
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_StartEndLength.GetLastParameters(self),2,nb,length)
+        StdMeshers._objref_StdMeshers_StartEndLength.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_StartEndLength.SetLength(self,length,isStart)
+        
+#Registering the new proxy for Arithmetic1D
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_StartEndLength._NP_RepositoryId, StartEndLength)

@@ -268,14 +268,22 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
-
-      else if(aStates->GetObjectType().IsEqual("Arithmetic1D")) {
+      // Case for Arithmetic1D or StartEndLength hypothesis
+      else if(aStates->GetObjectType().IsEqual("Arithmetic1D") || 
+              aStates->GetObjectType().IsEqual("StartEndLength")) {
         if(aMethod == "SetLength" &&
            aStates->GetCurrectState().size() >= 2) {
           if(aCmd->GetArg(2) == "1" && !aStates->GetCurrectState().at(0).IsEmpty())
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
           else if(!aStates->GetCurrectState().at(1).IsEmpty())
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+          aStates->IncrementState();
+        }
+      }
+      else if(aStates->GetObjectType().IsEqual("Deflection1D")){
+        if(aMethod == "SetDeflection" && aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
           aStates->IncrementState();
         }
       }

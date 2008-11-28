@@ -453,13 +453,15 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_StartEndLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble(), true );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetLength( params[1].myValue.toDouble(), false );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="Deflection1D" )
     {
       StdMeshers::StdMeshers_Deflection1D_var h =
 	StdMeshers::StdMeshers_Deflection1D::_narrow( hypothesis() );
-
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetDeflection( params[0].myValue.toDouble() );
     }
     else if( hypType()=="AutomaticLength" )
@@ -652,19 +654,37 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_StartEndLength::_narrow( hyp );
 
     item.myName = tr( "SMESH_START_LENGTH_PARAM" );
-    item.myValue = h->GetLength( true );
+
+    aVaribaleName = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+    item.isVariable = !aVaribaleName.isEmpty();
+    if(item.isVariable) 
+      item.myValue = aVaribaleName;
+    else
+      item.myValue = h->GetLength( true );
     p.append( item );
+
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
+    aVaribaleName = (aParameters->length() > 1) ? QString(aParameters[1].in()) : QString("");
+    item.isVariable = !aVaribaleName.isEmpty();
+    if(item.isVariable) 
+      item.myValue = aVaribaleName;
+    else
     item.myValue = h->GetLength( false );
+    
     p.append( item );
   }
   else if( hypType()=="Deflection1D" )
   {
     StdMeshers::StdMeshers_Deflection1D_var h =
       StdMeshers::StdMeshers_Deflection1D::_narrow( hyp );
-
+    
     item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
-    item.myValue = h->GetDeflection();
+    aVaribaleName = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+    item.isVariable = !aVaribaleName.isEmpty();
+    if(item.isVariable) 
+      item.myValue = aVaribaleName;
+    else
+      item.myValue = h->GetDeflection();
     p.append( item );
   }
   else if( hypType()=="AutomaticLength" )
