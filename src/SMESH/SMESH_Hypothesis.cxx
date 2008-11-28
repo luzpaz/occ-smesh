@@ -51,6 +51,7 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
   _type = PARAM_ALGO;
   _shapeType = 0; // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
+  _parameters = string();
 }
 
 //=============================================================================
@@ -149,4 +150,24 @@ const char* SMESH_Hypothesis::GetLibName() const
 void SMESH_Hypothesis::SetLibName(const char* theLibName)
 {
   _libName = string(theLibName);
+}
+
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+void SMESH_Hypothesis::SetParameters(const char *theParameters)
+{
+  _parameters = string(theParameters);
+}
+
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+char* SMESH_Hypothesis::GetParameters() const
+{
+  return (char*)_parameters.c_str();
 }

@@ -421,6 +421,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="Arithmetic1D" )
     {
@@ -479,8 +480,12 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_LayerDistribution::_narrow( hypothesis() );
       StdMeshersGUI_LayerDistributionParamWdg* w = 
         widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
-
+      
       h->SetLayerDistribution( w->GetHypothesis() );
+      /*      h->SetParameters(w->GetHypothesis()->GetParameters());
+      if(QString(w->GetHypothesis()->GetName()) == "LocalLength")
+        h->SetParameters(w->GetHypothesis()->GetParameters());
+      */
     }
     else if( hypType()=="ProjectionSource1D" )
     {
@@ -552,16 +557,17 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   }
   
   SMESH::SMESH_Hypothesis_var hyp = initParamsHypothesis();
+  SMESH::ListOfParameters_var aParameters = hyp->GetLastParameters();
+  QString aVaribaleName; 
 
   if( hypType()=="LocalLength" )
   {
     StdMeshers::StdMeshers_LocalLength_var h =
       StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
-    SMESH::ListOfParameters_var aParameters = hyp->GetLastParameters();
     
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
 
-    QString aVaribaleName = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+    aVaribaleName = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
     item.isVariable = !aVaribaleName.isEmpty();
     if(item.isVariable) 
       item.myValue = aVaribaleName;
@@ -583,9 +589,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     StdMeshers::StdMeshers_SegmentLengthAroundVertex_var h =
       StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hyp );
-
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
-    item.myValue = h->GetLength();
+
+    aVaribaleName = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");    
+    item.isVariable = !aVaribaleName.isEmpty();
+
+    if(item.isVariable)
+      item.myValue = aVaribaleName;
+    else
+      item.myValue = h->GetLength();
     p.append( item );
   }
   else if( hypType()=="Arithmetic1D" )
@@ -660,11 +672,20 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     p.append( item );
   }
   else if( hypType()=="LayerDistribution" )
-  {
-    StdMeshers::StdMeshers_LayerDistribution_var h =
+    {
+      StdMeshers::StdMeshers_LayerDistribution_var h =
       StdMeshers::StdMeshers_LayerDistribution::_narrow( hyp );
 
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
+    
+    //Set into not published hypo last variables
+    /*    QStringList aLastVarsList;
+    for(int i = 0;i<aParameters->length();i++) 
+      aLastVarsList.append(QString(aParameters[i].in()));
+
+    if(!aLastVarsList.isEmpty())
+      h->GetLayerDistribution()->SetParameters(SMESHGUI::JoinObjectParameters(aLastVarsList));
+    */    
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
   }

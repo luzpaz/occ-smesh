@@ -472,6 +472,7 @@ public:
 
   void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
   char* GetParameters(CORBA::Object_ptr theObject);
+  char* ParseParameters(const char* theParameters);
   
  
 private:

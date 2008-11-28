@@ -876,32 +876,47 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
   if(aSObj->_is_nil())
     return;
-
+  
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-
-  TCollection_AsciiString aNewParams;
-  TCollection_AsciiString anInputParams;
-  SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(theParameters);
-    
   SALOMEDS::GenericAttribute_var anAttr;
   anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
   SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
+
+  TCollection_AsciiString aNewParams;
   TCollection_AsciiString aOldParameters(aStringAttr->Value());
-  SALOMEDS::ListOfStrings aVars= aSections[0];
-  for(int i=0;i<aVars.length();i++ ) {
-    anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
-      TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
-    if(i != aVars.length()-1)
-      anInputParams+=":";
-  }
+  TCollection_AsciiString anInputParams(ParseParameters(theParameters));
+  
   if(!aOldParameters.Length())
     aNewParams = anInputParams;
   else 
     aNewParams = aOldParameters+"|"+anInputParams;
-
+  
   aStringAttr->SetValue( aNewParams.ToCString() );
 }
 
+//=======================================================================
+//function : GetParameters
+//purpose  : 
+//=======================================================================
+char* SMESH_Gen_i::ParseParameters(const char* theParameters)
+{
+  const char* aParameters = CORBA::string_dup(theParameters);
+  TCollection_AsciiString anInputParams;
+  SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  if( !aStudy->_is_nil() ) {
+    SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
+    if(aSections->length() > 0) {
+      SALOMEDS::ListOfStrings aVars= aSections[0];
+      for(int i=0;i<aVars.length();i++ ) {
+        anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
+          TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
+        if(i != aVars.length()-1)
+          anInputParams+=":";
+      }
+    }
+  }
+  return CORBA::string_dup(anInputParams.ToCString());
+}
 
 //=======================================================================
 //function : GetParameters

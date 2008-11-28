@@ -125,15 +125,30 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 {
   theGen = new _pyGen( theEntry2AccessorMethod );
   
-  SMESH_NoteBook * aNoteBook = new SMESH_NoteBook( theGen );
+  SMESH_NoteBook * aNoteBook = new SMESH_NoteBook();
   
-  // split theScript into separate commands
   int from = 1, end = theScript.Length(), to;
   while ( from < end && ( to = theScript.Location( "\n", from, end )))
   {
     if ( to != from )
+        // cut out and store a command
+        aNoteBook->AddCommand( theScript.SubString( from, to - 1 ));
+      from = to + 1;
+  }
+  
+  aNoteBook->ReplaceVariables();
+
+  TCollection_AsciiString aNoteScript = aNoteBook->GetResultScript();
+  delete aNoteBook;
+  aNoteBook = 0;
+  
+  // split theScript into separate commands
+  from = 1, end = aNoteScript.Length();
+  while ( from < end && ( to = aNoteScript.Location( "\n", from, end )))
+  {
+    if ( to != from )
       // cut out and store a command
-      theGen->AddCommand( aNoteBook->ReplaceVariables(theScript.SubString( from, to - 1 )));
+      theGen->AddCommand( aNoteScript.SubString( from, to - 1 ));
     from = to + 1;
   }
   // finish conversion

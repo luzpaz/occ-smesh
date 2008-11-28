@@ -124,14 +124,39 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 
 //=============================================================================
 /*!
+ *  SMESH_Hypothesis_i::IsPublished()
+ *
+ */
+//=============================================================================
+bool SMESH_Hypothesis_i::IsPublished(){
+  bool res = false;
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  if(gen){
+    SALOMEDS::SObject_var SO = 
+      SMESH_Gen_i::ObjectToSObject(gen->GetCurrentStudy() , SMESH::SMESH_Hypothesis::_narrow(_this()));
+    res = !SO->_is_nil();
+  }
+  return res;
+}
+
+//=============================================================================
+/*!
  *  SMESH_Hypothesis_i::SetParameters()
  *
  */
 //=============================================================================
 void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
 {
-  SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),
-                                               CORBA::string_dup(theParameters));
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  char * aParameters = CORBA::string_dup(theParameters);
+  if(gen){
+    if(IsPublished()) {
+      SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),aParameters);
+    }
+    else {
+      myBaseImpl->SetParameters(gen->ParseParameters(aParameters));
+    }
+  }
 }
 
 //=============================================================================
@@ -143,7 +168,16 @@ void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
 char* SMESH_Hypothesis_i::GetParameters()
 {
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
-  return CORBA::string_dup(gen->GetParameters(SMESH::SMESH_Hypothesis::_narrow(_this())));
+  char* aResult;
+  if(IsPublished()) {
+    MESSAGE("SMESH_Hypothesis_i::GetParameters() : Get Parameters from SObject");
+    aResult = gen->GetParameters(SMESH::SMESH_Hypothesis::_narrow(_this()));
+  }
+  else {
+    MESSAGE("SMESH_Hypothesis_i::GetParameters() : Get local parameters");
+    aResult = myBaseImpl->GetParameters(); 
+  }
+  return CORBA::string_dup(aResult);
 }
 
 //=============================================================================

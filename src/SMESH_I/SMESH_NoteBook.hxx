@@ -26,12 +26,15 @@
 
 #include <TCollection_AsciiString.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
+ 
+class _pyCommand;
 
 #include <vector>
 #include <string>
 
 typedef std::vector<TCollection_AsciiString>  TState;
 typedef std::vector<TState>                   TAllStates;
+typedef TCollection_AsciiString _pyID;
 
 class ObjectStates{
   
@@ -55,21 +58,47 @@ private:
   int                                       _dumpstate;
 };
 
+class LayerDistributionStates : public ObjectStates
+{
+public:
+  typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TDistributionMap;
+  LayerDistributionStates();
+  ~LayerDistributionStates();
+
+  void AddDistribution(const TCollection_AsciiString& theDistribution);
+  bool HasDistribution(const TCollection_AsciiString& theDistribution) const;
+
+  bool SetDistributionType(const TCollection_AsciiString& theDistribution,
+                           const TCollection_AsciiString& theType);
+  TCollection_AsciiString GetDistributionType(const TCollection_AsciiString& theDistribution) const;
+  
+private:
+  
+  TDistributionMap _distributions;
+};
+
+
 class SMESH_NoteBook
 {
 public:
-  SMESH_NoteBook(Handle(_pyGen) theGen);
-  ~SMESH_NoteBook();
-  TCollection_AsciiString ReplaceVariables(const TCollection_AsciiString& theString) const;
-
   typedef std::map<TCollection_AsciiString,ObjectStates*> TVariablesMap;
+  typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TMeshEditorMap;
+  SMESH_NoteBook();
+  ~SMESH_NoteBook();
+  void ReplaceVariables();
+  
+  void AddCommand(const TCollection_AsciiString& theString);
+  TCollection_AsciiString GetResultScript() const;
 
 private:
   void InitObjectMap();
+  void ProcessLayerDistribution();
   
 private:
+  
   TVariablesMap _objectMap;
-  Handle(_pyGen) myGen;
+  std::vector<Handle(_pyCommand)> _commands;
+  TMeshEditorMap myMeshEditors;
 };
 
 #endif //SMESH_NoteBook_HeaderFile

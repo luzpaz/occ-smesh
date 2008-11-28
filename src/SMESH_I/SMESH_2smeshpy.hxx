@@ -186,7 +186,6 @@ public:
   bool AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const;
   bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
   const char* AccessorMethod() const;
-  const std::map< _pyID, Handle(_pyMeshEditor) >& getMeshEditors() const { return myMeshEditors; }
 private:
   std::map< _pyID, Handle(_pyMesh) >       myMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) > myMeshEditors;

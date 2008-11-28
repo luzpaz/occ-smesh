@@ -33,9 +33,9 @@
 #include <string>
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #else
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #endif
 
 using namespace std;
@@ -114,13 +114,79 @@ TCollection_AsciiString ObjectStates::GetObjectType() const{
   return _type;
 }
 
+
 //================================================================================
 /*!
  * \brief Constructor
  */
 //================================================================================
-SMESH_NoteBook::SMESH_NoteBook(Handle(_pyGen) theGen):
-  myGen( theGen )
+LayerDistributionStates::LayerDistributionStates():
+  ObjectStates("LayerDistribution")
+{
+}
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+LayerDistributionStates::~LayerDistributionStates()
+{
+}
+
+
+//================================================================================
+/*!
+ * \brief AddDistribution
+ */
+//================================================================================
+void LayerDistributionStates::AddDistribution(const TCollection_AsciiString& theDistribution)
+{
+  _distributions.insert(pair<TCollection_AsciiString,TCollection_AsciiString>(theDistribution,""));
+}
+
+//================================================================================
+/*!
+ * \brief HasDistribution
+ */
+//================================================================================
+bool LayerDistributionStates::HasDistribution(const TCollection_AsciiString& theDistribution) const
+{
+  return _distributions.find(theDistribution) != _distributions.end();
+}
+
+//================================================================================
+/*!
+ * \brief SetDistributionType
+ */
+//================================================================================
+bool LayerDistributionStates::SetDistributionType(const TCollection_AsciiString& theDistribution,
+                                                  const TCollection_AsciiString& theType)
+{
+  TDistributionMap::iterator it = _distributions.find(theDistribution);
+  if(it == _distributions.end())
+    return false;
+  (*it).second = theType;
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief GetDistributionType
+ */
+//================================================================================
+TCollection_AsciiString LayerDistributionStates::
+GetDistributionType(const TCollection_AsciiString& theDistribution) const
+{
+  TDistributionMap::const_iterator it = _distributions.find(theDistribution);
+  return (it == _distributions.end()) ? TCollection_AsciiString() : (*it).second;
+}
+
+//================================================================================
+/*!
+ * \brief Constructor
+ */
+//================================================================================
+SMESH_NoteBook::SMESH_NoteBook()
 {
   InitObjectMap();
 }
@@ -146,82 +212,99 @@ SMESH_NoteBook::~SMESH_NoteBook()
  * \retval TCollection_AsciiString - Convertion result
  */
 //================================================================================
-TCollection_AsciiString SMESH_NoteBook::ReplaceVariables(const TCollection_AsciiString& theString) const
+void SMESH_NoteBook::ReplaceVariables()
 {
-  _pyCommand aCmd( theString, -1);
-  TCollection_AsciiString aMethod = aCmd.GetMethod();
-  TCollection_AsciiString aObject = aCmd.GetObject();
-  TCollection_AsciiString aResultValue = aCmd.GetResultValue();
-  if(aMethod.IsEmpty())
-    return theString;
 
-  // check if method modifies the object itself
-  TVariablesMap::const_iterator it = _objectMap.find(aObject);
-  if(it == _objectMap.end()) // check if method returns a new object
-    it = _objectMap.find(aResultValue);
-
-  if(it == _objectMap.end()) { // check if method modifies a mesh using mesh editor
-    const std::map< _pyID, Handle(_pyMeshEditor) >& aMeshEditors = myGen->getMeshEditors();
-    std::map< _pyID, Handle(_pyMeshEditor) >::const_iterator meIt = aMeshEditors.find(aObject);
-    if(meIt != aMeshEditors.end()) {
-      Handle(_pyMeshEditor) aMeshEditor = (*meIt).second;
-      if(!aMeshEditor.IsNull()) {
-	Handle(_pyCommand) aCreationCommand = aMeshEditor->GetCreationCmd();
-	if(!aCreationCommand.IsNull()) {
-	  TCollection_AsciiString aMesh = aCreationCommand->GetObject();
-	  it = _objectMap.find(aMesh);
-	}
+  for(int i=0;i<_commands.size();i++) {
+    Handle(_pyCommand) aCmd = _commands[i];
+    TCollection_AsciiString aMethod = aCmd->GetMethod();
+    TCollection_AsciiString aObject = aCmd->GetObject();
+    TCollection_AsciiString aResultValue = aCmd->GetResultValue();
+    if(MYDEBUG) {
+      cout<<"Command before : "<< aCmd->GetString()<<endl;
+      cout<<"Method : "<< aMethod<<endl;
+      cout<<"Object : "<< aObject<<endl;
+      cout<<"Result : "<< aResultValue<<endl;
+    }
+    
+    // check if method modifies the object itself
+    TVariablesMap::const_iterator it = _objectMap.find(aObject);
+    if(it == _objectMap.end()) // check if method returns a new object
+      it = _objectMap.find(aResultValue);
+    
+    if(it == _objectMap.end()) { // check if method modifies a mesh using mesh editor
+      TMeshEditorMap::const_iterator meIt = myMeshEditors.find(aObject);
+      if(meIt != myMeshEditors.end()) {
+        TCollection_AsciiString aMesh = (*meIt).second;
+	it = _objectMap.find(aMesh);
       }
+    }
+    
+    if(it != _objectMap.end() && !aMethod.IsEmpty()) {
+      ObjectStates *aStates = (*it).second;
+      // Case for LocalLength hypothesis
+      if(aStates->GetObjectType().IsEqual("LocalLength")) {
+        if(aMethod.IsEqual("SetLength")) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+        else if(aMethod.IsEqual("SetPrecision")) {
+          if(!aStates->GetCurrectState().at(1).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+          aStates->IncrementState();
+        }
+      }
+      
+      // Case for SegmentLengthAroundVertex hypothesis
+      else if(aStates->GetObjectType().IsEqual("SegmentLengthAroundVertex")) {
+        if(aMethod == "SetLength") {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+      }
+      // Case for LayerDistribution hypothesis (not finished yet)
+      else if(aStates->GetObjectType() == "LayerDistribution") {
+        if(aMethod == "SetLayerDistribution"){
+          LayerDistributionStates* aLDStates = (LayerDistributionStates*)(aStates);
+          aLDStates->AddDistribution(aCmd->GetArg(1));
+        }
+      }
+
+      else if(aStates->GetObjectType().IsEqual("Mesh")) {
+        if(aMethod.IsEqual("Translate") ||
+           aMethod.IsEqual("TranslateMakeGroups") ||
+           aMethod.IsEqual("TranslateMakeMesh")) {
+          bool isVariableFound = false;
+          int anArgIndex = 0;
+          for(int i = 1, n = aCmd->GetNbArgs(); i <= n; i++) {
+            if(aCmd->GetArg(i).IsEqual("SMESH.PointStruct")) {
+              anArgIndex = i+1;
+              break;
+            }
+          }
+          if(anArgIndex > 0) {
+            for(int j = 0; j <= 2; j++) {
+              if(!aStates->GetCurrectState().at(j).IsEmpty()) {
+                isVariableFound = true;
+                aCmd->SetArg(anArgIndex+j, aStates->GetCurrectState().at(j));
+              }
+            }
+          }
+          if(isVariableFound) {
+            aCmd->SetArg(anArgIndex - 1, TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".PointStructStr");
+            aCmd->SetArg(anArgIndex - 2, TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".DirStructStr");
+          }
+          aStates->IncrementState();
+        }
+      }
+    }
+    if(MYDEBUG) {
+      cout<<"Command after: "<< aCmd->GetString()<<endl;
     }
   }
-
-  if(it != _objectMap.end()) {
-    ObjectStates *aStates = (*it).second;
-    if(MYDEBUG)
-      cout<<"SMESH_NoteBook::ReplaceVariables :Object Type : "<<aStates->GetObjectType()<<endl;
-    if(aStates->GetObjectType().IsEqual("LocalLength")) {
-      if(aMethod.IsEqual("SetLength")) {
-        if(!aStates->GetCurrectState().at(0).IsEmpty() )
-          aCmd.SetArg(1,aStates->GetCurrectState().at(0));
-        aStates->IncrementState();
-      }
-      else if(aMethod.IsEqual("SetPrecision")) {
-        if(!aStates->GetCurrectState().at(1).IsEmpty() )
-          aCmd.SetArg(1,aStates->GetCurrectState().at(1));
-        aStates->IncrementState();
-      }
-    }
-    else if(aStates->GetObjectType().IsEqual("Mesh")) {
-      if(aMethod.IsEqual("Translate") ||
-	 aMethod.IsEqual("TranslateMakeGroups") ||
-	 aMethod.IsEqual("TranslateMakeMesh")) {
-	bool isVariableFound = false;
-	int anArgIndex = 0;
-	for(int i = 1, n = aCmd.GetNbArgs(); i <= n; i++) {
-	  if(aCmd.GetArg(i).IsEqual("SMESH.PointStruct")) {
-	    anArgIndex = i+1;
-	    break;
-	  }
-	}
-	if(anArgIndex > 0) {
-	  for(int j = 0; j <= 2; j++) {
-	    if(!aStates->GetCurrectState().at(j).IsEmpty()) {
-	      isVariableFound = true;
-	      aCmd.SetArg(anArgIndex+j, aStates->GetCurrectState().at(j));
-	    }
-	  }
-	}
-	if(isVariableFound) {
-	  aCmd.SetArg(anArgIndex - 1, TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".PointStructStr");
-	  aCmd.SetArg(anArgIndex - 2, TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".DirStructStr");
-	}
-	aStates->IncrementState();
-      }
-    }
-    return aCmd.GetString();
-  }
-  
-  return theString;
+  //  ProcessLayerDistribution();
 }
 //================================================================================
 /*!
@@ -265,8 +348,12 @@ void SMESH_NoteBook::InitObjectMap()
       }
       if(MYDEBUG)
         cout<<"The object Type : "<<anObjType<<endl;
+      ObjectStates *aState = NULL;
+      if(anObjType == "LayerDistribution")
+        aState = new LayerDistributionStates();
+      else
+        aState = new  ObjectStates(anObjType);
       
-      ObjectStates *aState = new  ObjectStates(anObjType);
       for(int i = 0; i < aSections->length(); i++) {
         TState aVars;
         SALOMEDS::ListOfStrings aListOfVars = aSections[i];
@@ -286,4 +373,85 @@ void SMESH_NoteBook::InitObjectMap()
       _objectMap.insert(pair<TCollection_AsciiString,ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
     }
   }
+}
+
+//================================================================================
+/*!
+ * 
+ */
+//================================================================================
+void SMESH_NoteBook::AddCommand(const TCollection_AsciiString& theString)
+{
+  Handle(_pyCommand) aCommand = new _pyCommand( theString, -1);
+  _commands.push_back(aCommand);
+
+  if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
+    myMeshEditors.insert( make_pair( aCommand->GetResultValue(),
+				     aCommand->GetObject() ) );
+  }
+}
+
+//================================================================================
+/*!
+ * 
+ */
+//================================================================================
+void SMESH_NoteBook::ProcessLayerDistribution()
+{
+  // 1) Find all LayerDistribution states
+  vector<LayerDistributionStates*> aLDS;
+  TVariablesMap::const_iterator it = _objectMap.begin();
+  for(;it != _objectMap.end();it++)
+    if(LayerDistributionStates* aLDStates = (LayerDistributionStates*)((*it).second)) {
+      aLDS.push_back(aLDStates);
+    }
+  
+  // 2) Initialize all type of 1D Distribution hypothesis
+  for(int i=0;i<_commands.size();i++){
+    for(int j =0;j < aLDS.size();j++){
+      TCollection_AsciiString aResultValue = _commands[i]->GetResultValue();
+      if(_commands[i]->GetMethod() == "CreateHypothesis" &&
+         aLDS[j]->HasDistribution(aResultValue)){
+        TCollection_AsciiString aType = _commands[i]->GetArg(1);
+        aType.RemoveAll('\'');
+        aLDS[j]->SetDistributionType(aResultValue,aType);
+      }
+    }
+  }
+  // 3) ... and replase variables ...
+
+  for(int i=0;i<_commands.size();i++){
+    for(int j =0;j < aLDS.size();j++){
+      TCollection_AsciiString anObject = _commands[i]->GetObject();
+
+      if(aLDS[j]->HasDistribution(anObject)) {
+        TCollection_AsciiString aType = aLDS[j]->GetDistributionType(anObject);
+        TCollection_AsciiString aMethod = _commands[i]->GetMethod();
+        if(aType == "LocalLength") {
+          if(aMethod == "SetLength") {
+            if(!aLDS[j]->GetCurrectState().at(0).IsEmpty() )
+              _commands[i]->SetArg(1,aLDS[j]->GetCurrectState().at(0));
+            aLDS[j]->IncrementState();
+          }
+          else if(aMethod == "SetPrecision") {
+            if(!aLDS[j]->GetCurrectState().at(1).IsEmpty() )
+              _commands[i]->SetArg(1,aLDS[j]->GetCurrectState().at(1));
+            aLDS[j]->IncrementState();
+          }
+        }
+      }
+    }
+  }
+}
+//================================================================================
+/*!
+ *  \brief Return result script
+ */
+//================================================================================
+TCollection_AsciiString SMESH_NoteBook::GetResultScript() const
+{
+  TCollection_AsciiString aResult;
+  for(int i=0;i<_commands.size();i++)
+    aResult+=_commands[i]->GetString()+"\n";
+  return aResult;
 }

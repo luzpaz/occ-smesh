@@ -4093,13 +4093,18 @@ def ParseParameters(last, nbParams,nbParam, value):
         counter = counter+1
     return result, strResult
 
+#Wrapper class for StdMeshers_LocalLength hypothesis
 class LocalLength(StdMeshers._objref_StdMeshers_LocalLength):
-        
+
+    ## Set length parameter value
+    #  @param length numerical value or name of variable from notebook
     def SetLength(self, length):
         length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,1,length)
         StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_LocalLength.SetLength(self,length)
 
+   ## Set precision parameter value
+   #  @param precision numerical value or name of variable from notebook
     def SetPrecision(self, precision):
         precision,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,2,precision)
         StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
@@ -4107,3 +4112,18 @@ class LocalLength(StdMeshers._objref_StdMeshers_LocalLength):
 
 #Registering the new proxy for LocalLength
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryId, LocalLength)
+
+
+#Wrapper class for StdMeshers_SegmentLengthAroundVertex hypothesis
+class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex):
+    parent = StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex
+    
+    ## Set length parameter value
+    #  @param length numerical value or name of variable from notebook    
+    def SetLength(self, length):
+        length,parameters = ParseParameters(parent.GetLastParameters(self),1,1,length)
+        parent.SetParameters(self,parameters)
+        parent.SetLength(self,length)
+
+#Registering the new proxy for LocalLength
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex._NP_RepositoryId, LocalLength)
