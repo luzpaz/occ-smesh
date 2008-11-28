@@ -1272,8 +1272,8 @@ class Mesh:
     #  the main group but are not present in the tool group are added to the new one
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
-    def CutGroups(self, groups, name):
-        return self.mesh.CutGroups(groups, name)
+    def CutGroups(self, main_group, tool_group, name):
+        return self.mesh.CutGroups(main_group, tool_group, name)
         
     ## Produces a cut of groups
     #  A new group is created. All mesh elements that are present in main groups 
