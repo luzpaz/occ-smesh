@@ -4116,14 +4116,31 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryI
 
 #Wrapper class for StdMeshers_SegmentLengthAroundVertex hypothesis
 class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex):
-    parent = StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex
     
     ## Set length parameter value
     #  @param length numerical value or name of variable from notebook    
     def SetLength(self, length):
-        length,parameters = ParseParameters(parent.GetLastParameters(self),1,1,length)
-        parent.SetParameters(self,parameters)
-        parent.SetLength(self,length)
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.GetLastParameters(self),1,1,length)
+        StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetLength(self,length)
 
+#Registering the new proxy for SegmentLengthAroundVertex
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex._NP_RepositoryId, SegmentLengthAroundVertex)
+
+
+#Wrapper class for StdMeshers_Arithmetic1D hypothesis
+class Arithmetic1D(StdMeshers._objref_StdMeshers_Arithmetic1D):
+    
+    ## Set length parameter value
+    #  @param length   numerical value or name of variable from notebook
+    #  @param isStart  true is length is Start Length, otherwise false
+    def SetLength(self, length, isStart):
+        nb = 2
+        if isStart:
+            nb = 1
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetLastParameters(self),2,nb,length)
+        StdMeshers._objref_StdMeshers_Arithmetic1D.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_Arithmetic1D.SetLength(self,length,isStart)
+        
 #Registering the new proxy for LocalLength
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex._NP_RepositoryId, LocalLength)
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_Arithmetic1D._NP_RepositoryId, Arithmetic1D)

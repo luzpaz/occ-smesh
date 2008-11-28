@@ -43,9 +43,14 @@
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
+static int VARIABLE_DEBUG = 1;
 #else
 static int MYDEBUG = 0;
+static int VARIABLE_DEBUG = 1;
 #endif
+
+
+
 
 //=============================================================================
 /*!
@@ -869,15 +874,24 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 //=======================================================================
 void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
 {
+
+  if(VARIABLE_DEBUG)
+    cout<<"UpdateParameters : "<<theParameters<<endl;
   SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
   if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
     return;
 
   SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
-  if(aSObj->_is_nil())
+  if(aSObj->_is_nil())  
     return;
   
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+  
+  SALOMEDS::GenericAttribute_var aFindAttr;
+  bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
+  if(VARIABLE_DEBUG)
+    cout<<"Find Attribute "<<hasAttr<<endl;
+
   SALOMEDS::GenericAttribute_var anAttr;
   anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
   SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
@@ -886,10 +900,18 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   TCollection_AsciiString aOldParameters(aStringAttr->Value());
   TCollection_AsciiString anInputParams(ParseParameters(theParameters));
   
-  if(!aOldParameters.Length())
+  if(!hasAttr)
     aNewParams = anInputParams;
   else 
     aNewParams = aOldParameters+"|"+anInputParams;
+
+  if(VARIABLE_DEBUG)
+    {
+      cout<<"Input Parameters : "<<anInputParams<<endl;
+      cout<<"Old Parameters : "<<aOldParameters<<endl;
+      cout<<"New Parameters : "<<aNewParams<<endl;
+    }
+  
   
   aStringAttr->SetValue( aNewParams.ToCString() );
 }

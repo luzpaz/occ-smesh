@@ -81,7 +81,10 @@ void ObjectStates::AddState(const TState &theState)
 //================================================================================
 TState ObjectStates::GetCurrectState() const
 {
-  return _states[_dumpstate];
+  if(_states.size() > _dumpstate)
+    return _states[_dumpstate];
+  TState empty;
+  return empty;
 }
 
 
@@ -243,7 +246,7 @@ void SMESH_NoteBook::ReplaceVariables()
     if(it != _objectMap.end() && !aMethod.IsEmpty()) {
       ObjectStates *aStates = (*it).second;
       // Case for LocalLength hypothesis
-      if(aStates->GetObjectType().IsEqual("LocalLength")) {
+      if(aStates->GetObjectType().IsEqual("LocalLength") && aStates->GetCurrectState().size() >= 2) {
         if(aMethod.IsEqual("SetLength")) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
@@ -257,10 +260,22 @@ void SMESH_NoteBook::ReplaceVariables()
       }
       
       // Case for SegmentLengthAroundVertex hypothesis
-      else if(aStates->GetObjectType().IsEqual("SegmentLengthAroundVertex")) {
+      else if(aStates->GetObjectType().IsEqual("SegmentLengthAroundVertex")
+              && aStates->GetCurrectState().size() >= 1) {
         if(aMethod == "SetLength") {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+      }
+
+      else if(aStates->GetObjectType().IsEqual("Arithmetic1D")) {
+        if(aMethod == "SetLength" &&
+           aStates->GetCurrectState().size() >= 2) {
+          if(aCmd->GetArg(2) == "1" && !aStates->GetCurrectState().at(0).IsEmpty())
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          else if(!aStates->GetCurrectState().at(1).IsEmpty())
+            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
           aStates->IncrementState();
         }
       }
