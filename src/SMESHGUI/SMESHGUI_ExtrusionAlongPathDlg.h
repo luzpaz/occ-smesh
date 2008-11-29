@@ -78,6 +78,10 @@ private:
   int                       GetConstructorId();
   void                      SetEditCurrentArgument( QToolButton* );
 
+  bool                      isValid();
+
+  void                      updateLinearAngles();
+  
   SMESHGUI*                 mySMESHGUI;            /* Current SMESHGUI object */
   SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;        /* User shape selection */
@@ -94,6 +98,7 @@ private:
   SUIT_SelectionFilter*     myElementsFilter;
   SUIT_SelectionFilter*     myPathMeshFilter;
   int                       myType;
+  QList<double>             myAnglesList;
 
   // widgets
   QGroupBox*                ConstructorsBox;

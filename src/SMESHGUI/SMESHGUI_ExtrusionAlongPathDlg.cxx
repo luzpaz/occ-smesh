@@ -478,6 +478,9 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       !myMeshActor || myPathMesh->_is_nil() || myPathShape->_is_nil())
     return false;
 
+  if (!isValid())
+    return false;
+
   SMESH::long_array_var anElementsId = new SMESH::long_array;
 
   if (MeshCheck->isChecked()) {
@@ -559,16 +562,17 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     return false;
   }
 
+  QStringList aParameters;
+
   // get angles
   SMESH::double_array_var anAngles = new SMESH::double_array;
   if (AnglesGrp->isChecked()) {
-    anAngles->length(AnglesList->count());
+    anAngles->length(myAnglesList.count());
     int j = 0;
-    bool bOk;
-    for (int i = 0; i < AnglesList->count(); i++) {
-      double angle = AnglesList->item(i)->text().toDouble(&bOk);
-      if  (bOk)
-	anAngles[ j++ ] = angle*PI/180;
+    for (int i = 0; i < myAnglesList.count(); i++) {
+      double angle = myAnglesList[i];
+      anAngles[ j++ ] = angle*PI/180;
+      aParameters << AnglesList->item(i)->text();
     }
     anAngles->length(j);
   }
@@ -580,6 +584,10 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     aBasePoint.y = YSpin->GetValue();
     aBasePoint.z = ZSpin->GetValue();
   }
+
+  aParameters << XSpin->text();
+  aParameters << YSpin->text();
+  aParameters << ZSpin->text();
 
   try {
     SUIT_OverrideCursor wc;
@@ -599,6 +607,9 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
                                                myPathShape, aNodeStart,
                                                AnglesGrp->isChecked(), anAngles,
                                                BasePointGrp->isChecked(), aBasePoint);
+
+    if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
+      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
     //wc.stop();
     wc.suspend();
@@ -1140,7 +1151,18 @@ int SMESHGUI_ExtrusionAlongPathDlg::GetConstructorId()
 //=======================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::OnAngleAdded()
 {
-  AnglesList->addItem(QString::number(AngleSpin->GetValue()));
+  QString msg;
+  if( !AngleSpin->isValid( msg, true ) ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return;
+  }
+  AnglesList->addItem(AngleSpin->text());
+  myAnglesList.append(AngleSpin->GetValue());
+
+  updateLinearAngles();
 }
 
 //=======================================================================
@@ -1151,7 +1173,12 @@ void SMESHGUI_ExtrusionAlongPathDlg::OnAngleRemoved()
 {
   QList<QListWidgetItem*> aList = AnglesList->selectedItems();
   QListWidgetItem* anItem;
-  foreach(anItem, aList) delete anItem;
+  foreach(anItem, aList) {
+    myAnglesList.removeAt(AnglesList->row(anItem));
+    delete anItem;
+  }
+
+  updateLinearAngles();
 }
 
 //=================================================================================
@@ -1198,4 +1225,46 @@ void SMESHGUI_ExtrusionAlongPathDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_ExtrusionAlongPathDlg::isValid()
+{
+  QString msg;
+  bool ok = true;
+  ok = XSpin->isValid( msg, true ) && ok;
+  ok = YSpin->isValid( msg, true ) && ok;
+  ok = ZSpin->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
+}
+
+//=================================================================================
+// function : updateLinearAngles
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::updateLinearAngles()
+{
+  bool enableLinear = true;
+  for( int row = 0, nbRows = AnglesList->count(); row < nbRows; row++ ) {
+    if( QListWidgetItem* anItem = AnglesList->item( row ) ) {
+      enableLinear = false;
+      anItem->text().toDouble(&enableLinear);
+      if( !enableLinear )
+	break;
+    }
+  }
+  if( !enableLinear )
+    LinearAnglesCheck->setChecked( false );
+  LinearAnglesCheck->setEnabled( enableLinear );
 }

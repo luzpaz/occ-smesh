@@ -155,6 +155,11 @@ DefaultSize, DefaultGeom, Custom = 0,0,1
 
 PrecisionConfusion = 1e-07
 
+## Converts an angle from degrees to radians
+def DegreesToRadians(AngleInDegrees):
+    from math import pi
+    return AngleInDegrees * pi / 180.0
+
 # Salome notebook variable separator
 variable_separator = ":"
 
@@ -184,6 +189,54 @@ class PointStructStr:
             self.z = notebook.get(zStr)
         else:
             self.z = zStr
+
+# Parametrized substitute for PointStruct (with 6 parameters)
+class PointStructStr6:
+
+    x1 = 0
+    y1 = 0
+    z1 = 0
+    x2 = 0
+    y2 = 0
+    z2 = 0
+    xStr1 = ""
+    yStr1 = ""
+    zStr1 = ""
+    xStr2 = ""
+    yStr2 = ""
+    zStr2 = ""
+
+    def __init__(self, x1Str, x2Str, y1Str, y2Str, z1Str, z2Str):
+        self.x1Str = x1Str
+        self.x2Str = x2Str
+        self.y1Str = y1Str
+        self.y2Str = y2Str
+        self.z1Str = z1Str
+        self.z2Str = z2Str
+        if isinstance(x1Str, str) and notebook.isVariable(x1Str):
+            self.x1 = notebook.get(x1Str)
+        else:
+            self.x1 = x1Str
+        if isinstance(x2Str, str) and notebook.isVariable(x2Str):
+            self.x2 = notebook.get(x2Str)
+        else:
+            self.x2 = x2Str
+        if isinstance(y1Str, str) and notebook.isVariable(y1Str):
+            self.y1 = notebook.get(y1Str)
+        else:
+            self.y1 = y1Str
+        if isinstance(y2Str, str) and notebook.isVariable(y2Str):
+            self.y2 = notebook.get(y2Str)
+        else:
+            self.y2 = y2Str
+        if isinstance(z1Str, str) and notebook.isVariable(z1Str):
+            self.z1 = notebook.get(z1Str)
+        else:
+            self.z1 = z1Str
+        if isinstance(z2Str, str) and notebook.isVariable(z2Str):
+            self.z2 = notebook.get(z2Str)
+        else:
+            self.z2 = z2Str
 
 # Parametrized substitute for AxisStruct
 class AxisStructStr:
@@ -252,8 +305,14 @@ def ParseDirStruct(Dir):
     Parameters = "::"
     if isinstance(Dir, DirStructStr):
         pntStr = Dir.pointStruct
-        Parameters = str(pntStr.xStr) + ":" + str(pntStr.yStr) + ":" + str(pntStr.zStr)
-        Point = PointStruct(pntStr.x, pntStr.y, pntStr.z)
+        if isinstance(pntStr, PointStructStr6):
+            Parameters = str(pntStr.x1Str) + ":" + str(pntStr.x2Str) + ":"
+            Parameters += str(pntStr.y1Str) + ":" + str(pntStr.y2Str) + ":" 
+            Parameters += str(pntStr.z1Str) + ":" + str(pntStr.z2Str)
+            Point = PointStruct(pntStr.x2 - pntStr.x1, pntStr.y2 - pntStr.y1, pntStr.z2 - pntStr.z1)
+        else:
+            Parameters = str(pntStr.xStr) + ":" + str(pntStr.yStr) + ":" + str(pntStr.zStr)
+            Point = PointStruct(pntStr.x, pntStr.y, pntStr.z)
         Dir = DirStruct(Point)
     return Dir, Parameters
 
@@ -266,6 +325,24 @@ def ParseAxisStruct(Axis):
         Axis = AxisStruct(Axis.x, Axis.y, Axis.z, Axis.dx, Axis.dy, Axis.dz)
     return Axis, Parameters
 
+## Return list of variable values from salome notebook
+def ParseAngles(list):
+    Result = []
+    Parameters = ""
+    for parameter in list:
+        if isinstance(parameter,str) and notebook.isVariable(parameter):
+            Result.append(DegreesToRadians(notebook.get(parameter)))
+            pass
+        else:
+            Result.append(parameter)
+            pass
+        
+        Parameters = Parameters + str(parameter)
+        Parameters = Parameters + ":"
+        pass
+    Parameters = Parameters[:len(Parameters)-1]
+    return Result, Parameters
+    
 def IsEqual(val1, val2, tol=PrecisionConfusion):
     if abs(val1 - val2) < tol:
         return True
@@ -329,11 +406,6 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
     else:
         print hypName, "was not assigned to",geomName,":", reason
         pass
-
-## Converts an angle from degrees to radians
-def DegreesToRadians(AngleInDegrees):
-    from math import pi
-    return AngleInDegrees * pi / 180.0
 
 # end of l1_auxiliary
 ## @}
@@ -2335,7 +2407,7 @@ class Mesh:
     ## Generates new elements by rotation of the elements around the axis
     #  @param IDsOfElements the list of ids of elements to sweep
     #  @param Axis the axis of rotation, AxisStruct or line(geom object)
-    #  @param AngleInRadians the angle of Rotation
+    #  @param AngleInRadians the angle of Rotation (in radians) or a name of variable which defines angle in degrees
     #  @param NbOfSteps the number of steps
     #  @param Tolerance tolerance
     #  @param MakeGroups forces the generation of new groups from existing ones
@@ -2345,12 +2417,22 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweep(self, IDsOfElements, Axis, AngleInRadians, NbOfSteps, Tolerance,
                       MakeGroups=False, TotalAngle=False):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
+        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
+        Parameters = AxisParameters + ":" + AngleParameters + ":" + Parameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepMakeGroups(IDsOfElements, Axis,
                                                        AngleInRadians, NbOfSteps, Tolerance)
@@ -2496,6 +2578,8 @@ class Mesh:
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
                            HasAngles, Angles, HasRefPoint, RefPoint,
                            MakeGroups=False, LinearVariation=False):
+        Angles,AnglesParameters = ParseAngles(Angles)
+        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
@@ -2506,6 +2590,8 @@ class Mesh:
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
+        Parameters = AnglesParameters + ":" + RefPointParameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh,
                                                             PathShape, NodeStart, HasAngles,

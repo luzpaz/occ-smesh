@@ -49,6 +49,7 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Application.h>
+#include <SalomeApp_IntSpinBox.h>
 
 #include <SVTK_ViewWindow.h>
 #include <SVTK_Selector.h>
@@ -70,7 +71,6 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
-#include <QSpinBox>
 #include <QKeyEvent>
 
 // IDL includes
@@ -208,7 +208,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   SpinBox_Angle = new SMESHGUI_SpinBox(GroupAngleBox);
 
   TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupAngleBox);
-  SpinBox_NbSteps = new QSpinBox(GroupAngleBox);
+  SpinBox_NbSteps = new SalomeApp_IntSpinBox(GroupAngleBox);
 
   GroupAngleLayout->addWidget(RadioButton3,     0, 0);
   GroupAngleLayout->addWidget(RadioButton4,     0, 1);
@@ -337,6 +337,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(SpinBox_Tolerance, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
   connect(CheckBoxPreview,   SIGNAL(toggled(bool)),        this, SLOT(onDisplaySimulation(bool)));
 
+  connect(SpinBox_Angle, SIGNAL(textChanged(const QString&)), this, SLOT(onAngleTextChange(const QString&)));
+
   ConstructorsClicked(0);
   SelectionIntoArgument();
 }
@@ -444,10 +446,13 @@ void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RevolutionDlg::ClickOnApply()
+bool SMESHGUI_RevolutionDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
-    return;
+    return false;
+
+  if (!isValid())
+    return false;
 
   if (myNbOkElements && IsAxisOk()) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
@@ -474,6 +479,17 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     if ( GroupAngle->checkedId() == 1 )
       anAngle = anAngle/aNbSteps;
 
+    QStringList aParameters;
+    aParameters << SpinBox_X->text();
+    aParameters << SpinBox_Y->text();
+    aParameters << SpinBox_Z->text();
+    aParameters << SpinBox_DX->text();
+    aParameters << SpinBox_DY->text();
+    aParameters << SpinBox_DZ->text();
+    aParameters << SpinBox_Angle->text();
+    aParameters << SpinBox_NbSteps->text();
+    aParameters << SpinBox_Tolerance->text();
+
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
@@ -484,6 +500,8 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
                                                anAngle, aNbSteps, aTolerance);
       else
         aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+
+      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
     } catch (...) {
     }
 
@@ -494,6 +512,8 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
   }
+
+  return true;
 }
 
 //=================================================================================
@@ -502,8 +522,8 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_RevolutionDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if( ClickOnApply() )
+    ClickOnCancel();
 }
 
 //=================================================================================
@@ -544,6 +564,19 @@ void SMESHGUI_RevolutionDlg::ClickOnHelp()
 								 platform)).
 			     arg(myHelpFileName));
   }
+}
+
+//=======================================================================
+// function : onAngleTextChange()
+// purpose  :
+//=======================================================================
+void SMESHGUI_RevolutionDlg::onAngleTextChange (const QString& theNewText)
+{
+  bool isNumber;
+  SpinBox_Angle->text().toDouble( &isNumber );
+  if( !isNumber )
+    RadioButton3->setChecked( true );
+  RadioButton4->setEnabled( isNumber );
 }
 
 //=======================================================================
@@ -1050,4 +1083,33 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
     //erase preview
     mySimulation->SetVisibility(false);
   }
+}
+
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_RevolutionDlg::isValid()
+{
+  QString msg;
+  bool ok = true;
+  ok = SpinBox_X->isValid( msg, true ) && ok;
+  ok = SpinBox_Y->isValid( msg, true ) && ok;
+  ok = SpinBox_Z->isValid( msg, true ) && ok;
+  ok = SpinBox_DX->isValid( msg, true ) && ok;
+  ok = SpinBox_DY->isValid( msg, true ) && ok;
+  ok = SpinBox_DZ->isValid( msg, true ) && ok;
+  ok = SpinBox_Angle->isValid( msg, true ) && ok;
+  ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
+  ok = SpinBox_Tolerance->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

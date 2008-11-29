@@ -93,6 +93,8 @@ public:
 private:
   void InitObjectMap();
   void ProcessLayerDistribution();
+
+  bool GetReal(const TCollection_AsciiString& theVarName, double& theValue);
   
 private:
   

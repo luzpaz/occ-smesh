@@ -43,7 +43,7 @@ class QLineEdit;
 class QPushButton;
 class QRadioButton;
 class QCheckBox;
-class QSpinBox;
+class SalomeApp_IntSpinBox;
 class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
 class SMESHGUI;
@@ -74,6 +74,8 @@ private:
   void                      keyPressEvent( QKeyEvent* );
   int                       GetConstructorId();
   bool                      IsAxisOk();
+  
+  bool                      isValid();
   
   SMESHGUI*                 mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*     myIdValidator;
@@ -132,7 +134,7 @@ private:
   QLabel*                   TextLabelAngle;
   SMESHGUI_SpinBox*         SpinBox_Angle;
   QLabel*                   TextLabelNbSteps;
-  QSpinBox*                 SpinBox_NbSteps;
+  SalomeApp_IntSpinBox*     SpinBox_NbSteps;
   QLabel*                   TextLabelTolerance;
   SMESHGUI_SpinBox*         SpinBox_Tolerance;
   
@@ -142,13 +144,14 @@ private slots:
   void                      ConstructorsClicked( int );
   void                      ClickOnOk();
   void                      ClickOnCancel();
-  void                      ClickOnApply();
+  bool                      ClickOnApply();
   void                      ClickOnHelp();
   void                      SetEditCurrentArgument();
   void                      SelectionIntoArgument();
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
   void                      onTextChange( const QString& );
+  void                      onAngleTextChange( const QString& );
   void                      onSelectMesh( bool );
   void                      onVectorChanged();
   void                      toDisplaySimulation();

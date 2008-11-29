@@ -1401,10 +1401,9 @@ void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElement
                                        CORBA::Double             theTolerance)
 {
   if ( !myPreviewMode ) {
-    TPythonDump() << "axis = " << theAxis;
     TPythonDump() << this << ".RotationSweep( "
-                  << theIDsOfElements
-                  << ", axis, "
+                  << theIDsOfElements << ", "
+                  << theAxis << ", "
                   << theAngleInRadians << ", "
                   << theNbOfSteps << ", "
                   << theTolerance << " )";
@@ -1436,12 +1435,11 @@ SMESH_MeshEditor_i::RotationSweepMakeGroups(const SMESH::long_array& theIDsOfEle
                                                theTolerance,
                                                true);
   if ( !myPreviewMode ) {
-    TPythonDump()<< "axis = " << theAxis;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump<< this << ".RotationSweepMakeGroups( "
-               << theIDsOfElements
-               << ", axis, "
+               << theIDsOfElements << ", "
+               << theAxis << ", "
                << theAngleInRadians << ", "
                << theNbOfSteps << ", "
                << theTolerance << " )";
@@ -1912,24 +1910,18 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
 					 const SMESH::PointStruct &  theRefPoint)
 {
   if ( !myPreviewMode ) {
-    TPythonDump() << "rotAngles = " << theAngles;
-
-    if ( theHasRefPoint )
-      TPythonDump() << "refPoint = SMESH.PointStruct( "
-                    << theRefPoint.x << ", "
-                    << theRefPoint.y << ", "
-                    << theRefPoint.z << " )";
-    else
-      TPythonDump() << "refPoint = SMESH.PointStruct( 0,0,0 )";
-
     TPythonDump() << "error = " << this << ".ExtrusionAlongPath( "
                   << theIDsOfElements << ", "
                   << thePathMesh      << ", "
                   << thePathShape     << ", "
                   << theNodeStart     << ", "
                   << theHasAngles     << ", "
-                  << "rotAngles"      << ", "
-                  << theHasRefPoint   << ", refPoint )";
+                  << theAngles        << ", "
+                  << theHasRefPoint   << ", "
+                  << "SMESH.PointStruct( "
+                  << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
+                  << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
+                  << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
   }
   SMESH::SMESH_MeshEditor::Extrusion_Error anError;
   extrusionAlongPath( theIDsOfElements,
@@ -2023,16 +2015,6 @@ SMESH_MeshEditor_i::ExtrusionAlongPathMakeGroups(const SMESH::long_array&   theI
                                                          true,
                                                          Error);
   if ( !myPreviewMode ) {
-    TPythonDump() << "rotAngles = " << theAngles;
-
-    if ( theHasRefPoint )
-      TPythonDump() << "refPoint = SMESH.PointStruct( "
-                    << theRefPoint.x << ", "
-                    << theRefPoint.y << ", "
-                    << theRefPoint.z << " )";
-    else
-      TPythonDump() << "refPoint = SMESH.PointStruct( 0,0,0 )";
-
     bool isDumpGroups = aGroups && aGroups->length() > 0;
     TPythonDump aPythonDump;
     if(isDumpGroups) {
@@ -2049,8 +2031,12 @@ SMESH_MeshEditor_i::ExtrusionAlongPathMakeGroups(const SMESH::long_array&   theI
                << thePathShape     << ", "
                << theNodeStart     << ", "
                << theHasAngles     << ", "
-               << "rotAngles"      << ", "
-               << theHasRefPoint   << ", refPoint )";
+               << theAngles        << ", "
+               << theHasRefPoint   << ", "
+               << "SMESH.PointStruct( "
+               << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
+               << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
+               << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
   }
   return aGroups;
 }
