@@ -4229,9 +4229,12 @@ def ParseParameters(last, nbParams,nbParam, value):
             else:
                 strResult = strResult + ""
         else:
-            if isinstance(value, str) and notebook.isVariable(value):
-                result = notebook.get(value)
-                strResult=strResult+value 
+            if isinstance(value, str):
+                if notebook.isVariable(value):
+                    result = notebook.get(value)
+                    strResult=strResult+value
+                else:
+                    raise RuntimeError, "Variable with name '" + value + "' doesn't exist!!!"
             else:
                 strResult=strResult+str(value)
                 result = value
