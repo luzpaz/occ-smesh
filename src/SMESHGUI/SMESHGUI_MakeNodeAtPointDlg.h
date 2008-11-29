@@ -59,7 +59,7 @@ protected:
 
   virtual void                   activateSelection();
 
-  bool                           isValid();
+  bool                           isValid( QString& );
 
 protected slots:
   virtual bool                   onApply();

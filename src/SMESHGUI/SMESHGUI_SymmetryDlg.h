@@ -73,6 +73,8 @@ private:
   bool                   IsMirrorOk();
   void                   setNewMeshName();
 
+  bool                   isValid();
+
   SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
@@ -132,7 +134,7 @@ private slots:
   void                   ConstructorsClicked( int );
   void                   ClickOnOk();
   void                   ClickOnCancel();
-  void                   ClickOnApply();
+  bool                   ClickOnApply();
   void                   ClickOnHelp();
   void                   SetEditCurrentArgument();
   void                   SelectionIntoArgument();

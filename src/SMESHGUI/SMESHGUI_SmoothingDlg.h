@@ -43,7 +43,7 @@ class QPushButton;
 class QRadioButton;
 class QComboBox;
 class QCheckBox;
-class QSpinBox;
+class SalomeApp_IntSpinBox;
 class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
 class SMESHGUI;
@@ -71,6 +71,8 @@ private:
   void                   hideEvent( QHideEvent* );     /* ESC key */
   void                   keyPressEvent( QKeyEvent* );
 
+  bool                   isValid();
+  
   SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
@@ -104,7 +106,7 @@ private:
   QLabel*                TextLabelMethod;
   QComboBox*             ComboBoxMethod;
   QLabel*                TextLabelLimit;
-  QSpinBox*              SpinBox_IterationLimit;
+  SalomeApp_IntSpinBox*  SpinBox_IterationLimit;
   QLabel*                TextLabelAspectRatio;
   SMESHGUI_SpinBox*      SpinBox_AspectRatio;
   QCheckBox*             CheckBoxParametric;
@@ -114,7 +116,7 @@ private:
 private slots:
   void                   ClickOnOk();
   void                   ClickOnCancel();
-  void                   ClickOnApply();
+  bool                   ClickOnApply();
   void                   ClickOnHelp();
   void                   SetEditCurrentArgument();
   void                   SelectionIntoArgument();

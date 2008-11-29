@@ -441,6 +441,11 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
     aParameters << SpinBox1_1->text();
     aParameters << SpinBox1_2->text();
     aParameters << SpinBox1_3->text();
+    if (GetConstructorId() == 0) {
+      aParameters << SpinBox2_1->text();
+      aParameters << SpinBox2_2->text();
+      aParameters << SpinBox2_3->text();
+    }
 
     int actionButton = ActionGroup->checkedId();
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );

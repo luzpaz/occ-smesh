@@ -52,6 +52,8 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 
+#include <SalomeApp_IntSpinBox.h>
+
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_IndexedMapOfInteger.hxx>
@@ -65,7 +67,6 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QCheckBox>
-#include <QSpinBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -177,7 +178,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
 
   // Controls for nb. steps defining
   TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupArguments);
-  SpinBox_NbSteps = new QSpinBox(GroupArguments);
+  SpinBox_NbSteps = new SalomeApp_IntSpinBox(GroupArguments);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
@@ -359,6 +360,9 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
   if (mySMESHGUI->isActiveStudyLocked())
     return false;
 
+  if (!isValid())
+    return false;
+
   if (myNbOkElements) {
 
     SMESH::DirStruct aVector;
@@ -367,6 +371,12 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     aVector.PS.z = SpinBox_Dz->GetValue();
 
     long aNbSteps = (long)SpinBox_NbSteps->value();
+
+    QStringList aParameters;
+    aParameters << SpinBox_Dx->text();
+    aParameters << SpinBox_Dy->text();
+    aParameters << SpinBox_Dz->text();
+    aParameters << SpinBox_NbSteps->text();
 
     try {
       SUIT_OverrideCursor aWaitCursor;
@@ -377,6 +387,8 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
           aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
       else
         aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+
+      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
     } catch (...) {
     }
@@ -754,4 +766,27 @@ void SMESHGUI_ExtrusionDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_ExtrusionDlg::isValid()
+{
+  QString msg;
+  bool ok = true;
+  ok = SpinBox_Dx->isValid( msg, true ) && ok;
+  ok = SpinBox_Dy->isValid( msg, true ) && ok;
+  ok = SpinBox_Dz->isValid( msg, true ) && ok;
+  ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

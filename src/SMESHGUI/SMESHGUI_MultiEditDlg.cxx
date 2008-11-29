@@ -297,7 +297,7 @@ QWidget* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
 // name    : SMESHGUI_MultiEditDlg::isValid
 // Purpose : Verify validity of input data
 //=======================================================================
-bool SMESHGUI_MultiEditDlg::isValid (const bool /*theMess*/) const
+bool SMESHGUI_MultiEditDlg::isValid (const bool /*theMess*/)
 {
   return (!myMesh->_is_nil() &&
           (myListBox->count() > 0 || (myToAllChk->isChecked() && myActor)));
@@ -1168,12 +1168,39 @@ SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
 {
 }
 
+bool SMESHGUI_UnionOfTrianglesDlg::isValid (const bool theMess)
+{
+  bool ok = SMESHGUI_MultiEditDlg::isValid( theMess );
+  if( !ok )
+    return false;
+
+  QString msg;
+  ok = myMaxAngleSpin->isValid( msg, theMess );
+  if( !ok ) {
+    if( theMess ) {
+      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+      if ( !msg.isEmpty() )
+	str += "\n" + msg;
+      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    }
+    return false;
+  }
+
+  return ok;
+}
+
 bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                             const SMESH::long_array&    theIds)
 {
   SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
   double aMaxAngle = myMaxAngleSpin->GetValue() * PI / 180.0;
-  return theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
+  bool ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
+  if( ok ) {
+    QStringList aParameters;
+    aParameters << myMaxAngleSpin->text();
+    myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+  }
+  return ok;
 }
 
 

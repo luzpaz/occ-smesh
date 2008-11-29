@@ -894,8 +894,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   if ( sameMethods.empty() ) {
     const char * names[] = {
       "RemoveElements","RemoveNodes","AddNode","AddEdge","AddFace","AddPolygonalFace",
-      "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","MoveNode",
-      "InverseDiag","DeleteDiag","Reorient","ReorientObject","SplitQuad","SplitQuadObject",
+      "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","MoveNode", "MoveClosestNodeToPoint",
+      "InverseDiag","DeleteDiag","Reorient","ReorientObject","TriToQuad","SplitQuad","SplitQuadObject",
       "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
       "RotationSweep","RotationSweepObject","ExtrusionSweep","AdvancedExtrusion",
@@ -1770,14 +1770,21 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
     if ( begPos < 1 )
       begPos = myString.Location( "(", 1, Length() ) + 1;
 
-    int i = 0, prevLen = 0;
+    int i = 0, prevLen = 0, nbNestings = 0;
     while ( begPos != EMPTY ) {
       begPos += prevLen;
+      if( myString.Value( begPos ) == '(' )
+	nbNestings++;
       // check if we are looking at the closing parenthesis
       while ( begPos <= Length() && isspace( myString.Value( begPos )))
         ++begPos;
-      if ( begPos > Length() || myString.Value( begPos ) == ')' )
+      if ( begPos > Length() )
         break;
+      if ( myString.Value( begPos ) == ')' ) {
+	nbNestings--;
+	if( nbNestings == 0 )
+	  break;
+      }
       myArgs.Append( GetWord( myString, begPos, true, true ));
       SetBegPos( ARG1_IND + i, begPos );
       prevLen = myArgs.Last().Length();

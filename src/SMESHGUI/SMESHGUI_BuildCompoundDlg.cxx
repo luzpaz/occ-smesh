@@ -285,7 +285,14 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
     return false;
+
+  if (!isValid())
+    return false;
+
   if (!myMesh->_is_nil()) {
+    QStringList aParameters;
+    aParameters << SpinBoxTol->text();
+
     try	{
       SUIT_OverrideCursor aWaitCursor;
 
@@ -303,6 +310,8 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 					       CheckBoxMerge->isChecked(), 
 					       SpinBoxTol->GetValue());
      
+      aCompoundMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
       mySMESHGUI->updateObjBrowser();
     } catch(...) {
@@ -485,4 +494,23 @@ void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
 {
   TextLabelTol->setEnabled(toMerge);
   SpinBoxTol->setEnabled(toMerge);
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_BuildCompoundDlg::isValid()
+{
+  QString msg;
+  bool ok = SpinBoxTol->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

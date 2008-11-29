@@ -87,13 +87,14 @@
 
 namespace SMESH
 {
-  void AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z )
+  void AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z, const QStringList& theParameters )
   {
     SUIT_OverrideCursor wc;
     try {
       _PTR(SObject) aSobj = SMESH::FindSObject( theMesh );
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
       aMeshEditor->AddNode( x, y, z );
+      theMesh->SetParameters( SMESHGUI::JoinObjectParameters(theParameters) );
       _PTR(Study) aStudy = GetActiveStudyDocument();
       CORBA::Long anId = aStudy->StudyId();
       if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( anId, aSobj->GetID().c_str() ) ) {
@@ -400,12 +401,21 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
     return false;
   }
 
+  if( !isValid() )
+    return false;
+
   /* Recup args and call method */
   double x = SpinBox_X->GetValue();
   double y = SpinBox_Y->GetValue();
   double z = SpinBox_Z->GetValue();
+
+  QStringList aParameters;
+  aParameters << SpinBox_X->text();
+  aParameters << SpinBox_Y->text();
+  aParameters << SpinBox_Z->text();
+
   mySimulation->SetVisibility( false );
-  SMESH::AddNode( myMesh, x, y, z );
+  SMESH::AddNode( myMesh, x, y, z, aParameters );
   SMESH::SetPointRepresentation( true );
 
   // select myMesh
@@ -590,4 +600,26 @@ void SMESHGUI_NodesDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_NodesDlg::isValid()
+{
+  QString msg;
+  bool ok = true;
+  ok = SpinBox_X->isValid( msg, true ) && ok;
+  ok = SpinBox_Y->isValid( msg, true ) && ok;
+  ok = SpinBox_Z->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

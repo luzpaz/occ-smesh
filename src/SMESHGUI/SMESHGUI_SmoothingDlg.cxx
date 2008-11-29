@@ -49,6 +49,8 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_IntSpinBox.h>
+
 #include <SVTK_ViewModel.h>
 #include <SVTK_Selector.h>
 #include <SVTK_ViewWindow.h>
@@ -67,7 +69,6 @@
 #include <QRadioButton>
 #include <QComboBox>
 #include <QCheckBox>
-#include <QSpinBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -154,7 +155,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   // Controls for iteration limit defining
   TextLabelLimit = new QLabel(tr("ITERATION_LIMIT"), GroupArguments);
 
-  SpinBox_IterationLimit = new QSpinBox(GroupArguments);
+  SpinBox_IterationLimit = new SalomeApp_IntSpinBox(GroupArguments);
 
   // Controls for max. aspect ratio defining
   TextLabelAspectRatio = new QLabel(tr("MAX_ASPECT_RATIO"), GroupArguments);
@@ -306,10 +307,13 @@ void SMESHGUI_SmoothingDlg::Init()
 // function : ClickOnApply()
 // purpose  : Called when user presses <Apply> button
 //=================================================================================
-void SMESHGUI_SmoothingDlg::ClickOnApply()
+bool SMESHGUI_SmoothingDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
-    return;
+    return false;
+
+  if (!isValid())
+    return false;
 
   if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
@@ -333,6 +337,10 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
     long anIterationLimit = (long)SpinBox_IterationLimit->value();
     double aMaxAspectRatio = SpinBox_AspectRatio->GetValue();
 
+    QStringList aParameters;
+    aParameters << SpinBox_IterationLimit->text();
+    aParameters << SpinBox_AspectRatio->text();
+
     SMESH::SMESH_MeshEditor::Smooth_Method aMethod = SMESH::SMESH_MeshEditor::LAPLACIAN_SMOOTH;
     if (ComboBoxMethod->currentIndex() > 0)
       aMethod =  SMESH::SMESH_MeshEditor::CENTROIDAL_SMOOTH;
@@ -348,6 +356,9 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
       else
 	aResult = aMeshEditor->Smooth(anElementsId.inout(), aNodesId.inout(),
 				      anIterationLimit, aMaxAspectRatio, aMethod);
+
+      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+
     } catch (...) {
     }
 
@@ -361,6 +372,8 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
       Init();
     }
   }
+
+  return true;
 }
 
 //=================================================================================
@@ -369,8 +382,8 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_SmoothingDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if( ClickOnApply() )
+    ClickOnCancel();
 }
 
 //=================================================================================
@@ -756,4 +769,25 @@ void SMESHGUI_SmoothingDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_SmoothingDlg::isValid()
+{
+  QString msg;
+  bool ok = true;
+  ok = SpinBox_IterationLimit->isValid( msg, true ) && ok;
+  ok = SpinBox_AspectRatio->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

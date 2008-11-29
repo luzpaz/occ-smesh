@@ -371,9 +371,11 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     return false;
   }
 
-  if ( !isValid() ) { // node id is invalid
-    SUIT_MessageBox::warning( dlg(), tr( "SMESH_WRN_WARNING" ),
-			      tr("INVALID_ID") );
+  QString msg;
+  if ( !isValid( msg ) ) { // node id is invalid
+    if( !msg.isEmpty() )
+      SUIT_MessageBox::warning( dlg(), tr( "SMESH_WRN_WARNING" ),
+				tr("INVALID_ID") );
     dlg()->show();
     return false;
   }
@@ -407,6 +409,12 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     }
     if (aResult)
     {
+      QStringList aParameters;
+      aParameters << myDlg->myX->text();
+      aParameters << myDlg->myY->text();
+      aParameters << myDlg->myZ->text();
+      aMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+
       myDlg->myId->setText("");
 
       SALOME_ListIO aList;
@@ -431,10 +439,9 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
  */
 //================================================================================
 
-bool SMESHGUI_MakeNodeAtPointOp::isValid()
+bool SMESHGUI_MakeNodeAtPointOp::isValid( QString& msg )
 {
   bool ok = true;
-
   if ( myMeshActor &&
        myDlg->myMoveRBtn->isDown() &&
        !myDlg->myAutoSearchChkBox->isChecked() )
@@ -444,7 +451,14 @@ bool SMESHGUI_MakeNodeAtPointOp::isValid()
     if ( id > 0 )
       if (SMDS_Mesh* aMesh = myMeshActor->GetObject()->GetMesh())
         ok = aMesh->FindNode( id );
+    if( !ok )
+      msg += tr("INVALID_ID") + "\n";
   }
+
+  ok = myDlg->myX->isValid( msg, !myNoPreview ) && ok;
+  ok = myDlg->myY->isValid( msg, !myNoPreview ) && ok;
+  ok = myDlg->myZ->isValid( msg, !myNoPreview ) && ok;
+
   return ok;
 }
 
@@ -537,7 +551,8 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
     const bool preview    = myDlg->myPreviewChkBox->isChecked();
     if ( autoSearch )
       myDlg->myId->setText("");
-    if ( preview && ( autoSearch || isValid() ))
+    QString msg;
+    if ( preview && ( autoSearch || isValid( msg ) ))
     {
       try {
         SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());

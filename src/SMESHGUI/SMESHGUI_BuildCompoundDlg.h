@@ -72,6 +72,8 @@ private:
   void                    hideEvent( QHideEvent* );          /* ESC key */
   void                    keyPressEvent( QKeyEvent* );
 
+  bool                    isValid();
+  
 private:
   SMESHGUI*               mySMESHGUI;     /* Current SMESHGUI object */
   LightApp_SelectionMgr*  mySelectionMgr; /* User shape selection */

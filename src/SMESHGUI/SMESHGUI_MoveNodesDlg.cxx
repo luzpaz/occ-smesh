@@ -281,6 +281,22 @@ bool SMESHGUI_MoveNodesDlg::isValid (const bool theMess)
 				   tr("NODE_ID_IS_NOT_DEFINED"));
     return false;
   }
+
+  QString msg;
+  bool ok = true;
+  ok = myX->isValid( msg, theMess ) && ok;
+  ok = myY->isValid( msg, theMess ) && ok;
+  ok = myZ->isValid( msg, theMess ) && ok;
+  if( !ok ) {
+    if( theMess ) {
+      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+      if ( !msg.isEmpty() )
+	str += "\n" + msg;
+      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    }
+    return false;
+  }
+
   return true;
 }
 
@@ -325,6 +341,12 @@ bool SMESHGUI_MoveNodesDlg::onApply()
   bool aResult = false;
   try {
     aResult = aMeshEditor->MoveNode(anId, myX->GetValue(), myY->GetValue(), myZ->GetValue());
+
+    QStringList aParameters;
+    aParameters << myX->text();
+    aParameters << myY->text();
+    aParameters << myZ->text();
+    aMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
   } catch (...) {
   }
 

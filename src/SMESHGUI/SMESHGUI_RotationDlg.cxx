@@ -355,10 +355,13 @@ void SMESHGUI_RotationDlg::Init (bool ResetControls)
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RotationDlg::ClickOnApply()
+bool SMESHGUI_RotationDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
-    return;
+    return false;
+
+  if( !isValid() )
+    return false;
 
   if (myNbOkElements && IsAxisOk()) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
@@ -379,6 +382,16 @@ void SMESHGUI_RotationDlg::ClickOnApply()
     anAxis.vz = SpinBox_DZ->GetValue();
 
     double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+
+    QStringList aParameters;
+    aParameters << SpinBox_X->text();
+    aParameters << SpinBox_Y->text();
+    aParameters << SpinBox_Z->text();
+    aParameters << SpinBox_DX->text();
+    aParameters << SpinBox_DY->text();
+    aParameters << SpinBox_DZ->text();
+    aParameters << SpinBox_Angle->text();
+
     int actionButton = ActionGroup->checkedId();
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
     try {
@@ -387,6 +400,8 @@ void SMESHGUI_RotationDlg::ClickOnApply()
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups )
@@ -394,11 +409,15 @@ void SMESHGUI_RotationDlg::ClickOnApply()
             aMeshEditor->RotateMakeGroups(anElementsId, anAxis, anAngle);
         else
           aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh = 
           aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                       LineEditNewMesh->text().toLatin1().data());
+	if( !mesh->_is_nil())
+	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
       }
     } catch (...) {
     }
@@ -410,6 +429,8 @@ void SMESHGUI_RotationDlg::ClickOnApply()
     Init(false);
     SelectionIntoArgument();
   }
+
+  return true;
 }
 
 //=================================================================================
@@ -418,8 +439,8 @@ void SMESHGUI_RotationDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_RotationDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if( ClickOnApply() )
+    ClickOnCancel();
 }
 
 //=================================================================================
@@ -905,4 +926,31 @@ void SMESHGUI_RotationDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_RotationDlg::isValid()
+{
+  bool ok = true;
+  QString msg;
+
+  ok = SpinBox_X->isValid( msg, true ) && ok;
+  ok = SpinBox_Y->isValid( msg, true ) && ok;
+  ok = SpinBox_Z->isValid( msg, true ) && ok;
+  ok = SpinBox_DX->isValid( msg, true ) && ok;
+  ok = SpinBox_DY->isValid( msg, true ) && ok;
+  ok = SpinBox_DZ->isValid( msg, true ) && ok;
+  ok = SpinBox_Angle->isValid( msg, true ) && ok;
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

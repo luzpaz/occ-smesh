@@ -185,6 +185,54 @@ class PointStructStr:
         else:
             self.z = zStr
 
+# Parametrized substitute for AxisStruct
+class AxisStructStr:
+
+    x = 0
+    y = 0
+    z = 0
+    dx = 0
+    dy = 0
+    dz = 0
+    xStr = ""
+    yStr = ""
+    zStr = ""
+    dxStr = ""
+    dyStr = ""
+    dzStr = ""
+
+    def __init__(self, xStr, yStr, zStr, dxStr, dyStr, dzStr):
+        self.xStr = xStr
+        self.yStr = yStr
+        self.zStr = zStr
+        self.dxStr = dxStr
+        self.dyStr = dyStr
+        self.dzStr = dzStr
+        if isinstance(xStr, str) and notebook.isVariable(xStr):
+            self.x = notebook.get(xStr)
+        else:
+            self.x = xStr
+        if isinstance(yStr, str) and notebook.isVariable(yStr):
+            self.y = notebook.get(yStr)
+        else:
+            self.y = yStr
+        if isinstance(zStr, str) and notebook.isVariable(zStr):
+            self.z = notebook.get(zStr)
+        else:
+            self.z = zStr
+        if isinstance(dxStr, str) and notebook.isVariable(dxStr):
+            self.dx = notebook.get(dxStr)
+        else:
+            self.dx = dxStr
+        if isinstance(dyStr, str) and notebook.isVariable(dyStr):
+            self.dy = notebook.get(dyStr)
+        else:
+            self.dy = dyStr
+        if isinstance(dzStr, str) and notebook.isVariable(dzStr):
+            self.dz = notebook.get(dzStr)
+        else:
+            self.dz = dzStr
+
 # Parametrized substitute for DirStruct
 class DirStructStr:
 
@@ -192,12 +240,31 @@ class DirStructStr:
         self.pointStruct = pointStruct
 
 # Returns list of variable values from salome notebook
-def ParseDirStruct(Vector):
-    pntStr = Vector.pointStruct
-    pnt = PointStruct(pntStr.x, pntStr.y, pntStr.z)
-    Vector = DirStruct(pnt)
-    Parameters = str(pntStr.xStr) + ":" + str(pntStr.yStr) + ":" + str(pntStr.zStr)
-    return Vector, Parameters
+def ParsePointStruct(Point):
+    Parameters = "::"
+    if isinstance(Point, PointStructStr):
+        Parameters = str(Point.xStr) + ":" + str(Point.yStr) + ":" + str(Point.zStr)
+        Point = PointStruct(Point.x, Point.y, Point.z)
+    return Point, Parameters
+
+# Returns list of variable values from salome notebook
+def ParseDirStruct(Dir):
+    Parameters = "::"
+    if isinstance(Dir, DirStructStr):
+        pntStr = Dir.pointStruct
+        Parameters = str(pntStr.xStr) + ":" + str(pntStr.yStr) + ":" + str(pntStr.zStr)
+        Point = PointStruct(pntStr.x, pntStr.y, pntStr.z)
+        Dir = DirStruct(Point)
+    return Dir, Parameters
+
+# Returns list of variable values from salome notebook
+def ParseAxisStruct(Axis):
+    Parameters = ":::::"
+    if isinstance(Axis, AxisStructStr):
+        Parameters = str(Axis.xStr) + ":" + str(Axis.yStr) + ":" + str(Axis.zStr) + ":"
+        Parameters += str(Axis.dxStr) + ":" + str(Axis.dyStr) + ":" + str(Axis.dzStr)
+        Axis = AxisStruct(Axis.x, Axis.y, Axis.z, Axis.dx, Axis.dy, Axis.dz)
+    return Axis, Parameters
 
 def IsEqual(val1, val2, tol=PrecisionConfusion):
     if abs(val1 - val2) < tol:
@@ -420,6 +487,32 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @ingroup l2_modif_patterns
     def GetPattern(self):
         return SMESH._objref_SMESH_Gen.GetPattern(self)
+
+    ## Create a compound of Mesh objects
+    #  @param theMeshArray array of Mesh objects
+    #  @param theUniteIdenticalGroups flag used to unite identical mesh groups
+    #  @param theMergeNodesAndElements flag used to merge mesh nodes and elements
+    #  @param theMergeTolerance tolerance of merging
+    #  @return a compound of Mesh objects
+    #  @ingroup l1_auxiliary
+    def Concatenate( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance ):
+        theMergeTolerance,Parameters = geompyDC.ParseParameters(theMergeTolerance)
+        aMesh = SMESH._objref_SMESH_Gen.Concatenate( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance )
+        aMesh.SetParameters(Parameters)
+        return aMesh
+
+    ## Create a compound of Mesh objects
+    #  @param theMeshArray array of Mesh objects
+    #  @param theUniteIdenticalGroups flag used to unite identical mesh groups
+    #  @param theMergeNodesAndElements flag used to merge mesh nodes and elements
+    #  @param theMergeTolerance tolerance of merging
+    #  @return a compound of Mesh objects
+    #  @ingroup l1_auxiliary
+    def ConcatenateWithGroups( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance ):
+        theMergeTolerance,Parameters = geompyDC.ParseParameters(theMergeTolerance)
+        aMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance )
+        aMesh.SetParameters(Parameters)
+        return aMesh
 
 
     # Filtering. Auxiliary functions:
@@ -1692,6 +1785,8 @@ class Mesh:
     #  @return Id of the new node
     #  @ingroup l2_modif_add
     def AddNode(self, x, y, z):
+        x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
+        self.mesh.SetParameters(Parameters)
         return self.editor.AddNode( x, y, z)
 
     ## Creates a linear or quadratic edge (this is determined
@@ -1847,7 +1942,20 @@ class Mesh:
     #  @return True if succeed else False
     #  @ingroup l2_modif_movenode
     def MoveNode(self, NodeID, x, y, z):
+        x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
+        self.mesh.SetParameters(Parameters)
         return self.editor.MoveNode(NodeID, x, y, z)
+
+    ## Finds the node closest to a point and moves it to a point location
+    #  @param x  the X coordinate of a point
+    #  @param y  the Y coordinate of a point
+    #  @param z  the Z coordinate of a point
+    #  @return the ID of a node
+    #  @ingroup l2_modif_throughp
+    def MoveClosestNodeToPoint(self, x, y, z, NodeID):
+        x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
+        self.mesh.SetParameters(Parameters)
+        return self.editor.MoveClosestNodeToPoint(x, y, z, NodeID)
 
     ## Finds the node closest to a point
     #  @param x  the X coordinate of a point
@@ -1909,12 +2017,25 @@ class Mesh:
     #  @param theCriterion  is FT_...; used to choose a neighbour to fuse with.
     #  @param MaxAngle      is the maximum angle between element normals at which the fusion
     #                       is still performed; theMaxAngle is mesured in radians.
+    #                       Also it could be a name of variable which defines angle in degrees.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuad(self, IDsOfElements, theCriterion, MaxAngle):
+        flag = False
+        if isinstance(MaxAngle,str):
+            flag = True
+        MaxAngle,Parameters = geompyDC.ParseParameters(MaxAngle)
+        if flag:
+            MaxAngle = DegreesToRadians(MaxAngle)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        return self.editor.TriToQuad(IDsOfElements, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
+        self.mesh.SetParameters(Parameters)
+        Functor = 0
+	if ( isinstance( theCriterion, SMESH._objref_NumericalFunctor ) ):
+            Functor = theCriterion
+        else:
+            Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.TriToQuad(IDsOfElements, Functor, MaxAngle)
 
     ## Fuses the neighbouring triangles of the object into quadrangles
     #  @param theObject is mesh, submesh or group
@@ -2132,6 +2253,8 @@ class Mesh:
                MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
+        MaxNbOfIterations,MaxAspectRatio,Parameters = geompyDC.ParseParameters(MaxNbOfIterations,MaxAspectRatio)
+        self.mesh.SetParameters(Parameters)
         return self.editor.Smooth(IDsOfElements, IDsOfFixedNodes,
                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
@@ -2164,6 +2287,8 @@ class Mesh:
                          MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
+        MaxNbOfIterations,MaxAspectRatio,Parameters = geompyDC.ParseParameters(MaxNbOfIterations,MaxAspectRatio)
+        self.mesh.SetParameters(Parameters)
         return self.editor.SmoothParametric(IDsOfElements, IDsOfFixedNodes,
                                             MaxNbOfIterations, MaxAspectRatio, Method)
 
@@ -2269,6 +2394,10 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
+        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
+        Parameters = StepVectorParameters + ":" + Parameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
         self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
@@ -2436,6 +2565,8 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
+        Mirror,Parameters = ParseAxisStruct(Mirror)
+        self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorMakeGroups(IDsOfElements, Mirror, theMirrorType)
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
@@ -2455,8 +2586,10 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
+        Mirror,Parameters = ParseAxisStruct(Mirror)
         mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
                                           MakeGroups, NewMeshName)
+        mesh.SetParameters(Parameters)
         return Mesh(self.smeshpyD,self.geompyD,mesh)
 
     ## Creates a symmetrical copy of the object
@@ -2504,17 +2637,15 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
     def Translate(self, IDsOfElements, Vector, Copy, MakeGroups=False):
-        Parameters = ""
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
-        elif ( isinstance( Vector, DirStructStr ) ):
-            Vector,Parameters = ParseDirStruct(Vector)
+        Vector,Parameters = ParseDirStruct(Vector)
+        self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateMakeGroups(IDsOfElements, Vector)
         self.editor.Translate(IDsOfElements, Vector, Copy)
-        self.mesh.SetParameters(Parameters)
         return []
 
     ## Creates a new mesh of translated elements
@@ -2525,13 +2656,11 @@ class Mesh:
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def TranslateMakeMesh(self, IDsOfElements, Vector, MakeGroups=False, NewMeshName=""):
-        Parameters = ""
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
-        elif ( isinstance( Vector, DirStructStr ) ):
-            Vector,Parameters = ParseDirStruct(Vector)
+        Vector,Parameters = ParseDirStruct(Vector)
         mesh = self.editor.TranslateMakeMesh(IDsOfElements, Vector, MakeGroups, NewMeshName)
         mesh.SetParameters(Parameters)
         return Mesh ( self.smeshpyD, self.geompyD, mesh )
@@ -2571,16 +2700,25 @@ class Mesh:
     ## Rotates the elements
     #  @param IDsOfElements list of elements ids
     #  @param Axis the axis of rotation (AxisStruct or geom line)
-    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param AngleInRadians the angle of rotation (in radians) or a name of variable which defines angle in degrees
     #  @param Copy allows copying the rotated elements
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
     def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy, MakeGroups=False):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
+        Parameters = AxisParameters + ":" + Parameters
+        self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateMakeGroups(IDsOfElements, Axis, AngleInRadians)
         self.editor.Rotate(IDsOfElements, Axis, AngleInRadians, Copy)
@@ -2589,18 +2727,27 @@ class Mesh:
     ## Creates a new mesh of rotated elements
     #  @param IDsOfElements list of element ids
     #  @param Axis the axis of rotation (AxisStruct or geom line)
-    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param AngleInRadians the angle of rotation (in radians) or a name of variable which defines angle in degrees
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def RotateMakeMesh (self, IDsOfElements, Axis, AngleInRadians, MakeGroups=0, NewMeshName=""):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
+        Parameters = AxisParameters + ":" + Parameters
         mesh = self.editor.RotateMakeMesh(IDsOfElements, Axis, AngleInRadians,
                                           MakeGroups, NewMeshName)
+        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Rotates the object

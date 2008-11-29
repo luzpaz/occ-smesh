@@ -428,10 +428,13 @@ void SMESHGUI_SymmetryDlg::ConstructorsClicked (int constructorId)
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_SymmetryDlg::ClickOnApply()
+bool SMESHGUI_SymmetryDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
-    return;
+    return false;
+
+  if( !isValid() )
+    return false;
 
   if (myNbOkElements && IsMirrorOk()) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
@@ -455,6 +458,13 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
       aMirror.vz = SpinBox_DZ->GetValue();
     }
 
+    QStringList aParameters;
+    aParameters << SpinBox_X->text();
+    aParameters << SpinBox_Y->text();
+    aParameters << SpinBox_Z->text();
+    aParameters << ( GetConstructorId() == 0 ? QString::number(0) : SpinBox_DX->text() );
+    aParameters << ( GetConstructorId() == 0 ? QString::number(0) : SpinBox_DY->text() );
+    aParameters << ( GetConstructorId() == 0 ? QString::number(0) : SpinBox_DZ->text() );
 
     SMESH::SMESH_MeshEditor::MirrorType aMirrorType;
 
@@ -475,6 +485,8 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups )
@@ -482,11 +494,15 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
             aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
         else
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh = 
           aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
                                       LineEditNewMesh->text().toLatin1().data());
+	if( !mesh->_is_nil())
+	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
       }
     } catch (...) {
     }
@@ -499,6 +515,8 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
   }
+
+  return true;
 }
 
 //=================================================================================
@@ -507,8 +525,8 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_SymmetryDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if( ClickOnApply() )
+    ClickOnCancel();
 }
 
 //=================================================================================
@@ -1003,4 +1021,32 @@ void SMESHGUI_SymmetryDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_SymmetryDlg::isValid()
+{
+  bool ok = true;
+  QString msg;
+
+  ok = SpinBox_X->isValid( msg, true ) && ok;
+  ok = SpinBox_Y->isValid( msg, true ) && ok;
+  ok = SpinBox_Z->isValid( msg, true ) && ok;
+  if (GetConstructorId() != 0) {
+    ok = SpinBox_DX->isValid( msg, true ) && ok;
+    ok = SpinBox_DY->isValid( msg, true ) && ok;
+    ok = SpinBox_DZ->isValid( msg, true ) && ok;
+  }
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

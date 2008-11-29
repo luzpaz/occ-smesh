@@ -77,6 +77,8 @@ private:
   void                    hideEvent ( QHideEvent* );
   void                    keyPressEvent( QKeyEvent* );
   
+  bool                    isValid();
+  
   QGroupBox*              GroupConstructors;
   QRadioButton*           Constructor1;
   QGroupBox*              GroupCoordinates;

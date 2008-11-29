@@ -45,7 +45,6 @@ class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QCheckBox;
-class QSpinBox;
 class QPushButton;
 
 class SMESHGUI;
@@ -55,6 +54,7 @@ class SMESHGUI_SpinBox;
 class SVTK_Selector;
 class LightApp_SelectionMgr;
 class SUIT_SelectionFilter;
+class SalomeApp_IntSpinBox;
 
 //=================================================================================
 // class    : SMESHGUI_ExtrusionDlg
@@ -74,6 +74,8 @@ private:
   void                             keyPressEvent( QKeyEvent* );
   int                              GetConstructorId();
 
+  bool                             isValid();
+  
   SMESHGUI*                        mySMESHGUI;            /* Current SMESHGUI object */
   SMESHGUI_IdValidator*            myIdValidator;
   LightApp_SelectionMgr*           mySelectionMgr;        /* User shape selection */
@@ -107,7 +109,7 @@ private:
   QLabel*                          TextLabelDz;
   SMESHGUI_SpinBox*                SpinBox_Dz;
   QLabel*                          TextLabelNbSteps;
-  QSpinBox*                        SpinBox_NbSteps;
+  SalomeApp_IntSpinBox*            SpinBox_NbSteps;
   QCheckBox*                       MakeGroupsCheck;
 
   QGroupBox*                       GroupButtons;

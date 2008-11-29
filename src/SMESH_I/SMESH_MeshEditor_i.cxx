@@ -1563,9 +1563,8 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
 {
   extrusionSweep (theIDsOfElements, theStepVector, theNbOfSteps, false );
   if ( !myPreviewMode ) {
-    TPythonDump() << "stepVector = " << theStepVector;
     TPythonDump() << this << ".ExtrusionSweep( "
-                  << theIDsOfElements << ", stepVector, " << theNbOfSteps << " )";
+                  << theIDsOfElements << ", " << theStepVector <<", " << theNbOfSteps << " )";
   }
 }
 
@@ -1637,11 +1636,10 @@ SMESH_MeshEditor_i::ExtrusionSweepMakeGroups(const SMESH::long_array& theIDsOfEl
   SMESH::ListOfGroups* aGroups = extrusionSweep (theIDsOfElements, theStepVector, theNbOfSteps, true );
     
   if ( !myPreviewMode ) {
-    TPythonDump() << "stepVector = " << theStepVector;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump  << this << ".ExtrusionSweepMakeGroups( "
-                 << theIDsOfElements << ", stepVector, " << theNbOfSteps << " )";
+                 << theIDsOfElements << ", " << theStepVector <<", " << theNbOfSteps << " )";
   }
   return aGroups;
 }
@@ -2287,12 +2285,11 @@ SMESH_MeshEditor_i::MirrorMakeGroups(const SMESH::long_array&            theIDsO
 {
   SMESH::ListOfGroups * aGroups = mirror(theIDsOfElements, theMirror, theMirrorType, true, true);
   if ( !myPreviewMode ) {
-    TPythonDump()<<"axis = "<<theMirror;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".MirrorMakeGroups( "
                 << theIDsOfElements << ", "
-                << "axis, "
+                << theMirror << ", "
                 << mirrorTypeName(theMirrorType) << " )";
   }
   return aGroups;
@@ -2311,12 +2308,11 @@ SMESH_MeshEditor_i::MirrorObjectMakeGroups(SMESH::SMESH_IDSource_ptr           t
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   SMESH::ListOfGroups * aGroups = mirror(anElementsId, theMirror, theMirrorType, true, true);
   if ( !myPreviewMode ) {
-    TPythonDump()<<"axis = "<<theMirror;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".MirrorObjectMakeGroups( "
                 << theObject << ", "
-                << "axis, "
+                << theMirror << ", "
                 << mirrorTypeName(theMirrorType) << " )";
   }
   return aGroups;
@@ -2659,10 +2655,9 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
                                 CORBA::Boolean            theCopy)
 {
   if ( !myPreviewMode ) {
-    TPythonDump() << "axis = " << theAxis;
     TPythonDump() << this << ".Rotate( "
-                  << theIDsOfElements
-                  << ", axis, "
+                  << theIDsOfElements << ", "
+                  << theAxis << ", "
                   << theAngle << ", "
                   << theCopy << " )";
   }
@@ -2684,10 +2679,9 @@ void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
 				      CORBA::Boolean            theCopy)
 {
   if ( !myPreviewMode ) {
-    TPythonDump() << "axis = " << theAxis;
     TPythonDump() << this << ".RotateObject( "
-                  << theObject
-                  << ", axis, "
+                  << theObject << ", "
+                  << theAxis << ", "
                   << theAngle << ", "
                   << theCopy << " )";
   }
@@ -2711,12 +2705,11 @@ SMESH_MeshEditor_i::RotateMakeGroups(const SMESH::long_array& theIDsOfElements,
 {
   SMESH::ListOfGroups * aGroups =  rotate(theIDsOfElements,theAxis,theAngle,true,true);
   if ( !myPreviewMode ) {
-    TPythonDump() << "axis = " << theAxis;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".RotateMakeGroups( "
-                << theIDsOfElements
-                << ", axis, "
+                << theIDsOfElements << ", "
+		<< theAxis << ", "
                 << theAngle << " )";
   }
   return aGroups;
@@ -2736,13 +2729,12 @@ SMESH_MeshEditor_i::RotateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
   SMESH::ListOfGroups * aGroups =  rotate(anElementsId,theAxis,theAngle,true,true);
  
   if ( !myPreviewMode ) {
-    TPythonDump() << "axis = " << theAxis;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".RotateObjectMakeGroups( "
-                  << theObject
-                  << ", axis, "
-                  << theAngle << " )";
+		<< theObject << ", "
+		<< theAxis << ", "
+		<< theAngle << " )";
   }
   return aGroups;
 }

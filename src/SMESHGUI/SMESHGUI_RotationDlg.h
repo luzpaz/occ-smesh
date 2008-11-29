@@ -72,6 +72,8 @@ private:
   bool                   IsAxisOk();
   void                   setNewMeshName();
   
+  bool                   isValid();
+
   SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
@@ -130,7 +132,7 @@ private:
 private slots:
   void                   ClickOnOk();
   void                   ClickOnCancel();
-  void                   ClickOnApply();
+  bool                   ClickOnApply();
   void                   ClickOnHelp();
   void                   SetEditCurrentArgument();
   void                   SelectionIntoArgument();
