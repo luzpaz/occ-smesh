@@ -267,7 +267,8 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
-      // Case for Arithmetic1D or StartEndLength hypothesis
+
+      // Case for Arithmetic1D and StartEndLength hypothesis
       else if(aStates->GetObjectType().IsEqual("Arithmetic1D") || 
               aStates->GetObjectType().IsEqual("StartEndLength")) {
         if(aMethod == "SetLength" &&
@@ -279,6 +280,8 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
+      
+      //Case for Deflection1D hypothesis
       else if(aStates->GetObjectType().IsEqual("Deflection1D")){
         if(aMethod == "SetDeflection" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
@@ -286,6 +289,7 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
+      
       // Case for LayerDistribution hypothesis (not finished yet)
       else if(aStates->GetObjectType() == "LayerDistribution") {
         if(aMethod == "SetLayerDistribution"){
@@ -293,7 +297,40 @@ void SMESH_NoteBook::ReplaceVariables()
           aLDStates->AddDistribution(aCmd->GetArg(1));
         }
       }
+      
+      // Case for MaxElementArea hypothesis
+      else if(aStates->GetObjectType().IsEqual("MaxElementArea")){
+        if(aMethod == "SetMaxElementArea" && aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+      }
 
+      // Case for NumberOfLayers hypothesis
+      else if(aStates->GetObjectType().IsEqual("NumberOfLayers")){
+        if(aMethod == "SetNumberOfLayers" && aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+      }
+
+      // Case for NumberOfSegments hypothesis
+      else if(aStates->GetObjectType().IsEqual("NumberOfSegments")){
+        if(aMethod == "SetNumberOfSegments" && aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          if(aStates->GetCurrectState().size()==1)
+            aStates->IncrementState();
+        }
+        else if (aMethod == "SetScaleFactor" && aStates->GetCurrectState().size() >= 2) {
+          if(!aStates->GetCurrectState().at(1).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+          aStates->IncrementState();
+        }
+      }
+      
       else if(aStates->GetObjectType().IsEqual("Mesh")) {
 	TState aCurrentState = aStates->GetCurrectState();
         int aCurrentStateSize = aCurrentState.size();
@@ -494,6 +531,8 @@ void SMESH_NoteBook::InitObjectMap()
 //================================================================================
 void SMESH_NoteBook::AddCommand(const TCollection_AsciiString& theString)
 {
+  if(MYDEBUG)
+    cout<<theString<<endl;
   Handle(_pyCommand) aCommand = new _pyCommand( theString, -1);
   _commands.push_back(aCommand);
 

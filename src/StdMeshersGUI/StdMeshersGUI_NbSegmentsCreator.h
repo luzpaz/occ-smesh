@@ -33,7 +33,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-class QtxIntSpinBox;
+class SalomeApp_IntSpinBox;
 class QtxComboBox;
 class SMESHGUI_SpinBox;
 class StdMeshersGUI_DistrTableFrame;
@@ -50,6 +50,7 @@ typedef struct
   double              myScale;
   SMESH::double_array myTable;
   QString             myName, myExpr;
+  QString             myNbSegVarName, myScaleVarName;
 
 } NbSegmentsHypothesisData;
 
@@ -77,7 +78,7 @@ private:
   bool storeParamsToHypo( const NbSegmentsHypothesisData& ) const;
 
 private:
-  QtxIntSpinBox*   myNbSeg;
+  SalomeApp_IntSpinBox*   myNbSeg;
   QtxComboBox*     myDistr;
   SMESHGUI_SpinBox*   myScale;
   StdMeshersGUI_DistrTableFrame*  myTable;

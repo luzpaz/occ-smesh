@@ -26,8 +26,8 @@
 
 // SMESH includes
 #include "SMESH_StdMeshersGUI.hxx"
-
 #include <SMESHGUI_Hypotheses.h>
+
 
 /*!
  * \brief Class for creation of standard hypotheses
@@ -58,7 +58,7 @@ protected:
   virtual QWidget* getWidgetForParam( int paramIndex ) const;
   virtual ListOfWidgets* customWidgets() const;
   virtual void     onReject();
-  //  virtual QVariant parseParameter(const QStringList& theList, int theNbParam) const;
+  virtual bool     initVariableName(SMESH::ListOfParameters_var theParameters, StdParam& theParams, int order) const;
 
   template<class T>
     T* widget(int i) const {

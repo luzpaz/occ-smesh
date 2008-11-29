@@ -26,6 +26,7 @@
 #include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_DistrPreview.h"
 
+#include <SMESHGUI.h>
 #include <SMESHGUI_Utils.h>
 #include <SMESHGUI_HypothesesUtils.h>
 #include <SMESHGUI_SpinBox.h>
@@ -35,7 +36,7 @@
 
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
-#include <QtxIntSpinBox.h>
+#include <SalomeApp_IntSpinBox.h>
 #include <QtxComboBox.h>
 
 // Qt includes
@@ -81,12 +82,13 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg ) const
 {
   if( !SMESHGUI_GenericHypothesisCreator::checkParams( msg ) )
     return false;
-
   NbSegmentsHypothesisData data_old, data_new;
   readParamsFromHypo( data_old );
   readParamsFromWidgets( data_new );
   bool res = storeParamsToHypo( data_new );
   storeParamsToHypo( data_old );
+  res = myNbSeg->isValid( msg, true ) && res;
+  res = myScale->isValid( msg, true ) && res;
   return res;
 }
 
@@ -124,7 +126,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
 
   // 1)  number of segments
   myGroupLayout->addWidget( new QLabel( tr( "SMESH_NB_SEGMENTS_PARAM" ), GroupC1 ), row, 0 );
-  myNbSeg = new QtxIntSpinBox( GroupC1 );
+  myNbSeg = new SalomeApp_IntSpinBox( GroupC1 );
   myNbSeg->setMinimum( 1 );
   myNbSeg->setMaximum( 9999 );
   myGroupLayout->addWidget( myNbSeg, row, 1 );
@@ -208,9 +210,16 @@ void StdMeshersGUI_NbSegmentsCreator::retrieveParams() const
 
   if( myName )
     myName->setText( data.myName );
-  myNbSeg->setValue( data.myNbSeg );
+  if(data.myNbSegVarName.isEmpty())
+    myNbSeg->setValue( data.myNbSeg );
+  else
+    myNbSeg->setText( data.myNbSegVarName );
+  
   myDistr->setCurrentIndex( data.myDistrType );
-  myScale->setValue( data.myScale );
+  if(data.myScaleVarName.isEmpty())
+    myScale->setValue( data.myScale );
+  else
+    myScale->setText( data.myScaleVarName );
   myConv->button( data.myConv )->setChecked( true );
   myTable->setFuncMinValue(myConv->checkedId()==0 ? -1E20 : 0);
   myTable->setData( data.myTable );
@@ -225,7 +234,7 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
   NbSegmentsHypothesisData data;
   readParamsFromWidgets( data );
   storeParamsToHypo( data );
-
+    
   QString valStr = QString::number( data.myNbSeg ) += "; ";
 
   enum DistrType
@@ -240,8 +249,8 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
   case Regular :
     valStr += tr("SMESH_DISTR_REGULAR");
     break;
-  case Scale   :
-    valStr += tr("SMESH_NB_SEGMENTS_SCALE_PARAM") + " = " + QString::number( data.myScale );
+  case Scale   : 
+    valStr += tr("SMESH_NB_SEGMENTS_SCALE_PARAM") + " = " + QString::number( data.myScale );\
     break;
   case TabFunc : {
     //valStr += tr("SMESH_TAB_FUNC");
@@ -277,9 +286,21 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
   h_data.myName = hypName();
 
   h_data.myNbSeg = (int) h->GetNumberOfSegments();
+  
+  SMESH::ListOfParameters_var aParameters = h->GetLastParameters();
+
+  h_data.myNbSegVarName  = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+
   int distr = (int) h->GetDistrType();
   h_data.myDistrType = distr;
   h_data.myScale = distr==1 ? h->GetScaleFactor() : 1.0;
+  
+  if(distr==1){
+    h_data.myScaleVarName  = (aParameters->length() > 1) ? QString(aParameters[1].in()) : QString("");
+  }
+  else 
+    h_data.myScaleVarName = QString("");
+
   if( distr==2 )
   {
     SMESH::double_array* a = h->GetTableFunction();
@@ -312,13 +333,17 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     if( isCreation() )
       SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.toLatin1().data() );
 
+    QStringList aVariablesList;
+    aVariablesList.append(h_data.myNbSegVarName);
+
     h->SetNumberOfSegments( h_data.myNbSeg );
     int distr = h_data.myDistrType;
     h->SetDistrType( distr );
-
-    if( distr==1 )
+    
+    if( distr==1 ) {
       h->SetScaleFactor( h_data.myScale );
-
+      aVariablesList.append(h_data.myScaleVarName);
+    }
     if( distr==2 || distr==3 )
       h->SetConversionMode( h_data.myConv );
 
@@ -330,6 +355,8 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //setting of function must follow after setConversionMode, because otherwise
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
+
+    h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
   }
   catch(const SALOME::SALOME_Exception& ex)
   {
@@ -343,6 +370,8 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromWidgets( NbSegmentsHypothesi
 {
   h_data.myName      = myName ? myName->text() : "";
   h_data.myNbSeg     = myNbSeg->value();
+  h_data.myNbSegVarName =  myNbSeg->text();
+  h_data.myScaleVarName =  myScale->text();
   h_data.myDistrType = myDistr->currentIndex();
   h_data.myConv      = myConv->checkedId();
   h_data.myScale     = myScale->value();

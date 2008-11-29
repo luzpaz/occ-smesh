@@ -4243,14 +4243,14 @@ def ParseParameters(last, nbParams,nbParam, value):
 #Wrapper class for StdMeshers_LocalLength hypothesis
 class LocalLength(StdMeshers._objref_StdMeshers_LocalLength):
 
-    ## Set length parameter value
+    ## Set Length parameter value
     #  @param length numerical value or name of variable from notebook
     def SetLength(self, length):
         length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,1,length)
         StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_LocalLength.SetLength(self,length)
 
-   ## Set precision parameter value
+   ## Set Precision parameter value
    #  @param precision numerical value or name of variable from notebook
     def SetPrecision(self, precision):
         precision,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,2,precision)
@@ -4264,7 +4264,7 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryI
 #Wrapper class for StdMeshers_SegmentLengthAroundVertex hypothesis
 class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex):
     
-    ## Set length parameter value
+    ## Set Length parameter value
     #  @param length numerical value or name of variable from notebook    
     def SetLength(self, length):
         length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.GetLastParameters(self),1,1,length)
@@ -4278,7 +4278,7 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex._
 #Wrapper class for StdMeshers_Arithmetic1D hypothesis
 class Arithmetic1D(StdMeshers._objref_StdMeshers_Arithmetic1D):
     
-    ## Set length parameter value
+    ## Set Length parameter value
     #  @param length   numerical value or name of variable from notebook
     #  @param isStart  true is length is Start Length, otherwise false
     def SetLength(self, length, isStart):
@@ -4295,7 +4295,7 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_Arithmetic1D._NP_Repository
 #Wrapper class for StdMeshers_Deflection1D hypothesis
 class Deflection1D(StdMeshers._objref_StdMeshers_Deflection1D):
     
-    ## Set deflection parameter value
+    ## Set Deflection parameter value
     #  @param deflection numerical value or name of variable from notebook    
     def SetDeflection(self, deflection):
         deflection,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Deflection1D.GetLastParameters(self),1,1,deflection)
@@ -4303,12 +4303,12 @@ class Deflection1D(StdMeshers._objref_StdMeshers_Deflection1D):
         StdMeshers._objref_StdMeshers_Deflection1D.SetDeflection(self,deflection)
 
 #Registering the new proxy for Deflection1D
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_StartEndLength._NP_RepositoryId, Deflection1D)
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_Deflection1D._NP_RepositoryId, Deflection1D)
 
 #Wrapper class for StdMeshers_StartEndLength hypothesis
 class StartEndLength(StdMeshers._objref_StdMeshers_StartEndLength):
     
-    ## Set length parameter value
+    ## Set Length parameter value
     #  @param length   numerical value or name of variable from notebook
     #  @param isStart  true is length is Start Length, otherwise false
     def SetLength(self, length, isStart):
@@ -4319,5 +4319,52 @@ class StartEndLength(StdMeshers._objref_StdMeshers_StartEndLength):
         StdMeshers._objref_StdMeshers_StartEndLength.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_StartEndLength.SetLength(self,length,isStart)
         
-#Registering the new proxy for Arithmetic1D
+#Registering the new proxy for StartEndLength
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_StartEndLength._NP_RepositoryId, StartEndLength)
+
+#Wrapper class for StdMeshers_MaxElementArea hypothesis
+class MaxElementArea(StdMeshers._objref_StdMeshers_MaxElementArea):
+    
+    ## Set Max Element Area parameter value
+    #  @param area  numerical value or name of variable from notebook
+    def SetMaxElementArea(self, area):
+        area ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementArea.GetLastParameters(self),1,1,area)
+        StdMeshers._objref_StdMeshers_MaxElementArea.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_MaxElementArea.SetMaxElementArea(self,area)
+        
+#Registering the new proxy for MaxElementArea
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementArea._NP_RepositoryId, MaxElementArea)
+
+#Wrapper class for StdMeshers_NumberOfLayers hypothesis
+class NumberOfLayers(StdMeshers._objref_StdMeshers_NumberOfLayers):
+    
+    ## Set Number Of Layers parameter value
+    #  @param nbLayers  numerical value or name of variable from notebook
+    def SetNumberOfLayers(self, nbLayers):
+        nbLayers ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfLayers.GetLastParameters(self),1,1,nbLayers)
+        StdMeshers._objref_StdMeshers_NumberOfLayers.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_NumberOfLayers.SetNumberOfLayers(self,nbLayers)
+        
+#Registering the new proxy for NumberOfLayers
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_NumberOfLayers._NP_RepositoryId, NumberOfLayers)
+
+#Wrapper class for StdMeshers_NumberOfSegments hypothesis
+class NumberOfSegments(StdMeshers._objref_StdMeshers_NumberOfSegments):
+    
+    ## Set Number Of Segments parameter value
+    #  @param nbSeg numerical value or name of variable from notebook
+    def SetNumberOfSegments(self, nbSeg):
+        lastParameters = StdMeshers._objref_StdMeshers_NumberOfSegments.GetLastParameters(self)
+        nbSeg , parameters = ParseParameters(lastParameters,1,1,nbSeg)
+        StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_NumberOfSegments.SetNumberOfSegments(self,nbSeg)
+        
+    ## Set Scale Factor parameter value
+    #  @param factor numerical value or name of variable from notebook
+    def SetScaleFactor(self, factor):
+        factor, parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfSegments.GetLastParameters(self),2,2,factor)
+        StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_NumberOfSegments.SetScaleFactor(self,factor)
+        
+#Registering the new proxy for NumberOfSegments
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_NumberOfSegments._NP_RepositoryId, NumberOfSegments)
