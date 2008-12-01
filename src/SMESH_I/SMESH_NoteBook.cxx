@@ -33,9 +33,9 @@
 #include <string>
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #else
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #endif
 
 using namespace std;
@@ -314,6 +314,29 @@ void SMESH_NoteBook::ReplaceVariables()
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
           aStates->IncrementState();
         }
+      }
+      // Case for NETGEN_Parameters_2D hypothesis
+      else if(aStates->GetObjectType().IsEqual("NETGEN_Parameters_2D")){
+        if(aMethod == "SetMaxSize" && aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+        else if(aMethod == "SetGrowthRate" && aStates->GetCurrectState().size() >= 2) {
+          if(!aStates->GetCurrectState().at(1).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+          aStates->IncrementState();
+        }
+        else if(aMethod == "SetNbSegPerEdge" && aStates->GetCurrectState().size() >= 3) {
+          if(!aStates->GetCurrectState().at(2).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(2));
+          aStates->IncrementState();
+        } 
+        else if(aMethod == "SetNbSegPerRadius" && aStates->GetCurrectState().size() >= 4) {
+          if(!aStates->GetCurrectState().at(3).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(3));
+          aStates->IncrementState();
+        } 
       }
 
       // Case for NumberOfLayers hypothesis
