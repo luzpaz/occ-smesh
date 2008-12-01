@@ -1364,6 +1364,194 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   return false;
 }
 
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::Precompute
+ *
+ *  Compute mesh as preview till indicated dimension on shape
+ */
+//=============================================================================
+
+SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh,
+						   GEOM::GEOM_Object_ptr theShapeObject,
+						   SMESH::Dimension      theDimension,
+						   SMESH::long_array&    theShapesId)
+     throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Precompute" );
+
+  if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", 
+                                  SALOME::BAD_PARAM );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
+                                  SALOME::BAD_PARAM );
+
+  SMESH::MeshPreviewStruct_var result = 0;
+  try {
+    // get mesh servant
+    SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+    ASSERT( meshServant );
+    if ( meshServant ) {
+      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      meshServant->CheckGeomGroupModif();
+      // get local TopoDS_Shape
+      TopoDS_Shape myLocShape;
+      if(theMesh->HasShapeToMesh())
+        myLocShape = GeomObjectToShape( theShapeObject );
+      else
+	return result._retn();;
+
+      // call implementation compute
+      ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
+      TSetOfInt shapeIds;
+      ::MeshDimension aDim = (MeshDimension)theDimension;
+      if ( myGen.Compute( myLocMesh, myLocShape, false, aDim, &shapeIds ) )
+      {
+	int nbShapeId = shapeIds.size();
+	theShapesId.length( nbShapeId );
+	// iterates on shapes and collect mesh entities into mesh preview
+	result = new SMESH::MeshPreviewStruct;
+	TSetOfInt::const_iterator idIt = shapeIds.begin();
+	TSetOfInt::const_iterator idEnd = shapeIds.end();
+	std::map< int, int > mapOfShIdNb;
+	std::set< SMESH_TLink > setOfEdge;
+	std::list< SMDSAbs_ElementType > listOfElemType;
+	typedef map<const SMDS_MeshElement*, int > TNode2LocalIDMap;
+	typedef TNode2LocalIDMap::iterator         TNodeLocalID;
+	TNode2LocalIDMap mapNode2LocalID;
+	list< TNodeLocalID > connectivity;
+	int i, nbConnNodes = 0;
+	std::set< const SMESH_subMesh* > setOfVSubMesh;
+	// iterates on shapes
+	for ( ; idIt != idEnd; idIt++ )
+	{
+	  if ( mapOfShIdNb.find( *idIt ) != mapOfShIdNb.end() )
+	    continue;
+	  SMESH_subMesh* sm = myLocMesh.GetSubMeshContaining(*idIt);
+	  if ( !sm || !sm->IsMeshComputed() )
+	    continue;
+	  
+	  const TopoDS_Shape& aSh = sm->GetSubShape();
+	  const int shDim = myGen.GetShapeDim( aSh );
+	  if ( shDim < 1 || shDim > theDimension )
+	    continue;
+
+	  mapOfShIdNb[ *idIt ] = 0;
+	  theShapesId[ mapOfShIdNb.size() - 1 ] = *idIt;
+
+	  SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
+	  if ( !smDS ) continue;
+
+	  if ( theDimension == SMESH::DIM_2D )
+	  {
+	    SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
+	    while ( faceIt->more() )
+	    {
+	      const SMDS_MeshElement* face = faceIt->next();
+	      int aNbNode = face->NbNodes();
+	      if ( aNbNode > 4 )
+		aNbNode /= 2; // do not take into account additional middle nodes
+
+	      SMDS_MeshNode* node1 = (SMDS_MeshNode*)face->GetNode( 1 );
+	      for ( int nIndx = 1; nIndx <= aNbNode; nIndx++ )
+	      {
+		SMDS_MeshNode* node2 = (SMDS_MeshNode*)face->GetNode( nIndx < aNbNode ? nIndx+1 : 1 );
+		if ( setOfEdge.insert( SMESH_TLink ( node1, node2 ) ).second )
+		{
+		  listOfElemType.push_back( SMDSAbs_Edge );
+		  connectivity.push_back
+		    ( mapNode2LocalID.insert( make_pair( node1, ++nbConnNodes)).first );
+		  connectivity.push_back
+		    ( mapNode2LocalID.insert( make_pair( node2, ++nbConnNodes)).first );
+		}
+		node1 = node2;
+	      }
+	    }
+	  }
+	  else if ( theDimension == SMESH::DIM_1D )
+	  {
+	    SMDS_NodeIteratorPtr nodeIt = smDS->GetNodes();
+	    while ( nodeIt->more() )
+	    {
+	      listOfElemType.push_back( SMDSAbs_Node );
+	      connectivity.push_back
+		( mapNode2LocalID.insert( make_pair( nodeIt->next(), ++nbConnNodes)).first );
+	    }
+	    // add corner nodes by first vertex from edge
+	    SMESH_subMeshIteratorPtr edgeSmIt =
+	      sm->getDependsOnIterator(/*includeSelf*/false,
+				       /*complexShapeFirst*/false);
+	    while ( edgeSmIt->more() )
+	    {
+	      SMESH_subMesh* vertexSM = edgeSmIt->next();
+	      // check that vertex is not already treated
+	      if ( !setOfVSubMesh.insert( vertexSM ).second )
+		continue;
+	      if ( vertexSM->GetSubShape().ShapeType() != TopAbs_VERTEX )
+		continue;
+
+	      const SMESHDS_SubMesh* vertexSmDS = vertexSM->GetSubMeshDS();
+	      SMDS_NodeIteratorPtr nodeIt = vertexSmDS->GetNodes();
+	      while ( nodeIt->more() )
+	      {
+		listOfElemType.push_back( SMDSAbs_Node );
+		connectivity.push_back
+		  ( mapNode2LocalID.insert( make_pair( nodeIt->next(), ++nbConnNodes)).first );
+	      }
+	    }
+	  }
+	}
+
+	// fill node coords and assign local ids to the nodes
+	int nbNodes = mapNode2LocalID.size();
+	result->nodesXYZ.length( nbNodes );
+	TNodeLocalID node2ID = mapNode2LocalID.begin();
+	for ( i = 0; i < nbNodes; ++i, ++node2ID ) {
+	  node2ID->second = i;
+	  const SMDS_MeshNode* node = (const SMDS_MeshNode*) node2ID->first;
+	  result->nodesXYZ[i].x = node->X();
+	  result->nodesXYZ[i].y = node->Y();
+	  result->nodesXYZ[i].z = node->Z();
+	}
+	// fill connectivity
+	result->elementConnectivities.length( nbConnNodes );
+	list< TNodeLocalID >::iterator connIt = connectivity.begin();
+	for ( i = 0; i < nbConnNodes; ++i, ++connIt ) {
+	  result->elementConnectivities[i] = (*connIt)->second;
+	}
+
+	// fill element types
+	result->elementTypes.length( listOfElemType.size() );
+	std::list< SMDSAbs_ElementType >::const_iterator typeIt = listOfElemType.begin();
+	std::list< SMDSAbs_ElementType >::const_iterator typeEnd = listOfElemType.end();
+	for ( i = 0; typeIt != typeEnd; ++i, ++typeIt )
+        {
+	  SMDSAbs_ElementType elemType = *typeIt;
+	  result->elementTypes[i].SMDS_ElementType = (SMESH::ElementType)elemType;
+	  result->elementTypes[i].isPoly           = false;
+	  result->elementTypes[i].nbNodesInElement = elemType == SMDSAbs_Edge ? 2 : 1;
+	}
+
+	// correct number of shapes
+	theShapesId.length( mapOfShIdNb.size() );
+      }
+    }
+  }
+  catch ( std::bad_alloc ) {
+    INFOS( "Precompute(): lack of memory" );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "Precompute(): catch exception "<< S_ex.what() );
+  }
+  catch ( ... ) {
+    INFOS( "Precompute(): unknown exception " );
+  }
+  return result._retn();
+}
+
 //================================================================================
 /*!
  * \brief Return geometrical object the given element is built on
@@ -3538,9 +3726,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           // "Nodes on Faces" - ID of node on face
           // "Face U positions" - U parameter of node on face
           // "Face V positions" - V parameter of node on face
-          char* aEid_DSName = "Nodes on Edges";
-          char* aEu_DSName  = "Edge positions";
-          char* aFu_DSName  = "Face U positions";
+          const char* aEid_DSName = "Nodes on Edges";
+          const char* aEu_DSName  = "Edge positions";
+          const char* aFu_DSName  = "Face U positions";
           //char* aFid_DSName = "Nodes on Faces";
           //char* aFv_DSName  = "Face V positions";
 

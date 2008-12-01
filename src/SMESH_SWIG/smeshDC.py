@@ -928,6 +928,16 @@ class Mesh:
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             salome.sg.updateObjBrowser(1)
 
+    ## Removes all nodes and elements of indicated shape
+    #  @ingroup l2_construct
+    def ClearSubMesh(self, geomId):
+        self.mesh.ClearSubMesh(geomId)
+        if salome.sg.hasDesktop():
+            smeshgui = salome.ImportComponentGUI("SMESH")
+            smeshgui.Init(salome.myStudyId)
+            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
+            salome.sg.updateObjBrowser(1)
+
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
     #  @param fineness [0,-1] defines mesh fineness
     #  @return True or False

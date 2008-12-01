@@ -35,6 +35,10 @@
             <translation>mesh_compute.png</translation>
         </message>
         <message>
+            <source>ICON_PRECOMPUTE</source>
+            <translation>mesh_precompute.png</translation>
+        </message>
+        <message>
             <source>ICON_CONNECTION</source>
             <translation>mesh_multi_edges.png</translation>
         </message>

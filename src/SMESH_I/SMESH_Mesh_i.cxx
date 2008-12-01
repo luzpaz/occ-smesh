@@ -209,6 +209,24 @@ void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
   TPythonDump() <<  _this() << ".Clear()";
 }
 
+//================================================================================
+/*!
+ * \brief Remove all nodes and elements for indicated shape
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ClearSubMesh(CORBA::Long ShapeID)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  try {
+    _impl->ClearSubMesh( ShapeID );
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+}
+
 //=============================================================================
 /*!
  *
@@ -1976,7 +1994,7 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
 
   // Perform Export
   PrepareForWriting(file);
-  char* aMeshName = "Mesh";
+  const char* aMeshName = "Mesh";
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() ) {
     SALOMEDS::SObject_var aMeshSO = _gen_i->ObjectToSObject( aStudy, _this() );

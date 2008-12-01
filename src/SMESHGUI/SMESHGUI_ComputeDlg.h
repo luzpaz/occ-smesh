@@ -30,19 +30,29 @@
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_Operation.h"
 
+// SALOME GUI includes
+#include <SALOME_InteractiveObject.hxx>
+
 // Qt includes
+#include <QMap>
+#include <QPointer>
 #include <QGroupBox>
 
 // IDL includes
 #include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QFrame;
 class QPushButton;
 class QTableWidget;
 class QLabel;
+class QtxComboBox;
 class SMESHGUI_ComputeDlg;
+class SMESHGUI_PrecomputeDlg;
 class SMESHGUI_MeshEditPreview;
+
+class SMESH::compute_error_array;
 
 namespace SMESH
 {
@@ -50,9 +60,52 @@ namespace SMESH
 }
 
 /*!
+ * \brief Base operation to compute a mesh and show computation errors
+ */
+class SMESHGUI_EXPORT SMESHGUI_BaseComputeOp: public SMESHGUI_Operation
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_BaseComputeOp();
+  virtual ~SMESHGUI_BaseComputeOp();
+
+protected:
+  virtual void                   startOperation();
+  virtual void                   stopOperation();
+
+  SMESHGUI_ComputeDlg*           computeDlg() const;
+  void                           computeMesh();
+  void                           showComputeResult( const bool,
+						    const bool,
+						    SMESH::compute_error_array_var&,
+						    const bool,
+						    const QString& );
+    
+protected slots:
+  void                           onPreviewShape();
+  void                           onPublishShape();
+  void                           onShowBadMesh();
+  void                           currentCellChanged();
+
+private:
+  QTableWidget*                  table();
+
+private:
+  QPointer<SMESHGUI_ComputeDlg>  myCompDlg;
+
+protected:
+  SMESH::SMESH_Mesh_var            myMesh;
+  GEOM::GEOM_Object_var            myMainShape;
+  SMESH::TShapeDisplayer*          myTShapeDisplayer;
+  SMESHGUI_MeshEditPreview*        myBadMeshDisplayer;
+  Handle(SALOME_InteractiveObject) myIObject;
+};
+
+/*!
  * \brief Operation to compute a mesh and show computation errors
  */
-class SMESHGUI_EXPORT SMESHGUI_ComputeOp: public SMESHGUI_Operation
+class SMESHGUI_EXPORT SMESHGUI_ComputeOp: public SMESHGUI_BaseComputeOp
 {
   Q_OBJECT
 
@@ -64,26 +117,43 @@ public:
 
 protected:
   virtual void                   startOperation();
-  virtual void                   stopOperation();
 
 protected slots:
   virtual bool                   onApply();
+};
+
+/*!
+ * \brief Operation to preview and compute a mesh and show computation errors
+ */
+class SMESHGUI_EXPORT SMESHGUI_PrecomputeOp: public SMESHGUI_BaseComputeOp
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_PrecomputeOp();
+  virtual ~SMESHGUI_PrecomputeOp();
+
+  virtual LightApp_Dialog*       dlg() const;
+
+protected:
+  virtual void                   startOperation();
+  virtual void                   stopOperation();
+  virtual void                   resumeOperation();
+
+  virtual void                   initDialog();
+
+protected slots:
+  virtual bool                   onApply();
+  virtual void                   onCancel();
 
 private slots:
-  void                           onPreviewShape();
-  void                           onPublishShape();
-  void                           onShowBadMesh();
-  void                           currentCellChanged();
+  void                           onPreview();
 
 private:
-  QTableWidget*                  table();
-
-  SMESHGUI_ComputeDlg*           myDlg;
-
-  SMESH::SMESH_Mesh_var          myMesh;
-  GEOM::GEOM_Object_var          myMainShape;
-  SMESH::TShapeDisplayer*        myTShapeDisplayer;
-  SMESHGUI_MeshEditPreview*      myBadMeshDisplayer;
+  QMap< int, int >               myMapShapeId;
+  QPointer<LightApp_Dialog>      myActiveDlg;
+  QPointer<SMESHGUI_PrecomputeDlg> myDlg;
+  SMESHGUI_MeshEditPreview*      myPreviewDisplayer;
 };
 
 /*!
@@ -142,9 +212,10 @@ class SMESHGUI_EXPORT SMESHGUI_ComputeDlg : public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-  SMESHGUI_ComputeDlg();
+  SMESHGUI_ComputeDlg( QWidget* );
+  virtual ~SMESHGUI_ComputeDlg();
 
-private:
+protected:
   QFrame*                      createMainFrame( QWidget* );
 
   QLabel*                      myMeshName;
@@ -160,7 +231,32 @@ private:
   SMESHGUI_MeshInfosBox*       myBriefInfo;
   SMESHGUI_MeshInfosBox*       myFullInfo;
 
-  friend class SMESHGUI_ComputeOp;
+  friend class SMESHGUI_BaseComputeOp;
+  friend class SMESHGUI_PrecomputeOp;
 };
+
+/*!
+ * \brief Dialog to preview and compute a mesh and show computation errors
+ */
+
+class SMESHGUI_EXPORT SMESHGUI_PrecomputeDlg : public SMESHGUI_Dialog
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_PrecomputeDlg( QWidget* );
+  virtual ~SMESHGUI_PrecomputeDlg();
+  
+  void                         setPreviewModes( const QList<int>& );
+  int                          getPreviewMode() const;
+
+signals:
+  void                         preview();
+
+private:
+  QPushButton*                 myPreviewBtn;
+  QtxComboBox*                 myPreviewMode;
+};
+
 
 #endif // SMESHGUI_COMPUTEDLG_H

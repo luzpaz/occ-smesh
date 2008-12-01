@@ -237,6 +237,17 @@ public:
   CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
                                    GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
+  
+  /*!
+   * Calculate Mesh as preview till indicated dimension on shape
+   * First, verify list of hypothesis associated with the subShape.
+   * Return mesh preview structure
+   */
+  SMESH::MeshPreviewStruct* Precompute( SMESH::SMESH_Mesh_ptr theMesh,
+					GEOM::GEOM_Object_ptr theSubObject,
+					SMESH::Dimension      theDimension,
+					SMESH::long_array&    theShapesId )
+    throw ( SALOME::SALOME_Exception );
 
   // Returns errors of hypotheses definintion
   SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh, 

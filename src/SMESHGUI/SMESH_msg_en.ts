@@ -155,6 +155,10 @@
             <translation>Compute</translation>
         </message>
         <message>
+            <source>MEN_PRECOMPUTE</source>
+            <translation>Preview</translation>
+        </message>
+        <message>
             <source>MEN_CONNECTION</source>
             <translation>Borders at Multi-Connection</translation>
         </message>
@@ -1917,6 +1921,10 @@ Consider saving your work before application crash</translation>
             <translation>Compute</translation>
         </message>
         <message>
+            <source>STB_PRECOMPUTE</source>
+            <translation>Preview</translation>
+        </message>
+        <message>
             <source>STB_CONNECTION</source>
             <translation>Borders at Multi-Connection</translation>
         </message>
@@ -2379,6 +2387,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_COMPUTE</source>
             <translation>Compute</translation>
+        </message>
+        <message>
+            <source>TOP_PRECOMPUTE</source>
+            <translation>Preview</translation>
         </message>
         <message>
             <source>TOP_CONNECTION</source>
@@ -3107,6 +3119,38 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>SHOW_BAD_MESH</source>
             <translation>Show bad Mesh</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_PrecomputeDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Preview and Compute mesh</translation>
+        </message>
+        <message>
+            <source>PREVIEW</source>
+            <translation>Preview</translation>
+        </message>
+        <message>
+            <source>PREVIEW_1</source>
+            <translation>1D Mesh</translation>
+        </message>
+        <message>
+            <source>PREVIEW_2</source>
+            <translation>2D Mesh</translation>
+        </message>
+        <message>
+            <source>COMPUTE</source>
+            <translation>Compute</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_PrecomputeOp</name>
+        <message>
+            <source>CLEAR_SUBMESH_QUESTION</source>
+            <translation>A temporary submeshes on the selected geometry
+ created during preview operation.
+ Do you want to remove all this submeshes?</translation>
         </message>
     </context>
     <context>
