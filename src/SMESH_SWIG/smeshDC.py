@@ -4548,3 +4548,71 @@ class NETGENPlugin_Hypothesis_2D(NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D
 
 #Registering the new proxy for NETGENPlugin_Hypothesis_2D
 omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D._NP_RepositoryId, NETGENPlugin_Hypothesis_2D)
+
+
+class NETGEN_SimpleParameters_2D(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D):
+    
+    ## Set Number of Segments parameter value
+    #  @param nbSeg numerical value or name of variable from notebook
+    def SetNumberOfSegments(self, nbSeg):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+        nbSeg, parameters = ParseParameters(lastParameters,2,1,nbSeg)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetNumberOfSegments(self, nbSeg)
+
+    ## Set Local Length parameter value
+    #  @param length numerical value or name of variable from notebook
+    def SetLocalLength(self, length):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+        length, parameters = ParseParameters(lastParameters,2,1,length)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetLocalLength(self, length)
+
+    ## Set Max Element Area parameter value
+    #  @param area  numerical value or name of variable from notebook    
+    def SetMaxElementArea(self, area):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+        area, parameters = ParseParameters(lastParameters,2,2,area)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetMaxElementArea(self, area)
+        
+#Registering the new proxy for NETGEN_SimpleParameters_2D
+omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D._NP_RepositoryId, NETGEN_SimpleParameters_2D)
+
+class NETGEN_SimpleParameters_3D(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D):    
+    ## Set Number of Segments parameter value
+    #  @param nbSeg numerical value or name of variable from notebook
+    def SetNumberOfSegments(self, nbSeg):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+        nbSeg, parameters = ParseParameters(lastParameters,3,1,nbSeg)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetNumberOfSegments(self, nbSeg)
+
+    ## Set Local Length parameter value
+    #  @param length numerical value or name of variable from notebook
+    def SetLocalLength(self, length):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+        length, parameters = ParseParameters(lastParameters,3,1,length)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetLocalLength(self, length)
+
+    ## Set Max Element Area parameter value
+    #  @param area  numerical value or name of variable from notebook    
+    def SetMaxElementArea(self, area):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+        area, parameters = ParseParameters(lastParameters,3,2,area)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetMaxElementArea(self, area)
+
+
+    ## Set Max Element Volume parameter value
+    #  @param volume numerical value or name of variable from notebook    
+    def SetMaxElementVolume(self, volume):
+        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+        volume, parameters = ParseParameters(lastParameters,3,3,volume)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetMaxElementVolume(self, volume)
+
+        
+#Registering the new proxy for NETGEN_SimpleParameters_3D
+omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D._NP_RepositoryId, NETGEN_SimpleParameters_3D)

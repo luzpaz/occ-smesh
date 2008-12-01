@@ -315,6 +315,7 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
+
       // Case for NETGEN_Parameters_2D or NETGEN_Parameters_2D hypothesis
       else if(aStates->GetObjectType().IsEqual("NETGEN_Parameters_2D") ||
               aStates->GetObjectType().IsEqual("NETGEN_Parameters")){
@@ -340,6 +341,31 @@ void SMESH_NoteBook::ReplaceVariables()
         } 
       }
 
+      // Case for NETGEN_SimpleParameters_3D or NETGEN_SimpleParameters_2D hypothesis
+      else if(aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_3D") ||
+              aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_2D")){
+
+        if((aMethod == "SetNumberOfSegments" || aMethod == "LocalLength") && 
+           aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+        else if(aMethod == "SetMaxElementArea" && aStates->GetCurrectState().size() >= 2) {
+          if(!aStates->GetCurrectState().at(1).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+          aStates->IncrementState();
+        }
+        else if(aMethod == "SetMaxElementVolume" && aStates->GetCurrectState().size() >= 3) {
+          if(!aStates->GetCurrectState().at(2).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(2));
+          aStates->IncrementState();
+        }
+        else if(aMethod == "LengthFromEdges" || aMethod == "LengthFromFaces"){
+          aStates->IncrementState();
+        }
+      }
+      
       // Case for NumberOfLayers hypothesis
       else if(aStates->GetObjectType().IsEqual("NumberOfLayers")){
         if(aMethod == "SetNumberOfLayers" && aStates->GetCurrectState().size() >= 1) {
