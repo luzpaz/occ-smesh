@@ -315,8 +315,9 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
-      // Case for NETGEN_Parameters_2D hypothesis
-      else if(aStates->GetObjectType().IsEqual("NETGEN_Parameters_2D")){
+      // Case for NETGEN_Parameters_2D or NETGEN_Parameters_2D hypothesis
+      else if(aStates->GetObjectType().IsEqual("NETGEN_Parameters_2D") ||
+              aStates->GetObjectType().IsEqual("NETGEN_Parameters")){
         if(aMethod == "SetMaxSize" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
