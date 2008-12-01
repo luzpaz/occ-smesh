@@ -59,8 +59,8 @@ public:
    * \brief Return the name of the python file wrapping IDL API
     * \retval TCollection_AsciiString - The file name
    */
-  static char* SmeshpyName() { return "smesh"; }
-  static char* GenName() { return "smesh.smesh"; }
+  static const char* SmeshpyName() { return "smesh"; }
+  static const char* GenName() { return "smesh.smesh"; }
 };
 
 namespace SMESH
@@ -150,8 +150,8 @@ namespace SMESH
     TPythonDump&
     operator<<(const SMESH::ListOfGroups * theList);
 
-    static char* SMESHGenName() { return "smeshgen"; }
-    static char* MeshEditorName() { return "mesh_editor"; }
+    static const char* SMESHGenName() { return "smeshgen"; }
+    static const char* MeshEditorName() { return "mesh_editor"; }
 
     /*!
      * \brief Return marker of long string literal beginning
