@@ -266,6 +266,32 @@ void SMESH_Mesh::Clear()
 }
 
 //=======================================================================
+/*!
+ * \brief Remove all nodes and elements of indicated shape
+ */
+//=======================================================================
+
+void SMESH_Mesh::ClearSubMesh(const int theShapeId)
+{
+  // clear sub-meshes; get ready to re-compute as a side-effect 
+  if ( SMESH_subMesh *sm = GetSubMeshContaining( theShapeId ) )
+  {
+    SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
+							     /*complexShapeFirst=*/false);
+    while ( smIt->more() )
+    {
+      sm = smIt->next();
+      TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();      
+      if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
+	// all other shapes depends on vertices so they are already cleaned
+	sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      // to recompute even if failed
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+    }
+  }
+}
+
+//=======================================================================
 //function : UNVToMesh
 //purpose  : 
 //=======================================================================

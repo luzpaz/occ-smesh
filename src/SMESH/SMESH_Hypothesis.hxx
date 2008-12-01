@@ -37,6 +37,14 @@ class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
 
+enum MeshDimension // dimension of mesh
+{
+  MeshDim_0D,
+  MeshDim_1D,
+  MeshDim_2D,
+  MeshDim_3D
+};
+
 class SMESH_EXPORT SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
 public:

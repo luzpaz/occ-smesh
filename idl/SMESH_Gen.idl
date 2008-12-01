@@ -222,6 +222,17 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Calculate Mesh as preview till indicated dimension
+     * First, verify list of hypothesis associated with the subShape.
+     * Return mesh preview structure
+     */
+    MeshPreviewStruct Precompute( in SMESH_Mesh        theMesh, 
+				  in GEOM::GEOM_Object theSubObject,
+				  in Dimension         theDimension,
+				  inout long_array    theShapesId )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Return errors of hypotheses definintion
      * algo_error_array is empty if everything is OK
      */

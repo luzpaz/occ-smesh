@@ -229,6 +229,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Remove all nodes and elements of submesh
+     */
+    void ClearSubMesh(in long ShapeID)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Get the subMesh object associated to a subShape. The subMesh object
      * gives access to nodes and elements IDs.
      * SubMesh will be used instead of SubShape in a next idl version to

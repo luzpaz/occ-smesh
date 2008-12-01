@@ -45,6 +45,7 @@
 #include <TopoDS_Shape.hxx>
 
 #include <map>
+#include <list>
 
 class SMESHDS_Document;
 
@@ -56,6 +57,8 @@ typedef struct studyContextStruct
   std::map < int, SMESH_Mesh * >mapMesh;
   SMESHDS_Document * myDocument;
 } StudyContextStruct;
+
+typedef std::set<int> TSetOfInt;
 
 class SMESH_EXPORT  SMESH_Gen
 {
@@ -69,11 +72,15 @@ class SMESH_EXPORT  SMESH_Gen
   /*!
    * \brief Computes aMesh on aShape 
    *  \param anUpward - compute from vertices up to more complex shape (internal usage)
+   *  \param aDim - upper level dimension of the mesh computation
+   *  \param aShapesId - list of shapes with computed mesh entities (elements or nodes)
    *  \retval bool - true if none submesh failed to compute
    */
-  bool Compute(::SMESH_Mesh &       aMesh,
-               const TopoDS_Shape & aShape,
-               const bool           anUpward=false);
+  bool Compute(::SMESH_Mesh &        aMesh,
+               const TopoDS_Shape &  aShape,
+               const bool            anUpward=false,
+	       const ::MeshDimension aDim=::MeshDim_3D,
+	       TSetOfInt*            aShapesId=0);
 
   bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
   // notify on bad state of attached algos, return false

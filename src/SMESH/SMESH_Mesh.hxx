@@ -87,6 +87,11 @@ public:
    */
   void Clear();
 
+  /*!
+   * \brief Remove all nodes and elements of indicated shape
+   */
+  void ClearSubMesh(const int theShapeId);
+
   int UNVToMesh(const char* theFileName);
   /*!
    * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value

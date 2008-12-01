@@ -49,6 +49,24 @@ typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
 typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
+
+typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
+
+//=======================================================================
+/*!
+ * \brief A sorted pair of nodes
+ */
+//=======================================================================
+
+struct SMESH_TLink: public NLink
+{
+  SMESH_TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
+  { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
+  SMESH_TLink(const NLink& link ):NLink( link )
+  { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
+};
+
+
 class SMDS_MeshFace;
 class SMDS_MeshNode;
 class gp_Ax1;
