@@ -43,14 +43,11 @@
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
-static int VARIABLE_DEBUG = 1;
+static int VARIABLE_DEBUG = 0;
 #else
 static int MYDEBUG = 0;
-static int VARIABLE_DEBUG = 1;
+static int VARIABLE_DEBUG = 0;
 #endif
-
-
-
 
 //=============================================================================
 /*!

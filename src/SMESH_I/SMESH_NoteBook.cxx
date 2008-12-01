@@ -33,9 +33,9 @@
 #include <string>
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 #else
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 #endif
 
 using namespace std;
@@ -414,6 +414,8 @@ void SMESH_NoteBook::ReplaceVariables()
 	      }
 	    }
 	    else if(aCurrentStateSize == 6) { // translation by x1, x2, y1, y2, z1, z2
+	      // TODO: limitation until operations on the variables will be introduced
+	      /*
 	      isVariableFound = true;
 	      for(int j = 0; j < 3; j++) {
 		TCollection_AsciiString anArg = aCmd->GetArg(anArgIndex+j);
@@ -437,6 +439,7 @@ void SMESH_NoteBook::ReplaceVariables()
 		}
 		aCmd->SetArg(anArgIndex+j, aValue1 + ", " + aValue2 );
 	      }
+	      */
 	    }
           }
           if(isVariableFound) {
