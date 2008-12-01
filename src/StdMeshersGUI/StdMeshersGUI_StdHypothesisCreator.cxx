@@ -446,6 +446,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_MaxElementVolume::_narrow( hypothesis() );
 
       h->SetMaxElementVolume( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="StartEndLength" )
     {
@@ -623,7 +624,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_MaxElementVolume::_narrow( hyp );
 
     item.myName = tr( "SMESH_MAX_ELEMENT_VOLUME_PARAM" );
-    item.myValue = h->GetMaxElementVolume();
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetMaxElementVolume();
     p.append( item );
   }
   else if( hypType()=="StartEndLength" )

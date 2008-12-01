@@ -4424,6 +4424,21 @@ class MaxElementArea(StdMeshers._objref_StdMeshers_MaxElementArea):
 #Registering the new proxy for MaxElementArea
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementArea._NP_RepositoryId, MaxElementArea)
 
+
+#Wrapper class for StdMeshers_MaxElementVolume hypothesis
+class MaxElementVolume(StdMeshers._objref_StdMeshers_MaxElementVolume):
+    
+    ## Set Max Element Volume parameter value
+    #  @param area  numerical value or name of variable from notebook
+    def SetMaxElementVolume(self, volume):
+        volume ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementVolume.GetLastParameters(self),1,1,volume)
+        StdMeshers._objref_StdMeshers_MaxElementVolume.SetParameters(self,parameters)
+        StdMeshers._objref_StdMeshers_MaxElementVolume.SetMaxElementVolume(self,volume)
+        
+#Registering the new proxy for MaxElementVolume
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementVolume._NP_RepositoryId, MaxElementVolume)
+
+
 #Wrapper class for StdMeshers_NumberOfLayers hypothesis
 class NumberOfLayers(StdMeshers._objref_StdMeshers_NumberOfLayers):
     

@@ -307,6 +307,15 @@ void SMESH_NoteBook::ReplaceVariables()
         }
       }
 
+      // Case for MaxElementVolume hypothesis
+      else if(aStates->GetObjectType().IsEqual("MaxElementVolume")){
+        if(aMethod == "SetMaxElementVolume" && aStates->GetCurrectState().size() >= 1) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+          aStates->IncrementState();
+        }
+      }
+
       // Case for NumberOfLayers hypothesis
       else if(aStates->GetObjectType().IsEqual("NumberOfLayers")){
         if(aMethod == "SetNumberOfLayers" && aStates->GetCurrectState().size() >= 1) {
