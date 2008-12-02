@@ -345,7 +345,7 @@ void SMESH_NoteBook::ReplaceVariables()
       else if(aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_3D") ||
               aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_2D")){
 
-        if((aMethod == "SetNumberOfSegments" || aMethod == "LocalLength") && 
+        if((aMethod == "SetNumberOfSegments" || aMethod == "SetLocalLength") && 
            aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
