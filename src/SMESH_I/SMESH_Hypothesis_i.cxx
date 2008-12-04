@@ -191,7 +191,12 @@ SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
   SMESH::ListOfParameters_var aResult = new SMESH::ListOfParameters();
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   if(gen) {
-    char *aParameters = GetParameters();
+    char *aParameters;
+    if(IsPublished())
+     aParameters = GetParameters();
+    else
+      aParameters = myBaseImpl->GetLastParameters();
+
     SALOMEDS::Study_ptr aStudy = gen->GetCurrentStudy();
     if(!aStudy->_is_nil()) {
       SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
@@ -204,6 +209,31 @@ SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
     }
   }
   return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::SetLastParameters()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::SetLastParameters(const char* theParameters)
+{
+  if(!IsPublished()) {
+    myBaseImpl->SetLastParameters(theParameters);
+  }
+}
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::ClearParameters()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::ClearParameters()
+{
+  if(!IsPublished()) {
+    myBaseImpl->ClearParameters();
+  }
 }
 
 //=============================================================================

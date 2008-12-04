@@ -4350,6 +4350,17 @@ class LocalLength(StdMeshers._objref_StdMeshers_LocalLength):
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryId, LocalLength)
 
 
+#Wrapper class for StdMeshers_LayerDistribution hypothesis
+class LayerDistribution(StdMeshers._objref_StdMeshers_LayerDistribution):
+    
+    def SetLayerDistribution(self, hypo):
+        StdMeshers._objref_StdMeshers_LayerDistribution.SetParameters(self,hypo.GetParameters())
+        hypo.ClearParameters();
+        StdMeshers._objref_StdMeshers_LayerDistribution.SetLayerDistribution(self,hypo)
+
+#Registering the new proxy for LayerDistribution
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_LayerDistribution._NP_RepositoryId, LayerDistribution)
+
 #Wrapper class for StdMeshers_SegmentLengthAroundVertex hypothesis
 class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex):
     
@@ -4398,8 +4409,8 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_Deflection1D._NP_Repository
 class StartEndLength(StdMeshers._objref_StdMeshers_StartEndLength):
     
     ## Set Length parameter value
-    #  @param length   numerical value or name of variable from notebook
-    #  @param isStart  true is length is Start Length, otherwise false
+    #  @param length  numerical value or name of variable from notebook
+    #  @param isStart true is length is Start Length, otherwise false
     def SetLength(self, length, isStart):
         nb = 2
         if isStart:

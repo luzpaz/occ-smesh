@@ -41,7 +41,7 @@ class ObjectStates{
 public:
   
   ObjectStates(TCollection_AsciiString theType);
-  ~ObjectStates();
+  virtual ~ObjectStates();
 
   void AddState(const TState &theState);
 
@@ -63,7 +63,7 @@ class LayerDistributionStates : public ObjectStates
 public:
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TDistributionMap;
   LayerDistributionStates();
-  ~LayerDistributionStates();
+  virtual ~LayerDistributionStates();
 
   void AddDistribution(const TCollection_AsciiString& theDistribution);
   bool HasDistribution(const TCollection_AsciiString& theDistribution) const;

@@ -159,7 +159,23 @@ void SMESH_Hypothesis::SetLibName(const char* theLibName)
 //=============================================================================
 void SMESH_Hypothesis::SetParameters(const char *theParameters)
 {
-  _parameters = string(theParameters);
+  string aNewParameters(theParameters);
+  if(aNewParameters.size()==0 && _parameters.size()==0)
+    aNewParameters = " ";
+  if(_parameters.size()>0)
+    _parameters +="|";
+  _parameters +=aNewParameters;
+  SetLastParameters(theParameters);
+}
+
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+void SMESH_Hypothesis::ClearParameters()
+{
+  _parameters = string();
 }
 
 //=============================================================================
@@ -170,4 +186,24 @@ void SMESH_Hypothesis::SetParameters(const char *theParameters)
 char* SMESH_Hypothesis::GetParameters() const
 {
   return (char*)_parameters.c_str();
+}
+
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+char* SMESH_Hypothesis::GetLastParameters() const
+{
+  return (char*)_lastParameters.c_str();
+}
+
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+void SMESH_Hypothesis::SetLastParameters(const char* theParameters)
+{
+  _lastParameters = string(theParameters);
 }

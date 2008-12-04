@@ -41,6 +41,7 @@ static int MYDEBUG = 0;
 using namespace std;
 
 
+void SetVariable(Handle(_pyCommand) theCommand,const ObjectStates* theStates, int position, int theArgNb);
 
 //================================================================================
 /*!
@@ -295,6 +296,8 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetLayerDistribution"){
           LayerDistributionStates* aLDStates = (LayerDistributionStates*)(aStates);
           aLDStates->AddDistribution(aCmd->GetArg(1));
+          if(MYDEBUG)
+            cout<<"Add Distribution :"<<aCmd->GetArg(1)<<endl;
         }
       }
       
@@ -573,7 +576,8 @@ void SMESH_NoteBook::ReplaceVariables()
       cout<<"Command after: "<< aCmd->GetString()<<endl;
     }
   }
-  //  ProcessLayerDistribution();
+  
+  ProcessLayerDistribution();
 }
 //================================================================================
 /*!
@@ -618,8 +622,9 @@ void SMESH_NoteBook::InitObjectMap()
       if(MYDEBUG)
         cout<<"The object Type : "<<anObjType<<endl;
       ObjectStates *aState = NULL;
-      if(anObjType == "LayerDistribution")
+      if(anObjType == "LayerDistribution") {
         aState = new LayerDistributionStates();
+      }
       else
         aState = new  ObjectStates(anObjType);
       
@@ -672,10 +677,15 @@ void SMESH_NoteBook::ProcessLayerDistribution()
   // 1) Find all LayerDistribution states
   vector<LayerDistributionStates*> aLDS;
   TVariablesMap::const_iterator it = _objectMap.begin();
-  for(;it != _objectMap.end();it++)
-    if(LayerDistributionStates* aLDStates = (LayerDistributionStates*)((*it).second)) {
+  for(;it != _objectMap.end();it++) {
+    LayerDistributionStates* aLDStates = dynamic_cast<LayerDistributionStates*>(((*it).second));
+    if(aLDStates!=NULL) {
       aLDS.push_back(aLDStates);
     }
+  }
+  
+  if(!aLDS.size())
+    return;
   
   // 2) Initialize all type of 1D Distribution hypothesis
   for(int i=0;i<_commands.size();i++){
@@ -700,13 +710,39 @@ void SMESH_NoteBook::ProcessLayerDistribution()
         TCollection_AsciiString aMethod = _commands[i]->GetMethod();
         if(aType == "LocalLength") {
           if(aMethod == "SetLength") {
-            if(!aLDS[j]->GetCurrectState().at(0).IsEmpty() )
-              _commands[i]->SetArg(1,aLDS[j]->GetCurrectState().at(0));
+            SetVariable(_commands[i], aLDS[j],0,1);
             aLDS[j]->IncrementState();
           }
           else if(aMethod == "SetPrecision") {
-            if(!aLDS[j]->GetCurrectState().at(1).IsEmpty() )
-              _commands[i]->SetArg(1,aLDS[j]->GetCurrectState().at(1));
+            SetVariable(_commands[i], aLDS[j],1,1);
+            aLDS[j]->IncrementState();
+          }
+        }
+
+        // Case for NumberOfSegments hypothesis
+        else if(aType == "NumberOfSegments"){
+          if(aMethod == "SetNumberOfSegments") {
+            SetVariable(_commands[i], aLDS[j],0,1);
+            if(aLDS[j]->GetCurrectState().size()==1)
+              aLDS[j]->IncrementState();
+          }
+          else if (aMethod == "SetScaleFactor") {
+            SetVariable(_commands[i], aLDS[j],1,1);
+            aLDS[j]->IncrementState();
+          }
+        }
+        
+        else if( aType == "Deflection1D" ){
+          if(aMethod == "SetDeflection"){
+            SetVariable(_commands[i], aLDS[j],0,1);
+            aLDS[j]->IncrementState();
+          }
+        }
+        // Case for Arithmetic1D and StartEndLength hypothesis
+        else if(aType == "Arithmetic1D" || aType == "StartEndLength") {
+          if(aMethod == "SetLength") {
+            int anArgNb = (_commands[i]->GetArg(2) == "1") ? 0 : 1;
+            SetVariable(_commands[i], aLDS[j],anArgNb,1);
             aLDS[j]->IncrementState();
           }
         }
@@ -757,4 +793,16 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
   }
 
   return ok;
+}
+
+
+/*!
+ *  Set variable of the ObjectStates from position to the _pyCommand
+ *  method as nbArg argument
+ */
+void SetVariable(Handle(_pyCommand) theCommand, const ObjectStates* theStates, int position, int theArgNb)
+{
+  if(theStates->GetCurrectState().size() > position)
+    if(!theStates->GetCurrectState().at(position).IsEmpty())
+      theCommand->SetArg(theArgNb,theStates->GetCurrectState().at(position));
 }

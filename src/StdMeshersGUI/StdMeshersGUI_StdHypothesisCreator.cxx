@@ -488,10 +488,8 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
       
       h->SetLayerDistribution( w->GetHypothesis() );
-      /*      h->SetParameters(w->GetHypothesis()->GetParameters());
-      if(QString(w->GetHypothesis()->GetName()) == "LocalLength")
-        h->SetParameters(w->GetHypothesis()->GetParameters());
-      */
+      h->SetParameters(w->GetHypothesis()->GetParameters());
+      w->GetHypothesis()->ClearParameters();
     }
     else if( hypType()=="ProjectionSource1D" )
     {
@@ -684,13 +682,13 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
     
     //Set into not published hypo last variables
-    /*    QStringList aLastVarsList;
+    QStringList aLastVarsList;
     for(int i = 0;i<aParameters->length();i++) 
       aLastVarsList.append(QString(aParameters[i].in()));
 
     if(!aLastVarsList.isEmpty())
-      h->GetLayerDistribution()->SetParameters(SMESHGUI::JoinObjectParameters(aLastVarsList));
-    */    
+      h->GetLayerDistribution()->SetLastParameters(SMESHGUI::JoinObjectParameters(aLastVarsList));
+    
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
   }

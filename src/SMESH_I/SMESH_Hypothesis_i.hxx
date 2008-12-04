@@ -75,6 +75,13 @@ public:
   //Return list of last notebook variables used for Hypothesis creation.
   SMESH::ListOfParameters* GetLastParameters();
 
+  //Set last parameters for not published hypothesis
+  
+  void SetLastParameters(const char* theParameters);
+  
+  // Clear parameters list
+  void ClearParameters();
+
   //Return true if hypothesis was published in study
   bool IsPublished();
 

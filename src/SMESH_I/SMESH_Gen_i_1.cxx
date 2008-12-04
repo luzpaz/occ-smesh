@@ -866,7 +866,7 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 }
 
 //=======================================================================
-//function : UpdateSObject
+//function : UpdateParameters
 //purpose  : 
 //=======================================================================
 void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
@@ -914,7 +914,7 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
 }
 
 //=======================================================================
-//function : GetParameters
+//function : ParseParameters
 //purpose  : 
 //=======================================================================
 char* SMESH_Gen_i::ParseParameters(const char* theParameters)
@@ -924,14 +924,16 @@ char* SMESH_Gen_i::ParseParameters(const char* theParameters)
   SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
   if( !aStudy->_is_nil() ) {
     SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
-    if(aSections->length() > 0) {
-      SALOMEDS::ListOfStrings aVars= aSections[0];
+    for(int j=0;j<aSections->length();j++) {
+      SALOMEDS::ListOfStrings aVars= aSections[j];
       for(int i=0;i<aVars.length();i++ ) {
         anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
           TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
         if(i != aVars.length()-1)
           anInputParams+=":";
       }
+      if(j!=aSections->length()-1)
+        anInputParams+="|";
     }
   }
   return CORBA::string_dup(anInputParams.ToCString());
