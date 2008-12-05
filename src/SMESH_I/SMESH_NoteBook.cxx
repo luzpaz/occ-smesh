@@ -404,9 +404,12 @@ void SMESH_NoteBook::ReplaceVariables()
       else if(aStates->GetObjectType().IsEqual("Mesh")) {
 	TState aCurrentState = aStates->GetCurrectState();
         int aCurrentStateSize = aCurrentState.size();
-	if(aMethod.IsEqual("Translate") ||
-           aMethod.IsEqual("TranslateMakeGroups") ||
-           aMethod.IsEqual("TranslateMakeMesh")) {
+	if(aMethod.IsEqual("Translate")                  ||
+           aMethod.IsEqual("TranslateMakeGroups")        ||
+           aMethod.IsEqual("TranslateMakeMesh")          ||
+           aMethod.IsEqual("TranslateObject")            ||
+           aMethod.IsEqual("TranslateObjectMakeGroups")  ||
+           aMethod.IsEqual("TranslateObjectMakeMesh")) {
           bool isVariableFound = false;
           int anArgIndex = 0;
           for(int i = 1, n = aCmd->GetNbArgs(); i <= n; i++) {
@@ -465,6 +468,9 @@ void SMESH_NoteBook::ReplaceVariables()
 	else if(aMethod.IsEqual("Rotate")                  ||
 		aMethod.IsEqual("RotateMakeGroups")        ||
 		aMethod.IsEqual("RotateMakeMesh")          ||
+                aMethod.IsEqual("RotateObject")            ||
+                aMethod.IsEqual("RotateObjectMakeGroups")  ||
+                aMethod.IsEqual("RotateObjectMakeMesh")    ||
 		aMethod.IsEqual("RotationSweep")           ||
 		aMethod.IsEqual("RotationSweepMakeGroups") ||
 		aMethod.IsEqual("Mirror")                  ||
