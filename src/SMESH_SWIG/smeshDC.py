@@ -4588,3 +4588,33 @@ class NETGEN_SimpleParameters_3D(NETGEN_SimpleParameters_2D,NETGENPlugin._objref
         
 #Registering the new proxy for NETGEN_SimpleParameters_3D
 omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D._NP_RepositoryId, NETGEN_SimpleParameters_3D)
+
+class Pattern(SMESH._objref_SMESH_Pattern):
+
+    def ApplyToMeshFaces(self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse):
+        flag = False
+        if isinstance(theNodeIndexOnKeyPoint1,str):
+            flag = True
+        theNodeIndexOnKeyPoint1,Parameters = geompyDC.ParseParameters(theNodeIndexOnKeyPoint1)
+        if flag:
+            theNodeIndexOnKeyPoint1 -= 1
+        theMesh.SetParameters(Parameters)
+        return SMESH._objref_SMESH_Pattern.ApplyToMeshFaces( self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse )
+
+    def ApplyToHexahedrons(self, theMesh, theVolumesIDs, theNode000Index, theNode001Index):
+        flag0 = False
+        flag1 = False
+        if isinstance(theNode000Index,str):
+            flag0 = True
+        if isinstance(theNode001Index,str):
+            flag1 = True
+        theNode000Index,theNode001Index,Parameters = geompyDC.ParseParameters(theNode000Index,theNode001Index)
+        if flag0:
+            theNode000Index -= 1
+        if flag1:
+            theNode001Index -= 1
+        theMesh.SetParameters(Parameters)
+        return SMESH._objref_SMESH_Pattern.ApplyToHexahedrons( self, theMesh, theVolumesIDs, theNode000Index, theNode001Index )
+
+#Registering the new proxy for Pattern
+omniORB.registerObjref(SMESH._objref_SMESH_Pattern._NP_RepositoryId, Pattern)

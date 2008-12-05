@@ -51,6 +51,7 @@
 #include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Tools.h>
 #include <LightApp_Application.h>
+#include <SalomeApp_IntSpinBox.h>
 
 #include <SALOME_ListIO.hxx>
 
@@ -76,7 +77,6 @@
 #include <QRadioButton>
 #include <QCheckBox>
 #include <QButtonGroup>
-#include <QSpinBox>
 #include <QList>
 #include <QDir>
 #include <QFileDialog>
@@ -246,9 +246,9 @@ QWidget* SMESHGUI_MeshPatternDlg::createMainFrame (QWidget* theParent)
   mySelEdit[ Ids ] = new QLineEdit( myRefineGrp );
 
   QLabel* aNodeLbl = new QLabel( tr( "NODE_1" ), myRefineGrp );
-  myNode1          = new QSpinBox( myRefineGrp );
+  myNode1          = new SalomeApp_IntSpinBox( myRefineGrp );
   myNode2Lbl       = new QLabel( tr( "NODE_2" ), myRefineGrp );
-  myNode2          = new QSpinBox( myRefineGrp );
+  myNode2          = new SalomeApp_IntSpinBox( myRefineGrp );
 
   myRefineGrpLayout->addWidget( mySelLbl[ Ids ],  0, 0 );
   myRefineGrpLayout->addWidget( mySelBtn[ Ids ],  0, 1 );
@@ -411,6 +411,24 @@ void SMESHGUI_MeshPatternDlg::Init()
 //=======================================================================
 bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
 {
+  if (isRefine())
+  {
+    QString msg;
+    bool ok = true;
+    ok = myNode1->isValid( msg, theMess ) && ok;
+    if (myType == Type_3d)
+      ok = myNode2->isValid( msg, theMess ) && ok;
+    if( !ok ) {
+      if( theMess ) {
+	QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+	if ( !msg.isEmpty() )
+	  str += "\n" + msg;
+	SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+      }
+      return false;
+    }
+  }
+
   QList<int> ids;
   if ((isRefine() &&
        (myMesh->_is_nil() || !getIds(ids) || getNode(false) < 0 ||
@@ -459,6 +477,12 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       myType == Type_2d
 	? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
 	: myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
+
+      QStringList aParameters;
+      aParameters << myNode1->text();
+      if(myType == Type_3d )
+	aParameters << myNode2->text();
+      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
     } else { // Applying a pattern to geometrical object
       if (myType == Type_2d)
@@ -1375,8 +1399,8 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
 void SMESHGUI_MeshPatternDlg::onNodeChanged (int value)
 {
   if (myType == Type_3d) {
-    QSpinBox* first = (QSpinBox*)sender();
-    QSpinBox* second = first == myNode1 ? myNode2 : myNode1;
+    SalomeApp_IntSpinBox* first = (SalomeApp_IntSpinBox*)sender();
+    SalomeApp_IntSpinBox* second = first == myNode1 ? myNode2 : myNode1;
     int secondVal = second->value();
     if (secondVal == value) {
       secondVal = value == second->maximum() ? second->minimum() : value + 1;

@@ -243,7 +243,15 @@ void SMESH_NoteBook::ReplaceVariables()
       }
     }
     
+    if(it == _objectMap.end()) { // additional check for pattern mapping
+      if(aMethod.IsEqual("ApplyToMeshFaces") ||
+	 aMethod.IsEqual("ApplyToHexahedrons"))
+	it = _objectMap.find(aCmd->GetArg(1));
+    }
+    
     if(it != _objectMap.end()) {
+      if(MYDEBUG)
+	cout << "Found object : " << (*it).first << endl;
       ObjectStates *aStates = (*it).second;
       // Case for LocalLength hypothesis
       if(aStates->GetObjectType().IsEqual("LocalLength") && aStates->GetCurrectState().size() >= 2) {
@@ -570,7 +578,19 @@ void SMESH_NoteBook::ReplaceVariables()
 	  }
 	  aStates->IncrementState();
 	}
+	else if(aMethod.IsEqual("ApplyToMeshFaces") ||
+		aMethod.IsEqual("ApplyToHexahedrons")) {
+	  int anArgIndex = aCmd->GetNbArgs()-1;
+	  for(int j = 0; j < aCurrentStateSize; j++)
+	    if(!aCurrentState.at(j).IsEmpty())
+	      aCmd->SetArg(anArgIndex+j, aCurrentState.at(j));
+	  aStates->IncrementState();
+	}
       }
+    }
+    else {
+      if(MYDEBUG)
+	cout << "Object not found" << endl;
     }
     if(MYDEBUG) {
       cout<<"Command after: "<< aCmd->GetString()<<endl;
