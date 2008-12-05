@@ -462,13 +462,17 @@ void SMESH_NoteBook::ReplaceVariables()
           }
           aStates->IncrementState();
         }
-	else if(aMethod.IsEqual("Rotate") ||
-		aMethod.IsEqual("RotateMakeGroups") ||
-		aMethod.IsEqual("RotateMakeMesh") ||
-		aMethod.IsEqual("RotationSweep") ||
+	else if(aMethod.IsEqual("Rotate")                  ||
+		aMethod.IsEqual("RotateMakeGroups")        ||
+		aMethod.IsEqual("RotateMakeMesh")          ||
+		aMethod.IsEqual("RotationSweep")           ||
 		aMethod.IsEqual("RotationSweepMakeGroups") ||
-		aMethod.IsEqual("Mirror") ||
-		aMethod.IsEqual("MirrorMakeGroups")) {
+		aMethod.IsEqual("Mirror")                  ||
+		aMethod.IsEqual("MirrorMakeMesh")          ||
+                aMethod.IsEqual("MirrorMakeGroups")        ||
+                aMethod.IsEqual("MirrorObject")            || 
+                aMethod.IsEqual("MirrorObjectMakeMesh")    ||
+                aMethod.IsEqual("MirrorObjectMakeGroups")) {
 	  bool isSubstitute = false;
 	  int anArgIndex = 0;
 	  for(int i = 1, n = aCmd->GetNbArgs(); i <= n; i++) {

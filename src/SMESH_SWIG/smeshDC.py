@@ -318,10 +318,10 @@ def ParseDirStruct(Dir):
 
 # Returns list of variable values from salome notebook
 def ParseAxisStruct(Axis):
-    Parameters = ":::::"
+    Parameters = 5*variable_separator
     if isinstance(Axis, AxisStructStr):
-        Parameters = str(Axis.xStr) + ":" + str(Axis.yStr) + ":" + str(Axis.zStr) + ":"
-        Parameters += str(Axis.dxStr) + ":" + str(Axis.dyStr) + ":" + str(Axis.dzStr)
+        Parameters = str(Axis.xStr) + variable_separator + str(Axis.yStr) + variable_separator + str(Axis.zStr) + variable_separator
+        Parameters += str(Axis.dxStr) + variable_separator + str(Axis.dyStr) + variable_separator + str(Axis.dzStr)
         Axis = AxisStruct(Axis.x, Axis.y, Axis.z, Axis.dx, Axis.dy, Axis.dz)
     return Axis, Parameters
 
@@ -2692,6 +2692,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
+        Mirror,Parameters = ParseAxisStruct(Mirror)
+        self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorObjectMakeGroups(theObject, Mirror, theMirrorType)
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
@@ -2711,8 +2713,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if (isinstance(Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
+        Mirror,Parameters = ParseAxisStruct(Mirror)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
                                                 MakeGroups, NewMeshName)
+        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD,self.geompyD,mesh )
 
     ## Translates the elements

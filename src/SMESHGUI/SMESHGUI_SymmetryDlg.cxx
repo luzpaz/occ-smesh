@@ -90,7 +90,8 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_SYMMETRY_POINT")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_SYMMETRY_AXIS")));
@@ -483,39 +484,57 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
       switch ( actionButton ) {
-      case MOVE_ELEMS_BUTTON:
-        aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
-	if( !myMesh->_is_nil())
-	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
-        break;
-      case COPY_ELEMS_BUTTON:
-        if ( makeGroups )
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
+      case MOVE_ELEMS_BUTTON: {
+        if(CheckBoxMesh->isChecked())
+          aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, false );
         else
-          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
+          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
+        
 	if( !myMesh->_is_nil())
 	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
-      case MAKE_MESH_BUTTON:
-        SMESH::SMESH_Mesh_var mesh = 
-          aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
-                                      LineEditNewMesh->text().toLatin1().data());
+      }
+      case COPY_ELEMS_BUTTON: {
+        SMESH::ListOfGroups_var groups;
+        if ( makeGroups )
+          if(CheckBoxMesh->isChecked())
+            groups = aMeshEditor->MirrorObjectMakeGroups(mySelectedObject, aMirror, aMirrorType);
+          else
+            groups = aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
+        else
+          if(CheckBoxMesh->isChecked())
+            aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, true);
+          else
+            aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+        break;
+        }
+      case MAKE_MESH_BUTTON: {
+        SMESH::SMESH_Mesh_var mesh;
+        if(CheckBoxMesh->isChecked())
+          mesh = aMeshEditor->MirrorObjectMakeMesh(mySelectedObject, aMirror, aMirrorType, makeGroups,
+                                                   LineEditNewMesh->text().toLatin1().data());
+        else
+          mesh = aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
+                                             LineEditNewMesh->text().toLatin1().data());
 	if( !mesh->_is_nil())
 	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+        break;
+      }
       }
     } catch (...) {
     }
-
+    
     SMESH::UpdateView();
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
          actionButton == MAKE_MESH_BUTTON )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
   }
-
   return true;
 }
 
@@ -681,8 +700,13 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) { //MESH
-        // get IDs from mesh
+      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil()) { //MESH
+        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      }
+      else
+        return;
+      // get IDs from mesh
+      /*
         SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
         if (!aSMDSMesh)
           return;
@@ -694,17 +718,20 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
             aNbUnits++;
           }
         }
+        
       } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
         // get submesh
         SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
 
         // get IDs from submesh
+        /*
         SMESH::long_array_var anElementsIds = new SMESH::long_array;
         anElementsIds = aSubMesh->GetElementsId();
         for (int i = 0; i < anElementsIds->length(); i++) {
           myElementsId += QString(" %1").arg(anElementsIds[i]);
         }
         aNbUnits = anElementsIds->length();
+        
       } else { // GROUP
         // get smesh group
         SMESH::SMESH_GroupBase_var aGroup =
@@ -720,14 +747,14 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
         }
         aNbUnits = anElementsIds->length();
       }
+      */
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, IO, aString);
       myElementsId = aString;
+      if (aNbUnits < 1)
+        return;
     }
-
-    if (aNbUnits < 1)
-      return;
-
+    
     myNbOkElements = true;
   } else {
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);

@@ -84,6 +84,8 @@ private:
 
   QWidget*               myEditCurrentArgument;   /* Current  LineEdit */
 
+  SMESH::SMESH_IDSource_var mySelectedObject;
+
   bool                   myBusy;
   SMESH::SMESH_Mesh_var  myMesh;
   SMESH_Actor*           myActor;
