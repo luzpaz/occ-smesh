@@ -496,16 +496,18 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
       }
       case COPY_ELEMS_BUTTON: {
         SMESH::ListOfGroups_var groups;
-        if ( makeGroups )
+        if ( makeGroups ) {
           if(CheckBoxMesh->isChecked())
             groups = aMeshEditor->MirrorObjectMakeGroups(mySelectedObject, aMirror, aMirrorType);
           else
             groups = aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
-        else
+        }
+        else {
           if(CheckBoxMesh->isChecked())
             aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, true);
           else
             aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
+        }
 	if( !myMesh->_is_nil())
 	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;

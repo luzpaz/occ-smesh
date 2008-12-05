@@ -89,6 +89,8 @@ private:
   SMESH_Actor*           myActor;
   SMESH_LogicalFilter*   myMeshOrSubMeshOrGroupFilter;
 
+  SMESH::SMESH_IDSource_var mySelectedObject;
+
   QGroupBox*             ConstructorsBox;
   QButtonGroup*          GroupConstructors;
   QRadioButton*          RadioButton1;

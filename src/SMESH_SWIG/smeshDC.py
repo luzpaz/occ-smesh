@@ -2767,6 +2767,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        Vector,Parameters = ParseDirStruct(Vector)
+        self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateObjectMakeGroups(theObject, Vector)
         self.editor.TranslateObject(theObject, Vector, Copy)
@@ -2784,7 +2786,9 @@ class Mesh:
             theObject = theObject.GetMesh()
         if (isinstance(Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        Vector,Parameters = ParseDirStruct(Vector)
         mesh = self.editor.TranslateObjectMakeMesh(theObject, Vector, MakeGroups, NewMeshName)
+        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Rotates the elements
@@ -2843,16 +2847,25 @@ class Mesh:
     ## Rotates the object
     #  @param theObject the object to rotate( mesh, submesh, or group)
     #  @param Axis the axis of rotation (AxisStruct or geom line)
-    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param AngleInRadians the angle of rotation (in radians) or a name of variable which defines angle in degrees
     #  @param Copy allows copying the rotated elements
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
     def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
         if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
         if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
+        Parameters = AxisParameters + ":" + Parameters
+        self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateObjectMakeGroups(theObject, Axis, AngleInRadians)
         self.editor.RotateObject(theObject, Axis, AngleInRadians, Copy)
@@ -2861,18 +2874,27 @@ class Mesh:
     ## Creates a new mesh from the rotated object
     #  @param theObject the object to rotate (mesh, submesh, or group)
     #  @param Axis the axis of rotation (AxisStruct or geom line)
-    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param AngleInRadians the angle of rotation (in radians)  or a name of variable which defines angle in degrees
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def RotateObjectMakeMesh(self, theObject, Axis, AngleInRadians, MakeGroups=0,NewMeshName=""):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
         if (isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
+        Parameters = AxisParameters + ":" + Parameters
         mesh = self.editor.RotateObjectMakeMesh(theObject, Axis, AngleInRadians,
                                                        MakeGroups, NewMeshName)
+        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Finds groups of ajacent nodes within Tolerance.

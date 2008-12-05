@@ -89,7 +89,8 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_MESH_ROTATION")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
@@ -399,23 +400,38 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
-        aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
+        if(CheckBoxMesh->isChecked())
+          aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, false);
+        else
+            aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
 	if( !myMesh->_is_nil())
 	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case COPY_ELEMS_BUTTON:
-        if ( makeGroups )
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->RotateMakeGroups(anElementsId, anAxis, anAngle);
-        else
-          aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
+        if ( makeGroups ) {
+          SMESH::ListOfGroups_var groups;
+          if(CheckBoxMesh->isChecked())
+            groups = aMeshEditor->RotateObjectMakeGroups(mySelectedObject, anAxis, anAngle);
+          else
+            groups = aMeshEditor->RotateMakeGroups(anElementsId, anAxis, anAngle);
+        }
+        else {
+          if(CheckBoxMesh->isChecked())
+            aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, true);
+          else 
+            aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
+        }
 	if( !myMesh->_is_nil())
 	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case MAKE_MESH_BUTTON:
-        SMESH::SMESH_Mesh_var mesh = 
-          aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
-                                      LineEditNewMesh->text().toLatin1().data());
+        SMESH::SMESH_Mesh_var mesh;
+        if(CheckBoxMesh->isChecked())
+          mesh = aMeshEditor->RotateObjectMakeMesh(mySelectedObject, anAxis, anAngle, makeGroups,
+                                                   LineEditNewMesh->text().toLatin1().data());
+        else 
+          mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
+                                             LineEditNewMesh->text().toLatin1().data());
 	if( !mesh->_is_nil())
 	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
       }
@@ -427,6 +443,7 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
          actionButton == MAKE_MESH_BUTTON )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
+    mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
   }
 
@@ -594,13 +611,18 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) { //MESH
+      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil()) { //MESH
+        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      }
+      else
+        return;
         // get IDs from mesh
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
+        /*
+          SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
+          if (!aSMDSMesh)
           return;
 
-        for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++) {
+          for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++) {
           const SMDS_MeshElement * e = aSMDSMesh->FindElement(i);
           if (e) {
             myElementsId += QString(" %1").arg(i);
@@ -608,40 +630,41 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
           }
         }
       } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
+      // get submesh
         SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
+        
         // get IDs from submesh
         SMESH::long_array_var anElementsIds = new SMESH::long_array;
         anElementsIds = aSubMesh->GetElementsId();
         for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
+        myElementsId += QString(" %1").arg(anElementsIds[i]);
+          }
         aNbUnits = anElementsIds->length();
       } else { // GROUP
         // get smesh group
         SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
+        SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
         if (aGroup->_is_nil())
-          return;
+        return;
 
-        // get IDs from smesh group
+          // get IDs from smesh group
         SMESH::long_array_var anElementsIds = new SMESH::long_array;
         anElementsIds = aGroup->GetListOfID();
         for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
+        myElementsId += QString(" %1").arg(anElementsIds[i]);
+          }
         aNbUnits = anElementsIds->length();
-      }
-    } else {
+        }
+        */
+      } else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
-    }
-
-    if (aNbUnits < 1)
-      return;
+      if (aNbUnits < 1)
+        return;
+      }
 
     myNbOkElements = true;
+
   } else {
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
@@ -724,6 +747,7 @@ void SMESHGUI_RotationDlg::SetEditCurrentArgument()
       }
       break;
     }
+
   }
 
   myEditCurrentArgument->setFocus();
