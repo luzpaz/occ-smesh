@@ -90,7 +90,8 @@
 SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_SMOOTHING")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
@@ -350,12 +351,22 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
-      if ( CheckBoxParametric->isChecked() )
-	aResult = aMeshEditor->SmoothParametric(anElementsId.inout(), aNodesId.inout(),
-						anIterationLimit, aMaxAspectRatio, aMethod);
-      else
-	aResult = aMeshEditor->Smooth(anElementsId.inout(), aNodesId.inout(),
-				      anIterationLimit, aMaxAspectRatio, aMethod);
+      if ( CheckBoxParametric->isChecked() ) {
+        if(CheckBoxMesh->isChecked())
+	  aResult = aMeshEditor->SmoothParametricObject(mySelectedObject, aNodesId.inout(),
+							anIterationLimit, aMaxAspectRatio, aMethod);
+	else
+	  aResult = aMeshEditor->SmoothParametric(anElementsId.inout(), aNodesId.inout(),
+						  anIterationLimit, aMaxAspectRatio, aMethod);
+      }
+      else {
+        if(CheckBoxMesh->isChecked())
+	  aResult = aMeshEditor->SmoothObject(mySelectedObject, aNodesId.inout(),
+					      anIterationLimit, aMaxAspectRatio, aMethod);
+	else
+	  aResult = aMeshEditor->Smooth(anElementsId.inout(), aNodesId.inout(),
+					anIterationLimit, aMaxAspectRatio, aMethod);
+      }
 
       myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
@@ -370,6 +381,8 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
       mySelectionMgr->setSelectedObjects(aList, false);
       SMESH::UpdateView();
       Init();
+
+      mySelectedObject = SMESH::SMESH_IDSource::_nil();
     }
   }
 
@@ -543,57 +556,21 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) { //MESH
-        // get IDs from mesh
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
-          return;
-
-        for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++ ) {
-          const SMDS_MeshElement * e = aSMDSMesh->FindElement(i);
-          if (e) {
-            myElementsId += QString(" %1").arg(i);
-            aNbUnits++;
-          }
-        }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aSubMesh->GetElementsId();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-          return;
-
-        // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      }
+      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil())
+        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      else
+        return;
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
+      if (aNbUnits < 1)
+        return;
     }
   } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myActor) {
     myNbOkNodes = 0;
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
   } else {
   }
-
-  if (aNbUnits < 1)
-    return;
 
   myBusy = true;
   myEditCurrentArgument->setText(aString);

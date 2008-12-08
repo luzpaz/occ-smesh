@@ -83,6 +83,8 @@ private:
   int                              myNbOkElements;        /* to check when elements are defined */
   SVTK_Selector*                   mySelector;
 
+  SMESH::SMESH_IDSource_var        mySelectedObject;
+
   bool                             myBusy;
   SMESH::SMESH_Mesh_var            myMesh;
   SMESH::long_array_var            myElementsId;

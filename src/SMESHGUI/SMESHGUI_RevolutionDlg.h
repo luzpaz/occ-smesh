@@ -85,6 +85,8 @@ private:
   QWidget*                  myEditCurrentArgument;   /* Current  argument */
   SVTK_Selector*            mySelector;
   
+  SMESH::SMESH_IDSource_var mySelectedObject;
+
   bool                      myBusy;
   SMESH::SMESH_Mesh_var     myMesh;
   SMESH_Actor*              myActor;

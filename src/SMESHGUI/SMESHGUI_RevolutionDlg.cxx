@@ -88,7 +88,8 @@
 SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
 
@@ -494,12 +495,31 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       
-      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
-        SMESH::ListOfGroups_var groups = 
-          aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
-                                               anAngle, aNbSteps, aTolerance);
-      else
+      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
+        if( CheckBoxMesh->isChecked() ) {
+	  if( GetConstructorId() == 0 )
+	    SMESH::ListOfGroups_var groups = 
+	      aMeshEditor->RotationSweepObject1DMakeGroups(mySelectedObject, anAxis,
+							   anAngle, aNbSteps, aTolerance);
+	  else
+	    SMESH::ListOfGroups_var groups = 
+	      aMeshEditor->RotationSweepObject2DMakeGroups(mySelectedObject, anAxis,
+							   anAngle, aNbSteps, aTolerance);
+	}
+	else
+	  SMESH::ListOfGroups_var groups = 
+	    aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
+						 anAngle, aNbSteps, aTolerance);
+      }
+      else {
+        if( CheckBoxMesh->isChecked() ) {
+	  if( GetConstructorId() == 0 )
+	    aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
+	  else
+	    aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
+	}
         aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+      }
 
       myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
     } catch (...) {
@@ -510,6 +530,7 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
   }
 
@@ -689,77 +710,18 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
     }
 
     if (CheckBoxMesh->isChecked()) {
-      int aConstructorId = GetConstructorId();
-
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) { //MESH
-        // get IDs from mesh
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
-          return;
-
-        if (aConstructorId == 0) {
-          SMDS_EdgeIteratorPtr anIter = aSMDSMesh->edgesIterator();
-
-          while (anIter->more()) {
-            const SMDS_MeshEdge * edge = anIter->next();
-            if (edge) {
-              myElementsId += QString(" %1").arg(edge->GetID());
-              aNbUnits++;
-            }
-          }
-        } else if (aConstructorId == 1) {
-          SMDS_FaceIteratorPtr anIter = aSMDSMesh->facesIterator();
-          while (anIter->more()) {
-            const SMDS_MeshFace * face = anIter->next();
-            if (face) {
-              myElementsId += QString(" %1").arg(face->GetID());
-              aNbUnits++;
-            }
-          }
-        }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        if (aConstructorId == 0)
-          anElementsIds = aSubMesh->GetElementsByType(SMESH::EDGE);
-        else if (aConstructorId == 1)
-          anElementsIds = aSubMesh->GetElementsByType(SMESH::FACE);
-
-        for (int i = 0; i < anElementsIds->length(); i++)
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        aNbUnits = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-          return;
-
-        if ((aConstructorId == 0 && aGroup->GetType()!= SMESH::EDGE) ||
-            (aConstructorId == 1 && aGroup->GetType()!= SMESH::FACE))
-          return;
-
-        // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      }
+      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil())
+        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      else
+        return;
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
+      if (aNbUnits < 1)
+	return;
     }
-
-    if (aNbUnits < 1)
-      return;
-
     myNbOkElements = true;
   } else {
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
@@ -1064,11 +1026,20 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
       try {
 	SUIT_OverrideCursor aWaitCursor;
 	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
-	aMeshEditor->RotationSweep(anElementsId.inout(), 
-				   anAxis, 
-				   anAngle, 
-				   aNbSteps, 
-				   aTolerance);
+        if( CheckBoxMesh->isChecked() ) {
+	  if( GetConstructorId() == 0 )
+	    aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis,
+					       anAngle, aNbSteps, aTolerance);
+	  else
+	    aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis,
+					       anAngle, aNbSteps, aTolerance);
+	}
+	else
+	  aMeshEditor->RotationSweep(anElementsId.inout(), 
+				     anAxis, 
+				     anAngle, 
+				     aNbSteps, 
+				     aTolerance);
 	SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
 	mySimulation->SetData(aMeshPreviewStruct._retn());
       } catch (...) {}

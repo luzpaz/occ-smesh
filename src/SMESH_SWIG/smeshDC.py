@@ -161,7 +161,7 @@ def DegreesToRadians(AngleInDegrees):
     return AngleInDegrees * pi / 180.0
 
 # Salome notebook variable separator
-variable_separator = ":"
+var_separator = ":"
 
 # Parametrized substitute for PointStruct
 class PointStructStr:
@@ -294,34 +294,34 @@ class DirStructStr:
 
 # Returns list of variable values from salome notebook
 def ParsePointStruct(Point):
-    Parameters = "::"
+    Parameters = 2*var_separator
     if isinstance(Point, PointStructStr):
-        Parameters = str(Point.xStr) + ":" + str(Point.yStr) + ":" + str(Point.zStr)
+        Parameters = str(Point.xStr) + var_separator + str(Point.yStr) + var_separator + str(Point.zStr)
         Point = PointStruct(Point.x, Point.y, Point.z)
     return Point, Parameters
 
 # Returns list of variable values from salome notebook
 def ParseDirStruct(Dir):
-    Parameters = "::"
+    Parameters = 2*var_separator
     if isinstance(Dir, DirStructStr):
         pntStr = Dir.pointStruct
         if isinstance(pntStr, PointStructStr6):
-            Parameters = str(pntStr.x1Str) + ":" + str(pntStr.x2Str) + ":"
-            Parameters += str(pntStr.y1Str) + ":" + str(pntStr.y2Str) + ":" 
-            Parameters += str(pntStr.z1Str) + ":" + str(pntStr.z2Str)
+            Parameters = str(pntStr.x1Str) + var_separator + str(pntStr.x2Str) + var_separator
+            Parameters += str(pntStr.y1Str) + var_separator + str(pntStr.y2Str) + var_separator 
+            Parameters += str(pntStr.z1Str) + var_separator + str(pntStr.z2Str)
             Point = PointStruct(pntStr.x2 - pntStr.x1, pntStr.y2 - pntStr.y1, pntStr.z2 - pntStr.z1)
         else:
-            Parameters = str(pntStr.xStr) + ":" + str(pntStr.yStr) + ":" + str(pntStr.zStr)
+            Parameters = str(pntStr.xStr) + var_separator + str(pntStr.yStr) + var_separator + str(pntStr.zStr)
             Point = PointStruct(pntStr.x, pntStr.y, pntStr.z)
         Dir = DirStruct(Point)
     return Dir, Parameters
 
 # Returns list of variable values from salome notebook
 def ParseAxisStruct(Axis):
-    Parameters = 5*variable_separator
+    Parameters = 5*var_separator
     if isinstance(Axis, AxisStructStr):
-        Parameters = str(Axis.xStr) + variable_separator + str(Axis.yStr) + variable_separator + str(Axis.zStr) + variable_separator
-        Parameters += str(Axis.dxStr) + variable_separator + str(Axis.dyStr) + variable_separator + str(Axis.dzStr)
+        Parameters = str(Axis.xStr) + var_separator + str(Axis.yStr) + var_separator + str(Axis.zStr) + var_separator
+        Parameters += str(Axis.dxStr) + var_separator + str(Axis.dyStr) + var_separator + str(Axis.dzStr)
         Axis = AxisStruct(Axis.x, Axis.y, Axis.z, Axis.dx, Axis.dy, Axis.dz)
     return Axis, Parameters
 
@@ -338,7 +338,7 @@ def ParseAngles(list):
             pass
         
         Parameters = Parameters + str(parameter)
-        Parameters = Parameters + ":"
+        Parameters = Parameters + var_separator
         pass
     Parameters = Parameters[:len(Parameters)-1]
     return Result, Parameters
@@ -2431,7 +2431,7 @@ class Mesh:
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
         NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
-        Parameters = AxisParameters + ":" + AngleParameters + ":" + Parameters
+        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepMakeGroups(IDsOfElements, Axis,
@@ -2452,16 +2452,96 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                             MakeGroups=False, TotalAngle=False):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
+        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
+        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObjectMakeGroups(theObject, Axis, AngleInRadians,
                                                              NbOfSteps, Tolerance)
         self.editor.RotationSweepObject(theObject, Axis, AngleInRadians, NbOfSteps, Tolerance)
+        return []
+
+    ## Generates new elements by rotation of the elements of object around the axis
+    #  @param theObject object which elements should be sweeped
+    #  @param Axis the axis of rotation, AxisStruct or line(geom object)
+    #  @param AngleInRadians the angle of Rotation
+    #  @param NbOfSteps number of steps
+    #  @param Tolerance tolerance
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an angular size
+    #                    of all steps, else - size of each step
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @ingroup l2_modif_extrurev
+    def RotationSweepObject1D(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
+                              MakeGroups=False, TotalAngle=False):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+            Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
+        if TotalAngle and NbOfSteps:
+            AngleInRadians /= NbOfSteps
+        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
+        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
+        if MakeGroups:
+            return self.editor.RotationSweepObject1DMakeGroups(theObject, Axis, AngleInRadians,
+                                                               NbOfSteps, Tolerance)
+        self.editor.RotationSweepObject1D(theObject, Axis, AngleInRadians, NbOfSteps, Tolerance)
+        return []
+
+    ## Generates new elements by rotation of the elements of object around the axis
+    #  @param theObject object which elements should be sweeped
+    #  @param Axis the axis of rotation, AxisStruct or line(geom object)
+    #  @param AngleInRadians the angle of Rotation
+    #  @param NbOfSteps number of steps
+    #  @param Tolerance tolerance
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an angular size
+    #                    of all steps, else - size of each step
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @ingroup l2_modif_extrurev
+    def RotationSweepObject2D(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
+                              MakeGroups=False, TotalAngle=False):
+        flag = False
+        if isinstance(AngleInRadians,str):
+            flag = True
+        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
+        if flag:
+            AngleInRadians = DegreesToRadians(AngleInRadians)
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+            Axis = self.smeshpyD.GetAxisStruct(Axis)
+        Axis,AxisParameters = ParseAxisStruct(Axis)
+        if TotalAngle and NbOfSteps:
+            AngleInRadians /= NbOfSteps
+        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
+        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
+        if MakeGroups:
+            return self.editor.RotationSweepObject2DMakeGroups(theObject, Axis, AngleInRadians,
+                                                             NbOfSteps, Tolerance)
+        self.editor.RotationSweepObject2D(theObject, Axis, AngleInRadians, NbOfSteps, Tolerance)
         return []
 
     ## Generates new elements by extrusion of the elements with given ids
@@ -2478,7 +2558,7 @@ class Mesh:
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         StepVector,StepVectorParameters = ParseDirStruct(StepVector)
         NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
-        Parameters = StepVectorParameters + ":" + Parameters
+        Parameters = StepVectorParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
@@ -2518,6 +2598,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
+        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
+        Parameters = StepVectorParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
@@ -2535,6 +2619,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
+        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
+        Parameters = StepVectorParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObject1DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject1D(theObject, StepVector, NbOfSteps)
@@ -2552,6 +2640,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
+        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
+        Parameters = StepVectorParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObject2DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject2D(theObject, StepVector, NbOfSteps)
@@ -2590,7 +2682,7 @@ class Mesh:
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
-        Parameters = AnglesParameters + ":" + RefPointParameters
+        Parameters = AnglesParameters + var_separator + RefPointParameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh,
@@ -2620,6 +2712,8 @@ class Mesh:
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
                                  HasAngles, Angles, HasRefPoint, RefPoint,
                                  MakeGroups=False, LinearVariation=False):
+        Angles,AnglesParameters = ParseAngles(Angles)
+        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
@@ -2629,6 +2723,8 @@ class Mesh:
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
+        Parameters = AnglesParameters + var_separator + RefPointParameters
+        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh,
                                                                   PathShape, NodeStart, HasAngles,
@@ -2636,6 +2732,90 @@ class Mesh:
         return self.editor.ExtrusionAlongPathObject(theObject, PathMesh, PathShape,
                                                     NodeStart, HasAngles, Angles, HasRefPoint,
                                                     RefPoint)
+
+    ## Generates new elements by extrusion of the elements which belong to the object
+    #  The path of extrusion must be a meshed edge.
+    #  @param theObject the object which elements should be processed
+    #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
+    #  @param PathShape shape(edge) defines the sub-mesh for the path
+    #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
+    #  @param HasAngles allows the shape to be rotated around the path
+    #                   to get the resulting mesh in a helical fashion
+    #  @param Angles list of angles
+    #  @param HasRefPoint allows using the reference point
+    #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
+    #         The User can specify any point as the Reference Point.
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
+    #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
+    #          only SMESH::Extrusion_Error otherwise
+    #  @ingroup l2_modif_extrurev
+    def ExtrusionAlongPathObject1D(self, theObject, PathMesh, PathShape, NodeStart,
+                                   HasAngles, Angles, HasRefPoint, RefPoint,
+                                   MakeGroups=False, LinearVariation=False):
+        Angles,AnglesParameters = ParseAngles(Angles)
+        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+            RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
+        if ( isinstance( PathMesh, Mesh )):
+            PathMesh = PathMesh.GetMesh()
+        if HasAngles and Angles and LinearVariation:
+            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
+            pass
+        Parameters = AnglesParameters + var_separator + RefPointParameters
+        self.mesh.SetParameters(Parameters)
+        if MakeGroups:
+            return self.editor.ExtrusionAlongPathObject1DMakeGroups(theObject, PathMesh,
+                                                                    PathShape, NodeStart, HasAngles,
+                                                                    Angles, HasRefPoint, RefPoint)
+        return self.editor.ExtrusionAlongPathObject1D(theObject, PathMesh, PathShape,
+                                                      NodeStart, HasAngles, Angles, HasRefPoint,
+                                                      RefPoint)
+
+    ## Generates new elements by extrusion of the elements which belong to the object
+    #  The path of extrusion must be a meshed edge.
+    #  @param theObject the object which elements should be processed
+    #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
+    #  @param PathShape shape(edge) defines the sub-mesh for the path
+    #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
+    #  @param HasAngles allows the shape to be rotated around the path
+    #                   to get the resulting mesh in a helical fashion
+    #  @param Angles list of angles
+    #  @param HasRefPoint allows using the reference point
+    #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
+    #         The User can specify any point as the Reference Point.
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
+    #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
+    #          only SMESH::Extrusion_Error otherwise
+    #  @ingroup l2_modif_extrurev
+    def ExtrusionAlongPathObject2D(self, theObject, PathMesh, PathShape, NodeStart,
+                                   HasAngles, Angles, HasRefPoint, RefPoint,
+                                   MakeGroups=False, LinearVariation=False):
+        Angles,AnglesParameters = ParseAngles(Angles)
+        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+            RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
+        if ( isinstance( PathMesh, Mesh )):
+            PathMesh = PathMesh.GetMesh()
+        if HasAngles and Angles and LinearVariation:
+            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
+            pass
+        Parameters = AnglesParameters + var_separator + RefPointParameters
+        self.mesh.SetParameters(Parameters)
+        if MakeGroups:
+            return self.editor.ExtrusionAlongPathObject2DMakeGroups(theObject, PathMesh,
+                                                                    PathShape, NodeStart, HasAngles,
+                                                                    Angles, HasRefPoint, RefPoint)
+        return self.editor.ExtrusionAlongPathObject2D(theObject, PathMesh, PathShape,
+                                                      NodeStart, HasAngles, Angles, HasRefPoint,
+                                                      RefPoint)
 
     ## Creates a symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
@@ -2811,7 +2991,7 @@ class Mesh:
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         Axis,AxisParameters = ParseAxisStruct(Axis)
-        Parameters = AxisParameters + ":" + Parameters
+        Parameters = AxisParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateMakeGroups(IDsOfElements, Axis, AngleInRadians)
@@ -2838,7 +3018,7 @@ class Mesh:
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         Axis,AxisParameters = ParseAxisStruct(Axis)
-        Parameters = AxisParameters + ":" + Parameters
+        Parameters = AxisParameters + var_separator + Parameters
         mesh = self.editor.RotateMakeMesh(IDsOfElements, Axis, AngleInRadians,
                                           MakeGroups, NewMeshName)
         mesh.SetParameters(Parameters)
@@ -4351,7 +4531,7 @@ def ParseParameters(last, nbParams,nbParam, value):
                 strResult=strResult+str(value)
                 result = value
         if nbParams - 1 != counter:
-            strResult=strResult+variable_separator #":"
+            strResult=strResult+var_separator #":"
         counter = counter+1
     return result, strResult
 

@@ -516,7 +516,13 @@ void SMESH_NoteBook::ReplaceVariables()
 	  aStates->IncrementState();
 	}
 	else if(aMethod.IsEqual("ExtrusionSweep") ||
-		aMethod.IsEqual("ExtrusionSweepMakeGroups")) {
+		aMethod.IsEqual("ExtrusionSweepObject") ||
+		aMethod.IsEqual("ExtrusionSweepObject1D") ||
+		aMethod.IsEqual("ExtrusionSweepObject2D") ||
+		aMethod.IsEqual("ExtrusionSweepMakeGroups") ||
+		aMethod.IsEqual("ExtrusionSweepObjectMakeGroups") ||
+		aMethod.IsEqual("ExtrusionSweepObject1DMakeGroups") ||
+		aMethod.IsEqual("ExtrusionSweepObject2DMakeGroups")) {
 	  bool isSubstitute = false;
 	  int anArgIndex = 0;
 	  for(int i = 1, n = aCmd->GetNbArgs(); i <= n; i++) {
@@ -541,9 +547,12 @@ void SMESH_NoteBook::ReplaceVariables()
 	  aStates->IncrementState();
 	}
 	else if(aMethod.IsEqual("ExtrusionAlongPath") ||
+		aMethod.IsEqual("ExtrusionAlongPathObject") ||
 		aMethod.IsEqual("ExtrusionAlongPathMakeGroups") ||
+		aMethod.IsEqual("ExtrusionAlongPathObjectMakeGroups") ||
 		/* workaround for a bug in the command parsing algorithm */
-		aCmd->GetString().Search("ExtrusionAlongPathMakeGroups") != -1) {
+		aCmd->GetString().Search("ExtrusionAlongPathMakeGroups") != -1 ||
+		aCmd->GetString().Search("ExtrusionAlongPathObjectMakeGroups") != -1 ) {
 	  int aNbAngles = aCurrentStateSize-3; // State looks like "Angle1:...:AngleN:X:Y:Z"
 	  bool isSubstitute = false;
 	  int anArgIndex = 0;
@@ -580,7 +589,9 @@ void SMESH_NoteBook::ReplaceVariables()
 	  aStates->IncrementState();
 	}
 	else if(aMethod.IsEqual("Smooth") ||
-		aMethod.IsEqual("SmoothParametric")) {
+		aMethod.IsEqual("SmoothObject") ||
+		aMethod.IsEqual("SmoothParametric") ||
+		aMethod.IsEqual("SmoothParametricObject")) {
 	  int anArgIndex = aCmd->GetNbArgs() - 2;
 	  for(int j = 0; j < aCurrentStateSize; j++) {
 	    if(!aCurrentState.at(j).IsEmpty())

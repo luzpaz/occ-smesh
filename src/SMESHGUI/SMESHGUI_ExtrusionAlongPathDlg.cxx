@@ -483,45 +483,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   SMESH::long_array_var anElementsId = new SMESH::long_array;
 
-  if (MeshCheck->isChecked()) {
-    // If "Select whole mesh, submesh or group" check box is on ->
-    // get all elements of the required type from the object selected
-
-    // if MESH object is selected
-    if (!CORBA::is_nil(SMESH::SMESH_Mesh::_narrow(myIDSource))) {
-      // get mesh
-      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(myIDSource);
-      // get IDs from mesh...
-      if (Elements1dRB->isChecked())
-	// 1d elements
-	anElementsId = aMesh->GetElementsByType(SMESH::EDGE);
-      else if (Elements2dRB->isChecked()) {
-	anElementsId = aMesh->GetElementsByType(SMESH::FACE);
-      }
-    }
-    // SUBMESH is selected
-    if (!CORBA::is_nil(SMESH::SMESH_subMesh::_narrow(myIDSource))) {
-      // get submesh
-      SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(myIDSource);
-      // get IDs from submesh
-      if (Elements1dRB->isChecked())
-	// 1d elements
-	anElementsId = aSubMesh->GetElementsByType(SMESH::EDGE);
-      else if (Elements2dRB->isChecked())
-	// 2d elements
-	anElementsId = aSubMesh->GetElementsByType(SMESH::FACE);
-    }
-    // GROUP is selected
-    if (!CORBA::is_nil(SMESH::SMESH_GroupBase::_narrow(myIDSource))) {
-      // get smesh group
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(myIDSource);
-      // get IDs from group
-      // 1d elements or 2d elements
-      if (Elements1dRB->isChecked() && aGroup->GetType() == SMESH::EDGE ||
-	  Elements2dRB->isChecked() && aGroup->GetType() == SMESH::FACE)
-	anElementsId = aGroup->GetListOfID();
-    }
-  } else {
+  if (!MeshCheck->isChecked()) {
     // If "Select whole mesh, submesh or group" check box is off ->
     // use only elements of given type selected by user
 
@@ -546,10 +508,10 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       }
       anElementsId->length(j);
     }
-  }
 
-  if (anElementsId->length() <= 0) {
-    return false;
+    if (anElementsId->length() <= 0) {
+      return false;
+    }
   }
 
   if (StartPointLineEdit->text().trimmed().isEmpty()) {
@@ -596,17 +558,47 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       anAngles = aMeshEditor->LinearAnglesVariation( myPathMesh, myPathShape, anAngles );
 
     SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
-    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
-      SMESH::ListOfGroups_var groups = 
-        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
-                                                  myPathShape, aNodeStart,
-                                                  AnglesGrp->isChecked(), anAngles,
-                                                  BasePointGrp->isChecked(), aBasePoint, retVal);
-    else
-      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
-                                               myPathShape, aNodeStart,
-                                               AnglesGrp->isChecked(), anAngles,
-                                               BasePointGrp->isChecked(), aBasePoint);
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
+      if( MeshCheck->isChecked() ) {
+	if( GetConstructorId() == 0 )
+	  SMESH::ListOfGroups_var groups = 
+	    aMeshEditor->ExtrusionAlongPathObject1DMakeGroups(myIDSource, myPathMesh,
+							      myPathShape, aNodeStart,
+							      AnglesGrp->isChecked(), anAngles,
+							      BasePointGrp->isChecked(), aBasePoint, retVal);
+	else
+	  SMESH::ListOfGroups_var groups = 
+	    aMeshEditor->ExtrusionAlongPathObject2DMakeGroups(myIDSource, myPathMesh,
+							      myPathShape, aNodeStart,
+							      AnglesGrp->isChecked(), anAngles,
+							      BasePointGrp->isChecked(), aBasePoint, retVal);
+      }
+      else
+	SMESH::ListOfGroups_var groups = 
+	  aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
+						    myPathShape, aNodeStart,
+						    AnglesGrp->isChecked(), anAngles,
+						    BasePointGrp->isChecked(), aBasePoint, retVal);
+    }
+    else {
+      if( MeshCheck->isChecked() ) {
+	if( GetConstructorId() == 0 )
+	  retVal = aMeshEditor->ExtrusionAlongPathObject1D(myIDSource, myPathMesh,
+							   myPathShape, aNodeStart,
+							   AnglesGrp->isChecked(), anAngles,
+							   BasePointGrp->isChecked(), aBasePoint);
+	else
+	  retVal = aMeshEditor->ExtrusionAlongPathObject2D(myIDSource, myPathMesh,
+							   myPathShape, aNodeStart,
+							   AnglesGrp->isChecked(), anAngles,
+							   BasePointGrp->isChecked(), aBasePoint);
+      }
+      else
+	retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
+						 myPathShape, aNodeStart,
+						 AnglesGrp->isChecked(), anAngles,
+						 BasePointGrp->isChecked(), aBasePoint);
+    }
 
     if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
       myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );

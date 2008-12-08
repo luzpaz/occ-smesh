@@ -282,6 +282,48 @@ module SMESH
                                                in long            NbOfSteps,
                                                in double          Tolerance);
     /*!
+     * \brief Genarate dim+1 elements by rotation of the object around axis
+     * \param theObject - object containing elements to ratate
+     * \param Axix - rotation axis
+     * \param AngleInRadians - rotation angle
+     * \param NbOfSteps - number of elements to generate from one element
+     */
+    void RotationSweepObject1D(in SMESH_IDSource  theObject,
+			       in AxisStruct      Axix,
+			       in double          AngleInRadians,
+			       in long            NbOfSteps,
+			       in double          Tolerance);
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups RotationSweepObject1DMakeGroups(in SMESH_IDSource  theObject,
+						 in AxisStruct      Axix,
+						 in double          AngleInRadians,
+						 in long            NbOfSteps,
+						 in double          Tolerance);
+    /*!
+     * \brief Genarate dim+1 elements by rotation of the object around axis
+     * \param theObject - object containing elements to ratate
+     * \param Axix - rotation axis
+     * \param AngleInRadians - rotation angle
+     * \param NbOfSteps - number of elements to generate from one element
+     */
+    void RotationSweepObject2D(in SMESH_IDSource  theObject,
+			       in AxisStruct      Axix,
+			       in double          AngleInRadians,
+			       in long            NbOfSteps,
+			       in double          Tolerance);
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups RotationSweepObject2DMakeGroups(in SMESH_IDSource  theObject,
+						 in AxisStruct      Axix,
+						 in double          AngleInRadians,
+						 in long            NbOfSteps,
+						 in double          Tolerance);
+    /*!
      * \brief Genarate dim+1 elements by extrusion of elements along vector
      * \param IDsOfElements - elements to sweep
      * \param StepVector - vector giving direction and distance of an extrusion step
@@ -385,6 +427,42 @@ module SMESH
                                                     in boolean           HasRefPoint,
                                                     in PointStruct       RefPoint,
                                                     out Extrusion_Error  Error);
+
+    Extrusion_Error ExtrusionAlongPathObject1D(in SMESH_IDSource    theObject,
+					       in SMESH_Mesh        PathMesh,
+					       in GEOM::GEOM_Object PathShape,
+					       in long              NodeStart,
+					       in boolean           HasAngles,
+					       in double_array      Angles,
+					       in boolean           HasRefPoint,
+					       in PointStruct       RefPoint);
+    ListOfGroups ExtrusionAlongPathObject1DMakeGroups(in SMESH_IDSource    theObject,
+						      in SMESH_Mesh        PathMesh,
+						      in GEOM::GEOM_Object PathShape,
+						      in long              NodeStart,
+						      in boolean           HasAngles,
+						      in double_array      Angles,
+						      in boolean           HasRefPoint,
+						      in PointStruct       RefPoint,
+						      out Extrusion_Error  Error);
+
+    Extrusion_Error ExtrusionAlongPathObject2D(in SMESH_IDSource    theObject,
+					       in SMESH_Mesh        PathMesh,
+					       in GEOM::GEOM_Object PathShape,
+					       in long              NodeStart,
+					       in boolean           HasAngles,
+					       in double_array      Angles,
+					       in boolean           HasRefPoint,
+					       in PointStruct       RefPoint);
+    ListOfGroups ExtrusionAlongPathObject2DMakeGroups(in SMESH_IDSource    theObject,
+						      in SMESH_Mesh        PathMesh,
+						      in GEOM::GEOM_Object PathShape,
+						      in long              NodeStart,
+						      in boolean           HasAngles,
+						      in double_array      Angles,
+						      in boolean           HasRefPoint,
+						      in PointStruct       RefPoint,
+						      out Extrusion_Error  Error);
 
    /*!
     * Compute rotation angles for ExtrusionAlongPath as linear variation

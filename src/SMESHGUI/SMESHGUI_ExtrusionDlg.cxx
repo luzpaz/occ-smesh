@@ -87,7 +87,8 @@
 SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
@@ -382,11 +383,29 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
-      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
-        SMESH::ListOfGroups_var groups = 
-          aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
-      else
-        aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
+        if( CheckBoxMesh->isChecked() ) {
+	  if( GetConstructorId() == 0 )
+	    SMESH::ListOfGroups_var groups = 
+	      aMeshEditor->ExtrusionSweepObject1DMakeGroups(mySelectedObject, aVector, aNbSteps);
+	  else
+	    SMESH::ListOfGroups_var groups = 
+	      aMeshEditor->ExtrusionSweepObject2DMakeGroups(mySelectedObject, aVector, aNbSteps);
+	}
+	else
+	  SMESH::ListOfGroups_var groups = 
+	    aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
+      }
+      else {
+	if( CheckBoxMesh->isChecked() ) {
+	  if( GetConstructorId() == 0 )
+	    aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
+	  else
+	    aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+	}
+	else
+	  aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+      }
 
       myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
@@ -398,6 +417,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
   }
   return true;
@@ -561,40 +581,20 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     }
 
     if (CheckBoxMesh->isChecked()) {
-      SMESH::ElementType neededType = GetConstructorId() ? SMESH::FACE : SMESH::EDGE;
-
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
-
-      if (!mesh->_is_nil()) { //MESH
-        // get elements from mesh
-          myElementsId = mesh->GetElementsByType(neededType);
-          aNbElements = myElementsId->length();
-      } else {
-        SMESH::SMESH_subMesh_var aSubMesh =
-          SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-        
-        if (!aSubMesh->_is_nil()) { //SUBMESH
-          // get IDs from submesh
-          myElementsId = aSubMesh->GetElementsByType(neededType);
-          aNbElements = myElementsId->length();
-        } else {
-          SMESH::SMESH_GroupBase_var aGroup = 
-            SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-
-          if (!aGroup->_is_nil() && aGroup->GetType() == neededType) { // GROUP
-            // get IDs from smesh group
-            myElementsId = aGroup->GetListOfID();
-            aNbElements = myElementsId->length();
-          }
-        }
-      }
+      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil())
+        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      else
+        return;
     } else {
       // get indices of selcted elements
       TColStd_IndexedMapOfInteger aMapIndex;
       mySelector->GetIndex(IO,aMapIndex);
       aNbElements = aMapIndex.Extent();
+
+      if (aNbElements < 1)
+	return;
 
       myElementsId = new SMESH::long_array;
       myElementsId->length( aNbElements );
@@ -602,9 +602,6 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
       for ( int i = 0; i < aNbElements; ++i )
         aString += QString(" %1").arg( myElementsId[ i ] = aMapIndex( i+1 ) );
     }
-
-    if (aNbElements < 1)
-      return;
 
     myNbOkElements = true;
   }
