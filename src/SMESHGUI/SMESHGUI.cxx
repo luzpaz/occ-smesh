@@ -1875,11 +1875,18 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-    
+
     case 810: // Union Groups
     case 811: // Intersect groups
     case 812: // Cut groups
     {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
+				  tr( "NOT_A_VTK_VIEWER" ) );
+        break;
+      }
+
       if ( checkLock( aStudy ) )
         break;
 
@@ -2932,8 +2939,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   // popup for object browser
 
   createPopupItem( 150, OB, mesh, "&& selcount=1 && isImported" );      // FILE INFORMATION
-  createPopupItem( 703, OB, mesh, "&& isComputable");      // CREATE_SUBMESH
-  createPopupItem( 703, OB, subMesh, "&& isComputable" );  // CREATE_SUBMESH
   createPopupItem( 704, OB, mesh, "&& isComputable");      // EDIT_MESHSUBMESH
   createPopupItem( 704, OB, subMesh, "&& isComputable" );  // EDIT_MESHSUBMESH
   createPopupItem( 803, OB, group );                       // EDIT_GROUP
@@ -3462,23 +3467,11 @@ void SMESHGUI::createPreferences()
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
   setPreferenceProperty( fontGr, "columns", 2 );
 
-  int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
+  addVtkFontPref( tr( "SMESH_TITLE" ), fontGr, "scalar_bar_title_font" );
   addPreference( tr( "PREF_TITLE_COLOR" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
-  int lfont = addPreference( tr( "SMESH_LABELS" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_label_font" );
+
+  addVtkFontPref( tr( "SMESH_LABELS" ), fontGr, "scalar_bar_label_font" );
   addPreference( tr( "PREF_LABELS_COLOR" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_label_color" );
-
-  QStringList fam;
-  fam.append( tr( "SMESH_FONT_ARIAL" ) );
-  fam.append( tr( "SMESH_FONT_COURIER" ) );
-  fam.append( tr( "SMESH_FONT_TIMES" ) );
-  int wflag = ( QtxFontEdit::Family | QtxFontEdit::Scripting );
-
-  setPreferenceProperty( tfont, "families", fam );
-  setPreferenceProperty( tfont, "system", false );
-  setPreferenceProperty( tfont, "widget_flags", wflag );
-  setPreferenceProperty( lfont, "families", fam );
-  setPreferenceProperty( lfont, "system", false );
-  setPreferenceProperty( lfont, "widget_flags", wflag );
 
   int colorsLabelsGr = addPreference( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), sbarTab );
   setPreferenceProperty( colorsLabelsGr, "columns", 2 );
@@ -4188,3 +4181,35 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
     }
   }
 }
+
+/*!
+  \brief Adds preferences for dfont of VTK viewer
+  \param label label
+  \param pIf group identifier
+  \param param parameter
+  \return identifier of preferences
+*/
+int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param )
+{
+  int tfont = addPreference( label, pId, LightApp_Preferences::Font, "VISU", param );
+  
+  setPreferenceProperty( tfont, "mode", QtxFontEdit::Custom );
+
+  QStringList fam;
+  fam.append( tr( "SMESH_FONT_ARIAL" ) );
+  fam.append( tr( "SMESH_FONT_COURIER" ) );
+  fam.append( tr( "SMESH_FONT_TIMES" ) );
+
+  setPreferenceProperty( tfont, "fonts", fam );
+
+  int f = QtxFontEdit::Family | QtxFontEdit::Bold | QtxFontEdit::Italic | QtxFontEdit::Shadow;
+  setPreferenceProperty( tfont, "features", f );
+
+  return tfont;
+}
+
+
+
+
+
+

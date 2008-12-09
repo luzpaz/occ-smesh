@@ -314,7 +314,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
     
     myTitleBoldCheck->setChecked  ( f.bold() );
     myTitleItalicCheck->setChecked( f.italic() );
-    myTitleShadowCheck->setChecked( f.underline() );
+    myTitleShadowCheck->setChecked( f.overline() );
   }
 				      
   QColor labelColor = mgr->colorValue("SMESH", "scalar_bar_label_color", 
@@ -332,7 +332,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
       
     myLabelsBoldCheck  ->setChecked( f.bold() );
     myLabelsItalicCheck->setChecked( f.italic() );
-    myLabelsShadowCheck->setChecked( f.underline() );
+    myLabelsShadowCheck->setChecked( f.overline() );
   }
 
   int aNbColors = mgr->integerValue("SMESH", "scalar_bar_num_colors", 64);

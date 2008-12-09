@@ -149,6 +149,9 @@ protected:
 
 private:
   void                            OnEditDelete();
+  int                             addVtkFontPref( const QString& label, 
+                                                  const int pId, 
+                                                  const QString& param );
 
 private :
   static SMESH::SMESH_Gen_var     myComponentSMESH;
