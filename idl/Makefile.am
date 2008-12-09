@@ -66,7 +66,8 @@ libSalomeIDLSMESH_la_LDFLAGS = -no-undefined -version-info=0:0:0
 libSalomeIDLSMESH_la_LIBADD  =		\
 	@CORBA_LIBS@			\
 	$(MED_LDFLAGS) -lSalomeIDLMED	\
-	$(GEOM_LDFLAGS) -lSalomeIDLGEOM
+	$(GEOM_LDFLAGS) -lSalomeIDLGEOM \
+	$(KERNEL_LDFLAGS) -lSalomeIDLKernel
 
 # These variables defines the building process of CORBA files
 OMNIORB_IDL         = @OMNIORB_IDL@
