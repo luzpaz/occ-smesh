@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
 
 class SMESH_Gen;
 class SMESH_Mesh;
@@ -242,6 +243,18 @@ public:
   static bool GetNodeParamOnEdge(const SMESHDS_Mesh*     theMesh,
                                  const TopoDS_Edge&      theEdge,
                                  std::vector< double > & theParams);
+  /*!
+   * \brief Fill map of node parameter on geometrical edge to node it-self
+   * \param theMesh - The mesh containing nodes
+   * \param theEdge - The geometrical edge of interest
+   * \param theNodes - The resulting map
+   * \param ignoreMediumNodes - to store medium nodes of quadratic elements or not
+   * \retval bool - false if not all parameters are OK
+   */
+  static bool GetSortedNodesOnEdge(const SMESHDS_Mesh*                        theMesh,
+                                   const TopoDS_Edge&                         theEdge,
+                                   const bool                                 ignoreMediumNodes,
+                                   std::map< double, const SMDS_MeshNode* > & theNodes);
   /*!
    * \brief Find out elements orientation on a geometrical face
    * \param theFace - The face correctly oriented in the shape being meshed

@@ -362,6 +362,70 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
 
 //================================================================================
 /*!
+ * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
+ * \param theMesh - The mesh containing nodes
+ * \param theEdge - The geometrical edge of interest
+ * \param theParams - The resulting vector of sorted node parameters
+ * \retval bool - false if not all parameters are OK
+ */
+//================================================================================
+
+bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theMesh,
+                                      const TopoDS_Edge&                    theEdge,
+                                      const bool                            ignoreMediumNodes,
+                                      map< double, const SMDS_MeshNode* > & theNodes)
+{
+  theNodes.clear();
+
+  if ( !theMesh || theEdge.IsNull() )
+    return false;
+
+  SMESHDS_SubMesh * eSubMesh = theMesh->MeshElements( theEdge );
+  if ( !eSubMesh || !eSubMesh->GetElements()->more() )
+    return false; // edge is not meshed
+
+  int nbNodes = 0;
+  set < double > paramSet;
+  if ( eSubMesh )
+  {
+    // loop on nodes of an edge: sort them by param on edge
+    SMDS_NodeIteratorPtr nIt = eSubMesh->GetNodes();
+    while ( nIt->more() )
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      if ( ignoreMediumNodes ) {
+        SMDS_ElemIteratorPtr elemIt = node->GetInverseElementIterator();
+        if ( elemIt->more() && elemIt->next()->IsMediumNode( node ))
+          continue;
+      }
+      const SMDS_PositionPtr& pos = node->GetPosition();
+      if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
+        return false;
+      const SMDS_EdgePosition* epos =
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+      theNodes.insert( make_pair( epos->GetUParameter(), node ));
+      ++nbNodes;
+    }
+  }
+  // add vertex nodes
+  TopoDS_Vertex v1, v2;
+  TopExp::Vertices(theEdge, v1, v2);
+  const SMDS_MeshNode* n1 = VertexNode( v1, (SMESHDS_Mesh*) theMesh );
+  const SMDS_MeshNode* n2 = VertexNode( v2, (SMESHDS_Mesh*) theMesh );
+  Standard_Real f, l;
+  BRep_Tool::Range(theEdge, f, l);
+  if ( v1.Orientation() != TopAbs_FORWARD )
+    std::swap( f, l );
+  if ( n1 && ++nbNodes )
+    theNodes.insert( make_pair( f, n1 ));
+  if ( n2 && ++nbNodes )
+    theNodes.insert( make_pair( l, n2 ));
+
+  return theNodes.size() == nbNodes;
+}
+
+//================================================================================
+/*!
  * \brief Make filter recognize only compatible hypotheses
  * \param theFilter - the filter to initialize
  * \param ignoreAuxiliary - make filter ignore compatible auxiliary hypotheses
