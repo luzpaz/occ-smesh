@@ -1598,7 +1598,7 @@ void SMESH_ActorDef::UpdateScalarBar()
     else
      aScalarBarTitleProp->ItalicOff();
 
-    if ( f.underline() )
+    if ( f.overline() )
       aScalarBarTitleProp->ShadowOn();
     else
       aScalarBarTitleProp->ShadowOff();
@@ -1633,7 +1633,7 @@ void SMESH_ActorDef::UpdateScalarBar()
     else
       aScalarBarLabelProp->ItalicOff();
 
-    if( f.underline() )
+    if( f.overline() )
       aScalarBarLabelProp->ShadowOn();
     else
       aScalarBarLabelProp->ShadowOff();
