@@ -164,6 +164,13 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Set the object name
+     */
+    void SetName( in string theObjectIOR,
+		  in string theObjectName )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Create a Mesh object, given a geometry shape.
      * Mesh is created empty (no points, no elements).
      * Shape is explored via GEOM_Client to create local copies.
@@ -174,7 +181,7 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
     
     /*!
-     * Create a empty mesh object
+     * Create an empty mesh object
      */
     SMESH_Mesh CreateEmptyMesh()
       raises ( SALOME::SALOME_Exception );
