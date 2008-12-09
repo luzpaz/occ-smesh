@@ -2027,7 +2027,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if( aSel )
         aSel->selectedObjects( selected );
 
-      bool isAny = false; // iss there any appropriate object selected
+      bool isAny = false; // is there any appropriate object selected
 
       SALOME_ListIteratorOfListIO It( selected );
       for ( ; It.More(); It.Next() )
@@ -2055,14 +2055,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
               newName = LightApp_NameDlg::getName(desktop(), newName);
               if ( !newName.isEmpty() )
               {
-                //old source: aStudy->renameIObject( IObject, newName );
-                aName->SetValue( newName.toLatin1().constData() );
-
-                // if current object is group update group's name
-                SMESH::SMESH_GroupBase_var aGroup =
-                  SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-                if (!aGroup->_is_nil() )
-                  aGroup->SetName( newName.toLatin1().constData() );
+                SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), newName.toLatin1().data());
 
                 updateObjBrowser();
               }

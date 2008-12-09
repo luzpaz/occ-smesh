@@ -131,12 +131,7 @@ namespace SMESH
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
       return;
-    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-    _PTR(GenericAttribute) anAttr =
-      aBuilder->FindOrCreateAttribute(theSObject, "AttributeName");
-    _PTR(AttributeName) aName = anAttr;
-    if (aName)
-      aName->SetValue(theName.toLatin1().data());
+    SMESHGUI::GetSMESHGen()->SetName(theSObject->GetIOR().c_str(), theName.toLatin1().data());
   }
 
   void SetValue (_PTR(SObject) theSObject, const QString& theValue)

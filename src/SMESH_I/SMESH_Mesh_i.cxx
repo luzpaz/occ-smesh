@@ -1988,10 +1988,6 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
 {
   Unexpect aCatch(SALOME_SalomeException);
 
-  // Update Python script
-  TPythonDump() << _this() << ".ExportToMED( '"
-                << file << "', " << auto_groups << ", " << theVersion << " )";
-
   // Perform Export
   PrepareForWriting(file);
   const char* aMeshName = "Mesh";
@@ -2000,10 +1996,6 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
     SALOMEDS::SObject_var aMeshSO = _gen_i->ObjectToSObject( aStudy, _this() );
     if ( !aMeshSO->_is_nil() ) {
       aMeshName = aMeshSO->GetName();
-      //SCRUTE(file);
-      //SCRUTE(aMeshName);
-      //SCRUTE(aMeshSO->GetID());
-
       // asv : 27.10.04 : fix of 6903: check for StudyLocked before adding attributes
       if ( !aStudy->GetProperties()->IsLocked() )
 	{
@@ -2022,6 +2014,16 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
 	}
     }
   }
+  // Update Python script
+  // set name of mesh before export
+  TPythonDump() << _gen_i << ".SetName(" << _this() << ", '" << aMeshName << "')";
+  
+  // check names of groups
+  checkGroupNames();
+
+  TPythonDump() << _this() << ".ExportToMED( '"
+                << file << "', " << auto_groups << ", " << theVersion << " )";
+
   _impl->ExportMED( file, aMeshName, auto_groups, theVersion );
 }
 
@@ -2038,6 +2040,8 @@ void SMESH_Mesh_i::ExportDAT (const char *file)
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
+  // check names of groups
+  checkGroupNames();
   TPythonDump() << _this() << ".ExportDAT( '" << file << "' )";
 
   // Perform Export
@@ -2051,6 +2055,8 @@ void SMESH_Mesh_i::ExportUNV (const char *file)
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
+  // check names of groups
+  checkGroupNames();
   TPythonDump() << _this() << ".ExportUNV( '" << file << "' )";
 
   // Perform Export
@@ -2064,6 +2070,8 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
+  // check names of groups
+  checkGroupNames();
   TPythonDump() << _this() << ".ExportSTL( '" << file << "', " << isascii << " )";
 
   // Perform Export
@@ -2999,4 +3007,42 @@ SALOME_MED::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
     res->fileSize = res->major = res->minor = res->release = -1;
   }
   return res._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief Check and correct names of mesh groups
+ */
+//=============================================================================
+
+void SMESH_Mesh_i::checkGroupNames()
+{
+  int nbGrp = NbGroups();
+  if ( !nbGrp )
+    return;
+
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( aStudy->_is_nil() )
+    return; // nothing to do
+  
+  SMESH::ListOfGroups* grpList = 0;
+  // avoid dump of "GetGroups"
+  {
+    // store python dump into a local variable inside local scope
+    SMESH::TPythonDump pDump; // do not delete this line of code
+    grpList = GetGroups();
+  }
+
+  for ( int gIndx = 0; gIndx < nbGrp; gIndx++ ) {
+    SMESH::SMESH_GroupBase_ptr aGrp = (*grpList)[ gIndx ];
+    if ( !aGrp )
+      continue;
+    SALOMEDS::SObject_var aGrpSO = _gen_i->ObjectToSObject( aStudy, aGrp );
+    if ( aGrpSO->_is_nil() )
+      continue;
+    // correct name of the mesh group if necessary
+    const char* guiName = aGrpSO->GetName();
+    if ( strcmp(guiName, aGrp->GetName()) )
+      aGrp->SetName( guiName );
+  }
 }

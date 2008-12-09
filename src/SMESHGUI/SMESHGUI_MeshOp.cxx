@@ -1493,6 +1493,9 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
 
   // create sub-mesh
   SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.toLatin1().data() );
+  _PTR(SObject) aSubMeshSO = SMESH::FindSObject( aSubMeshVar.in() );
+  if ( aSubMeshSO )
+    SMESH::SetName( aSubMeshSO, aName.toLatin1().data() );
 
   for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ )
   {

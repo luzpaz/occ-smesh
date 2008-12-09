@@ -4147,6 +4147,25 @@ CORBA::Long SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
 }
 
 //=============================================================================
+/*!
+ *  SMESH_Gen_i::SetName
+ *
+ *  Set a new object name
+ */
+//=============================================================================
+void SMESH_Gen_i::SetName(const char* theIOR,
+                          const char* theName)
+{
+  if ( theIOR && strcmp( theIOR, "" ) ) {
+    CORBA::Object_var anObject = GetORB()->string_to_object( theIOR );
+    SALOMEDS::SObject_var aSO = ObjectToSObject( myCurrentStudy, anObject );
+    if ( !aSO->_is_nil() ) {
+      SetName( aSO, theName );
+    }
+  }
+}
+
+//=============================================================================
 /*! 
  *  SMESHEngine_factory
  *

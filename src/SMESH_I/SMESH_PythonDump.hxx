@@ -53,7 +53,8 @@ public:
    */
   static TCollection_AsciiString
   ConvertScript(const TCollection_AsciiString& theScript,
-                Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod);
+                Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
+		Resource_DataMapOfAsciiStringAsciiString& theObjectNames);
 
   /*!
    * \brief Return the name of the python file wrapping IDL API

@@ -59,10 +59,10 @@ namespace SMESH
   {
     if(--myCounter == 0){
       SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+      std::string aString = myStream.str();
+      TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
       SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-      if(!aStudy->_is_nil()){
-	std::string aString = myStream.str();
-	TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
+      if(!aStudy->_is_nil() && !aCollection.IsEmpty()){
 	aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
 	if(MYDEBUG) MESSAGE(aString);
       }
@@ -684,7 +684,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   // Some objects are wrapped with python classes and
   // Resource_DataMapOfAsciiStringAsciiString holds methods returning wrapped objects
   Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
-  aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod );
+  aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod, theObjectNames );
 
   // Find entries to be replaced by names
   Handle(TColStd_HSequenceOfInteger) aSeq = FindEntries(aScript);
@@ -832,8 +832,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
 
   // Set object names
   anUpdatedScript += "\n\t## set object names";
-  anUpdatedScript += helper + "  \n\tisGUIMode = " + isPublished;
-  anUpdatedScript += "\n\tif isGUIMode and salome.sg.hasDesktop():";
 //   anUpdatedScript += "\n\t\tsmeshgui = salome.ImportComponentGUI(\"SMESH\")";
 //   anUpdatedScript += "\n\t\tsmeshgui.Init(theStudy._get_StudyId())";
 //   anUpdatedScript += "\n";
@@ -852,13 +850,14 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       aName = theObjectNames.Find(anEntry);
       aGUIName = theNames.Find(anEntry);
       mapEntries.Bind(anEntry, aName);
-      anUpdatedScript += helper + "\n\t\t" + aSmeshpy + ".SetName(" + aName;
+      anUpdatedScript += helper + "\n\t" + aSMESHGen + ".SetName(" + aName;
       if ( anEntry2AccessorMethod.IsBound( anEntry ) )
         anUpdatedScript += helper + "." + anEntry2AccessorMethod( anEntry );
       anUpdatedScript += helper + ", '" + aGUIName + "')";
     }
   }
-  anUpdatedScript += "\n\n\t\tsalome.sg.updateObjBrowser(0)";
+  anUpdatedScript += "\n\tif salome.sg.hasDesktop():";
+  anUpdatedScript += "\n\t\tsalome.sg.updateObjBrowser(0)";
 
   // -----------------------------------------------------------------
   // store visual properties of displayed objects
@@ -874,7 +873,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       CORBA::string_free(script);
     }
   }
-
   anUpdatedScript += "\n\n\tpass\n";
 
   // -----------------------------------------------------------------

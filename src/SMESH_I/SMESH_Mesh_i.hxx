@@ -472,6 +472,12 @@ public:
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
+  /*!
+   * Check and correct names of mesh groups
+   */
+  void checkGroupNames();
+
+private:
 
   static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here

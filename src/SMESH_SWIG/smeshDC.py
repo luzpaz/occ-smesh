@@ -172,18 +172,6 @@ def GetName(obj):
         attr = sobj.FindAttribute("AttributeName")[1]
         return attr.Value()
 
-## Sets a name to the object
-def SetName(obj, name):
-    if isinstance( obj, Mesh ):
-        obj = obj.GetMesh()
-    elif isinstance( obj, Mesh_Algorithm ):
-        obj = obj.GetAlgorithm()
-    ior  = salome.orb.object_to_string(obj)
-    sobj = salome.myStudy.FindObjectIOR(ior)
-    if not sobj is None:
-        attr = sobj.FindAttribute("AttributeName")[1]
-        attr.SetValue(name)
-
 ## Prints error message if a hypothesis was not assigned.
 def TreatHypoStatus(status, hypName, geomName, isAlgo):
     if isAlgo:
@@ -313,6 +301,19 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
     # From SMESH_Gen interface:
     # ------------------------
+
+    ## Sets the given name to the object
+    #  @param obj the object to rename
+    #  @param name a new object name
+    #  @ingroup l1_auxiliary
+    def SetName(self, obj, name):
+        print "obj_name = ", name
+        if isinstance( obj, Mesh ):
+            obj = obj.GetMesh()
+        elif isinstance( obj, Mesh_Algorithm ):
+            obj = obj.GetAlgorithm()
+        ior  = salome.orb.object_to_string(obj)
+        SMESH._objref_SMESH_Gen.SetName(self, ior, name)
 
     ## Sets the current mode
     #  @ingroup l1_auxiliary
@@ -557,6 +558,12 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         else:
             print "Error: given parameter is not numerucal functor type."
 
+    ## Creates hypothesis
+    #  @param 
+    #  @param 
+    #  @return created hypothesis instance
+    def CreateHypothesis(self, theHType, theLibName="libStdMeshersEngine.so"):
+        return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
 
 import omniORB
 #Registering the new proxy for SMESH_Gen
@@ -600,9 +607,9 @@ class Mesh:
         else:
             self.mesh = self.smeshpyD.CreateEmptyMesh()
         if name != 0:
-            SetName(self.mesh, name)
+            self.smeshpyD.SetName(self.mesh, name)
         elif obj != 0:
-            SetName(self.mesh, GetName(obj))
+            self.smeshpyD.SetName(self.mesh, GetName(obj))
 
         if not self.geom:
             self.geom = self.mesh.GetShapeToMesh()
@@ -633,7 +640,7 @@ class Mesh:
     #  @param name a new name of the mesh
     #  @ingroup l2_construct
     def SetName(self, name):
-        SetName(self.GetMesh(), name)
+        self.smeshpyD.SetName(self.GetMesh(), name)
 
     ## Gets the subMesh object associated to a \a theSubObject geometrical object.
     #  The subMesh object gives access to the IDs of nodes and elements.
@@ -2915,7 +2922,7 @@ class Mesh_Algorithm:
 
     ## Sets the name to the algorithm
     def SetName(self, name):
-        SetName(self.algo, name)
+        self.mesh.smeshpyD.SetName(self.algo, name)
 
     ## Gets the id of the algorithm
     def GetId(self):
@@ -2978,7 +2985,7 @@ class Mesh_Algorithm:
                 s = ","
                 i = i + 1
                 pass
-            SetName(hypo, hyp + a)
+            self.mesh.smeshpyD.SetName(hypo, hyp + a)
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
         TreatHypoStatus( status, GetName(hypo), GetName(self.geom), 0 )

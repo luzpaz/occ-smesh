@@ -176,6 +176,10 @@ public:
   // *****************************************
   // Interface methods
   // *****************************************
+  // Set a new Mesh object name
+  void SetName(const char* theIOR,
+	       const char* theName);
+
   //GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
   void SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo );
 
