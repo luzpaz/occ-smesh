@@ -291,8 +291,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
   if (!myMesh->_is_nil()) {
     QStringList aParameters;
-    aParameters << SpinBoxTol->text();
-
+    aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
     try	{
       SUIT_OverrideCursor aWaitCursor;
 
@@ -492,8 +491,11 @@ void SMESHGUI_BuildCompoundDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
 {
+  
   TextLabelTol->setEnabled(toMerge);
   SpinBoxTol->setEnabled(toMerge);
+  if(!toMerge)
+    SpinBoxTol->SetValue(1e-05);
 }
 
 //=================================================================================
@@ -503,7 +505,9 @@ void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
 bool SMESHGUI_BuildCompoundDlg::isValid()
 {
   QString msg;
-  bool ok = SpinBoxTol->isValid( msg, true ) && ok;
+  bool ok=true;
+  if(CheckBoxMerge->isChecked())
+    ok = SpinBoxTol->isValid( msg, true );
 
   if( !ok ) {
     QString str( tr( "SMESH_INCORRECT_INPUT" ) );
