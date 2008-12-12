@@ -560,32 +560,25 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def GetPattern(self):
         return SMESH._objref_SMESH_Gen.GetPattern(self)
 
-    ## Create a compound of Mesh objects
-    #  @param theMeshArray array of Mesh objects
-    #  @param theUniteIdenticalGroups flag used to unite identical mesh groups
-    #  @param theMergeNodesAndElements flag used to merge mesh nodes and elements
-    #  @param theMergeTolerance tolerance of merging
-    #  @return a compound of Mesh objects
-    #  @ingroup l1_auxiliary
-    def Concatenate( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance ):
-        theMergeTolerance,Parameters = geompyDC.ParseParameters(theMergeTolerance)
-        aMesh = SMESH._objref_SMESH_Gen.Concatenate( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance )
-        aMesh.SetParameters(Parameters)
+    ## Concatenate the given meshes into one mesh.
+    #  @return an instance of Mesh class
+    #  @param meshes the meshes to combine into one mesh
+    #  @param uniteIdenticalGroups if true, groups with same names are united, else they are renamed
+    #  @param mergeNodesAndElements if true, equal nodes and elements aremerged
+    #  @param mergeTolerance tolerance for merging nodes
+    #  @param allGroups forces creation of groups of all elements
+    def Concatenate( self, meshes, uniteIdenticalGroups,
+                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
+        mergeTolerance,Parameters = geompyDC.ParseParameters(mergeTolerance)
+        if allGroups:
+            aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
+                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
+        else:
+            aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
+                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
+        aSmeshMesh.SetParameters(Parameters)
+        aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
-
-    ## Create a compound of Mesh objects
-    #  @param theMeshArray array of Mesh objects
-    #  @param theUniteIdenticalGroups flag used to unite identical mesh groups
-    #  @param theMergeNodesAndElements flag used to merge mesh nodes and elements
-    #  @param theMergeTolerance tolerance of merging
-    #  @return a compound of Mesh objects
-    #  @ingroup l1_auxiliary
-    def ConcatenateWithGroups( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance ):
-        theMergeTolerance,Parameters = geompyDC.ParseParameters(theMergeTolerance)
-        aMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups( self, theMeshArray, theUniteIdenticalGroups, theMergeNodesAndElements, theMergeTolerance )
-        aMesh.SetParameters(Parameters)
-        return aMesh
-
 
     # Filtering. Auxiliary functions:
     # ------------------------------
