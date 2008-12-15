@@ -69,7 +69,8 @@ public:
   SMESHGUI_GroupDlg( SMESHGUI*,
 		     SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   SMESHGUI_GroupDlg( SMESHGUI*,
-		     SMESH::SMESH_GroupBase_ptr );
+		     SMESH::SMESH_GroupBase_ptr,
+                     const bool theIsConvert = false );
   ~SMESHGUI_GroupDlg();
   
   static QString                GetDefaultName( const QString& );
@@ -112,7 +113,8 @@ private slots:
 private:
   void                          initDialog( bool );
   void                          init( SMESH::SMESH_Mesh_ptr );
-  void                          init( SMESH::SMESH_GroupBase_ptr );
+  void                          init( SMESH::SMESH_GroupBase_ptr,
+                                      const bool theIsConvert = false );
   void                          closeEvent( QCloseEvent* );
   void                          enterEvent( QEvent* );
   void                          hideEvent( QHideEvent* );   /* ESC key */

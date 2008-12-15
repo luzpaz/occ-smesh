@@ -1631,6 +1631,74 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
 
 //=============================================================================
 /*!
+ * \brief Create standalone group instead if group on geometry
+ * 
+ */
+//=============================================================================
+
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupOnGeom_ptr theGroup )
+{
+  SMESH::SMESH_Group_var aGroup;
+  if ( theGroup->_is_nil() )
+    return aGroup._retn();
+
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESH_GroupBase_i* aGroupToRem =
+    dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
+  if ( !aGroupToRem )
+    return aGroup._retn();
+
+  int anId = aGroupToRem->GetLocalID();
+  if ( !_impl->ConvertToStandalone( anId ) )
+    return aGroup._retn();
+
+    SMESH_GroupBase_i* aGroupImpl;
+      aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
+
+
+  // remove old instance of group from own map
+  _mapGroups.erase( anId );
+
+  SALOMEDS::StudyBuilder_var builder;
+  SALOMEDS::SObject_var aGroupSO;
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( !aStudy->_is_nil() )  {
+    builder = aStudy->NewBuilder();
+    aGroupSO = _gen_i->ObjectToSObject( aStudy, theGroup );
+    if ( !aGroupSO->_is_nil() ) {
+
+    // remove reference to geometry
+    SALOMEDS::ChildIterator_var chItr = aStudy->NewChildIterator(aGroupSO);
+    for ( ; chItr->More(); chItr->Next() )
+      // Remove group's child SObject
+      builder->RemoveObject( chItr->Value() );
+
+      // Update Python script
+      TPythonDump() << aGroupSO << " = " << _this() << ".ConvertToStandalone( "
+                    << aGroupSO << " )";
+    }
+  }
+
+  // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+  SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
+  aGroupImpl->Register();
+  // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+
+  // remember new group in own map
+  aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
+  _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( aGroup );
+
+  // register CORBA object for persistence
+  //int nextId = _gen_i->RegisterObject( aGroup );
+  //if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+  builder->SetIOR( aGroupSO, _gen_i->GetORB()->object_to_string( aGroup ) );
+
+  return aGroup._retn();
+}
+
+//=============================================================================
+/*!
  *
  */
 //=============================================================================

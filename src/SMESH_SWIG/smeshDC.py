@@ -1310,6 +1310,11 @@ class Mesh:
       return self.mesh.CreateDimGroup(groups, elem_type, name)
 
 
+    ## Convert group on geom into standalone group
+    #  @ingroup l2_grps_delete
+    def ConvertToStandalone(self, group):
+        return self.mesh.ConvertToStandalone(group)
+
     # Get some info about mesh:
     # ------------------------
 

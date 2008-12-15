@@ -236,6 +236,7 @@ public:
 
   void RemoveGroup (const int theGroupID);
 
+  SMESH_Group* ConvertToStandalone ( int theGroupID );
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 

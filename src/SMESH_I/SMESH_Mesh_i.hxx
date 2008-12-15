@@ -151,6 +151,8 @@ public:
   throw (SALOME::SALOME_Exception);
   
 
+  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupOnGeom_ptr theGeomGroup );
+
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
 //      throw (SALOME::SALOME_Exception);
 

@@ -251,6 +251,10 @@
             <translation>Edit Group</translation>
         </message>
         <message>
+            <source>MEN_EDIT_GEOMGROUP_AS_GROUP</source>
+            <translation>Edit Group as Standalone</translation>
+        </message>
+        <message>
             <source>MEN_EDIT_HYPO</source>
             <translation>Edit Hypothesis</translation>
         </message>
@@ -1019,6 +1023,10 @@ so that the application may crash. Do you wish to continue visualization?</trans
         <message>
             <source>SMESH_EDIT_GROUP_TITLE</source>
             <translation>Edit Group</translation>
+        </message>
+        <message>
+            <source>SMESH_EDIT_GEOMGROUP_AS_GROUP_TITLE</source>
+            <translation>Edit Group as Standalone</translation>
         </message>
         <message>
             <source>SMESH_EDIT_HYPOTHESES</source>
@@ -2005,6 +2013,10 @@ Consider saving your work before application crash</translation>
             <translation>Edit Group</translation>
         </message>
         <message>
+            <source>STB_EDIT_GEOMGROUP_AS_GROUP</source>
+            <translation>Edit Group as Standalone</translation>
+        </message>
+        <message>
             <source>STB_EDIT_HYPO</source>
             <translation>Edit Hypothesis</translation>
         </message>
@@ -2471,6 +2483,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_EDIT_GROUP</source>
             <translation>Edit Group</translation>
+        </message>
+        <message>
+            <source>TOP_EDIT_GEOMGROUP_AS_GROUP</source>
+            <translation>Edit Group as Standalone</translation>
         </message>
         <message>
             <source>TOP_EDIT_HYPO</source>

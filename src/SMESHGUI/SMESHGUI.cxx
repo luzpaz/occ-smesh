@@ -1876,6 +1876,36 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 815:                                     // Edit GEOM GROUP as standalone
+    {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
+				  tr( "NOT_A_VTK_VIEWER" ) );
+        break;
+      }
+
+      if(checkLock(aStudy)) break;
+      EmitSignalDeactivateDialog();
+
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      SALOME_ListIO selected;
+      if( aSel )
+        aSel->selectedObjects( selected );
+
+      SALOME_ListIteratorOfListIO It (selected);
+      for ( ; It.More(); It.Next() )
+      {
+        SMESH::SMESH_GroupOnGeom_var aGroup =
+          SMESH::IObjectToInterface<SMESH::SMESH_GroupOnGeom>(It.Value());
+        if (!aGroup->_is_nil()) {
+          SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, aGroup, true );
+          aDlg->show();
+	}
+      }
+      break;
+    }
+
     case 810: // Union Groups
     case 811: // Intersect groups
     case 812: // Cut groups
@@ -2606,6 +2636,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  801, "CREATE_GROUP",    "ICON_CREATE_GROUP" );
   createSMESHAction(  802, "CONSTRUCT_GROUP", "ICON_CONSTRUCT_GROUP" );
   createSMESHAction(  803, "EDIT_GROUP",      "ICON_EDIT_GROUP" );
+  createSMESHAction(  815, "EDIT_GEOMGROUP_AS_GROUP", "ICON_EDIT_GROUP" );
   createSMESHAction(  804, "ADD" );
   createSMESHAction(  805, "REMOVE" );
   createSMESHAction(  810, "UN_GROUP",        "ICON_UNION" );
@@ -2744,6 +2775,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 806, meshId, -1 );
   createMenu( 802, meshId, -1 );
   createMenu( 803, meshId, -1 );
+  createMenu( 815, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 810, meshId, -1 );
   createMenu( 811, meshId, -1 );
@@ -2842,6 +2874,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 806, meshTb );
   createTool( 802, meshTb );
   createTool( 803, meshTb );
+  //createTool( 815, meshTb );
   createTool( separator(), meshTb );
   createTool( 900, meshTb );
   createTool( 902, meshTb );
@@ -2942,6 +2975,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 704, OB, mesh, "&& isComputable");      // EDIT_MESHSUBMESH
   createPopupItem( 704, OB, subMesh, "&& isComputable" );  // EDIT_MESHSUBMESH
   createPopupItem( 803, OB, group );                       // EDIT_GROUP
+  createPopupItem( 815, OB, group, "&& groupType = 'GroupOnGeom'" ); // EDIT_GROUP
+
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 701, OB, mesh, "&& isComputable" );     // COMPUTE
   createPopupItem( 711, OB, mesh, "&& isComputable" );     // PRECOMPUTE
@@ -2974,6 +3009,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 803, View, group ); // EDIT_GROUP
   createPopupItem( 804, View, elems ); // ADD
   createPopupItem( 805, View, elems ); // REMOVE
+
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 214, View, mesh_group ); // UPDATE
   createPopupItem( 900, View, mesh_group ); // ADV_INFO

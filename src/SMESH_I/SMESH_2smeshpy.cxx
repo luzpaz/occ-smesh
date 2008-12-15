@@ -830,7 +830,13 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       theCommand->SetArg( 1, grp );
     }
     else {
-      AddMeshAccess( theCommand );
+      _pyID type = theCommand->GetArg( 1 );
+      _pyID name = theCommand->GetArg( 2 );
+      theCommand->SetMethod( "GroupOnGeom" );
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, grp );
+      theCommand->SetArg( 2, name );
+      theCommand->SetArg( 3, type );
     }
   }
   // ----------------------------------------------------------------------
@@ -908,7 +914,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
-        "Clear"
+        "Clear", "ConvertToStandalone"
         ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }

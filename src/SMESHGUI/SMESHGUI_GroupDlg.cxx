@@ -126,7 +126,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
 // purpose  :
 //=================================================================================
 SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
-				      SMESH::SMESH_GroupBase_ptr theGroup )
+				      SMESH::SMESH_GroupBase_ptr theGroup,
+                                      const bool theIsConvert )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
@@ -136,7 +137,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
 {
   initDialog( false );
   if ( !theGroup->_is_nil() )
-    init( theGroup );
+    init( theGroup, theIsConvert );
   else
   {
     mySelectSubMesh->setEnabled( false );
@@ -510,7 +511,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 // function : Init()
 // purpose  :
 //=================================================================================
-void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
+void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
+                              const bool theIsConvert)
 {
   restoreShowEntityMode();
   myMesh = theGroup->GetMesh();
@@ -537,23 +539,27 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
   myTypeGroup->button(aType)->setChecked(true);
 
   myGroup = SMESH::SMESH_Group::_narrow( theGroup );
+  myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_narrow( theGroup );
 
-  if (!myGroup->_is_nil())
-  {
-    // NPAL19389: create a group with a selection in another group
-    // set actor of myMesh, if it is visible, else set
-    // actor of myGroup, if it is visible, else try
-    // any visible actor of group or submesh of myMesh
-    // commented, because an attempt to set selection on not displayed cells leads to error
-    //SetAppropriateActor();
-    myActor = SMESH::FindActorByObject(myMesh);
-    if ( !myActor )
-      myActor = SMESH::FindActorByObject(myGroup);
-    SMESH::SetPickable(myActor);
+  if (myGroup->_is_nil() && myGroupOnGeom->_is_nil())
+    return;
 
-    myGrpTypeGroup->button(0)->setChecked(true);
-    onGrpTypeChanged(0);
+  // NPAL19389: create a group with a selection in another group
+  // set actor of myMesh, if it is visible, else set
+  // actor of theGroup, if it is visible, else try
+  // any visible actor of group or submesh of myMesh
+  // commented, because an attempt to set selection on not displayed cells leads to error
+  //SetAppropriateActor();
+  myActor = SMESH::FindActorByObject(myMesh);
+  if ( !myActor )
+    myActor = SMESH::FindActorByObject(theGroup);
+  SMESH::SetPickable(myActor);
 
+  int grpType = (!myGroup->_is_nil() ? 0 : (theIsConvert ? 0 : 1));
+  myGrpTypeGroup->button(grpType)->setChecked(true);
+  onGrpTypeChanged(grpType);
+
+  if ( grpType == 0 ) {
     myCurrentLineEdit = 0;
     myElements->clear();
     setSelectionMode(aType);
@@ -562,8 +568,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
     setShowEntityMode(); // depends on myTypeId
 
     myIdList.clear();
-    if (!myGroup->IsEmpty()) {
-      SMESH::long_array_var anElements = myGroup->GetListOfID();
+    if (!theGroup->IsEmpty()) {
+      SMESH::long_array_var anElements = theGroup->GetListOfID();
       int k = anElements->length();
       for (int i = 0; i < k; i++) {
         myIdList.append(anElements[i]);
@@ -574,38 +580,19 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
   }
   else
   {
-    myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_narrow( theGroup );
-
-    if ( !myGroupOnGeom->_is_nil() )
+    QString aShapeName( "" );
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    GEOM::GEOM_Object_var aGroupShape = myGroupOnGeom->GetShape();
+    if (!aGroupShape->_is_nil())
     {
-      // NPAL19389: create a group with a selection in another group
-      // set actor of myMesh, if it is visible, else set
-      // actor of myGroupOnGeom, if it is visible, else try
-      // any visible actor of group or submesh of myMesh
-      // commented, because an attempt to set selection on not displayed cells leads to error
-      //SetAppropriateActor();
-      myActor = SMESH::FindActorByObject(myMesh);
-      if ( !myActor )
-        myActor = SMESH::FindActorByObject(myGroupOnGeom);
-      SMESH::SetPickable(myActor);
-
-      myGrpTypeGroup->button(1)->setChecked(true);
-      onGrpTypeChanged(1);
-
-      QString aShapeName( "" );
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-      GEOM::GEOM_Object_var aGroupShape = myGroupOnGeom->GetShape();
-      if (!aGroupShape->_is_nil())
-      {
-        _PTR(SObject) aGroupShapeSO = aStudy->FindObjectID(aGroupShape->GetStudyEntry());
-        aShapeName = aGroupShapeSO->GetName().c_str();
-      }
-      myGeomGroupLine->setText( aShapeName );
-      myNameChanged = true;
-      myName->blockSignals(true);
-      myName->setText( "Group On " + aShapeName);
-      myName->blockSignals(false);
+      _PTR(SObject) aGroupShapeSO = aStudy->FindObjectID(aGroupShape->GetStudyEntry());
+      aShapeName = aGroupShapeSO->GetName().c_str();
     }
+    myGeomGroupLine->setText( aShapeName );
+    myNameChanged = true;
+    myName->blockSignals(true);
+    myName->setText( "Group On " + aShapeName);
+    myName->blockSignals(false);
   }
 }
 
@@ -754,6 +741,17 @@ bool SMESHGUI_GroupDlg::onApply()
       return false;
 
     mySelectionMgr->clearSelected();
+
+    if (myGroup->_is_nil()) { // creation or conversion
+      // check if group on geometry is not null
+      if (!CORBA::is_nil(myGroupOnGeom)) {
+        if (myMesh->_is_nil())
+          return false;
+        myGroup = myMesh->ConvertToStandalone( myGroupOnGeom );
+	// nullify pointer, because object become dead
+        myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
+      }
+    }
 
     if (myGroup->_is_nil()) { // creation
       if (myMesh->_is_nil())

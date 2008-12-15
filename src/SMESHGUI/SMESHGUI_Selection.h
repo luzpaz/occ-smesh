@@ -65,6 +65,7 @@ public:
   virtual QList<QVariant> entityMode( int ) const;
   virtual QString         controlMode( int ) const;
   virtual QString         facesOrientationMode( int ) const;
+  virtual QString         groupType( int ) const;
   
   SMESH_Actor*            getActor( int ) const;
 

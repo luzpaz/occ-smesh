@@ -1479,3 +1479,41 @@ SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem 
 {
   return _myMeshDS->GetElementType( id, iselem );
 }
+
+//=============================================================================
+/*!
+ *  \brief Convert group on geometry into standalone group
+ */
+//=============================================================================
+
+SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
+{
+  SMESH_Group* aGroup = 0;
+  std::map < int, SMESH_Group * >::iterator itg = _mapGroup.find( theGroupID );
+  if ( itg == _mapGroup.end() )
+    return aGroup;
+
+  SMESH_Group* anOldGrp = (*itg).second;
+  SMESHDS_GroupBase* anOldGrpDS = anOldGrp->GetGroupDS();
+  if ( !anOldGrp || !anOldGrpDS )
+    return aGroup;
+
+  // create new standalone group
+  aGroup = new SMESH_Group (theGroupID, this, anOldGrpDS->GetType(), anOldGrp->GetName() );
+  _mapGroup[theGroupID] = aGroup;
+
+  SMESHDS_Group* aNewGrpDS = dynamic_cast<SMESHDS_Group*>( aGroup->GetGroupDS() );
+  GetMeshDS()->RemoveGroup( anOldGrpDS );
+  GetMeshDS()->AddGroup( aNewGrpDS );
+
+  // add elements (or nodes) into new created group
+  SMDS_ElemIteratorPtr anItr = anOldGrpDS->GetElements();
+  while ( anItr->more() )
+    aNewGrpDS->Add( (anItr->next())->GetID() );
+
+  // remove old group
+  delete anOldGrp;
+
+  return aGroup;
+}
+

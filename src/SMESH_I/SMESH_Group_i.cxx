@@ -119,20 +119,24 @@ SMESHDS_GroupBase* SMESH_GroupBase_i::GetGroupDS() const
 
 void SMESH_GroupBase_i::SetName( const char* theName )
 {
-  // Update Python script
-  TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
-
   // Perform renaming
   ::SMESH_Group* aGroup = GetSmeshGroup();
-  if (aGroup) {
-    aGroup->SetName(theName);
-
-    // Update group name in a study
-    SMESH_Gen_i* aGen = myMeshServant->GetGen();
-    aGen->SetName( aGen->ObjectToSObject( aGen->GetCurrentStudy(), _this() ), theName );
+  if (!aGroup) {
+    MESSAGE("can't set name of a vague group");
     return;
   }
-  MESSAGE("can't set name of a vague group");
+
+  if ( aGroup->GetName() && !strcmp( aGroup->GetName(), theName ) )
+    return; // nothing to rename
+
+  aGroup->SetName(theName);
+
+  // Update group name in a study
+  SMESH_Gen_i* aGen = myMeshServant->GetGen();
+  aGen->SetName( aGen->ObjectToSObject( aGen->GetCurrentStudy(), _this() ), theName );
+  
+  // Update Python script
+  TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
 }
 
 //=============================================================================

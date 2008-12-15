@@ -359,6 +359,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Convert group on geometry into standalone group
+     */
+    SMESH_Group ConvertToStandalone( in SMESH_GroupOnGeom theGeomGroup )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Add hypothesis to the mesh, under a particular subShape
      * (or the main shape itself)
      * The Add method is only used to prepare the build of the mesh and store
