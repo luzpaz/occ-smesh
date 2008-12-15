@@ -518,7 +518,8 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
 	  else
 	    aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
 	}
-        aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+	else
+	  aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
       }
 
       myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );

@@ -472,7 +472,13 @@ void SMESH_NoteBook::ReplaceVariables()
                 aMethod.IsEqual("RotateObjectMakeGroups")  ||
                 aMethod.IsEqual("RotateObjectMakeMesh")    ||
 		aMethod.IsEqual("RotationSweep")           ||
+		aMethod.IsEqual("RotationSweepObject")     ||
+		aMethod.IsEqual("RotationSweepObject1D")   ||
+		aMethod.IsEqual("RotationSweepObject2D")   ||
 		aMethod.IsEqual("RotationSweepMakeGroups") ||
+		aMethod.IsEqual("RotationSweepObjectMakeGroups") ||
+		aMethod.IsEqual("RotationSweepObject1DMakeGroups") ||
+		aMethod.IsEqual("RotationSweepObject2DMakeGroups") ||
 		aMethod.IsEqual("Mirror")                  ||
 		aMethod.IsEqual("MirrorMakeMesh")          ||
                 aMethod.IsEqual("MirrorMakeGroups")        ||
@@ -548,11 +554,17 @@ void SMESH_NoteBook::ReplaceVariables()
 	}
 	else if(aMethod.IsEqual("ExtrusionAlongPath") ||
 		aMethod.IsEqual("ExtrusionAlongPathObject") ||
+		aMethod.IsEqual("ExtrusionAlongPathObject1D") ||
+		aMethod.IsEqual("ExtrusionAlongPathObject2D") ||
 		aMethod.IsEqual("ExtrusionAlongPathMakeGroups") ||
 		aMethod.IsEqual("ExtrusionAlongPathObjectMakeGroups") ||
+		aMethod.IsEqual("ExtrusionAlongPathObject1DMakeGroups") ||
+		aMethod.IsEqual("ExtrusionAlongPathObject2DMakeGroups") ||
 		/* workaround for a bug in the command parsing algorithm */
 		aCmd->GetString().Search("ExtrusionAlongPathMakeGroups") != -1 ||
-		aCmd->GetString().Search("ExtrusionAlongPathObjectMakeGroups") != -1 ) {
+		aCmd->GetString().Search("ExtrusionAlongPathObjectMakeGroups") != -1 ||
+		aCmd->GetString().Search("ExtrusionAlongPathObject1DMakeGroups") != -1 ||
+		aCmd->GetString().Search("ExtrusionAlongPathObject2DMakeGroups") != -1 ) {
 	  int aNbAngles = aCurrentStateSize-3; // State looks like "Angle1:...:AngleN:X:Y:Z"
 	  bool isSubstitute = false;
 	  int anArgIndex = 0;
