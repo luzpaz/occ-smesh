@@ -5,6 +5,7 @@
 <ul>
 <li>\subpage introduction_to_mesh_page</li>
 <li>\subpage running_mesh_module_page</li>
+<li>\subpage using_notebook_mesh_page</li>
 <li>\subpage introduction_to_mesh_python_page</li>
 <li>\subpage creating_meshes_page</li>
 <ul>
