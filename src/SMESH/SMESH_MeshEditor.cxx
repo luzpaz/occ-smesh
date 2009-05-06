@@ -7547,6 +7547,7 @@ SMESH_MeshEditor::Sew_Error
 
 #ifdef _DEBUG_
 //#define DEBUG_MATCHING_NODES
+//#define MESSAGE(m) {cout<<m<<endl;}
 #endif
 
 SMESH_MeshEditor::Sew_Error
