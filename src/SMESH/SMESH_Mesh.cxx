@@ -23,7 +23,6 @@
 //  File   : SMESH_Mesh.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -109,6 +108,11 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 SMESH_Mesh::~SMESH_Mesh()
 {
   INFOS("SMESH_Mesh::~SMESH_Mesh");
+
+  // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
+  //   Notify event listeners at least that something happens
+  if ( SMESH_subMesh * sm = GetSubMeshContaining(1))
+    sm->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
 
   // delete groups
   std::map < int, SMESH_Group * >::iterator itg;
