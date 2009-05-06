@@ -30,4 +30,8 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # These files are data, module or lib files
 nodist_salomescript_DATA= VERSION
 
+# These files are python files
+dist_salomescript_PYTHON = \
+	smesh_setenv.py
+
 EXTRA_DIST+= VERSION.in
