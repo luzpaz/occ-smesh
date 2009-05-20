@@ -30,42 +30,49 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESH_Mesh.hxx"
-#include "SMESH_Controls.hxx"
-#include "SMESH_SequenceOfNode.hxx"
-#include "SMESH_SequenceOfElemPtr.hxx"
-#include "TColStd_HSequenceOfReal.hxx"
-#include "SMESH_MesherHelper.hxx"
 #include "SMDS_MeshElement.hxx"
+#include "SMESH_Controls.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_SequenceOfElemPtr.hxx"
+#include "SMESH_SequenceOfNode.hxx"
 
+#include <TColStd_HSequenceOfReal.hxx>
 #include <gp_Dir.hxx>
 
 #include <list>
 #include <map>
-
-typedef std::map<const SMDS_MeshElement*,
-                 std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
-typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
 class SMDS_MeshFace;
 class SMDS_MeshNode;
 class gp_Ax1;
 class gp_Vec;
 class gp_Pnt;
+class SMESH_MesherHelper;
 
-// ============================================================
+
+typedef std::map<const SMDS_MeshElement*,
+                 std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
+typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
+
+ //!< Set of elements sorted by ID, to be used to assure predictability of edition
+typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
+
+typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
+
+
+//=======================================================================
 /*!
- * \brief Set of elements sorted by ID, to be used to assure
- *  predictability of edition
+ * \brief A sorted pair of nodes
  */
-// ============================================================
+//=======================================================================
 
-template < class TMeshElem = SMDS_MeshElement>
-struct TIDCompare {
-  bool operator () (const TMeshElem* e1, const TMeshElem* e2) const
-  { return e1->GetID() < e2->GetID(); }
+struct SMESH_TLink: public NLink
+{
+  SMESH_TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
+  { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
+  SMESH_TLink(const NLink& link ):NLink( link )
+  { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
 };
-typedef std::set< const SMDS_MeshElement*, TIDCompare< SMDS_MeshElement> > TIDSortedElemSet;
 
 // ============================================================
 /*!
@@ -509,6 +516,9 @@ public:
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
+  
+  bool DoubleNodes( const std::list< int >& theListOfNodes, 
+                    const std::list< int >& theListOfModifiedElems );
 
 private:
 
