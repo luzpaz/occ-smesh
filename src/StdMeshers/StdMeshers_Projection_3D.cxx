@@ -30,27 +30,24 @@
 
 #include "StdMeshers_ProjectionUtils.hxx"
 
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Hypothesis.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMESH_Pattern.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 
 #include "utilities.h"
 
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
-
-using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())

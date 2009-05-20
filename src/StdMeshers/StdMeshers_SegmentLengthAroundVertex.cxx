@@ -22,8 +22,7 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_SegmentLengthAroundVertex.cxx
 //  Module : SMESH
-//  $Header$
-//
+
 #include "StdMeshers_SegmentLengthAroundVertex.hxx"
 
 #include "SMESH_Mesh.hxx"
@@ -31,7 +30,6 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
-#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 
 #include "utilities.h"
