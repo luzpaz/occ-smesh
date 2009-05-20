@@ -90,22 +90,6 @@ struct TNodeXYZ : public gp_XYZ {
   TNodeXYZ( const SMDS_MeshNode* n ):gp_XYZ( n->X(), n->Y(), n->Z() ) {}
 };
 
-typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
-
-//=======================================================================
-/*!
- * \brief A sorted pair of nodes
- */
-//=======================================================================
-
-struct TLink: public NLink
-{
-  TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
-  { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
-  TLink(const NLink& link ):NLink( link )
-  { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
-};
-
 //=======================================================================
 //function : SMESH_MeshEditor
 //purpose  :
@@ -1479,10 +1463,10 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
   // 1. map of elements with their linkIDs
   // 2. map of linkIDs with their elements
 
-  map< TLink, list< const SMDS_MeshElement* > > mapLi_listEl;
-  map< TLink, list< const SMDS_MeshElement* > >::iterator itLE;
-  map< const SMDS_MeshElement*, set< TLink > >  mapEl_setLi;
-  map< const SMDS_MeshElement*, set< TLink > >::iterator itEL;
+  map< SMESH_TLink, list< const SMDS_MeshElement* > > mapLi_listEl;
+  map< SMESH_TLink, list< const SMDS_MeshElement* > >::iterator itLE;
+  map< const SMDS_MeshElement*, set< SMESH_TLink > >  mapEl_setLi;
+  map< const SMDS_MeshElement*, set< SMESH_TLink > >::iterator itEL;
 
   TIDSortedElemSet::iterator itElem;
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
@@ -1501,7 +1485,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
 
     // fill maps
     for ( i = 0; i < 3; i++ ) {
-      TLink link( aNodes[i], aNodes[i+1] );
+      SMESH_TLink link( aNodes[i], aNodes[i+1] );
       // check if elements sharing a link can be fused
       itLE = mapLi_listEl.find( link );
       if ( itLE != mapLi_listEl.end() ) {
@@ -1527,7 +1511,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
     int nbElems = (*itLE).second.size();
     if ( nbElems < 2  ) {
       const SMDS_MeshElement* elem = (*itLE).second.front();
-      TLink link = (*itLE).first;
+      SMESH_TLink link = (*itLE).first;
       mapEl_setLi[ elem ].erase( link );
       if ( mapEl_setLi[ elem ].empty() )
         mapEl_setLi.erase( elem );
@@ -1553,11 +1537,11 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
 
     // search elements to fuse starting from startElem or links of elements
     // fused earlyer - startLinks
-    list< TLink > startLinks;
+    list< SMESH_TLink > startLinks;
     while ( startElem || !startLinks.empty() ) {
       while ( !startElem && !startLinks.empty() ) {
         // Get an element to start, by a link
-        TLink linkId = startLinks.front();
+        SMESH_TLink linkId = startLinks.front();
         startLinks.pop_front();
         itLE = mapLi_listEl.find( linkId );
         if ( itLE != mapLi_listEl.end() ) {
@@ -1573,15 +1557,15 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
       if ( startElem ) {
         // Get candidates to be fused
         const SMDS_MeshElement *tr1 = startElem, *tr2 = 0, *tr3 = 0;
-        const TLink *link12, *link13;
+        const SMESH_TLink *link12, *link13;
         startElem = 0;
         ASSERT( mapEl_setLi.find( tr1 ) != mapEl_setLi.end() );
-        set< TLink >& setLi = mapEl_setLi[ tr1 ];
+        set< SMESH_TLink >& setLi = mapEl_setLi[ tr1 ];
         ASSERT( !setLi.empty() );
-        set< TLink >::iterator itLi;
+        set< SMESH_TLink >::iterator itLi;
         for ( itLi = setLi.begin(); itLi != setLi.end(); itLi++ )
         {
-          const TLink & link = (*itLi);
+          const SMESH_TLink & link = (*itLi);
           itLE = mapLi_listEl.find( link );
           if ( itLE == mapLi_listEl.end() )
             continue;
@@ -1602,10 +1586,10 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
           }
 
           // add other links of elem to list of links to re-start from
-          set< TLink >& links = mapEl_setLi[ elem ];
-          set< TLink >::iterator it;
+          set< SMESH_TLink >& links = mapEl_setLi[ elem ];
+          set< SMESH_TLink >::iterator it;
           for ( it = links.begin(); it != links.end(); it++ ) {
-            const TLink& link2 = (*it);
+            const SMESH_TLink& link2 = (*it);
             if ( link2 != link )
               startLinks.push_back( link2 );
           }
@@ -2066,8 +2050,8 @@ void SMESH_MeshEditor::GetLinkedNodes( const SMDS_MeshNode* theNode,
             iAfter  = SMESH_MesherHelper::WrapIndex( iAfter, nb );
             iBefore = SMESH_MesherHelper::WrapIndex( iBefore, nb );
           }
-          linkedNodes.insert( elem->GetNode( iAfter ));
-          linkedNodes.insert( elem->GetNode( iBefore ));
+          linkedNodes.insert( elem->GetNodeWrap( iAfter ));
+          linkedNodes.insert( elem->GetNodeWrap( iBefore ));
         }
       }
     }
@@ -2462,9 +2446,8 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     // fix nodes on mesh boundary
 
     if ( checkBoundaryNodes ) {
-      typedef pair<const SMDS_MeshNode*, const SMDS_MeshNode*> TLink;
-      map< TLink, int > linkNbMap; // how many times a link encounters in elemsOnFace
-      map< TLink, int >::iterator link_nb;
+      map< NLink, int > linkNbMap; // how many times a link encounters in elemsOnFace
+      map< NLink, int >::iterator link_nb;
       // put all elements links to linkNbMap
       list< const SMDS_MeshElement* >::iterator elemIt = elemsOnFace.begin();
       for ( ; elemIt != elemsOnFace.end(); ++elemIt ) {
@@ -2473,10 +2456,10 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         if(elem->IsQuadratic())
           nbn = nbn/2;
         // loop on elem links: insert them in linkNbMap
-        const SMDS_MeshNode* curNode, *prevNode = elem->GetNode( nbn );
+        const SMDS_MeshNode* curNode, *prevNode = elem->GetNodeWrap( nbn );
         for ( int iN = 0; iN < nbn; ++iN ) {
           curNode = elem->GetNode( iN );
-          TLink link;
+          NLink link;
           if ( curNode < prevNode ) link = make_pair( curNode , prevNode );
           else                      link = make_pair( prevNode , curNode );
           prevNode = curNode;
@@ -2791,8 +2774,6 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
 
   int iNode, nbSame = 0, iNotSameNode = 0, iSameNode = 0;
   vector<int> sames(nbNodes);
-
-  //bool issimple[nbNodes];
   vector<bool> issimple(nbNodes);
 
   for ( iNode = 0; iNode < nbNodes; iNode++ ) {
@@ -2802,12 +2783,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     if ( listNewNodes.empty() )
       return;
 
-    if(listNewNodes.size()==nbSteps) {
-      issimple[iNode] = true;
-    }
-    else {
-      issimple[iNode] = false;
-    }
+    issimple[iNode] = (listNewNodes.size()==nbSteps);
 
     itNN[ iNode ] = listNewNodes.begin();
     prevNod[ iNode ] = node;
@@ -2852,11 +2828,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     //MESSAGE("Reversed elem " << elem );
     i0 = 2;
     i2 = 0;
-    if ( nbSame > 0 ) {
-      int iAB = iAfterSame + iBeforeSame;
-      iBeforeSame = iAB - iBeforeSame;
-      iAfterSame  = iAB - iAfterSame;
-    }
+    if ( nbSame > 0 )
+      std::swap( iBeforeSame, iAfterSame );
   }
 
   // make new elements
@@ -2875,8 +2848,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
           nextNod[ iNode ] = *itNN[ iNode ];
           itNN[ iNode ]++;
         }
-        else if(!elem->IsQuadratic() ||
-           elem->IsQuadratic() && elem->IsMediumNode(prevNod[iNode]) ) {
+        else if(!elem->IsQuadratic() || elem->IsMediumNode(prevNod[iNode]) ) {
           // we have to use each second node
           itNN[ iNode ]++;
           nextNod[ iNode ] = *itNN[ iNode ];
@@ -3304,7 +3276,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
               const SMDS_MeshFace * f = aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ]);
               if ( !f )
                 myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ] ));
-              else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+              else if ( nodes[ 1 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                 aMesh->ChangeElementNodes( f, nodes, nbn );
               break;
             }
@@ -3312,7 +3284,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
               const SMDS_MeshFace * f = aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ]);
               if ( !f )
                 myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] ));
-              else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+              else if ( nodes[ 1 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                 aMesh->ChangeElementNodes( f, nodes, nbn );
               break;
             }
@@ -3324,7 +3296,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                   if ( !f )
                     myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4],
                                                              nodes[1], nodes[3], nodes[5]));
-                  else if ( nodes[ 2 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                  else if ( nodes[ 2 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                     aMesh->ChangeElementNodes( f, nodes, nbn );
                 }
                 else {       /////// quadratic quadrangle
@@ -3333,7 +3305,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                   if ( !f )
                     myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4], nodes[6],
                                                              nodes[1], nodes[3], nodes[5], nodes[7]));
-                  else if ( nodes[ 2 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                  else if ( nodes[ 2 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                     aMesh->ChangeElementNodes( f, nodes, nbn );
                 }
               }
@@ -3342,7 +3314,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                 const SMDS_MeshFace * f = aMesh->FindFace( polygon_nodes );
                 if ( !f )
                   myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
-                else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                else if ( nodes[ 1 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                   aMesh->ChangeElementNodes( f, nodes, nbn );
               }
             }
@@ -7547,7 +7519,6 @@ SMESH_MeshEditor::Sew_Error
 
 #ifdef _DEBUG_
 //#define DEBUG_MATCHING_NODES
-//#define MESSAGE(m) {cout<<m<<endl;}
 #endif
 
 SMESH_MeshEditor::Sew_Error
@@ -7567,8 +7538,8 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
   if ( theSecondNode1 != theSecondNode2 )
     nReplaceMap.insert( make_pair( theSecondNode1, theSecondNode2 ));
 
-  set< TLink > linkSet; // set of nodes where order of nodes is ignored
-  linkSet.insert( TLink( theFirstNode1, theSecondNode1 ));
+  set< SMESH_TLink > linkSet; // set of nodes where order of nodes is ignored
+  linkSet.insert( SMESH_TLink( theFirstNode1, theSecondNode1 ));
 
   list< NLink > linkList[2];
   linkList[0].push_back( NLink( theFirstNode1, theSecondNode1 ));
@@ -7683,8 +7654,8 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
       for ( int i = 0; i < nbN; i++ )
       {
         const SMDS_MeshNode* n2 = f0->GetNode( i );
-        pair< set< TLink >::iterator, bool > iter_isnew =
-          linkSet.insert( TLink( n1, n2 ));
+        pair< set< SMESH_TLink >::iterator, bool > iter_isnew =
+          linkSet.insert( SMESH_TLink( n1, n2 ));
         if ( !iter_isnew.second ) { // already in a set: no need to process
           linkSet.erase( iter_isnew.first );
         }
@@ -7703,4 +7674,93 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
   } // loop on link lists
 
   return SEW_OK;
+}
+
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theNodes - identifiers of nodes to be doubled
+  \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
+         nodes. If list of element identifiers is empty then nodes are doubled but 
+         they not assigned to elements
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes, 
+                                    const std::list< int >& theListOfModifiedElems )
+{
+  myLastCreatedElems.Clear();
+  myLastCreatedNodes.Clear();
+
+  if ( theListOfNodes.size() == 0 )
+    return false;
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  if ( !aMeshDS )
+    return false;
+
+  // iterate through nodes and duplicate them
+
+  std::map< const SMDS_MeshNode*, const SMDS_MeshNode* > anOldNodeToNewNode;
+
+  std::list< int >::const_iterator aNodeIter;
+  for ( aNodeIter = theListOfNodes.begin(); aNodeIter != theListOfNodes.end(); ++aNodeIter )
+  {
+    int aCurr = *aNodeIter;
+    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aMeshDS->FindNode( aCurr );
+    if ( !aNode )
+      continue;
+
+    // duplicate node
+
+    const SMDS_MeshNode* aNewNode = aMeshDS->AddNode( aNode->X(), aNode->Y(), aNode->Z() );
+    if ( aNewNode )
+    {
+      anOldNodeToNewNode[ aNode ] = aNewNode;
+      myLastCreatedNodes.Append( aNewNode );
+    }
+  }
+
+  // Create map of new nodes for modified elements
+
+  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> > anElemToNodes;
+
+  std::list< int >::const_iterator anElemIter;
+  for ( anElemIter = theListOfModifiedElems.begin(); 
+        anElemIter != theListOfModifiedElems.end(); ++anElemIter )
+  {
+    int aCurr = *anElemIter;
+    SMDS_MeshElement* anElem = (SMDS_MeshElement*)aMeshDS->FindElement( aCurr );
+    if ( !anElem )
+      continue;
+
+    vector<const SMDS_MeshNode*> aNodeArr( anElem->NbNodes() );
+
+    SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
+    int ind = 0;
+    while ( anIter->more() ) 
+    { 
+      SMDS_MeshNode* aCurrNode = (SMDS_MeshNode*)anIter->next();
+      if ( aCurr && anOldNodeToNewNode.find( aCurrNode ) != anOldNodeToNewNode.end() )
+      {
+        const SMDS_MeshNode* aNewNode = anOldNodeToNewNode[ aCurrNode ];
+        aNodeArr[ ind++ ] = aNewNode;
+      }
+      else
+        aNodeArr[ ind++ ] = aCurrNode;
+    }
+    anElemToNodes[ anElem ] = aNodeArr;
+  }
+
+  // Change nodes of elements  
+
+  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> >::iterator
+    anElemToNodesIter = anElemToNodes.begin();
+  for ( ; anElemToNodesIter != anElemToNodes.end(); ++anElemToNodesIter )
+  {
+    const SMDS_MeshElement* anElem = anElemToNodesIter->first;
+    vector<const SMDS_MeshNode*> aNodeArr = anElemToNodesIter->second;
+    if ( anElem )
+      aMeshDS->ChangeElementNodes( anElem, &aNodeArr[ 0 ], anElem->NbNodes() );
+  }
+
+  return true;
 }
