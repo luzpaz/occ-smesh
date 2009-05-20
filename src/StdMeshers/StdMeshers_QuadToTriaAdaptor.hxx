@@ -27,7 +27,7 @@
 #define _SMESH_QuadToTriaAdaptor_HXX_
 
 #include <SMESH_Mesh.hxx>
-#include <SMESH_StdMeshers.hxx>
+#include "SMESH_StdMeshers.hxx"
 #include <SMDS_FaceOfNodes.hxx>
 #include <TColgp_HArray1OfPnt.hxx>
 #include <TColgp_HArray1OfVec.hxx>
@@ -48,15 +48,15 @@ public:
 
   bool Compute(SMESH_Mesh& aMesh);
 
-  std::list<const SMDS_FaceOfNodes*> GetTriangles(const SMDS_MeshElement* aFace);
+  const std::list<const SMDS_FaceOfNodes*>* GetTriangles(const SMDS_MeshElement* aFace);
 
 protected:
 
   //bool CheckDegenerate(const SMDS_MeshElement* aFace);
 
   int Preparation(const SMDS_MeshElement* face,
-                  Handle(TColgp_HArray1OfPnt) PN,
-                  Handle(TColgp_HArray1OfVec) VN,
+                  Handle(TColgp_HArray1OfPnt)& PN,
+                  Handle(TColgp_HArray1OfVec)& VN,
                   std::vector<const SMDS_MeshNode*>& FNodes,
                   gp_Pnt& PC, gp_Vec& VNorm);
 
@@ -67,8 +67,10 @@ protected:
 
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 
+  typedef std::map< const SMDS_MeshElement*, const SMDS_MeshElement*, TIDCompare > TF2PyramMap;
+
   std::map< const SMDS_MeshElement*, std::list<const SMDS_FaceOfNodes*> > myResMap;
-  std::map< const SMDS_MeshElement*, const SMDS_MeshElement* > myMapFPyram;
+  TF2PyramMap myMapFPyram;
   std::list< const SMDS_MeshNode* > myDegNodes;
 
 };
