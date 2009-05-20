@@ -23,8 +23,8 @@
 //  File   : SMESH_Algo.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
+
 #ifndef _SMESH_ALGO_HXX_
 #define _SMESH_ALGO_HXX_
 
@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
 
 class SMESH_Gen;
 class SMESH_Mesh;
@@ -149,7 +150,7 @@ public:
    *  have a name (type) listed in the algorithm. Hypothesis associated to
    *  father shape -are not- taken into account (see GetUsedHypothesis)
    */
-  const std::list <const SMESHDS_Hypothesis *> &
+  const list <const SMESHDS_Hypothesis *> &
   GetAppliedHypothesis(SMESH_Mesh &         aMesh,
                        const TopoDS_Shape & aShape,
                        const bool           ignoreAuxiliary=true);
@@ -162,12 +163,9 @@ public:
   bool InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
                                  const bool         ignoreAuxiliary) const;
   /*!
-   * \brief Initialize my parameter values by the mesh built on the geometry
-   *
-   * Just return false as the algorithm does not hold parameters values
+   * \brief Just return false as the algorithm does not hold parameters values
    */
-  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
-                                   const TopoDS_Shape& theShape);
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
   /*!
    * \brief return compute error
    */
@@ -242,6 +240,18 @@ public:
                                  const TopoDS_Edge&      theEdge,
                                  std::vector< double > & theParams);
   /*!
+   * \brief Fill map of node parameter on geometrical edge to node it-self
+   * \param theMesh - The mesh containing nodes
+   * \param theEdge - The geometrical edge of interest
+   * \param theNodes - The resulting map
+   * \param ignoreMediumNodes - to store medium nodes of quadratic elements or not
+   * \retval bool - false if not all parameters are OK
+   */
+  static bool GetSortedNodesOnEdge(const SMESHDS_Mesh*                        theMesh,
+                                   const TopoDS_Edge&                         theEdge,
+                                   const bool                                 ignoreMediumNodes,
+                                   std::map< double, const SMDS_MeshNode* > & theNodes);
+  /*!
    * \brief Find out elements orientation on a geometrical face
    * \param theFace - The face correctly oriented in the shape being meshed
    * \param theMeshDS - The mesh data structure
@@ -279,7 +289,7 @@ public:
     * \retval const SMDS_MeshNode* - found node or NULL
    */
   static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V,
-                                         SMESHDS_Mesh*        meshDS);
+                                         const SMESHDS_Mesh* meshDS);
 
 protected:
 
