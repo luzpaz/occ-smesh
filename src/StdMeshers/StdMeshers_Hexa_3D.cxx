@@ -24,13 +24,13 @@
 //           Moved here from SMESH_Hexa_3D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Hexa_3D.hxx"
-#include "StdMeshers_Quadrangle_2D.hxx"
+#include "StdMeshers_CompositeHexa_3D.hxx"
 #include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_Penta_3D.hxx"
 #include "StdMeshers_Prism_3D.hxx"
+#include "StdMeshers_Quadrangle_2D.hxx"
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -214,7 +214,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   //Unexpect aCatch(SalomeException);
   MESSAGE("StdMeshers_Hexa_3D::Compute");
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  
+
   // 0.  - shape and face mesh verification
   // 0.1 - shape must be a solid (or a shell) with 6 faces
 
@@ -224,8 +224,13 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     ASSERT(aSubMesh);
     meshFaces.push_back(aSubMesh);
   }
-  if (meshFaces.size() != 6)
-    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
+  if (meshFaces.size() != 6) {
+    //return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
+    static StdMeshers_CompositeHexa_3D compositeHexa(-10, 0, aMesh.GetGen());
+    if ( !compositeHexa.Compute( aMesh, aShape ))
+      return error( compositeHexa.GetComputeError() );
+    return true;
+  }
 
   // 0.2 - is each face meshed with Quadrangle_2D? (so, with a wire of 4 edges)
 

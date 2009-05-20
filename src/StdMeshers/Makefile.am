@@ -64,6 +64,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_CompositeSegment_1D.hxx \
 	StdMeshers_UseExisting_1D2D.hxx \
 	StdMeshers_QuadToTriaAdaptor.hxx \
+	StdMeshers_CompositeHexa_3D.hxx \
 	SMESH_StdMeshers.hxx \
 	StdMeshers_TrianglePreference.hxx
 
@@ -108,6 +109,7 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_CompositeSegment_1D.cxx \
 	StdMeshers_UseExisting_1D2D.cxx \
 	StdMeshers_QuadToTriaAdaptor.cxx \
+	StdMeshers_CompositeHexa_3D.cxx \
 	StdMeshers_TrianglePreference.cxx
 
 
