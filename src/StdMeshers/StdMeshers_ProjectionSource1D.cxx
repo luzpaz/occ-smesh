@@ -23,7 +23,6 @@
 //  File   : StdMeshers_ProjectionSource1D.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_ProjectionSource1D.hxx"
 
@@ -127,9 +126,10 @@ void StdMeshers_ProjectionSource1D::SetVertexAssociation(const TopoDS_Shape& sou
 
 void StdMeshers_ProjectionSource1D::SetSourceMesh(SMESH_Mesh* mesh)
 {
-  if ( _sourceMesh != mesh )
+  if ( _sourceMesh != mesh ) {
+    _sourceMesh = mesh;
     NotifySubMeshesHypothesisModification();
-  _sourceMesh = mesh;
+  }
 }
 
 //=============================================================================
@@ -228,4 +228,3 @@ void StdMeshers_ProjectionSource1D::RestoreParams(const TopoDS_Shape& s1,
   _targetVertex = TopoDS::Vertex( s3 );
   _sourceMesh   = mesh;
 }
-
