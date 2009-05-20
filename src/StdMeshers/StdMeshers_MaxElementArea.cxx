@@ -24,8 +24,8 @@
 //           Moved here from SMESH_MaxElementArea.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
+
 #include "StdMeshers_MaxElementArea.hxx"
 
 #include "SMESH_ControlsDef.hxx"

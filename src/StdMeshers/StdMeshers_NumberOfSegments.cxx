@@ -24,7 +24,6 @@
 //           Moved here from SMESH_NumberOfSegments.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_NumberOfSegments.hxx"
 
@@ -64,7 +63,7 @@ StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int         hypId,
                                                          int         studyId,
                                                          SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, studyId, gen),
-    _numberOfSegments(1),
+    _numberOfSegments(15),//issue 19923
     _distrType(DT_Regular),
     _scaleFactor(1.),
     _convMode(1)  //cut negative by default
@@ -678,6 +677,8 @@ bool StdMeshers_NumberOfSegments::SetParametersByMesh(const SMESH_Mesh*   theMes
   }
   if ( nbEdges )
     _numberOfSegments /= nbEdges;
+
+  if (_numberOfSegments == 0) _numberOfSegments = 1;
 
   return nbEdges;
 }

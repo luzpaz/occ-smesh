@@ -23,11 +23,11 @@
 //  File   : StdMeshers_NumberOfLayers.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_NumberOfLayers.hxx"
 
 
+#include "SMESH_Mesh.hxx"
 #include "utilities.h"
 
 using namespace std;
