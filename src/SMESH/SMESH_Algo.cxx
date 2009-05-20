@@ -23,8 +23,8 @@
 //  File   : SMESH_Algo.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
+
 #include "SMESH_Algo.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
@@ -285,12 +285,7 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
 
 //================================================================================
 /*!
- * \brief Initialize my parameter values by the mesh built on the geometry
- * \param theMesh - the built mesh
- * \param theShape - the geometry of interest
- * \retval bool - true if parameter values have been successfully defined
- *
- * Just return false as the algorithm does not hold parameters values
+ * \brief Just return false as the algorithm does not hold parameters values
  */
 //================================================================================
 
@@ -337,16 +332,18 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
         return false;
       const SMDS_EdgePosition* epos =
         static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
-      paramSet.insert( epos->GetUParameter() );
-      ++nbEdgeNodes;
+      if ( !paramSet.insert( epos->GetUParameter() ).second )
+        return false; // equal parameters
     }
   }
   // add vertex nodes params
-  Standard_Real f, l;
-  BRep_Tool::Range(theEdge, f, l);
-  paramSet.insert( f );
-  paramSet.insert( l );
-  if ( paramSet.size() != nbEdgeNodes + 2 )
+  TopoDS_Vertex V1,V2;
+  TopExp::Vertices( theEdge, V1, V2);
+  if ( VertexNode( V1, theMesh ) &&
+       !paramSet.insert( BRep_Tool::Parameter(V1,theEdge) ).second )
+    return false; // there are equal parameters
+  if ( VertexNode( V2, theMesh ) &&
+       !paramSet.insert( BRep_Tool::Parameter(V2,theEdge) ).second )
     return false; // there are equal parameters
 
   // fill the vector
@@ -357,6 +354,70 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
     *vecPar = *par;
 
   return theParams.size() > 1;
+}
+
+//================================================================================
+/*!
+ * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
+ * \param theMesh - The mesh containing nodes
+ * \param theEdge - The geometrical edge of interest
+ * \param theParams - The resulting vector of sorted node parameters
+ * \retval bool - false if not all parameters are OK
+ */
+//================================================================================
+
+bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theMesh,
+                                      const TopoDS_Edge&                    theEdge,
+                                      const bool                            ignoreMediumNodes,
+                                      map< double, const SMDS_MeshNode* > & theNodes)
+{
+  theNodes.clear();
+
+  if ( !theMesh || theEdge.IsNull() )
+    return false;
+
+  SMESHDS_SubMesh * eSubMesh = theMesh->MeshElements( theEdge );
+  if ( !eSubMesh || !eSubMesh->GetElements()->more() )
+    return false; // edge is not meshed
+
+  int nbNodes = 0;
+  set < double > paramSet;
+  if ( eSubMesh )
+  {
+    // loop on nodes of an edge: sort them by param on edge
+    SMDS_NodeIteratorPtr nIt = eSubMesh->GetNodes();
+    while ( nIt->more() )
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      if ( ignoreMediumNodes ) {
+        SMDS_ElemIteratorPtr elemIt = node->GetInverseElementIterator();
+        if ( elemIt->more() && elemIt->next()->IsMediumNode( node ))
+          continue;
+      }
+      const SMDS_PositionPtr& pos = node->GetPosition();
+      if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
+        return false;
+      const SMDS_EdgePosition* epos =
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+      theNodes.insert( make_pair( epos->GetUParameter(), node ));
+      ++nbNodes;
+    }
+  }
+  // add vertex nodes
+  TopoDS_Vertex v1, v2;
+  TopExp::Vertices(theEdge, v1, v2);
+  const SMDS_MeshNode* n1 = VertexNode( v1, (SMESHDS_Mesh*) theMesh );
+  const SMDS_MeshNode* n2 = VertexNode( v2, (SMESHDS_Mesh*) theMesh );
+  Standard_Real f, l;
+  BRep_Tool::Range(theEdge, f, l);
+  if ( v1.Orientation() != TopAbs_FORWARD )
+    std::swap( f, l );
+  if ( n1 && ++nbNodes )
+    theNodes.insert( make_pair( f, n1 ));
+  if ( n2 && ++nbNodes )
+    theNodes.insert( make_pair( l, n2 ));
+
+  return theNodes.size() == nbNodes;
 }
 
 //================================================================================
@@ -426,7 +487,7 @@ GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
 //================================================================================
 
 const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
-                                            SMESHDS_Mesh*        meshDS)
+                                            const SMESHDS_Mesh*  meshDS)
 {
   if ( SMESHDS_SubMesh* sm = meshDS->MeshElements(V) ) {
     SMDS_NodeIteratorPtr nIt= sm->GetNodes();
