@@ -49,7 +49,9 @@
 #include "DriverSTL_R_SMDS_Mesh.h"
 
 #undef _Precision_HeaderFile
+#include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
+#include <Bnd_Box.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -67,8 +69,6 @@ static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
-
-using namespace std;
 
 #define cSMESH_Hyp(h) static_cast<const SMESH_Hypothesis*>(h)
 
@@ -96,6 +96,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _myMeshDS      = theDocument->GetMesh(_idDoc);
   _isShapeToMesh = false;
   _isAutoColor   = false;
+  _shapeDiagonal = 0.0;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
@@ -133,9 +134,11 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::ShapeToMesh");
 
-  if ( !aShape.IsNull() && _isShapeToMesh )
-    throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
-
+  if ( !aShape.IsNull() && _isShapeToMesh ) {
+    if ( aShape.ShapeType() != TopAbs_COMPOUND && // group contents is allowed to change
+         _myMeshDS->ShapeToMesh().ShapeType() != TopAbs_COMPOUND )
+      throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
+  }
   // clear current data
   if ( !_myMeshDS->ShapeToMesh().IsNull() )
   {
@@ -161,6 +164,8 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
     // clear SMESHDS
     TopoDS_Shape aNullShape;
     _myMeshDS->ShapeToMesh( aNullShape );
+
+    _shapeDiagonal = 0.0;
   }
 
   // set a new geometry
@@ -182,6 +187,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
   else
   {
     _isShapeToMesh = false;
+    _shapeDiagonal = 0.0;
     _myMeshDS->ShapeToMesh( PseudoShape() );
   }
 }
@@ -212,6 +218,36 @@ const TopoDS_Solid& SMESH_Mesh::PseudoShape()
     aSolid = BRepPrimAPI_MakeBox(1,1,1);
   }
   return aSolid;
+}
+
+//=======================================================================
+/*!
+ * \brief Return diagonal size of bounding box of a shape
+ */
+//=======================================================================
+
+double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
+{
+  if ( !aShape.IsNull() ) {
+    Bnd_Box Box;
+    BRepBndLib::Add(aShape, Box);
+    return sqrt( Box.SquareExtent() );
+  }
+  return 0;
+}
+
+//=======================================================================
+/*!
+ * \brief Return diagonal size of bounding box of shape to mesh
+ */
+//=======================================================================
+
+double SMESH_Mesh::GetShapeDiagonalSize() const
+{
+  if ( _shapeDiagonal == 0. && _isShapeToMesh )
+    const_cast<SMESH_Mesh*>(this)->_shapeDiagonal = GetShapeDiagonalSize( GetShapeToMesh() );
+
+  return _shapeDiagonal;
 }
 
 //=======================================================================
@@ -275,6 +311,32 @@ void SMESH_Mesh::Clear()
 //     else
 //       _myMeshDS->RemoveNode(node);
 //   }
+}
+
+//=======================================================================
+/*!
+ * \brief Remove all nodes and elements of indicated shape
+ */
+//=======================================================================
+
+void SMESH_Mesh::ClearSubMesh(const int theShapeId)
+{
+  // clear sub-meshes; get ready to re-compute as a side-effect 
+  if ( SMESH_subMesh *sm = GetSubMeshContaining( theShapeId ) )
+  {
+    SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
+							     /*complexShapeFirst=*/false);
+    while ( smIt->more() )
+    {
+      sm = smIt->next();
+      TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();      
+      if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
+	// all other shapes depends on vertices so they are already cleaned
+	sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      // to recompute even if failed
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+    }
+  }
 }
 
 //=======================================================================
@@ -1465,3 +1527,41 @@ SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem 
 {
   return _myMeshDS->GetElementType( id, iselem );
 }
+
+//=============================================================================
+/*!
+ *  \brief Convert group on geometry into standalone group
+ */
+//=============================================================================
+
+SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
+{
+  SMESH_Group* aGroup = 0;
+  std::map < int, SMESH_Group * >::iterator itg = _mapGroup.find( theGroupID );
+  if ( itg == _mapGroup.end() )
+    return aGroup;
+
+  SMESH_Group* anOldGrp = (*itg).second;
+  SMESHDS_GroupBase* anOldGrpDS = anOldGrp->GetGroupDS();
+  if ( !anOldGrp || !anOldGrpDS )
+    return aGroup;
+
+  // create new standalone group
+  aGroup = new SMESH_Group (theGroupID, this, anOldGrpDS->GetType(), anOldGrp->GetName() );
+  _mapGroup[theGroupID] = aGroup;
+
+  SMESHDS_Group* aNewGrpDS = dynamic_cast<SMESHDS_Group*>( aGroup->GetGroupDS() );
+  GetMeshDS()->RemoveGroup( anOldGrpDS );
+  GetMeshDS()->AddGroup( aNewGrpDS );
+
+  // add elements (or nodes) into new created group
+  SMDS_ElemIteratorPtr anItr = anOldGrpDS->GetElements();
+  while ( anItr->more() )
+    aNewGrpDS->Add( (anItr->next())->GetID() );
+
+  // remove old group
+  delete anOldGrp;
+
+  return aGroup;
+}
+

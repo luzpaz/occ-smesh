@@ -23,7 +23,6 @@
 //  File   : SMESH_Mesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_MESH_HXX_
 #define _SMESH_MESH_HXX_
@@ -76,6 +75,14 @@ public:
    */
   bool HasShapeToMesh() const { return _isShapeToMesh; }
   /*!
+   * \brief Return diagonal size of bounding box of shape to mesh.
+   */
+  double GetShapeDiagonalSize() const;
+  /*!
+   * \brief Return diagonal size of bounding box of a shape.
+   */
+  static double GetShapeDiagonalSize(const TopoDS_Shape & aShape);
+  /*!
    * \brief Return a solid which is returned by GetShapeToMesh() if
    *        a real geometry to be meshed was not set
    */
@@ -85,6 +92,11 @@ public:
    * \brief Remove all nodes and elements
    */
   void Clear();
+
+  /*!
+   * \brief Remove all nodes and elements of indicated shape
+   */
+  void ClearSubMesh(const int theShapeId);
 
   int UNVToMesh(const char* theFileName);
   /*!
@@ -230,6 +242,7 @@ public:
 
   void RemoveGroup (const int theGroupID);
 
+  SMESH_Group* ConvertToStandalone ( int theGroupID );
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
@@ -254,6 +267,8 @@ protected:
   SMESH_Gen *                _gen;
 
   bool                       _isAutoColor;
+
+  double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
