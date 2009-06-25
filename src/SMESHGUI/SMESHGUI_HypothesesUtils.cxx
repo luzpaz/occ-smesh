@@ -18,7 +18,7 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
+
 #include "SMESHGUI_HypothesesUtils.h"
 
 #include "SMESHGUI.h"
@@ -81,8 +81,9 @@ namespace SMESH{
   THypothesisDataMap myHypothesesMap;
   THypothesisDataMap myAlgorithmsMap;
 
-  typedef map<string,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
-  THypCreatorMap myHypCreatorMap;
+  // BUG 0020378
+  //typedef map<string,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
+  //THypCreatorMap myHypCreatorMap;
 
   list<HypothesesSet*> myListOfHypothesesSets;
 
@@ -322,24 +323,26 @@ namespace SMESH{
     return false;
   }
 
-  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType)
+  HypothesisCreatorPtr GetHypothesisCreator(const char* aHypType)
   {
     if(MYDEBUG) MESSAGE("Get HypothesisCreator for " << aHypType);
 
     SMESHGUI_GenericHypothesisCreator* aCreator = 0;
 
     // check, if creator for this hypothesis type already exists
-    if (myHypCreatorMap.find(aHypType) != myHypCreatorMap.end()) {
-      aCreator = myHypCreatorMap[aHypType];
-    }
-    else {
+    // BUG 0020378
+    //if (myHypCreatorMap.find(aHypType) != myHypCreatorMap.end()) {
+    //  aCreator = myHypCreatorMap[aHypType];
+    //}
+    //else
+    {
       // 1. Init list of available hypotheses, if needed
       InitAvailableHypotheses();
 
       // 2. Get names of plugin libraries
       HypothesisData* aHypData = GetHypothesisData(aHypType);
       if (!aHypData) 
-        return aCreator;
+        return HypothesisCreatorPtr(aCreator);
       QString aClientLibName = aHypData->ClientLibName;
       QString aServerLibName = aHypData->ServerLibName;
 
@@ -380,7 +383,8 @@ namespace SMESH{
 	    }
 	    else {
 	      // map hypothesis creator to a hypothesis name
-	      myHypCreatorMap[aHypType] = aCreator;
+              // BUG 0020378
+	      //myHypCreatorMap[aHypType] = aCreator;
 	    }
 	  }
 	}
@@ -390,7 +394,7 @@ namespace SMESH{
       }
     }
 
-    return aCreator;
+    return HypothesisCreatorPtr(aCreator);
   }
 
 

@@ -24,7 +24,7 @@
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
 //  $Header$
-//
+
 #ifndef SMESHGUI_HypothesesUtils_HeaderFile
 #define SMESHGUI_HypothesesUtils_HeaderFile
 
@@ -43,13 +43,18 @@
 
 #include <vector>
 
+// boost includes
+#include <boost/shared_ptr.hpp>
+
 class HypothesisData;
 class HypothesesSet;
 class SMESHGUI_GenericHypothesisCreator;
 class SALOMEDSClient_SObject;
 class algo_error_array;
 
-namespace SMESH{
+namespace SMESH
+{
+  typedef boost::shared_ptr<SMESHGUI_GenericHypothesisCreator> HypothesisCreatorPtr;
 
   SMESHGUI_EXPORT
   void InitAvailableHypotheses();
@@ -78,7 +83,7 @@ namespace SMESH{
                              const HypothesisData* algo2Data);
 
   SMESHGUI_EXPORT
-  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType);
+  HypothesisCreatorPtr GetHypothesisCreator(const char* aHypType);
 
   SMESHGUI_EXPORT
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis(const char* aHypType,

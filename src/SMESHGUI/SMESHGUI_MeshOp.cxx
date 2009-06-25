@@ -1023,7 +1023,9 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
     SMESH::CreateHypothesis(theTypeName, aHypName, false);
   } else {
     // Get hypotheses creator client (GUI)
-    SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
+    // BUG 0020378
+    //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
+    SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
     if (aCreator) {
@@ -1079,8 +1081,11 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
     return;
 
   CORBA::String_var aTypeName = aHyp->GetName();
-  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aTypeName );
-  if ( aCreator ) {
+  // BUG 0020378
+  //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aTypeName);
+  SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aTypeName);
+  if ( aCreator )
+  {
     int obj = myDlg->getActiveObject();
     removeCustomFilters(); // Issue 0020170
     myDlg->setEnabled( false );
@@ -1645,11 +1650,14 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
         SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
       } else {
         // Get hypotheses creator client (GUI)
-        SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
+        // BUG 0020378
+        //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
+        SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypName);
 
         // Create algorithm
-        if (aCreator)
+        if (aCreator) {
           aCreator->create(true, aHypName, myDlg);
+        }
         else
           SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
       }

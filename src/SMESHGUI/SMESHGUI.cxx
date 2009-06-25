@@ -24,7 +24,7 @@
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //  $Header$
-//
+
 #include "SMESHGUI.h"
 
 #include "SMESH_Client.hxx"
@@ -2017,11 +2017,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         if ( !aHypothesis->_is_nil() )
         {
           CORBA::String_var aHypType = aHypothesis->GetName();
-          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypType);
-          if (aCreator)
+          // BUG 0020378
+          //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypType);
+          SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypType);
+          if (aCreator) {
             aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop() );
-          else
-          {
+          }
+          else {
             // report error
           }
         }
