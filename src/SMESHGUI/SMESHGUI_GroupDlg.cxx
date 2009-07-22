@@ -60,6 +60,8 @@
 #include "SVTK_ViewWindow.h"
 #include "SVTK_Selector.h"
 
+#include "VTKViewer_Algorithm.h"
+
 #include "utilities.h"
 
 // VTK Includes
@@ -2157,7 +2159,8 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
 
       // iterate on all actors in current view window, search for
       // any visible actor, that belongs to group or submesh of current mesh
-      vtkActorCollection *aCollection = aViewWindow->getRenderer()->GetActors();
+      VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       for (vtkActor *anAct = aCollection->GetNextActor();
            anAct && !isActor;
