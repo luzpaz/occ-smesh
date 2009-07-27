@@ -801,6 +801,8 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   {
     list< double > params;
     bool reversed = false;
+    if ( theMesh.GetShapeToMesh().ShapeType() >= TopAbs_WIRE )
+      reversed = ( EE.Orientation() == TopAbs_REVERSED );
     if ( !_mainEdge.IsNull() )
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
 
