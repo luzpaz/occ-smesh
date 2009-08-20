@@ -137,7 +137,7 @@ class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
   static int GetShapeIDByParams ( const gp_XYZ& theParams );
   // define an id of the block sub-shape by point parameters
 
-  static ostream& DumpShapeID (const int theBlockShapeID, ostream& stream);
+  static std::ostream& DumpShapeID (const int theBlockShapeID, std::ostream& stream);
   // DEBUG: dump an id of a block sub-shape
 
 
@@ -276,11 +276,14 @@ public:
   static int GetOrderedEdges (const TopoDS_Face&        theFace,
                               TopoDS_Vertex             theFirstVertex,
                               std::list< TopoDS_Edge >& theEdges,
-                              std::list< int >  &       theNbVertexInWires);
+                              std::list< int >  &       theNbVertexInWires,
+                              const bool                theShapeAnalysisAlgo=false);
   // Return nb wires and a list of oredered edges.
   // It is used to assign indices to subshapes.
   // theFirstVertex may be NULL.
   // Always try to set a seam edge first
+  // if (theShapeAnalysisAlgo) then ShapeAnalysis::OuterWire() is used to find the outer
+  // wire else BRepTools::OuterWire() is used
 
  public:
   // -----------------------------------------------------------
