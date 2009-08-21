@@ -44,7 +44,7 @@ SUBDIRS = idl adm_local resources src doc bin
 
 DIST_SUBDIRS = idl adm_local resources src doc bin 
 
-DISTCLEANFILES = a.out aclocal.m4 configure
+DISTCLEANFILES = a.out aclocal.m4 configure local-install.sh
 
 salomeinclude_DATA=SMESH_version.h
 
