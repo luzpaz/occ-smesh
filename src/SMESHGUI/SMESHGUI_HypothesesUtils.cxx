@@ -188,6 +188,7 @@ namespace SMESH{
 				   QObject::tr(aXmlHandler->errorProtocol()),
 				   QObject::tr("SMESH_BUT_OK"));
 	  }
+    delete aXmlHandler;
 	}
 	else {
 	  if (aNoAccessFiles.isEmpty())
