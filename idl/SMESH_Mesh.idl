@@ -112,7 +112,8 @@ module SMESH
     NODE,
     EDGE,
     FACE,
-    VOLUME
+    VOLUME,
+    ELEMENT0D
   };
   
   /*!
