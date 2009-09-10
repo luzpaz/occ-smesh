@@ -1840,8 +1840,21 @@ class Mesh:
     #  @return the ID of a node
     #  @ingroup l2_modif_throughp
     def FindNodeClosestTo(self, x, y, z):
-        preview = self.mesh.GetMeshEditPreviewer()
-        return preview.MoveClosestNodeToPoint(x, y, z, -1)
+        #preview = self.mesh.GetMeshEditPreviewer()
+        #return preview.MoveClosestNodeToPoint(x, y, z, -1)
+        return self.editor.FindNodeClosestTo(x, y, z)
+
+    ## Finds the elements where a point lays IN or ON
+    #  @param x  the X coordinate of a point
+    #  @param y  the Y coordinate of a point
+    #  @param z  the Z coordinate of a point
+    #  @param elementType type of elements to find (SMESH.ALL type
+    #         means elements of any type excluding nodes and 0D elements)
+    #  @return list of IDs of found elements
+    #  @ingroup l2_modif_throughp
+    def FindElementsByPoint(self, x, y, z, elementType = SMESH.ALL):
+        return self.editor.FindElementsByPoint(x, y, z, elementType)
+
 
     ## Finds the node closest to a point and moves it to a point location
     #  @param x  the X coordinate of a point
