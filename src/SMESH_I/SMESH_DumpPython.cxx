@@ -67,9 +67,9 @@ namespace SMESH
       SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
       if(!aStudy->_is_nil()){
         string aString = myStream.str();
-	      TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
-	      aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
-	      if(MYDEBUG) MESSAGE(aString);
+        TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
+        aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
+        if(MYDEBUG) MESSAGE(aString);
       }
     }
   }
@@ -128,6 +128,7 @@ namespace SMESH
     case EDGE:  myStream<<"EDGE";break;
     case FACE:  myStream<<"FACE";break;
     case VOLUME:myStream<<"VOLUME";break;
+    case ELEMENT0D:myStream<<"ELEMENT0D";break;
     }
     return *this;
   }
@@ -314,7 +315,7 @@ namespace SMESH
           myStream << aSObject->GetID();
           i < (aListLen - 1) ? myStream<<", " : myStream<<"]";
         }
-        
+
       }
     }
     return *this;
@@ -325,10 +326,10 @@ namespace SMESH
 
   //================================================================================
   /*!
-     * \brief Return marker of long string literal beginning
-      * \param type - a name of functionality producing the string literal 
-      * \retval TCollection_AsciiString - the marker string to be written into
-      * a raw python script
+   * \brief Return marker of long string literal beginning
+   * \param type - a name of functionality producing the string literal 
+   * \retval TCollection_AsciiString - the marker string to be written into
+   * a raw python script
    */
   //================================================================================
 
@@ -343,9 +344,9 @@ namespace SMESH
 
   //================================================================================
   /*!
-     * \brief Return marker of long string literal end
-      * \retval TCollection_AsciiString - the marker string to be written into
-      * a raw python script
+   * \brief Return marker of long string literal end
+   * \retval TCollection_AsciiString - the marker string to be written into
+   * a raw python script
    */
   //================================================================================
 
@@ -356,15 +357,15 @@ namespace SMESH
 
   //================================================================================
   /*!
-     * \brief Cut out a long string literal from a string
-      * \param theText - text possibly containing string literals
-      * \param theFrom - position in the text to search from
-      * \param theLongString - the retrieved literal
-      * \param theStringType - a name of functionality produced the literal
-      * \retval bool - true if a string literal found
-     * 
-     * The literal is removed from theText; theFrom points position right after
-     * the removed literal
+   * \brief Cut out a long string literal from a string
+   * \param theText - text possibly containing string literals
+   * \param theFrom - position in the text to search from
+   * \param theLongString - the retrieved literal
+   * \param theStringType - a name of functionality produced the literal
+   * \retval bool - true if a string literal found
+   * 
+   * The literal is removed from theText; theFrom points position right after
+   * the removed literal
    */
   //================================================================================
 
@@ -472,12 +473,12 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
     //insert global definition
     TCollection_AsciiString glob;
     for( Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString It(aMap);
-      It.More(); It.Next() )
+         It.More(); It.Next() )
     {      
       TCollection_AsciiString name = It.Value();
       //check valid name
       if ( !name.IsEmpty() && name.Search(' ') == -1 && name.Search( ':' ) == -1
-        && !name.IsIntegerValue() && !name.IsEqual("Hypotheses") && !name.IsEqual("Algorithms") )
+           && !name.IsIntegerValue() && !name.IsEqual("Hypotheses") && !name.IsEqual("Algorithms") )
       {
         if ( glob.Length() > 0 )
           glob += ',';
@@ -586,11 +587,11 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
     int c = (int)arr[i];
     j = i+1;
     if ( isdigit( c )) { //Is digit?
- 
+
       isFound = Standard_False;
       while((j < aLen) && ( isdigit(c) || c == ':' )) { //Check if it is an entry
-	c = (int)arr[j++];  
-	if(c == ':') isFound = Standard_True;
+        c = (int)arr[j++];  
+        if(c == ':') isFound = Standard_True;
       }
 
       if (isFound) {
@@ -616,8 +617,8 @@ namespace {
   //================================================================================
   /*!
    * \brief Make a string be a valid python name
-    * \param aName - a string to fix
-    * \retval bool - true if aName was not modified
+   * \param aName - a string to fix
+   * \retval bool - true if aName was not modified
    */
   //================================================================================
 
@@ -650,12 +651,12 @@ namespace {
  */
 //=============================================================================
 TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
-                        (SALOMEDS::Study_ptr theStudy, 
-                         Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
-                         Resource_DataMapOfAsciiStringAsciiString& theNames,
-                         bool isPublished, 
-                         bool& aValidScript,
-                         const TCollection_AsciiString& theSavedTrace)
+(SALOMEDS::Study_ptr theStudy, 
+ Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+ Resource_DataMapOfAsciiStringAsciiString& theNames,
+ bool isPublished, 
+ bool& aValidScript,
+ const TCollection_AsciiString& theSavedTrace)
 {
   TCollection_AsciiString helper; // to comfortably concatenate C strings
   TCollection_AsciiString aSmeshpy( SMESH_2smeshpy::SmeshpyName() );
@@ -851,9 +852,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   anUpdatedScript += "\n\t## set object names";
   anUpdatedScript += helper + "  \n\tisGUIMode = " + isPublished;
   anUpdatedScript += "\n\tif isGUIMode and salome.sg.hasDesktop():";
-//   anUpdatedScript += "\n\t\tsmeshgui = salome.ImportComponentGUI(\"SMESH\")";
-//   anUpdatedScript += "\n\t\tsmeshgui.Init(theStudy._get_StudyId())";
-//   anUpdatedScript += "\n";
+  //   anUpdatedScript += "\n\t\tsmeshgui = salome.ImportComponentGUI(\"SMESH\")";
+  //   anUpdatedScript += "\n\t\tsmeshgui.Init(theStudy._get_StudyId())";
+  //   anUpdatedScript += "\n";
 
   TCollection_AsciiString aGUIName;
   Resource_DataMapOfAsciiStringAsciiString mapEntries;
