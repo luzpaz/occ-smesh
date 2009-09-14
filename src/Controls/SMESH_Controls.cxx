@@ -56,9 +56,6 @@
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 
-using namespace std;
-
-
 /*
                             AUXILIARY METHODS
 */
@@ -137,7 +134,7 @@ namespace{
         }
       }
     }
-    int aResult = max ( aResult0, aResult1 );
+    int aResult = std::max ( aResult0, aResult1 );
 
 //     TColStd_MapOfInteger aMap;
 
@@ -363,7 +360,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   if ( nbNodes == 3 ) {
     // Compute lengths of the sides
-    vector< double > aLen (nbNodes);
+    std::vector< double > aLen (nbNodes);
     for ( int i = 0; i < nbNodes - 1; i++ )
       aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
     aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
@@ -383,7 +380,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   }
   else if ( nbNodes == 6 ) { // quadratic triangles
     // Compute lengths of the sides
-    vector< double > aLen (3);
+    std::vector< double > aLen (3);
     aLen[0] = getDistance( P(1), P(3) );
     aLen[1] = getDistance( P(3), P(5) );
     aLen[2] = getDistance( P(5), P(1) );
@@ -515,11 +512,11 @@ namespace{
 
   inline double getMaxHeight(double theLen[6])
   {
-    double aHeight = max(theLen[0],theLen[1]);
-    aHeight = max(aHeight,theLen[2]);
-    aHeight = max(aHeight,theLen[3]);
-    aHeight = max(aHeight,theLen[4]);
-    aHeight = max(aHeight,theLen[5]);
+    double aHeight = std::max(theLen[0],theLen[1]);
+    aHeight = std::max(aHeight,theLen[2]);
+    aHeight = std::max(aHeight,theLen[3]);
+    aHeight = std::max(aHeight,theLen[4]);
+    aHeight = std::max(aHeight,theLen[5]);
     return aHeight;
   }
 
@@ -580,181 +577,181 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   case 5:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 3 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 3 ),P( 4 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 3 ),P( 4 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     break;
   }
   case 6:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 5 ),P( 4 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 5 ),P( 4 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     break;
   }
   case 8:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 8 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 8 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 8 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 5 ),P( 8 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 4 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 6 ),P( 7 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 3 ),P( 6 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 5 ),P( 6 ),P( 8 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 7 ),P( 8 ),P( 6 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 2 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     break;
   }
@@ -771,7 +768,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
       const int* pInd = SMDS_VolumeTool::GetFaceNodesIndices( type, i, true );
       for ( int p = 0; p < 4; ++p ) // loop on nodes of a quadranle face
         points( p + 1 ) = P( pInd[ p ] + 1 );
-      aQuality = max( aQuality, aspect2D.GetValue( points ));
+      aQuality = std::max( aQuality, aspect2D.GetValue( points ));
     }
   }
   return aQuality;
@@ -1607,7 +1604,7 @@ bool FreeEdges::IsSatisfy( long theId )
     return false;
 
   int i = 0, nbNodes = aFace->NbNodes();
-  vector <const SMDS_MeshNode*> aNodes( nbNodes+1 );
+  std::vector <const SMDS_MeshNode*> aNodes( nbNodes+1 );
   while( anIter->more() )
   {
     const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
@@ -2946,32 +2943,54 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
 TSequenceOfXYZ::TSequenceOfXYZ()
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : std::vector<gp_XYZ>(n)
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : myArray(n)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const value_type& t) : std::vector<gp_XYZ>(n,t)
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const gp_XYZ& t) : myArray(n,t)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : std::vector<gp_XYZ>(theSequenceOfXYZ)
+TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : myArray(theSequenceOfXYZ.myArray)
 {}
 
 template <class InputIterator>
-TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd) : std::vector<gp_XYZ>(theBegin,theEnd)
+TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd): myArray(theBegin,theEnd)
+{}
+
+TSequenceOfXYZ::~TSequenceOfXYZ()
 {}
 
 TSequenceOfXYZ& TSequenceOfXYZ::operator=(const TSequenceOfXYZ& theSequenceOfXYZ)
 {
-  std::vector<gp_XYZ>::operator=(theSequenceOfXYZ);
+  myArray = theSequenceOfXYZ.myArray;
   return *this;
 }
 
-std::vector<gp_XYZ>::reference TSequenceOfXYZ::operator()(size_type n)
+gp_XYZ& TSequenceOfXYZ::operator()(size_type n)
 {
-  return std::vector<gp_XYZ>::operator[](n-1);
+  return myArray[n-1];
 }
 
-std::vector<gp_XYZ>::const_reference TSequenceOfXYZ::operator()(size_type n) const
+const gp_XYZ& TSequenceOfXYZ::operator()(size_type n) const
 {
-  return std::vector<gp_XYZ>::operator[](n-1);
+  return myArray[n-1];
 }
 
+void TSequenceOfXYZ::clear()
+{
+  myArray.clear();
+}
+
+void TSequenceOfXYZ::reserve(size_type n)
+{
+  myArray.reserve(n);
+}
+
+void TSequenceOfXYZ::push_back(const gp_XYZ& v)
+{
+  myArray.push_back(v);
+}
+
+TSequenceOfXYZ::size_type TSequenceOfXYZ::size() const
+{
+  return myArray.size();
+}
