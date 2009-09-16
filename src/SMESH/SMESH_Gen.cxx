@@ -51,9 +51,9 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
-	MESSAGE("SMESH_Gen::SMESH_Gen");
-	_localId = 0;
-	_hypId = 0;
+        MESSAGE("SMESH_Gen::SMESH_Gen");
+        _localId = 0;
+        _hypId = 0;
 }
 
 //=============================================================================
@@ -64,7 +64,7 @@ SMESH_Gen::SMESH_Gen()
 
 SMESH_Gen::~SMESH_Gen()
 {
-	MESSAGE("SMESH_Gen::~SMESH_Gen");
+        MESSAGE("SMESH_Gen::~SMESH_Gen");
 }
 
 //=============================================================================
@@ -74,26 +74,26 @@ SMESH_Gen::~SMESH_Gen()
 //=============================================================================
 
 /*SMESH_Hypothesis *SMESH_Gen::CreateHypothesis(const char *anHyp, int studyId)
-	throw(SALOME_Exception)
+        throw(SALOME_Exception)
 {
 
-	MESSAGE("CreateHypothesis("<<anHyp<<","<<studyId<<")");
-	// Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+        MESSAGE("CreateHypothesis("<<anHyp<<","<<studyId<<")");
+        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-	StudyContextStruct *myStudyContext = GetStudyContext(studyId);
+        StudyContextStruct *myStudyContext = GetStudyContext(studyId);
 
-	// create a new hypothesis object, store its ref. in studyContext
+        // create a new hypothesis object, store its ref. in studyContext
 
-	SMESH_Hypothesis *myHypothesis = _hypothesisFactory.Create(anHyp, studyId);
-	int hypId = myHypothesis->GetID();
-	myStudyContext->mapHypothesis[hypId] = myHypothesis;
-	SCRUTE(studyId);
-	SCRUTE(hypId);
+        SMESH_Hypothesis *myHypothesis = _hypothesisFactory.Create(anHyp, studyId);
+        int hypId = myHypothesis->GetID();
+        myStudyContext->mapHypothesis[hypId] = myHypothesis;
+        SCRUTE(studyId);
+        SCRUTE(hypId);
 
-	// store hypothesis in SMESHDS document
+        // store hypothesis in SMESHDS document
 
-	myStudyContext->myDocument->AddHypothesis(myHypothesis);
-	return myHypothesis;
+        myStudyContext->myDocument->AddHypothesis(myHypothesis);
+        return myHypothesis;
 }*/
 
 //=============================================================================
@@ -113,10 +113,10 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 
   // create a new SMESH_mesh object
   SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
-				     theStudyId,
-				     this,
-				     theIsEmbeddedMode,
-				     aStudyContext->myDocument);
+                                     theStudyId,
+                                     this,
+                                     theIsEmbeddedMode,
+                                     aStudyContext->myDocument);
   aStudyContext->mapMesh[_localId] = aMesh;
 
   return aMesh;
@@ -323,7 +323,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
           checkConformIgnoredAlgos (aMesh, (*revItSub).second, aGlobIgnoAlgo,
                                     algo, checkConform2, aCheckedMap, theErrors);
           int key = (*revItSub).first;
-	  SMESH_subMesh* sm = (*revItSub).second;
+          SMESH_subMesh* sm = (*revItSub).second;
           if ( aCheckedMap.find( key ) == aCheckedMap.end() )
           {
             aCheckedMap[ key ] = sm;
@@ -653,16 +653,16 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
 
 StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
 {
-	// Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-	if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
-	{
-		_mapStudyContext[studyId] = new StudyContextStruct;
-		_mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
-	}
-	StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
+        if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
+        {
+                _mapStudyContext[studyId] = new StudyContextStruct;
+                _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
+        }
+        StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
 //   ASSERT(_mapStudyContext.find(studyId) != _mapStudyContext.end());
-	return myStudyContext;
+        return myStudyContext;
 }
 
 //=============================================================================
@@ -727,6 +727,6 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 
 int SMESH_Gen::GetANewId()
 {
-	//MESSAGE("SMESH_Gen::GetANewId");
-	return _hypId++;
+        //MESSAGE("SMESH_Gen::GetANewId");
+        return _hypId++;
 }
