@@ -237,9 +237,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &         aMesh,
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
     for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    {
+      sm = *subIt;
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
         sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-
+    }
     // -----------------------------------------------
     // mesh the rest subshapes starting from vertices
     // -----------------------------------------------
