@@ -30,6 +30,7 @@
 #include "SMESHDS_Document.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_Mesh.hxx"
 
 #include "utilities.h"
 #include "OpUtil.hxx"
@@ -39,6 +40,8 @@
 #include <BRep_Tool.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+
+#include "memoire.h"
 
 using namespace std;
 
@@ -54,6 +57,8 @@ SMESH_Gen::SMESH_Gen()
 	_localId = 0;
 	_hypId = 0;
         _segmentation = 10;
+        SMDS_Mesh::_meshList.clear();
+        MESSAGE(SMDS_Mesh::_meshList.size());
 }
 
 //=============================================================================
@@ -135,6 +140,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 			TSetOfInt*            aShapesId)
 {
   MESSAGE("SMESH_Gen::Compute");
+  MEMOSTAT;
 
   bool ret = true;
 
@@ -284,6 +290,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
+  MEMOSTAT;
   return ret;
 }
 

@@ -130,6 +130,7 @@ dist_libStdMeshers_la_SOURCES = \
 libStdMeshers_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
 	$(BOOST_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(KERNEL_CXXFLAGS) \
 	$(GUI_CXXFLAGS) \
 	-I$(srcdir)/../SMESHImpl \

@@ -2815,7 +2815,7 @@ void ManifoldPart::expandBoundary
 void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
                                    ManifoldPart::TVectorOfFacePtr& theFaces ) const
 {
-  SMDS_Mesh::SetOfFaces aSetOfFaces;
+  std::set<SMDS_MeshCell *> aSetOfFaces;
   // take all faces that shared first node
   SMDS_ElemIteratorPtr anItr = theLink.myNode1->facesIterator();
   for ( ; anItr->more(); )
@@ -2823,7 +2823,7 @@ void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
     SMDS_MeshFace* aFace = (SMDS_MeshFace*)anItr->next();
     if ( !aFace )
       continue;
-    aSetOfFaces.Add( aFace );
+    aSetOfFaces.insert( aFace );
   }
   // take all faces that shared second node
   anItr = theLink.myNode2->facesIterator();
@@ -2831,7 +2831,7 @@ void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
   for ( ; anItr->more(); )
   {
     SMDS_MeshFace* aFace = (SMDS_MeshFace*)anItr->next();
-    if ( aSetOfFaces.Contains( aFace ) )
+    if ( aSetOfFaces.count( aFace ) )
       theFaces.push_back( aFace );
   }
 }

@@ -76,6 +76,9 @@ if test -z $QWTHOME; then
         if test ! -f $QWT_INCDIR/qwt.h ; then
           QWT_INCDIR=/usr/lib/qt4/include/qwt
         fi
+        if test ! -f $QWT_INCDIR/qwt.h ; then
+          QWT_INCDIR=/usr/include/qwt-qt4
+        fi
      fi
   else
      qwt_ok=no

@@ -31,18 +31,22 @@
 #include "SMDS_MeshObject.hxx"
 #include <set>
 
+class SMDS_Mesh;
 
 class SMDS_EXPORT SMDS_MeshIDFactory:public SMDS_MeshObject
 {
 public:
-  virtual int  GetFreeID();
+  int  GetFreeID();
   virtual void ReleaseID(int ID);
   virtual void Clear();
 
-  protected:
-	SMDS_MeshIDFactory();
-	int myMaxID;
-	std::set<int> myPoolOfID;
+  void SetMesh(SMDS_Mesh *mesh);
+  SMDS_Mesh* GetMesh();
+protected:
+  SMDS_MeshIDFactory();
+  int myMaxID;
+  std::set<int> myPoolOfID;
+  SMDS_Mesh *myMesh;
 };
 
 #endif

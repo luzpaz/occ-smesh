@@ -38,6 +38,11 @@ SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID)
 {
 }
 
+SMDS_MeshElement::SMDS_MeshElement(int id, UShortType meshId, ShortType shapeId):
+  myID(id), myMeshId(meshId), myShapeId(shapeId)
+{
+}
+
 void SMDS_MeshElement::Print(ostream & OS) const
 {
 	OS << "dump of mesh element" << endl;
@@ -238,3 +243,8 @@ int SMDS_MeshElement::GetNodeIndex( const SMDS_MeshNode* node ) const
       return i;
   return -1;
 }
+
+SMDS_MeshCell::SMDS_MeshCell()
+{
+    myVtkID = -1;
+};

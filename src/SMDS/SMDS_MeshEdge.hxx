@@ -31,7 +31,7 @@
 #include "SMDS_MeshElement.hxx"
 #include <iostream>
 
-class SMDS_EXPORT SMDS_MeshEdge:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshEdge:public SMDS_MeshCell
 {
 
   public:

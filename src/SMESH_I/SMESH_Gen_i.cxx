@@ -110,6 +110,7 @@
 
 #include "GEOM_Client.hxx"
 #include "Utils_ExceptHandlers.hxx"
+#include "memoire.h"
 
 #include <map>
 
@@ -1375,6 +1376,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
                                      GEOM::GEOM_Object_ptr theShapeObject )
      throw ( SALOME::SALOME_Exception )
 {
+  MEMOSTAT;
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Compute" );
 

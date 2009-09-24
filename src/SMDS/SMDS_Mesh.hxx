@@ -33,19 +33,27 @@
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
+#include "SMDS_MeshNodeIDFactory.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
-#include <NCollection_Map.hxx>
 
 #include <boost/shared_ptr.hpp>
 #include <set>
 #include <list>
+#include <vector>
+#include <vtkSystemIncludes.h>
+
+class vtkUnstructuredGrid;
 
 class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
 
+  static std::vector<SMDS_Mesh*> _meshList;    // --- to find the SMDS_mesh from its elements
+
   SMDS_Mesh();
+
+  inline vtkUnstructuredGrid* getGrid() {return myGrid; };
 
   SMDS_NodeIteratorPtr nodesIterator() const;
   SMDS_0DElementIteratorPtr elements0dIterator() const;
@@ -537,11 +545,15 @@ public:
    */
   bool Contains (const SMDS_MeshElement* elem) const;
 
-  typedef NCollection_Map<SMDS_MeshNode *> SetOfNodes;
-  typedef NCollection_Map<SMDS_Mesh0DElement *> SetOf0DElements;
-  typedef NCollection_Map<SMDS_MeshEdge *> SetOfEdges;
-  typedef NCollection_Map<SMDS_MeshFace *> SetOfFaces;
-  typedef NCollection_Map<SMDS_MeshVolume *> SetOfVolumes;
+  typedef std::vector<SMDS_MeshNode *> SetOfNodes;
+  typedef std::vector<SMDS_MeshCell *> SetOfCells;
+
+  void updateNodeMinMax();
+  int fromVtkToSmds(int vtkid) { return myElementIDFactory->fromVtkToSmds(vtkid); };
+
+  int myCellLinksSize;
+
+  static int chunkSize;
 
 private:
   SMDS_Mesh(SMDS_Mesh * parent);
@@ -552,8 +564,9 @@ private:
   SMDS_MeshFace * createQuadrangle(const SMDS_MeshNode * node1,
 				   const SMDS_MeshNode * node2,
 				   const SMDS_MeshNode * node3,
-				   const SMDS_MeshNode * node4);
-  SMDS_Mesh0DElement* Find0DElementOrCreate(const SMDS_MeshNode * n);
+				   const SMDS_MeshNode * node4,
+                                   int ID);
+//  SMDS_Mesh0DElement* Find0DElementOrCreate(const SMDS_MeshNode * n);
   SMDS_MeshEdge* FindEdgeOrCreate(const SMDS_MeshNode * n1,
 				  const SMDS_MeshNode * n2);
   SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
@@ -570,18 +583,35 @@ private:
 			    const SMDS_MeshElement * element,
 			    std::set<const SMDS_MeshElement*>& nodes);
 
+  inline void adjustmyCellsCapacity(int ID)
+  {
+    assert(ID >= 0);
+    if (ID >= myCells.size())
+        myCells.resize(ID+SMDS_Mesh::chunkSize,0);
+  };
+
   // Fields PRIVATE
 
+  int myMeshId;                           // --- index for this mesh in the vector
+  vtkUnstructuredGrid*      myGrid;
+
+
   SetOfNodes             myNodes;
-  SetOf0DElements        my0DElements;
-  SetOfEdges             myEdges;
-  SetOfFaces             myFaces;
-  SetOfVolumes           myVolumes;
+  SetOfCells             myCells;
+
+//   SetOf0DElements        my0DElements;
+//   SetOfEdges             myEdges;
+//   SetOfFaces             myFaces;
+//   SetOfVolumes           myVolumes;
+
   SMDS_Mesh *            myParent;
   std::list<SMDS_Mesh *> myChildren;
-  SMDS_MeshElementIDFactory *myNodeIDFactory;
+  SMDS_MeshNodeIDFactory *myNodeIDFactory;
   SMDS_MeshElementIDFactory *myElementIDFactory;
   SMDS_MeshInfo          myInfo;
+
+  int myNodeMin;
+  int myNodeMax;
 
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;

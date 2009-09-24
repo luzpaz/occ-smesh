@@ -25,6 +25,8 @@
 //  Module : SMESH
 //
 #include "SMDS_MeshIDFactory.hxx"
+#include "SMDS_Mesh.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -33,20 +35,26 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_MeshIDFactory::SMDS_MeshIDFactory():myMaxID(0)
+SMDS_MeshIDFactory::SMDS_MeshIDFactory():myMaxID(-1), myMesh(0)
 {
 }
 
 int SMDS_MeshIDFactory::GetFreeID()
 {
-	if (myPoolOfID.empty()) return ++myMaxID;
+    int newid;
+	if (myPoolOfID.empty())
+        {
+            newid = ++myMaxID;
+            //MESSAGE("GetFreeID new " << newid);
+        }
 	else
 	{
                 set<int>::iterator i = myPoolOfID.begin();
-		int ID = *i;//myPoolOfID.top();
+		newid = *i;//myPoolOfID.top();
 		myPoolOfID.erase( i );//myPoolOfID.pop();
-		return ID;
+                MESSAGE("GetFreeID pool " << newid);
 	}
+    return newid;
 }
 
 //=======================================================================
@@ -55,7 +63,7 @@ int SMDS_MeshIDFactory::GetFreeID()
 //=======================================================================
 void SMDS_MeshIDFactory::ReleaseID(const int ID)
 {
-  if ( ID > 0 )
+  if ( ID >= 0 )
   {
     if ( ID < myMaxID )
     {
@@ -82,6 +90,16 @@ void SMDS_MeshIDFactory::ReleaseID(const int ID)
 
 void SMDS_MeshIDFactory::Clear()
 {
-  myMaxID = 0;
+  myMaxID = -1;
   myPoolOfID.clear();
 }
+
+  void SMDS_MeshIDFactory::SetMesh(SMDS_Mesh *mesh)
+  {
+      myMesh = mesh;
+  }
+
+  SMDS_Mesh* SMDS_MeshIDFactory::GetMesh()
+  {
+      return myMesh;
+  }

@@ -28,28 +28,25 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshIDFactory.hxx"
-#include "SMDS_ElemIterator.hxx"
+#include "SMDS_MeshNodeIDFactory.hxx"
 
-#include <NCollection_DataMap.hxx>
+#include <vector>
 
 class SMDS_MeshElement;
 
-typedef NCollection_DataMap<int, SMDS_MeshElement *> SMDS_IdElementMap;
-
-class SMDS_EXPORT SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
+class SMDS_EXPORT SMDS_MeshElementIDFactory:public SMDS_MeshNodeIDFactory
 {
 public:
   SMDS_MeshElementIDFactory();
   bool BindID(int ID, SMDS_MeshElement * elem);
   SMDS_MeshElement * MeshElement(int ID);
-  virtual int GetFreeID();
   virtual void ReleaseID(int ID);
-  int GetMaxID() const;
-  int GetMinID() const;
   SMDS_ElemIteratorPtr elementsIterator() const;
   virtual void Clear();
-private:
+  int GetVtkCellType(int SMDSType);
+  int fromVtkToSmds(int vtkid) { return myVtkIndex[vtkid]; };
+
+protected:
   void updateMinMax() const;
   void updateMinMax(int id) const
   {
@@ -57,8 +54,9 @@ private:
     if (id < myMin) myMin = id;
   }
 
-  SMDS_IdElementMap myIDElements;
-  mutable int myMin, myMax;
+  std::vector<int> myIDElements; // index = ID client, value = ID vtk
+  std::vector<int> myVtkIndex;   // index = ID vtk, value = ID client
+  std::vector<int> myVtkCellTypes;
 
 };
 

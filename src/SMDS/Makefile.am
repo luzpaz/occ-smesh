@@ -43,6 +43,7 @@ salomeinclude_HEADERS = \
 	SMDS_MeshGroup.hxx \
 	SMDS_MeshIDFactory.hxx \
 	SMDS_MeshNode.hxx \
+	SMDS_MeshNodeIDFactory.hxx \
 	SMDS_MeshObject.hxx \
 	SMDS_MeshVolume.hxx \
 	SMDS_Position.hxx \
@@ -81,6 +82,7 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_MeshEdge.cxx \
 	SMDS_MeshFace.cxx \
 	SMDS_MeshVolume.cxx \
+	SMDS_MeshNodeIDFactory.cxx \
 	SMDS_MeshElementIDFactory.cxx \
 	SMDS_MeshGroup.cxx \
 	SMDS_MeshIDFactory.cxx \
@@ -101,9 +103,11 @@ dist_libSMDS_la_SOURCES = \
 libSMDS_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS)
 
 libSMDS_la_LDFLAGS  = \
+	$(VTK_LIBS) \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace \
 	$(CAS_KERNEL)
 

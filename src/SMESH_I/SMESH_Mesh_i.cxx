@@ -965,7 +965,7 @@ throw (SALOME::SALOME_Exception)
 
   try
   {
-    NCollection_Map< int > anIds;
+    vector< int > anIds;
     SMESH::ElementType aType = SMESH::ALL;
     for ( int g = 0, n = theGroups.length(); g < n; g++ )
     {
@@ -988,7 +988,7 @@ throw (SALOME::SALOME_Exception)
       for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
       {
         int aCurrId = aCurrIds[ i ];
-        anIds.Add( aCurrId );
+        anIds.push_back( aCurrId );
       }
     }
 
@@ -999,12 +999,12 @@ throw (SALOME::SALOME_Exception)
     
     // Create array of identifiers
     SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( anIds.Extent() );
+    aResIds->length( anIds.size() );
     
-    NCollection_Map< int >::Iterator anIter( anIds );
-    for ( int i = 0; anIter.More(); anIter.Next(), i++ )
+    //NCollection_Map< int >::Iterator anIter( anIds );
+    for ( int i = 0; i<anIds.size(); i++ )
     {
-      aResIds[ i ] = anIter.Value();
+      aResIds[ i ] = anIds[i];
     }
     aResGrp->Add( aResIds );
 
@@ -1130,14 +1130,14 @@ throw (SALOME::SALOME_Exception)
     
     // create map of ids
     int nbGrp = theGroups.length();
-    NCollection_Map< int > anIds;
+    vector< int > anIds;
     NCollection_DataMap< int, int >::Iterator anIter( anIdToCount );
     for ( ; anIter.More(); anIter.Next() )
     {
       int aCurrId = anIter.Key();
       int aCurrNb = anIter.Value();
       if ( aCurrNb == nbGrp )
-        anIds.Add( aCurrId );
+        anIds.push_back( aCurrId );
     }
 
     // Create group
@@ -1147,12 +1147,12 @@ throw (SALOME::SALOME_Exception)
     
     // Create array of identifiers
     SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( anIds.Extent() );
+    aResIds->length( anIds.size() );
     
-    NCollection_Map< int >::Iterator aListIter( anIds );
-    for ( int i = 0; aListIter.More(); aListIter.Next(), i++ )
+    //NCollection_Map< int >::Iterator aListIter( anIds );
+    for ( int i = 0; i<anIds.size(); i++ )
     {
-      aResIds[ i ] = aListIter.Value();
+      aResIds[ i ] = anIds[i];
     }
     aResGrp->Add( aResIds );
 
@@ -1249,7 +1249,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutListOfGroups(
 
   try
   {
-    NCollection_Map< int > aToolIds;
+    set< int > aToolIds;
     SMESH::ElementType aType = SMESH::ALL;
     int g, n;
     // iterate through tool groups
@@ -1274,11 +1274,11 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutListOfGroups(
       for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
       {
         int aCurrId = aCurrIds[ i ];
-        aToolIds.Add( aCurrId );
+        aToolIds.insert( aCurrId );
       }
     }
 
-    NCollection_Map< int > anIds; // result
+    vector< int > anIds; // result
 
     // Iterate through main group 
     for ( g = 0, n = theMainGroups.length(); g < n; g++ )
@@ -1302,8 +1302,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutListOfGroups(
       for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
       {
         int aCurrId = aCurrIds[ i ];
-        if ( !aToolIds.Contains( aCurrId ) )
-          anIds.Add( aCurrId );
+        if ( !aToolIds.count( aCurrId ) )
+          anIds.push_back( aCurrId );
       }
     }
 
@@ -1314,12 +1314,11 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutListOfGroups(
     
     // Create array of identifiers
     SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( anIds.Extent() );
+    aResIds->length( anIds.size() );
     
-    NCollection_Map< int >::Iterator anIter( anIds );
-    for ( int i = 0; anIter.More(); anIter.Next(), i++ )
+    for (int i=0; i<anIds.size(); i++ )
     {
-      aResIds[ i ] = anIter.Value();
+      aResIds[ i ] = anIds[i];
     }
     aResGrp->Add( aResIds );
 
@@ -1371,7 +1370,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
   {
     // Create map of nodes from all groups 
 
-    NCollection_Map< int > aNodeMap;
+    set< int > aNodeMap;
     
     for ( int g = 0, n = theGroups.length(); g < n; g++ )
     {
@@ -1390,7 +1389,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
           int aCurrId = aCurrIds[ i ];
           const SMDS_MeshNode* aNode = aMeshDS->FindNode( aCurrId );
           if ( aNode )
-            aNodeMap.Add( aNode->GetID() );
+            aNodeMap.insert( aNode->GetID() );
         }
       }
       else 
@@ -1408,7 +1407,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
             const SMDS_MeshNode* aNode = 
               dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() );
             if ( aNode )
-              aNodeMap.Add( aNode->GetID() );
+              aNodeMap.insert( aNode->GetID() );
           }
         }
       }
@@ -1416,22 +1415,25 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
 
     // Get result identifiers 
 
-    NCollection_Map< int > aResultIds;
+    vector< int > aResultIds;
     if ( theElemType == SMESH::NODE )
     {
-      NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
-      for ( ; aNodeIter.More(); aNodeIter.Next() )
-        aResultIds.Add( aNodeIter.Value() );
+      //NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
+      set<int>::iterator iter = aNodeMap.begin();
+      for ( ; iter != aNodeMap.end(); iter++ )
+        aResultIds.push_back( *iter);
     }
     else
     {
       // Create list of elements of given dimension constructed on the nodes
-      NCollection_Map< int > anElemList;
-      NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
-      for ( ; aNodeIter.More(); aNodeIter.Next() )
+      vector< int > anElemList;
+      //NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
+      //for ( ; aNodeIter.More(); aNodeIter.Next() )
+      set<int>::iterator iter = aNodeMap.begin();
+      for ( ; iter != aNodeMap.end(); iter++ )
       {
         const SMDS_MeshElement* aNode = 
-          dynamic_cast<const SMDS_MeshElement*>( aMeshDS->FindNode( aNodeIter.Value() ) );
+          dynamic_cast<const SMDS_MeshElement*>( aMeshDS->FindNode( *iter ) );
         if ( !aNode )
           continue;
 
@@ -1441,15 +1443,16 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
           const SMDS_MeshElement* anElem = 
             dynamic_cast<const SMDS_MeshElement*>( anElemIter->next() );
           if ( anElem && anElem->GetType() == anElemType )
-            anElemList.Add( anElem->GetID() );
+            anElemList.push_back( anElem->GetID() );
         }
       }
 
       // check whether all nodes of elements are present in nodes map
-      NCollection_Map< int >::Iterator anIter( anElemList );
-      for ( ; anIter.More(); anIter.Next() )
+      //NCollection_Map< int >::Iterator anIter( anElemList );
+      //for ( ; anIter.More(); anIter.Next() )
+      for (int i=0; i< anElemList.size(); i++)
       {
-        const SMDS_MeshElement* anElem = aMeshDS->FindElement( anIter.Value() );
+        const SMDS_MeshElement* anElem = aMeshDS->FindElement( anElemList[i] );
         if ( !anElem )
           continue;
 
@@ -1459,14 +1462,14 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
         {
           const SMDS_MeshNode* aNode = 
             dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() );
-          if ( !aNode || !aNodeMap.Contains( aNode->GetID() ) )
+          if ( !aNode || !aNodeMap.count( aNode->GetID() ) )
           {
             isOk = false;
             break;
           }
         } 
         if ( isOk )
-          aResultIds.Add( anElem->GetID() );
+          aResultIds.push_back( anElem->GetID() );
       }
     }
 
@@ -1478,11 +1481,12 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
     
     // Create array of identifiers
     SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( aResultIds.Extent() );
+    aResIds->length( aResultIds.size() );
     
-    NCollection_Map< int >::Iterator aResIter( aResultIds );
-    for ( int i = 0; aResIter.More(); aResIter.Next(), i++ )
-      aResIds[ i ] = aResIter.Value();
+    //NCollection_Map< int >::Iterator aResIter( aResultIds );
+    //for ( int i = 0; aResIter.More(); aResIter.Next(), i++ )
+    for (int i=0; i< aResultIds.size(); i++)
+      aResIds[ i ] = aResultIds[i];
     aResGrp->Add( aResIds );
 
     // Remove strings corresponding to group creation

@@ -31,6 +31,7 @@
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -42,6 +43,7 @@ using namespace std;
 SMDS_MeshEdge::SMDS_MeshEdge(const SMDS_MeshNode * node1,
                              const SMDS_MeshNode * node2)
 {	
+    //MESSAGE("SMDS_MeshEdge " << GetID());
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 }

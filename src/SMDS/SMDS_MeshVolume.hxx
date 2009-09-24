@@ -30,7 +30,7 @@
 
 #include "SMDS_MeshElement.hxx"
 
-class SMDS_EXPORT SMDS_MeshVolume:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshVolume:public SMDS_MeshCell
 {
 	
   public:

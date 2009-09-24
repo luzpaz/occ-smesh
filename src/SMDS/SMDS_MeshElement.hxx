@@ -36,6 +36,9 @@
 #include <vector>
 #include <iostream>
 
+typedef unsigned short UShortType;
+typedef short ShortType;
+
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
 class SMDS_MeshFace;	
@@ -116,13 +119,37 @@ public:
    */
   int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
+  inline int getId() {return myID; };
+  inline UShortType getMeshId() {return myMeshId; };
+  inline ShortType getshapeId() {return myShapeId; };
+  inline void setShapeId(UShortType shapeId) {myShapeId = shapeId; };
+
 protected:
   SMDS_MeshElement(int ID=-1);
+  SMDS_MeshElement(int id, UShortType meshId, ShortType shapeId=-1);
   virtual void Print(std::ostream & OS) const;
 
-private:
-  int myID;
+  int myID;        // --- element index 
+  UShortType myMeshId;
+  ShortType myShapeId;
 };
+
+// ============================================================
+/*!
+ * \brief Base class for all cells
+ */
+// ============================================================
+
+class SMDS_EXPORT SMDS_MeshCell:public SMDS_MeshElement
+{
+public:
+    SMDS_MeshCell();
+    inline void setVtkId(int vtkId) { myVtkID = vtkId; };
+    inline int getVtkId() const {return myVtkID; };
+protected:
+    int myVtkID;
+};
+
 
 // ============================================================
 /*!

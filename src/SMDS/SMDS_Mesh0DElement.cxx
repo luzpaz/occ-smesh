@@ -31,6 +31,7 @@
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -39,7 +40,8 @@ using namespace std;
 //purpose  :
 //=======================================================================
 SMDS_Mesh0DElement::SMDS_Mesh0DElement (const SMDS_MeshNode * node)
-{	
+{
+    MESSAGE("SMDS_Mesh0DElement " << GetID());
   myNode = node;
 }
 

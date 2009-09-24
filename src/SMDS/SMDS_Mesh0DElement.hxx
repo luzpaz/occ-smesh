@@ -32,7 +32,7 @@
 
 #include <iostream>
 
-class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshElement
+class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshCell
 {
  public:
   SMDS_Mesh0DElement (const SMDS_MeshNode * node);

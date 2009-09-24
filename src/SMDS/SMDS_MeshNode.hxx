@@ -36,7 +36,10 @@ class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 {
 
 public:
-  SMDS_MeshNode(double x, double y, double z);
+  SMDS_MeshNode(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
+
+  double* getCoord() const;
+
   void Print(std::ostream & OS) const;
   double X() const;
   double Y() const;
@@ -67,9 +70,7 @@ protected:
   elementsIterator(SMDSAbs_ElementType type) const;
 
 private:
-  double myX, myY, myZ;
   SMDS_PositionPtr myPosition;
-  NCollection_List<const SMDS_MeshElement*> myInverseElements;
 };
 
 #endif
