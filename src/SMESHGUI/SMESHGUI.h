@@ -99,9 +99,10 @@ public :
                                    SUIT_ViewWindow* = 0 );
 
   /* Non modal dialog boxes management */
-  void EmitSignalDeactivateDialog() ;
-  void EmitSignalStudyFrameChanged() ;
-  void EmitSignalCloseAllDialogs() ;
+  void EmitSignalDeactivateDialog();
+  void EmitSignalStudyFrameChanged();
+  void EmitSignalCloseAllDialogs();
+  void EmitSignalVisibilityChanged();
 
   virtual void                createPreferences();
   virtual void                preferencesChanged( const QString&, const QString& );
@@ -123,9 +124,10 @@ private slots:
 
 
 signals:
-  void SignalDeactivateActiveDialog() ;
-  void SignalStudyFrameChanged() ;
-  void SignalCloseAllDialogs() ;
+  void SignalDeactivateActiveDialog();
+  void SignalStudyFrameChanged();
+  void SignalCloseAllDialogs();
+  void SignalVisibilityChanged();
 
 protected:
   void createSMESHAction( const int, const QString&, const QString& = QString(""),

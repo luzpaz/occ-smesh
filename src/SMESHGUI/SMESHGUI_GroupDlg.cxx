@@ -23,7 +23,6 @@
 //  File   : SMESHGUI_GroupDlg.cxx
 //  Author : Natalia KOPNOVA
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESHGUI_GroupDlg.h"
 #include "SMESHGUI_FilterDlg.h"
@@ -111,8 +110,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
      mySelector(SMESH::GetViewWindow( theModule )->GetSelector()),
      myIsBusy( false ),
-     myNameChanged(false),
-     myActor( 0 )
+     myNameChanged(false)
 {
   if (!name) setName("SMESHGUI_GroupDlg");
   initDialog(true);
@@ -416,6 +414,7 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), this, SLOT(onClose()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(onObjectSelectionChanged()));
+  connect(mySMESHGUI, SIGNAL(SignalVisibilityChanged()),      this, SLOT(onVisibilityChanged()));
 
   myGrpTypeGroup->setButton(myGrpTypeGroup->id(rb1)); // VSR !!!
   onGrpTypeChanged(myGrpTypeGroup->id(rb1)); // VSR!!!
@@ -553,11 +552,12 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
     // actor of myGroup, if it is visible, else try
     // any visible actor of group or submesh of myMesh
     // commented, because an attempt to set selection on not displayed cells leads to error
-    //SetAppropriateActor();
-    myActor = SMESH::FindActorByObject(myMesh);
+    SetAppropriateActor();
+
+    /*    myActor = SMESH::FindActorByObject(myMesh);
     if ( !myActor )
       myActor = SMESH::FindActorByObject(myGroup);
-    SMESH::SetPickable(myActor);
+      SMESH::SetPickable(myActor);*/
 
     myGrpTypeGroup->setButton(0);
     onGrpTypeChanged(0);
@@ -591,11 +591,11 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
       // actor of myGroupOnGeom, if it is visible, else try
       // any visible actor of group or submesh of myMesh
       // commented, because an attempt to set selection on not displayed cells leads to error
-      //SetAppropriateActor();
-      myActor = SMESH::FindActorByObject(myMesh);
-      if ( !myActor )
-        myActor = SMESH::FindActorByObject(myGroupOnGeom);
-      SMESH::SetPickable(myActor);
+      SetAppropriateActor();
+      /*      SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
+      if ( !anActor )
+        anActor = SMESH::FindActorByObject(myGroupOnGeom);
+        SMESH::SetPickable(anActor);*/
 
       myGrpTypeGroup->setButton(1);
       onGrpTypeChanged(1);
@@ -714,15 +714,20 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
   if (mySelectionMode != theMode) {
     // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
-    if (myActor)
-      myActor->SetPointRepresentation(false);
+    if (myActorsList.count() > 0) {
+      for (unsigned int i = 0; i < myActorsList.count(); i++) {
+        myActorsList.at(i)->SetPointRepresentation(false);
+      }
+    }
     else
       SMESH::SetPointRepresentation(false);
     if (theMode < 4) {
       switch (theMode) {
       case 0:
-        if (myActor)
-          myActor->SetPointRepresentation(true);
+        if (myActorsList.count() > 0) {
+          for (unsigned int i = 0; i < myActorsList.count(); i++)
+            myActorsList.at(i)->SetPointRepresentation(true);
+        }
         else
           SMESH::SetPointRepresentation(true);
         if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -985,7 +990,7 @@ void SMESHGUI_GroupDlg::onOK()
 void SMESHGUI_GroupDlg::onListSelectionChanged()
 {
   //  MESSAGE("SMESHGUI_GroupDlg::onListSelectionChanged(); myActor = " << myActor);
-  if ( myIsBusy || !myActor) return;
+  if( myIsBusy || myActorsList.count() == 0 ) return;
     myIsBusy = true;
 
   if (myCurrentLineEdit == 0) {
@@ -998,9 +1003,9 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
         aIndexes.Add(anId);
       }
     }
-    mySelector->AddOrRemoveIndex(myActor->getIO(), aIndexes, false);
+    mySelector->AddOrRemoveIndex(myActorsList.first()->getIO(), aIndexes, false);
     SALOME_ListIO aList;
-    aList.Append(myActor->getIO());
+    aList.Append(myActorsList.first()->getIO());
     mySelectionMgr->setSelectedObjects(aList,false);
   }
   myIsBusy = false;
@@ -1234,13 +1239,13 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
   }
   else // !myCurrentLineEdit: local selection of nodes or elements
   {
-    if (aNbSel == 1 && myActor && myActor->hasIO())
+    if (aNbSel == 1 && myActorsList.count() > 0)
     {
 #ifdef ENABLE_SWITCH_ACTOR_DURING_ELEMENTS_SELECTION
       // NPAL19389: create a group with a selection in another group
       // Switch myActor to the newly selected one, if the last
       // is visible and belongs to group or submesh of myMesh
-      Handle(SALOME_InteractiveObject) curIO = myActor->getIO();
+      /*      Handle(SALOME_InteractiveObject) curIO = myActor->getIO();
       Handle(SALOME_InteractiveObject) selIO = aList.First();
       if (curIO->hasEntry() && selIO->hasEntry()) {
         const char* selEntry = selIO->getEntry();
@@ -1267,16 +1272,24 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
             }
           }
         }
-      }
+        }*/
       // NPAL19389 END
 #endif // ENABLE_SWITCH_ACTOR_DURING_ELEMENTS_SELECTION
 
       QString aListStr = "";
       int aNbItems = 0;
       if (myTypeId == 0) {
-        aNbItems = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aListStr);
+        for (unsigned int i = 0; i < myActorsList.count(); i++) {
+          QString tmpStr;
+          aNbItems += SMESH::GetNameOfSelectedNodes(mySelector, myActorsList.at(i)->getIO(), tmpStr);
+          aListStr += tmpStr;
+        }
       } else {
-        aNbItems = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aListStr);
+        for (unsigned int i = 0; i < myActorsList.count(); i++) {
+          QString tmpStr;
+          aNbItems += SMESH::GetNameOfSelectedElements(mySelector, myActorsList.at(i)->getIO(), tmpStr);
+          aListStr += tmpStr;
+        }
       }
       if (aNbItems > 0) {
         QStringList anElements = QStringList::split(" ", aListStr);
@@ -1289,19 +1302,21 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
     }
   }
 
-  if (!myActor) {
+  if (myActorsList.count() == 0) {
     if (!myGroup->_is_nil())
-      myActor = SMESH::FindActorByObject(myGroup);
-    else if (!myGroupOnGeom->_is_nil())
-      myActor = SMESH::FindActorByObject(myGroupOnGeom);
+      myActorsList.append( SMESH::FindActorByObject(myGroup) );
+    else if(!myGroupOnGeom->_is_nil())
+      myActorsList.append( SMESH::FindActorByObject(myGroupOnGeom) );
     else
-      myActor = SMESH::FindActorByObject(myMesh);
+      myActorsList.append( SMESH::FindActorByObject(myMesh) );
   }
 
   // somehow, if we display the mesh, while selecting from another actor,
   // the mesh becomes pickable, and there is no way to select any element
-  if (myActor)
-    SMESH::SetPickable(myActor);
+  if (myActorsList.count() > 0) {
+    for (unsigned int i = 0; i < myActorsList.count(); i++)
+      myActorsList.at(i)->SetPickable(true);
+  }
 
   myIsBusy = false;
 }
@@ -1469,7 +1484,7 @@ void SMESHGUI_GroupDlg::onAdd()
 
   int aNbSel = aList.Extent();
 
-  if (aNbSel == 0 || !myActor || myMesh->_is_nil()) return;
+  if (aNbSel == 0 || myActorsList.count() == 0 || myMesh->_is_nil()) return;
 
   myIsBusy = true;
 
@@ -1500,10 +1515,18 @@ void SMESHGUI_GroupDlg::onAdd()
     QString aListStr = "";
     int aNbItems = 0;
     if (myTypeId == 0) {
-      aNbItems = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aListStr);
+      for (unsigned int i = 0; i < myActorsList.count(); i++) {
+        QString tmpStr;
+        aNbItems += SMESH::GetNameOfSelectedNodes(mySelector, myActorsList.at(i)->getIO(), tmpStr);
+        aListStr += tmpStr;
+      }
     }
     else {
-      aNbItems = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aListStr);
+      for (unsigned int i = 0; i < myActorsList.count(); i++) {
+        QString tmpStr;
+        aNbItems += SMESH::GetNameOfSelectedElements(mySelector, myActorsList.at(i)->getIO(), tmpStr);
+        aListStr += tmpStr;
+      }
     }
     if (aNbItems > 0) {
       QStringList anElements = QStringList::split(" ", aListStr);
@@ -1534,7 +1557,7 @@ void SMESHGUI_GroupDlg::onAdd()
             SMESH::long_array_var anElements = aSubMesh->GetElementsByType(aType);
             int k = anElements->length();
             QListBoxItem* anItem = 0;
-            for (int i = 0; i < k; i++) {
+            for (unsigned int i = 0; i < k; i++) {
               QString aText = QString::number(anElements[i]);
               anItem = myElements->findItem(aText, Qt::ExactMatch);
               if (!anItem) {
@@ -1780,6 +1803,15 @@ void SMESHGUI_GroupDlg::onSort()
 void SMESHGUI_GroupDlg::closeEvent (QCloseEvent*)
 {
   onClose();
+}
+
+//=================================================================================
+// function : onVisibilityChanged()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onVisibilityChanged()
+{
+  SetAppropriateActor();
 }
 
 //=================================================================================
@@ -2109,81 +2141,72 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
 bool SMESHGUI_GroupDlg::SetAppropriateActor()
 {
   bool isActor = false;
-
+  myActorsList.clear();
+  
   if (myMesh->_is_nil()) return false;
-
+  
   SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView();
-
-  // try mesh actor
-  myActor = SMESH::FindActorByObject(myMesh);
-  if (myActor && myActor->hasIO())
-  {
-    isActor = true;
-    if (aViewWindow && !aViewWindow->isVisible(myActor->getIO()))
-        isActor = false;
-  }
-
-  // try current group actor
-  if (!isActor) {
-    if (!myGroup->_is_nil()) {
-      myActor = SMESH::FindActorByObject(myGroup);
-      if (myActor && myActor->hasIO())
-      {
-        isActor = true;
-        if (aViewWindow && !aViewWindow->isVisible(myActor->getIO()))
-            isActor = false;
+  
+  if (myGeomGroupBtn->isOn()) {   // try current group on geometry actor
+    if (!isActor) {
+      if (!myGroupOnGeom->_is_nil()) {
+        SMESH_Actor* anActor = SMESH::FindActorByObject(myGroupOnGeom);
+        if (anActor && anActor->hasIO())
+          {
+            isActor = true;
+            if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
+              isActor = false;
+            else
+              myActorsList.append(anActor);
+          }
       }
     }
-  }
-
-  // try current group on geometry actor
-  if (!isActor) {
-    if (!myGroupOnGeom->_is_nil()) {
-      myActor = SMESH::FindActorByObject(myGroupOnGeom);
-      if (myActor && myActor->hasIO())
+  } else {
+    // try mesh actor
+    SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
+    if (anActor && anActor->hasIO())
       {
         isActor = true;
-        if (aViewWindow && !aViewWindow->isVisible(myActor->getIO()))
+        if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
           isActor = false;
+        else
+          myActorsList.append(anActor);
       }
-    }
-  }
-
-  // try any visible actor of group or submesh of current mesh
-  if (!isActor && aViewWindow) {
-    // mesh entry
-    _PTR(SObject) aSObject = SMESH::FindSObject(myMesh);
-    if (aSObject) {
-      CORBA::String_var meshEntry = aSObject->GetID().c_str();
-      int len = strlen(meshEntry);
-
-      // iterate on all actors in current view window, search for
-      // any visible actor, that belongs to group or submesh of current mesh
-      VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
-      vtkActorCollection *aCollection = aCopy.GetActors();
-      aCollection->InitTraversal();
-      for (vtkActor *anAct = aCollection->GetNextActor();
-           anAct && !isActor;
-           anAct = aCollection->GetNextActor())
-      {
-        SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct);
-        if (anActor && anActor->hasIO()) {
-          Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-          if (aViewWindow->isVisible(anIO)) {
-            if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0) {
-              myActor = anActor;
-              isActor = true;
+    
+    // try any visible actor of group or submesh of current mesh
+    if (aViewWindow) {
+      // mesh entry
+      _PTR(SObject) aSObject = SMESH::FindSObject(myMesh);
+      if (aSObject) {
+        CORBA::String_var meshEntry = aSObject->GetID().c_str();
+        int len = strlen(meshEntry);
+        
+        // iterate on all actors in current view window, search for
+        // any visible actor, that belongs to group or submesh of current mesh
+        VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
+        vtkActorCollection *aCollection = aCopy.GetActors();
+        int nbItems = aCollection->GetNumberOfItems();
+        for (int i=0; i<nbItems && !isActor; i++) {
+          SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
+          if (anActor && anActor->hasIO()) {
+            Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+            if (aViewWindow->isVisible(anIO)) {
+              if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0)
+                myActorsList.append(anActor);
             }
           }
         }
       }
     }
   }
-
-  if (isActor)
-    SMESH::SetPickable(myActor);
-
-  return isActor;
+  
+  if (myActorsList.count() > 0) {
+    for (int i = 0; i < myActorsList.count(); i++) {
+      myActorsList.at(i)->SetPickable(true);
+    }
+  }
+  
+  return ( isActor || (myActorsList.count() > 0) );
 }
 
 //=======================================================================
