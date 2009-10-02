@@ -54,6 +54,8 @@
 
 #include <utilities.h>
 
+#include <limits>
+
 #define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
 
 namespace {
@@ -69,7 +71,7 @@ namespace {
 //================================================================================
 
 SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
-  : myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false), myCheckNodePos(false)
+  : myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false)
 {
   mySetElemOnShape = ( ! myMesh->HasShapeToMesh() );
 }
@@ -324,9 +326,8 @@ gp_Pnt2d SMESH_MesherHelper::GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& u
  * \param F - the face
  * \param n - the node
  * \param n2 - a node of element being created located inside a face
+ * \param check - optional flag returing false if found UV are invalid
  * \retval gp_XY - resulting UV
- * 
- * Auxilary function called form GetMediumNode()
  */
 //=======================================================================
 
@@ -337,37 +338,14 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
 {
   gp_Pnt2d uv( 1e100, 1e100 );
   const SMDS_PositionPtr Pos = n->GetPosition();
+  bool uvOK = false;
   if(Pos->GetTypeOfPosition()==SMDS_TOP_FACE)
   {
     // node has position on face
     const SMDS_FacePosition* fpos =
       static_cast<const SMDS_FacePosition*>(n->GetPosition().get());
     uv.SetCoord(fpos->GetUParameter(),fpos->GetVParameter());
-    if ( check && *check )
-    {
-      // check that uv is correct
-      TopLoc_Location loc;
-      Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
-      double tol = 2 * BRep_Tool::Tolerance( F );
-      gp_Pnt nodePnt = XYZ( n );
-      if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
-      if ( nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol ) {
-        // uv incorrect, project the node to surface
-        GeomAPI_ProjectPointOnSurf projector( nodePnt, surface, tol );
-        if ( !projector.IsDone() || projector.NbPoints() < 1 ) {
-          MESSAGE( "SMESH_MesherHelper::GetNodeUV() failed to project" )
-          return uv.XY();
-        }
-        Quantity_Parameter U,V;
-        projector.LowerDistanceParameters(U,V);
-        if ( nodePnt.Distance( surface->Value( U, V )) > tol )
-          MESSAGE( "SMESH_MesherHelper::GetNodeUV(), invalid projection" );
-        uv.SetCoord( U,V );
-      }
-      else if ( uv.XY().Modulus() > numeric_limits<double>::min() ) {
-        *check = false; // parameters are OK, do not check further more
-      }
-    }
+    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( F ));
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_EDGE)
   {
@@ -381,39 +359,43 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     double f, l;
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
     uv = C2d->Value( epos->GetUParameter() );
+    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( E ));
+
     // for a node on a seam edge select one of UVs on 2 pcurves
     if ( n2 && IsSeamShape( edgeID ) )
+    {
       uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
-
-    // adjust uv to period
-    TopLoc_Location loc;
-    Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
-    Standard_Boolean isUPeriodic = S->IsUPeriodic();
-    Standard_Boolean isVPeriodic = S->IsVPeriodic();
-    if ( isUPeriodic || isVPeriodic ) {
-      Standard_Real UF,UL,VF,VL;
-      S->Bounds(UF,UL,VF,VL);
-      if(isUPeriodic)
-        uv.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod(uv.X(),UF,UL));
-      if(isVPeriodic)
-        uv.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod(uv.Y(),VF,VL));
+    }
+    else
+    { // adjust uv to period
+      TopLoc_Location loc;
+      Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
+      Standard_Boolean isUPeriodic = S->IsUPeriodic();
+      Standard_Boolean isVPeriodic = S->IsVPeriodic();
+      if ( isUPeriodic || isVPeriodic ) {
+        Standard_Real UF,UL,VF,VL;
+        S->Bounds(UF,UL,VF,VL);
+        if(isUPeriodic)
+          uv.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod(uv.X(),UF,UL));
+        if(isVPeriodic)
+          uv.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod(uv.Y(),VF,VL));
+      }
     }
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
   {
     if ( int vertexID = n->GetPosition()->GetShapeId() ) {
-      bool ok = true;
       const TopoDS_Vertex& V = TopoDS::Vertex(GetMeshDS()->IndexToShape(vertexID));
       try {
         uv = BRep_Tool::Parameters( V, F );
+        uvOK = true;
       }
       catch (Standard_Failure& exc) {
-        ok = false;
       }
-      if ( !ok ) {
-        for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !ok && vert.More(); vert.Next() )
-          ok = ( V == vert.Current() );
-        if ( !ok ) {
+      if ( !uvOK ) {
+        for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !uvOK && vert.More(); vert.Next() )
+          uvOK = ( V == vert.Current() );
+        if ( !uvOK ) {
 #ifdef _DEBUG_
           MESSAGE ( "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
                << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
@@ -421,14 +403,14 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           // get UV of a vertex closest to the node
           double dist = 1e100;
           gp_Pnt pn = XYZ( n );
-          for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !ok && vert.More(); vert.Next() ) {
+          for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !uvOK && vert.More(); vert.Next() ) {
             TopoDS_Vertex curV = TopoDS::Vertex( vert.Current() );
             gp_Pnt p = BRep_Tool::Pnt( curV );
             double curDist = p.SquareDistance( pn );
             if ( curDist < dist ) {
               dist = curDist;
               uv = BRep_Tool::Parameters( curV, F );
-              if ( dist < DBL_MIN ) break;
+              uvOK = ( dist < DBL_MIN );
             }
           }
         }
@@ -452,7 +434,56 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
         uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
     }
   }
+
+  if ( check )
+    *check = uvOK;
+
   return uv.XY();
+}
+
+//=======================================================================
+/*!
+ * \brief Check and fix node UV on a face
+ *  \retval bool - false if UV is bad and could not be fixed
+ */
+//=======================================================================
+
+bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
+                                     const SMDS_MeshNode* n,
+                                     gp_XY&               uv,
+                                     const double         tol) const
+{
+  if ( !myOkNodePosShapes.count( n->GetPosition()->GetShapeId() ))
+  {
+    // check that uv is correct
+    TopLoc_Location loc;
+    Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
+    gp_Pnt nodePnt = XYZ( n );
+    if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
+    if ( nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
+    {
+      // uv incorrect, project the node to surface
+      GeomAPI_ProjectPointOnSurf projector( nodePnt, surface, tol );
+      if ( !projector.IsDone() || projector.NbPoints() < 1 )
+      {
+        MESSAGE( "SMESH_MesherHelper::CheckNodeUV() failed to project" );
+        return false;
+      }
+      Quantity_Parameter U,V;
+      projector.LowerDistanceParameters(U,V);
+      if ( nodePnt.Distance( surface->Value( U, V )) > tol )
+      {
+        MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
+        return false;
+      }
+      uv.SetCoord( U,V );
+    }
+    else if ( uv.Modulus() > numeric_limits<double>::min() )
+    {
+      ((SMESH_MesherHelper*) this)->myOkNodePosShapes.insert( n->GetPosition()->GetShapeId() );
+    }
+  }
+  return true;
 }
 
 //=======================================================================
@@ -581,23 +612,26 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
         F = TopoDS::Face(myShape);
         faceID = myShapeID;
       }
+      bool uvOK1, uvOK2;
+      gp_XY p1 = GetNodeUV(F,n1,n2, &uvOK1);
+      gp_XY p2 = GetNodeUV(F,n2,n1, &uvOK2);
 
-      gp_XY p1 = GetNodeUV(F,n1,n2, &myCheckNodePos);
-      gp_XY p2 = GetNodeUV(F,n2,n1, &myCheckNodePos);
+      if ( uvOK1 && uvOK2 )
+      {
+        if ( IsDegenShape( Pos1->GetShapeId() ))
+          p1.SetCoord( myParIndex, p2.Coord( myParIndex ));
+        else if ( IsDegenShape( Pos2->GetShapeId() ))
+          p2.SetCoord( myParIndex, p1.Coord( myParIndex ));
 
-      if ( IsDegenShape( Pos1->GetShapeId() ))
-        p1.SetCoord( myParIndex, p2.Coord( myParIndex ));
-      else if ( IsDegenShape( Pos2->GetShapeId() ))
-        p2.SetCoord( myParIndex, p1.Coord( myParIndex ));
-
-      TopLoc_Location loc;
-      Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
-      gp_XY uv = GetMiddleUV( S, p1, p2 );
-      gp_Pnt P = S->Value( uv.X(), uv.Y() ).Transformed(loc);
-      n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(n12, faceID, uv.X(), uv.Y());
-      myTLinkNodeMap.insert(make_pair(link,n12));
-      return n12;
+        TopLoc_Location loc;
+        Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
+        gp_XY uv = GetMiddleUV( S, p1, p2 );
+        gp_Pnt P = S->Value( uv.X(), uv.Y() ).Transformed(loc);
+        n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+        meshDS->SetNodeOnFace(n12, faceID, uv.X(), uv.Y());
+        myTLinkNodeMap.insert(make_pair(link,n12));
+        return n12;
+      }
     }
     if (edgeID>0 || shapeType == TopAbs_EDGE) {
 
@@ -609,8 +643,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
         edgeID = myShapeID;
       }
 
-      double p1 = GetNodeU(E,n1, &myCheckNodePos);
-      double p2 = GetNodeU(E,n2, &myCheckNodePos);
+      double p1 = GetNodeU(E,n1);
+      double p2 = GetNodeU(E,n2);
 
       double f,l;
       Handle(Geom_Curve) C = BRep_Tool::Curve(E, f, l);
@@ -721,10 +755,14 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
                                            const int id,
-					   const bool force3d)
+                                           const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
+
+  if( n1==n2 || n2==n3 || n3==n1 )
+    return elem;
+
   if(!myCreateQuadratic) {
     if(id)
       elem = meshDS->AddFaceWithID(n1, n2, n3, id);
@@ -758,10 +796,30 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n3,
                                            const SMDS_MeshNode* n4,
                                            const int id,
-					   const bool force3d)
+                                           const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
+
+  if( n1==n2 ) {
+    return AddFace(n1,n3,n4,id,force3d);
+  }
+  if( n1==n3 ) {
+    return AddFace(n1,n2,n4,id,force3d);
+  }
+  if( n1==n4 ) {
+    return AddFace(n1,n2,n3,id,force3d);
+  }
+  if( n2==n3 ) {
+    return AddFace(n1,n2,n4,id,force3d);
+  }
+  if( n2==n4 ) {
+    return AddFace(n1,n2,n3,id,force3d);
+  }
+  if( n3==n4 ) {
+    return AddFace(n1,n2,n3,id,force3d);
+  }
+
   if(!myCreateQuadratic) {
     if(id)
       elem = meshDS->AddFaceWithID(n1, n2, n3, n4, id);
@@ -798,7 +856,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n5,
                                                const SMDS_MeshNode* n6,
                                                const int id,
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
@@ -845,7 +903,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n3,
                                                const SMDS_MeshNode* n4,
                                                const int id, 
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
@@ -887,7 +945,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n4,
                                                const SMDS_MeshNode* n5,
                                                const int id, 
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMDS_MeshVolume* elem = 0;
   if(!myCreateQuadratic) {
@@ -938,7 +996,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n7,
                                                const SMDS_MeshNode* n8,
                                                const int id,
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
@@ -1380,7 +1438,7 @@ namespace { // Structures used by FixQuadraticElements()
     bool IsBoundary() const { return !_qfaces[1]; }
 
     void RemoveFace( const QFace* face ) const
-    { _qfaces[(face == _qfaces[1])] = 0; if (!_qfaces[0]) swap(_qfaces[0],_qfaces[1]); }
+    { _qfaces[(face == _qfaces[1])] = 0; if (!_qfaces[0]) std::swap(_qfaces[0],_qfaces[1]); }
 
     const QFace* NextFace( const QFace* f ) const
     { return _qfaces[0]==f ? _qfaces[1] : _qfaces[0]; }
@@ -1399,7 +1457,7 @@ namespace { // Structures used by FixQuadraticElements()
   // --------------------------------------------------------------------
   typedef list< TChainLink > TChain;
   typedef set < TChainLink > TLinkSet;
-  typedef TLinkSet::iterator TLinkInSet;
+  typedef TLinkSet::const_iterator TLinkInSet;
 
   const int theFirstStep = 5;
 
@@ -1487,7 +1545,7 @@ namespace { // Structures used by FixQuadraticElements()
   ostream& operator << (ostream& out, const QFace& f)
   {
     out <<"QFace nodes: "/*<< &f << "  "*/;
-    for ( TIDSortedElemSet::iterator n = f.begin(); n != f.end(); ++n )
+    for ( TIDSortedElemSet::const_iterator n = f.begin(); n != f.end(); ++n )
       out << (*n)->GetID() << " ";
     out << " \tvolumes: "
         << (f._volumes[0] ? f._volumes[0]->GetID() : 0) << " "
@@ -1834,7 +1892,7 @@ namespace { // Structures used by FixQuadraticElements()
     if ( iFaceCont > 0 ) // continues faces found, set one by the other
     {
       if ( iFaceCont != 1 )
-        swap( _faces[1], _faces[iFaceCont] );
+        std::swap( _faces[1], _faces[iFaceCont] );
     }
     else if ( _faces.size() > 1 ) // not found, set NULL by the first face
     {
@@ -1929,7 +1987,7 @@ namespace { // Structures used by FixQuadraticElements()
         }
       }
       curBndLinks->clear();
-      swap( curBndLinks, newBndLinks );
+      std::swap( curBndLinks, newBndLinks );
     }
   }
 
