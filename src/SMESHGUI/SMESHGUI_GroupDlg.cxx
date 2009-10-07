@@ -1303,12 +1303,21 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
   }
 
   if (myActorsList.count() == 0) {
-    if (!myGroup->_is_nil())
-      myActorsList.append( SMESH::FindActorByObject(myGroup) );
-    else if(!myGroupOnGeom->_is_nil())
-      myActorsList.append( SMESH::FindActorByObject(myGroupOnGeom) );
-    else
-      myActorsList.append( SMESH::FindActorByObject(myMesh) );
+    if (!myGroup->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
+      if ( anActor )
+        myActorsList.append( anActor  );
+    }
+    else if(!myGroupOnGeom->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroupOnGeom);
+      if ( anActor )
+        myActorsList.append( anActor );
+    }
+    else {
+      SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh );
+      if ( anActor )
+        myActorsList.append( anActor );
+    }
   }
 
   // somehow, if we display the mesh, while selecting from another actor,
