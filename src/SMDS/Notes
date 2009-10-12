@@ -1,0 +1,31 @@
+
+
+SMDS_Mesh
+  static vector<SMDS_Mesh*> _meshList;     --> retrouver un SMDS_Mesh
+  vtkUnstructuredGrid*      myGrid;
+
+  vector<SMDS_MeshNode *>   myNodes;       --> meme index que dans le pointSet de myGrid
+  vector<SMDS_MeshCell *>   myCells;       --> meme index que dans le cellTypes de myGrid
+
+
+
+SMDS_MeshElement
+  int myID;                                --> index dans la structure geree par SMDS_Mesh
+  int myMeshId;                            --> pour retrouver SMDS_Mesh* dans _meshList
+  int myShapeId;                           --> pour retrouver la subShape
+                                                         
+
+SMDS_MeshNode: SMDS_MeshElement
+  SMDS_PositionPtr myPosition;             --> objet position dans la shape geom
+  ##vector<int> myInverseElements;         --> pour retrouver les elements, vtkCellLinks
+
+
+SMDS_MeshCell: SMDS_MeshElement            --> generique pour tous les elements (cells)
+
+
+========= TODO ============
+
+enlever vtkId de SMDS_MeshCell, utiliser SMDS_MeshElementIDFactory.
+
+ajouter ID dans SMDS_Mesh::createTriangle 
+verifier ID dans SMDS_Mesh::Find*OrCreate
