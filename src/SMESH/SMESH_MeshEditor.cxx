@@ -2805,12 +2805,12 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
       return;
     }
 
-    issimple[iNode] = (listNewNodes.size()==nbSteps);
+    issimple[iNode] = (listNewNodes.size()==nbSteps); // is node medium
 
     itNN[ iNode ] = listNewNodes.begin();
     prevNod[ iNode ] = node;
     nextNod[ iNode ] = listNewNodes.front();
-    if( !issimple[iNode] ) {
+    if( !elem->IsQuadratic() || !issimple[iNode] ) {
       if ( prevNod[ iNode ] != nextNod [ iNode ])
         iNotSameNode = iNode;
       else {
@@ -8776,9 +8776,6 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
                                             const TIDSortedElemSet& theNodesNot,
                                             const TopoDS_Shape&     theShape )
 {
-  SMESHDS_Mesh* aMesh = GetMeshDS();
-  if (!aMesh)
-    return false;
   if ( theShape.IsNull() )
     return false;
 
@@ -8812,4 +8809,60 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
     }
   }
   return DoubleNodes( theElems, theNodesNot, anAffected );
+}
+
+/*!
+ * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+ * The created 2D mesh elements based on nodes of free faces of boundary volumes
+ * \return TRUE if operation has been completed successfully, FALSE otherwise
+ */
+
+bool SMESH_MeshEditor::Make2DMeshFrom3D()
+{
+  // iterates on volume elements and detect all free faces on them
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+  if (!aMesh)
+    return false;
+  bool res = false;
+  SMDS_VolumeIteratorPtr vIt = aMesh->volumesIterator();
+  while(vIt->more())
+  {
+    const SMDS_MeshVolume* volume = vIt->next();
+    SMDS_VolumeTool vTool( volume );
+    const bool isPoly = volume->IsPoly();
+    const bool isQuad = volume->IsQuadratic();
+    for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
+    {
+      if (!vTool.IsFreeFace(iface))
+        continue;
+      vector<const SMDS_MeshNode *> nodes;
+      int nbFaceNodes = vTool.NbFaceNodes(iface);
+      const SMDS_MeshNode** faceNodes = vTool.GetFaceNodes(iface);
+      if (vTool.IsFaceExternal(iface)) 
+      {
+        int inode = 0;
+        for ( ; inode < nbFaceNodes; inode += isQuad ? 2 : 1)
+          nodes.push_back(faceNodes[inode]);
+        if (isQuad)
+          for ( inode = 1; inode < nbFaceNodes; inode += 2)
+            nodes.push_back(faceNodes[inode]);
+      }
+      else
+      {
+        int inode = nbFaceNodes-1;
+        for ( ; inode >=0; inode -= isQuad ? 2 : 1)
+          nodes.push_back(faceNodes[inode]);
+        if (isQuad)
+          for ( inode = nbFaceNodes-2; inode >=0; inode -= 2)
+            nodes.push_back(faceNodes[inode]);
+      }
+
+      // add new face based on volume nodes
+      if (aMesh->FindFace( nodes ) )
+        continue; // face already exsist
+      myLastCreatedElems.Append( AddElement(nodes, SMDSAbs_Face, isPoly && iface == 1) );
+      res = true;
+    }
+  }
+  return res;
 }
