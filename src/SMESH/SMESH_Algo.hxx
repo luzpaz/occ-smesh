@@ -54,6 +54,9 @@ class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
 
+typedef std::map< SMESH_subMesh*, std::vector<int> > MapShapeNbElems;
+// vector must have size corresponding to EntityType_Last from SMDSAbs:
+typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
