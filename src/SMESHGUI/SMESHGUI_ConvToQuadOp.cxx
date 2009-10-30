@@ -38,12 +38,11 @@
 
 #include "SMESH_TypeFilter.hxx"
 
+#include "LightApp_UpdateFlags.h"
+#include "SUIT_MessageBox.h"
+#include "SUIT_OverrideCursor.h"
 #include "SalomeApp_Tools.h"
 
-#include "SUIT_MessageBox.h"
-
-#include "LightApp_UpdateFlags.h"
-       
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 //================================================================================
@@ -182,6 +181,7 @@ SUIT_SelectionFilter* SMESHGUI_ConvToQuadOp::createFilter( const int theId ) con
 //================================================================================
 bool SMESHGUI_ConvToQuadOp::onApply()
 {
+  SUIT_OverrideCursor aWaitCursor;
 
   QString aMess;
 
@@ -216,7 +216,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
     {
       bool aParam = true;
       if( myDlg->IsEnabledCheck() )
-	aParam = myDlg->IsMediumNdsOnGeom();
+        aParam = myDlg->IsMediumNdsOnGeom();
 
       aEditor->ConvertToQuadratic( aParam );
       aResult = true; 
