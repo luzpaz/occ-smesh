@@ -23,8 +23,8 @@
 //  File   : SMESH_Gen.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
+
 #ifndef _SMESH_GEN_HXX_
 #define _SMESH_GEN_HXX_
 
@@ -44,6 +44,7 @@
 #include <TopoDS_Shape.hxx>
 
 #include <map>
+#include <list>
 
 class SMESHDS_Document;
 
@@ -56,9 +57,11 @@ typedef struct studyContextStruct
   SMESHDS_Document * myDocument;
 } StudyContextStruct;
 
+typedef std::set<int> TSetOfInt;
+
 class SMESH_EXPORT  SMESH_Gen
 {
- public:
+public:
   SMESH_Gen();
   ~SMESH_Gen();
 
@@ -68,17 +71,45 @@ class SMESH_EXPORT  SMESH_Gen
   /*!
    * \brief Computes aMesh on aShape 
    *  \param anUpward - compute from vertices up to more complex shape (internal usage)
+   *  \param aDim - upper level dimension of the mesh computation
+   *  \param aShapesId - list of shapes with computed mesh entities (elements or nodes)
    *  \retval bool - true if none submesh failed to compute
    */
-  bool Compute(::SMESH_Mesh &       aMesh,
-               const TopoDS_Shape & aShape,
-               const bool           anUpward=false);
+  bool Compute(::SMESH_Mesh &        aMesh,
+               const TopoDS_Shape &  aShape,
+               const bool            anUpward=false,
+               const ::MeshDimension aDim=::MeshDim_3D,
+               TSetOfInt*            aShapesId=0);
+
+  /*!
+   * \brief evaluates size of prospective mesh on a shape 
+   * \param aMesh - the mesh
+   * \param aShape - the shape
+   * \param aResMap - map for prospective numbers of elements
+   * \retval bool - is a success
+   */
+  bool Evaluate(::SMESH_Mesh &        aMesh,
+                const TopoDS_Shape &  aShape,
+                MapShapeNbElems&      aResMap,
+                const bool            anUpward=false,
+                TSetOfInt*            aShapesId=0);
 
   bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
   // notify on bad state of attached algos, return false
   // if Compute() would fail because of some algo bad state
 
-  
+  /*!
+   * \brief Sets number of segments per diagonal of boundary box of geometry by which
+   *        default segment length of appropriate 1D hypotheses is defined
+   */
+  void SetBoundaryBoxSegmentation( int theNbSegments ) { _segmentation = theNbSegments; }
+  int  GetBoundaryBoxSegmentation() const { return _segmentation; }
+  /*!
+   * \brief Sets default number of segments per edge
+   */
+  void SetDefaultNbSegments(int nb) { _nbSegments = nb; }
+  int GetDefaultNbSegments() const { return _nbSegments; }
+
   struct TAlgoStateError
   {
     TAlgoStateErrorName _name;
@@ -107,16 +138,6 @@ class SMESH_EXPORT  SMESH_Gen
   SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
   static bool IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh);
 
-  // inherited methods from SALOMEDS::Driver
-
-  void Save(int studyId, const char *aUrlOfFile);
-  void Load(int studyId, const char *aUrlOfFile);
-  void Close(int studyId);
-  const char *ComponentDataType();
-
-  const char *IORToLocalPersistentID(const char *IORString, bool & IsAFile);
-  const char *LocalPersistentIDToIOR(const char *aLocalPersistentID);
-
   int GetANewId();
 
   std::map < int, SMESH_Algo * >_mapAlgo;
@@ -125,13 +146,19 @@ class SMESH_EXPORT  SMESH_Gen
   std::map < int, SMESH_2D_Algo * >_map2D_Algo;
   std::map < int, SMESH_3D_Algo * >_map3D_Algo;
 
- private:
+private:
 
-  int _localId;				// unique Id of created objects, within SMESH_Gen entity
+  int _localId;                     // unique Id of created objects, within SMESH_Gen entity
   std::map < int, StudyContextStruct * >_mapStudyContext;
 
   // hypotheses managing
   int _hypId;
+
+  // number of segments per diagonal of boundary box of geometry by which
+  // default segment length of appropriate 1D hypotheses is defined
+  int _segmentation;
+  // default of segments
+  int _nbSegments;
 };
 
 #endif

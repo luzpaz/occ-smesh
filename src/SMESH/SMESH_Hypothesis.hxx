@@ -23,8 +23,8 @@
 //  File   : SMESH_Hypothesis.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
+
 #ifndef _SMESH_HYPOTHESIS_HXX_
 #define _SMESH_HYPOTHESIS_HXX_
 
@@ -35,6 +35,14 @@
 class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
+
+enum MeshDimension // dimension of mesh
+{
+  MeshDim_0D = 0,
+  MeshDim_1D,
+  MeshDim_2D,
+  MeshDim_3D
+};
 
 class SMESH_EXPORT SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
@@ -71,9 +79,9 @@ public:
 
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
-    * \param theMesh - the built mesh
-    * \param theShape - the geometry of interest
-    * \retval bool - true if parameter values have been successfully defined
+   *  \param theMesh - the built mesh
+   *  \param theShape - the geometry of interest
+   *  \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape)=0;
 

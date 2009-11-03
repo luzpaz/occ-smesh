@@ -126,6 +126,16 @@ public:
   virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
   /*!
+   * \brief evaluates size of prospective mesh on a shape
+    * \param aMesh - the mesh
+    * \param aShape - the shape
+    * \param aNbElems - prospective number of elements by types
+    * \retval bool - is a success
+   */
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap) {return false;}/*= 0*/
+
+  /*!
    * \brief Returns a list of compatible hypotheses used to mesh a shape
     * \param aMesh - the mesh 
     * \param aShape - the shape

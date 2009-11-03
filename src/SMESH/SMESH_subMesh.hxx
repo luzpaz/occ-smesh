@@ -23,7 +23,6 @@
 //  File   : SMESH_subMesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
@@ -34,6 +33,7 @@
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "SMESH_Algo.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 
@@ -60,7 +60,7 @@ class SMESH_EXPORT SMESH_subMesh
 {
  public:
   SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
-		const TopoDS_Shape & aSubShape);
+                const TopoDS_Shape & aSubShape);
   virtual ~ SMESH_subMesh();
 
   int GetId() const;
@@ -191,6 +191,8 @@ public:
   void DumpAlgoState(bool isMain);
 
   bool ComputeStateEngine(int event);
+
+  bool Evaluate(MapShapeNbElems& aResMap);
 
   bool IsConform(const SMESH_Algo* theAlgo);
   // check if a conform mesh will be produced by the Algo
