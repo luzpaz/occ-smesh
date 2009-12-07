@@ -68,9 +68,9 @@ class SMESHGUI_EXPORT SMESHGUI_GroupDlg : public QDialog
 
 public:
   SMESHGUI_GroupDlg( SMESHGUI*,
-		     SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
+                     SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   SMESHGUI_GroupDlg( SMESHGUI*,
-		     SMESH::SMESH_GroupBase_ptr,
+                     SMESH::SMESH_GroupBase_ptr,
                      const bool theIsConvert = false );
   ~SMESHGUI_GroupDlg();
   
@@ -90,6 +90,7 @@ private slots:
   bool                          onApply();
   void                          onHelp();
   void                          onDeactivate();
+  void                          onVisibilityChanged();
   
   void                          onListSelectionChanged();
   void                          onObjectSelectionChanged();
@@ -126,6 +127,8 @@ private:
   bool                          SetAppropriateActor();
   void                          setShowEntityMode();
   void                          restoreShowEntityMode();
+
+  bool                          IsActorVisible( SMESH_Actor* );
   
   void                          setGroupColor( const SALOMEDS::Color& );
   SALOMEDS::Color               getGroupColor() const;
@@ -137,7 +140,6 @@ private:
   
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
-  SMESH_Actor*                  myActor;                 /* Current mesh actor */
   int                           myGrpTypeId;             /* Current group type id : standalone or group on geometry */
   int                           myTypeId;                /* Current type id = radio button id */
   int                           myStoredShownEntity;     /* Store ShowEntity mode of myMesh */
@@ -180,6 +182,7 @@ private:
   SMESHGUI_ShapeByMeshOp*       myShapeByMeshOp;
   
   SMESH::SMESH_Mesh_var         myMesh;
+  QList<SMESH_Actor*>           myActorsList;
   SMESH::SMESH_Group_var        myGroup;
   SMESH::SMESH_GroupOnGeom_var  myGroupOnGeom;
   QList<int>                    myIdList;

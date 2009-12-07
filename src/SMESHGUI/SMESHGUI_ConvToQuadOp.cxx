@@ -32,9 +32,10 @@
 #include <SMESH_TypeFilter.hxx>
 
 // SALOME GUI includes
-#include <SalomeApp_Tools.h>
-#include <SUIT_MessageBox.h>
 #include <LightApp_UpdateFlags.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SalomeApp_Tools.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -176,6 +177,7 @@ SUIT_SelectionFilter* SMESHGUI_ConvToQuadOp::createFilter( const int theId ) con
 //================================================================================
 bool SMESHGUI_ConvToQuadOp::onApply()
 {
+  SUIT_OverrideCursor aWaitCursor;
 
   QString aMess;
 
@@ -185,7 +187,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
   {
     dlg()->show();
     SUIT_MessageBox::warning( myDlg,
-			      tr( "SMESH_WRN_WARNING" ), tr("MESH_IS_NOT_SELECTED") );
+                              tr( "SMESH_WRN_WARNING" ), tr("MESH_IS_NOT_SELECTED") );
    
     return false;
   }
@@ -196,7 +198,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
   if( CORBA::is_nil(mesh) )
   {
     SUIT_MessageBox::warning( myDlg,
-			      tr( "SMESH_WRN_WARNING" ), tr("REF_IS_NULL") );
+                              tr( "SMESH_WRN_WARNING" ), tr("REF_IS_NULL") );
 
     return false;
   } 
@@ -210,7 +212,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
     {
       bool aParam = true;
       if( myDlg->IsEnabledCheck() )
-	aParam = myDlg->IsMediumNdsOnGeom();
+        aParam = myDlg->IsMediumNdsOnGeom();
 
       aEditor->ConvertToQuadratic( aParam );
       aResult = true; 

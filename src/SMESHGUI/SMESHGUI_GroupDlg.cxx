@@ -103,14 +103,13 @@
 // purpose  :
 //=================================================================================
 SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
-				      SMESH::SMESH_Mesh_ptr theMesh )
+                                      SMESH::SMESH_Mesh_ptr theMesh )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
     myIsBusy( false ),
-    myNameChanged( false ),
-    myActor( 0 )
+    myNameChanged( false )
 {
   initDialog( true );
   if ( !theMesh->_is_nil() )
@@ -129,7 +128,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
 // purpose  :
 //=================================================================================
 SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
-				      SMESH::SMESH_GroupBase_ptr theGroup,
+                                      SMESH::SMESH_GroupBase_ptr theGroup,
                                       const bool theIsConvert )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
@@ -330,7 +329,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   QLabel* aColorLab = new QLabel(tr( "SMESH_CHECK_COLOR" ), aColorBox );
   myColorBtn = new QtxColorButton(aColorBox);
   myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding, 
-			     myColorBtn->sizePolicy().verticalPolicy() );
+                             myColorBtn->sizePolicy().verticalPolicy() );
 
   aColorBoxLayout->addWidget(aColorLab);
   aColorBoxLayout->addWidget(myColorBtn);
@@ -413,6 +412,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(onClose()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),  this, SLOT(onObjectSelectionChanged()));
+  connect(mySMESHGUI, SIGNAL(SignalVisibilityChanged()),      this, SLOT(onVisibilityChanged()));
 
   rb1->setChecked(true); // VSR !!!
   onGrpTypeChanged(0); // VSR!!!
@@ -552,11 +552,12 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
   // actor of theGroup, if it is visible, else try
   // any visible actor of group or submesh of myMesh
   // commented, because an attempt to set selection on not displayed cells leads to error
-  //SetAppropriateActor();
-  myActor = SMESH::FindActorByObject(myMesh);
-  if ( !myActor )
-    myActor = SMESH::FindActorByObject(theGroup);
-  SMESH::SetPickable(myActor);
+  SetAppropriateActor();
+
+  /*  SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
+  if ( !anActor )
+    anActor = SMESH::FindActorByObject(theGroup);
+  SMESH::SetPickable(anActor);*/
 
   int grpType = (!myGroup->_is_nil() ? 0 : (theIsConvert ? 0 : 1));
   myGrpTypeGroup->button(grpType)->setChecked(true);
@@ -685,44 +686,50 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
   if (mySelectionMode != theMode) {
     // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
-    if (myActor)
-      myActor->SetPointRepresentation(false);
+    if (myActorsList.count() > 0) {
+      QListIterator<SMESH_Actor*> it( myActorsList );
+      while ( it.hasNext() )
+        it.next()->SetPointRepresentation(false);
+    }
     else
       SMESH::SetPointRepresentation(false);
     if (theMode < 4) {
       switch (theMode) {
       case 0:
-        if (myActor)
-	  myActor->SetPointRepresentation(true);
-	else
-	  SMESH::SetPointRepresentation(true);
-      	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(NodeSelection);
-	break;
+        if (myActorsList.count() > 0) {
+          QListIterator<SMESH_Actor*> it( myActorsList );
+          while ( it.hasNext() )
+            it.next()->SetPointRepresentation(true);
+        }
+        else
+          SMESH::SetPointRepresentation(true);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(NodeSelection);
+        break;
       case 1:
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(EdgeSelection);
-	break;
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(EdgeSelection);
+        break;
       case 2:
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(FaceSelection);
-	break;
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(FaceSelection);
+        break;
       default:
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(VolumeSelection);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(VolumeSelection);
       }
     } else {
       if (theMode == 4)
-	mySelectionMgr->installFilter(mySubMeshFilter);
+        mySelectionMgr->installFilter(mySubMeshFilter);
       else if (theMode == 5)
-	mySelectionMgr->installFilter(myGroupFilter);
+        mySelectionMgr->installFilter(myGroupFilter);
       else if (theMode == 6)
-	mySelectionMgr->installFilter(myMeshFilter);
+        mySelectionMgr->installFilter(myMeshFilter);
       else if (theMode == 7)
-	mySelectionMgr->installFilter(myGeomFilter);
+        mySelectionMgr->installFilter(myGeomFilter);
 
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(ActorSelection);
+        aViewWindow->SetSelectionMode(ActorSelection);
     }
     mySelectionMode = theMode;
   }
@@ -752,7 +759,7 @@ bool SMESHGUI_GroupDlg::onApply()
         if (myMesh->_is_nil())
           return false;
         myGroup = myMesh->ConvertToStandalone( myGroupOnGeom );
-	// nullify pointer, because object become dead
+        // nullify pointer, because object become dead
         myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
       }
     }
@@ -773,7 +780,7 @@ bool SMESHGUI_GroupDlg::onApply()
       int i, k = myElements->count();
       anIdList->length(k);
       for (i = 0; i < k; i++) {
-	anIdList[i] = myElements->item(i)->text().toInt();
+        anIdList[i] = myElements->item(i)->text().toInt();
       }
 
       myGroup = SMESH::AddGroup(myMesh, aType, myName->text());
@@ -800,46 +807,46 @@ bool SMESHGUI_GroupDlg::onApply()
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
       if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
-	anActor->setName(myName->text().toLatin1().data());
-	switch ( myTypeId ) {
-	case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
-	case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
-	case 2:
-	case 3: anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B ); break;
-	}
+        anActor->setName(myName->text().toLatin1().data());
+        switch ( myTypeId ) {
+        case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
+        case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
+        case 2:
+        case 3: anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B ); break;
+        }
       }
 
       QList<int> aAddList;
 
       int i, total = myElements->count();
       for (i = 0; i < total; i++) {
-	int anId = myElements->item(i)->text().toInt();
-	int idx = myIdList.indexOf(anId);
-	if ( idx == -1 )
-	  aAddList.append(anId);
-	else
-	  myIdList.removeAt(idx);
+        int anId = myElements->item(i)->text().toInt();
+        int idx = myIdList.indexOf(anId);
+        if ( idx == -1 )
+          aAddList.append(anId);
+        else
+          myIdList.removeAt(idx);
       }
       if (!aAddList.empty()) {
-	SMESH::long_array_var anIdList = new SMESH::long_array;
-	int added = aAddList.count();
-	anIdList->length(added);
-	for (i = 0; i < added; i++)
-	  anIdList[i] = aAddList[i];
-	myGroup->Add(anIdList.inout());
+        SMESH::long_array_var anIdList = new SMESH::long_array;
+        int added = aAddList.count();
+        anIdList->length(added);
+        for (i = 0; i < added; i++)
+          anIdList[i] = aAddList[i];
+        myGroup->Add(anIdList.inout());
       }
       if (!myIdList.empty()) {
-	SMESH::long_array_var anIdList = new SMESH::long_array;
-	int removed = myIdList.count();
-	anIdList->length(removed);
-	for (i = 0; i < removed; i++)
-	  anIdList[i] = myIdList[i];
-	myGroup->Remove(anIdList.inout());
+        SMESH::long_array_var anIdList = new SMESH::long_array;
+        int removed = myIdList.count();
+        anIdList->length(removed);
+        for (i = 0; i < removed; i++)
+          anIdList[i] = myIdList[i];
+        myGroup->Remove(anIdList.inout());
       }
       /* init for next operation */
       myIdList.clear();
       for (i = 0; i < total; i++) {
-	myIdList.append(myElements->item(i)->text().toInt());
+        myIdList.append(myElements->item(i)->text().toInt());
       }
     }
 
@@ -863,12 +870,12 @@ bool SMESHGUI_GroupDlg::onApply()
 
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
       GEOM::GEOM_IGroupOperations_var aGroupOp =
-	SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+        SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
 
       if (myGeomObjects->length() == 1) {
-	myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
-						    myName->text().toLatin1().data(),
-						    myGeomObjects[0]);
+        myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
+                                                    myName->text().toLatin1().data(),
+                                                    myGeomObjects[0]);
       }
       else {
         SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
@@ -910,12 +917,12 @@ bool SMESHGUI_GroupDlg::onApply()
           aNewGeomGroupName += myName->text();
           SALOMEDS::SObject_var aNewGroupSO =
             geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGroupVar,
-				aNewGeomGroupName.toLatin1().data(), aMeshShape);
+                                aNewGeomGroupName.toLatin1().data(), aMeshShape);
         }
 
         myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
-						    myName->text().toLatin1().data(),
-						    aGroupVar);
+                                                    myName->text().toLatin1().data(),
+                                                    aGroupVar);
       }
 
       SALOMEDS::Color aColor = getGroupColor();
@@ -938,13 +945,13 @@ bool SMESHGUI_GroupDlg::onApply()
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
       if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
-	anActor->setName(myName->text().toLatin1().data());
-	switch ( myTypeId ) {
-	case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
-	case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
-	case 2:
-	case 3: anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B ); break;
-	}
+        anActor->setName(myName->text().toLatin1().data());
+        switch ( myTypeId ) {
+        case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
+        case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
+        case 2:
+        case 3: anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B ); break;
+        }
       }
     }
 
@@ -972,9 +979,9 @@ void SMESHGUI_GroupDlg::onOK()
 //=================================================================================
 void SMESHGUI_GroupDlg::onListSelectionChanged()
 {
-  //  MESSAGE( "SMESHGUI_GroupDlg::onListSelectionChanged(); myActor = " << myActor);
-  if( myIsBusy || !myActor) return;
-    myIsBusy = true;
+  //MESSAGE( "SMESHGUI_GroupDlg::onListSelectionChanged(); myActorsList.count() = " << myActorsList.count());
+  if( myIsBusy || myActorsList.count() == 0 ) return;
+  myIsBusy = true;
 
   if (myCurrentLineEdit == 0) {
     mySelectionMgr->clearSelected();
@@ -982,9 +989,9 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
     QList<QListWidgetItem*> selItems = myElements->selectedItems();
     QListWidgetItem* anItem;
     foreach(anItem, selItems) aIndexes.Add(anItem->text().toInt());
-    mySelector->AddOrRemoveIndex(myActor->getIO(), aIndexes, false);
+    mySelector->AddOrRemoveIndex(myActorsList.first()->getIO(), aIndexes, false);
     SALOME_ListIO aList;
-    aList.Append(myActor->getIO());
+    aList.Append(myActorsList.first()->getIO());
     mySelectionMgr->setSelectedObjects(aList,false);
   }
   myIsBusy = false;
@@ -1026,7 +1033,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       myGeomObjects->length(0);
 
       if (myGeomGroupBtn->isChecked())
-	myGeomGroupBtn->setChecked(false);
+        myGeomGroupBtn->setChecked(false);
       if (!myCreate)
         myName->setText( "" );
 
@@ -1045,16 +1052,20 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       Handle(SALOME_InteractiveObject) IO = aList.First();
 
       if (myCreate) {
-	restoreShowEntityMode();
-	myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
+        restoreShowEntityMode();
+        myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
         setShowEntityMode();
         updateGeomPopup();
         if (myMesh->_is_nil())
-	{
+        {
           updateButtons();
-	  myIsBusy = false;
-	  return;
-	}
+          myIsBusy = false;
+          return;
+        }
+
+        if ( myFilterDlg && !myMesh->_is_nil()){
+          myFilterDlg->SetMesh( myMesh );
+        }
         myGroup = SMESH::SMESH_Group::_nil();
 
         // NPAL19389: create a group with a selection in another group
@@ -1075,15 +1086,14 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       else {
         SMESH::SMESH_GroupBase_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
         if (aGroup->_is_nil())
-	{
-	  myIsBusy = false;
+        {
+          myIsBusy = false;
           return;
-	}
+        }
         myIsBusy = false;
-        myCurrentLineEdit = 0;
 
-	myGroup = SMESH::SMESH_Group::_nil();
-	myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
+        myGroup = SMESH::SMESH_Group::_nil();
+        myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
 
         init(aGroup);
         myIsBusy = true;
@@ -1097,13 +1107,13 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       if (myGrpTypeId == 0)
       {
-	if (myTypeId == -1)
-	  onTypeChanged(0);
-	else
-	{
-	  myElements->clear();
-	  setSelectionMode(myTypeId);
-	}
+        if (myTypeId == -1)
+          onTypeChanged(0);
+        else
+        {
+          myElements->clear();
+          setSelectionMode(myTypeId);
+        }
       }
 
       myIsBusy = false;
@@ -1119,10 +1129,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       if (aNbSel == 0 || !aMeshSO)
       {
-	myGeomObjects->length(0);
-	updateButtons();
-	myIsBusy = false;
-	return;
+        myGeomObjects->length(0);
+        updateButtons();
+        myIsBusy = false;
+        return;
       }
 
       myGeomObjects->length(aNbSel);
@@ -1181,10 +1191,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       myGeomObjects->length(i);
       if ( i == 0 )
-	{
-	  myIsBusy = false;
-	  return;
-	}
+        {
+          myIsBusy = false;
+          return;
+        }
 
       aNbSel = i;
     }
@@ -1218,13 +1228,12 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
   }
   else // !myCurrentLineEdit: local selection of nodes or elements
   {
-    if (aNbSel == 1 && myActor && myActor->hasIO())
+    if (aNbSel == 1 && myActorsList.count() > 0 )
     {
-#ifdef ENABLE_SWITCH_ACTOR_DURING_ELEMENTS_SELECTION
       // NPAL19389: create a group with a selection in another group
       // Switch myActor to the newly selected one, if the last
       // is visible and belongs to group or submesh of myMesh
-      Handle(SALOME_InteractiveObject) curIO = myActor->getIO();
+      /*      Handle(SALOME_InteractiveObject) curIO = myActor->getIO();
       Handle(SALOME_InteractiveObject) selIO = aList.First();
       if (curIO->hasEntry() && selIO->hasEntry()) {
         const char* selEntry = selIO->getEntry();
@@ -1251,50 +1260,74 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
             }
           }
         }
-      }
+      }*/
       // NPAL19389 END
-#endif // ENABLE_SWITCH_ACTOR_DURING_ELEMENTS_SELECTION
 
       QString aListStr = "";
       int aNbItems = 0;
       if (myTypeId == 0) {
-	aNbItems = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aListStr);
+        QListIterator<SMESH_Actor*> it( myActorsList );
+        while ( it.hasNext() ) {
+          QString tmpStr;
+          aNbItems += SMESH::GetNameOfSelectedNodes(mySelector, it.next()->getIO(), tmpStr);
+          aListStr += tmpStr;
+        }
       } else {
-	aNbItems = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aListStr);
+        QListIterator<SMESH_Actor*> it( myActorsList );
+        while ( it.hasNext() ) {
+          QString tmpStr;
+          aNbItems += SMESH::GetNameOfSelectedElements(mySelector, it.next()->getIO(), tmpStr);
+          aListStr += tmpStr;
+        }
       }
       if (aNbItems > 0) {
-	QListWidgetItem* anItem;
-	QList<QListWidgetItem*> listItemsToSel;
-	QStringList anElements = aListStr.split( " ", QString::SkipEmptyParts);
-	for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
-	  QList<QListWidgetItem*> found = myElements->findItems(*it, Qt::MatchExactly);
-	  foreach(anItem, found)
-	    if (!anItem->isSelected())
-	      listItemsToSel.push_back(anItem);
-	}
-	bool blocked = myElements->signalsBlocked();
-	myElements->blockSignals(true);
-	foreach(anItem, listItemsToSel) anItem->setSelected(true);
-	myElements->blockSignals(blocked);
-	onListSelectionChanged();
-	listItemsToSel.clear();
+        QListWidgetItem* anItem;
+        QList<QListWidgetItem*> listItemsToSel;
+        QStringList anElements = aListStr.split( " ", QString::SkipEmptyParts);
+        for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
+          QList<QListWidgetItem*> found = myElements->findItems(*it, Qt::MatchExactly);
+          foreach(anItem, found)
+            if (!anItem->isSelected())
+              listItemsToSel.push_back(anItem);
+        }
+        bool blocked = myElements->signalsBlocked();
+        myElements->blockSignals(true);
+        foreach(anItem, listItemsToSel) anItem->setSelected(true);
+        myElements->blockSignals(blocked);
+        onListSelectionChanged();
+        listItemsToSel.clear();
       }
     }
   }
-
-  if (!myActor) {
-    if (!myGroup->_is_nil())
-      myActor = SMESH::FindActorByObject(myGroup);
-    else if(!myGroupOnGeom->_is_nil())
-      myActor = SMESH::FindActorByObject(myGroupOnGeom);
-    else
-      myActor = SMESH::FindActorByObject(myMesh);
+  
+  if (myActorsList.count() == 0) {
+    if (!myGroup->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
+      if ( anActor )
+        myActorsList.append( anActor  );
+    }
+    else if(!myGroupOnGeom->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroupOnGeom);
+      if ( anActor )
+        myActorsList.append( anActor );
+    }
+    else {
+      SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh );
+      if ( anActor )
+        myActorsList.append( anActor );
+    }
   }
 
   // somehow, if we display the mesh, while selecting from another actor,
   // the mesh becomes pickable, and there is no way to select any element
-  if (myActor)
-    SMESH::SetPickable(myActor);
+  if (myActorsList.count() > 0) {
+    QListIterator<SMESH_Actor*> it( myActorsList );
+    while ( it.hasNext() ) {
+      SMESH_Actor* anActor = it.next();
+      if ( IsActorVisible(anActor) )
+        anActor->SetPickable(true);
+    }
+  }
 
   myIsBusy = false;
 }
@@ -1387,11 +1420,14 @@ void SMESHGUI_GroupDlg::setCurrentSelection()
   QPushButton* send = (QPushButton*)sender();
   myCurrentLineEdit = 0;
   if (send == myMeshGroupBtn) {
-    myCurrentLineEdit = myMeshGroupLine;
+    disconnect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
+    mySelectionMgr->clearSelected();
     if (myCreate)
       setSelectionMode(6);
     else
       setSelectionMode(5);
+    connect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
+    myCurrentLineEdit = myMeshGroupLine;
     onObjectSelectionChanged();
   }
   else if (send == mySubMeshBtn) {
@@ -1413,8 +1449,8 @@ void SMESHGUI_GroupDlg::setFilters()
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
 
@@ -1469,7 +1505,7 @@ void SMESHGUI_GroupDlg::onAdd()
 
   int aNbSel = aList.Extent();
 
-  if (aNbSel == 0 || !myActor || myMesh->_is_nil()) return;
+  if (aNbSel == 0 || myActorsList.count() == 0 || myMesh->_is_nil()) return;
 
   myIsBusy = true;
 
@@ -1503,26 +1539,36 @@ void SMESHGUI_GroupDlg::onAdd()
     QString aListStr = "";
     int aNbItems = 0;
     if (myTypeId == 0) {
-      aNbItems = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aListStr);
+      QListIterator<SMESH_Actor*> it( myActorsList );
+      while ( it.hasNext() ) {
+        QString tmpStr;
+        aNbItems += SMESH::GetNameOfSelectedNodes(mySelector, it.next()->getIO(), tmpStr);
+        aListStr += tmpStr;
+      }
     }
     else {
-      aNbItems = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aListStr);
+      QListIterator<SMESH_Actor*> it( myActorsList );
+      while ( it.hasNext() ) {
+        QString tmpStr;
+        aNbItems += SMESH::GetNameOfSelectedElements(mySelector, it.next()->getIO(), tmpStr);
+        aListStr += tmpStr;
+      }
     }
     if (aNbItems > 0) {
       QStringList anElements = aListStr.split( " ", QString::SkipEmptyParts);
       for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
-	QList<QListWidgetItem*> found = myElements->findItems(*it, Qt::MatchExactly);
-	if (found.count() == 0) {
-	  anItem = new QListWidgetItem(*it);
-	  myElements->addItem(anItem);
-	  if (!anItem->isSelected())
-	    listItemsToSel.push_back(anItem);
-	}
-	else {
-	  foreach(anItem, found)
-	    if (!anItem->isSelected())
-	      listItemsToSel.push_back(anItem);
-	}
+        QList<QListWidgetItem*> found = myElements->findItems(*it, Qt::MatchExactly);
+        if (found.count() == 0) {
+          anItem = new QListWidgetItem(*it);
+          myElements->addItem(anItem);
+          if (!anItem->isSelected())
+            listItemsToSel.push_back(anItem);
+        }
+        else {
+          foreach(anItem, found)
+            if (!anItem->isSelected())
+              listItemsToSel.push_back(anItem);
+        }
       }
       bool blocked = myElements->signalsBlocked();
       myElements->blockSignals(true);
@@ -1542,8 +1588,8 @@ void SMESHGUI_GroupDlg::onAdd()
       SMESH::SMESH_subMesh_var aSubMesh =
         SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(anIt.Value());
       if (!aSubMesh->_is_nil()) {
-	// check if mesh is the same
-	if (aSubMesh->GetFather()->GetId() == myMesh->GetId()) {
+        // check if mesh is the same
+        if (aSubMesh->GetFather()->GetId() == myMesh->GetId()) {
           try {
             SMESH::long_array_var anElements = aSubMesh->GetElementsByType(aType);
             int k = anElements->length();
@@ -1553,21 +1599,21 @@ void SMESHGUI_GroupDlg::onAdd()
               if (found.count() == 0) {
                 anItem = new QListWidgetItem(aText);
                 myElements->addItem(anItem);
-		if (!anItem->isSelected())
-		  listItemsToSel.push_back(anItem);
+                if (!anItem->isSelected())
+                  listItemsToSel.push_back(anItem);
               }
-	      else {
-		foreach(anItem, found)
-		  if (!anItem->isSelected())
-		    listItemsToSel.push_back(anItem);
-	      }
+              else {
+                foreach(anItem, found)
+                  if (!anItem->isSelected())
+                    listItemsToSel.push_back(anItem);
+              }
             }
-	    bool blocked = myElements->signalsBlocked();
-	    myElements->blockSignals(true);
-	    foreach(anItem, listItemsToSel) anItem->setSelected(true);
-	    myElements->blockSignals(blocked);
-	    onListSelectionChanged();
-	    listItemsToSel.clear();
+            bool blocked = myElements->signalsBlocked();
+            myElements->blockSignals(true);
+            foreach(anItem, listItemsToSel) anItem->setSelected(true);
+            myElements->blockSignals(blocked);
+            onListSelectionChanged();
+            listItemsToSel.clear();
           }
           catch (const SALOME::SALOME_Exception& ex) {
             SalomeApp_Tools::QtCatchCorbaException(ex);
@@ -1589,32 +1635,32 @@ void SMESHGUI_GroupDlg::onAdd()
       SMESH::SMESH_GroupBase_var aGroup =
         SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIt.Value());
       if (!aGroup->_is_nil()) {
-	// check if mesh is the same
-	if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
-	  SMESH::long_array_var anElements = aGroup->GetListOfID();
-	  int k = anElements->length();
-	  for (int i = 0; i < k; i++) {
-	    QString aText = QString::number(anElements[i]);
-	    QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
-	    if (found.count() == 0) {
-	      anItem = new QListWidgetItem(aText);
-	      myElements->addItem(anItem);
-	      if (!anItem->isSelected())
-		listItemsToSel.push_back(anItem);
-	    }
-	    else {
-	      foreach(anItem, found)
-		if (!anItem->isSelected())
-		  listItemsToSel.push_back(anItem);
-	    }
-	  }
-	  bool blocked = myElements->signalsBlocked();
-	  myElements->blockSignals(true);
-	  foreach(anItem, listItemsToSel) anItem->setSelected(true);
-	  myElements->blockSignals(blocked);
-	  onListSelectionChanged();
-	  listItemsToSel.clear();
-	}
+        // check if mesh is the same
+        if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
+          SMESH::long_array_var anElements = aGroup->GetListOfID();
+          int k = anElements->length();
+          for (int i = 0; i < k; i++) {
+            QString aText = QString::number(anElements[i]);
+            QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
+            if (found.count() == 0) {
+              anItem = new QListWidgetItem(aText);
+              myElements->addItem(anItem);
+              if (!anItem->isSelected())
+                listItemsToSel.push_back(anItem);
+            }
+            else {
+              foreach(anItem, found)
+                if (!anItem->isSelected())
+                  listItemsToSel.push_back(anItem);
+            }
+          }
+          bool blocked = myElements->signalsBlocked();
+          myElements->blockSignals(true);
+          foreach(anItem, listItemsToSel) anItem->setSelected(true);
+          myElements->blockSignals(blocked);
+          onListSelectionChanged();
+          listItemsToSel.clear();
+        }
       }
     }
     mySelectGroup->setChecked(false);
@@ -1652,19 +1698,19 @@ void SMESHGUI_GroupDlg::onAdd()
 
       int k = anElements->length();
       for (int i = 0; i < k; i++) {
-	QString aText = QString::number(anElements[i]);
-	QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
-	if (found.count() == 0) {
-	  anItem = new QListWidgetItem(aText);
-	  myElements->addItem(anItem);
-	  if (!anItem->isSelected())
-	    listItemsToSel.push_back(anItem);
-	}
-	else {
-	  foreach(anItem, found)
-	    if (!anItem->isSelected())
-	      listItemsToSel.push_back(anItem);
-	}
+        QString aText = QString::number(anElements[i]);
+        QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
+        if (found.count() == 0) {
+          anItem = new QListWidgetItem(aText);
+          myElements->addItem(anItem);
+          if (!anItem->isSelected())
+            listItemsToSel.push_back(anItem);
+        }
+        else {
+          foreach(anItem, found)
+            if (!anItem->isSelected())
+              listItemsToSel.push_back(anItem);
+        }
       }
       bool blocked = myElements->signalsBlocked();
       myElements->blockSignals(true);
@@ -1717,42 +1763,42 @@ void SMESHGUI_GroupDlg::onRemove()
 
       SALOME_ListIteratorOfListIO anIt (aList);
       for ( ; anIt.More(); anIt.Next()) {
-	SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(anIt.Value());
-	if (!aSubMesh->_is_nil()) {
-	  // check if mesh is the same
-	  if (aSubMesh->GetFather()->GetId() == myMesh->GetId()) {
-	    if (aType == SMESH::NODE) {
-	      try {
-		SMESH::long_array_var anElements = aSubMesh->GetNodesId();
-		int k = anElements->length();
-		for (int i = 0; i < k; i++) {
-		  QList<QListWidgetItem*> found = 
-		    myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
-		  QListWidgetItem* anItem;
-		  foreach(anItem, found) delete anItem;
-		}
-	      }
-	      catch (const SALOME::SALOME_Exception& ex) {
-		SalomeApp_Tools::QtCatchCorbaException(ex);
-	      }
-	    }
-	    else {
-	      try {
-		SMESH::long_array_var anElements = aSubMesh->GetElementsId();
-		int k = anElements->length();
-		for (int i = 0; i < k; i++) {
-		  QList<QListWidgetItem*> found = 
-		    myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
-		  QListWidgetItem* anItem;
-		  foreach(anItem, found) delete anItem;
-		}
-	      }
-	      catch (const SALOME::SALOME_Exception& ex) {
-		SalomeApp_Tools::QtCatchCorbaException(ex);
-	      }
-	    }
-	  }
-	}
+        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(anIt.Value());
+        if (!aSubMesh->_is_nil()) {
+          // check if mesh is the same
+          if (aSubMesh->GetFather()->GetId() == myMesh->GetId()) {
+            if (aType == SMESH::NODE) {
+              try {
+                SMESH::long_array_var anElements = aSubMesh->GetNodesId();
+                int k = anElements->length();
+                for (int i = 0; i < k; i++) {
+                  QList<QListWidgetItem*> found = 
+                    myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
+                  QListWidgetItem* anItem;
+                  foreach(anItem, found) delete anItem;
+                }
+              }
+              catch (const SALOME::SALOME_Exception& ex) {
+                SalomeApp_Tools::QtCatchCorbaException(ex);
+              }
+            }
+            else {
+              try {
+                SMESH::long_array_var anElements = aSubMesh->GetElementsId();
+                int k = anElements->length();
+                for (int i = 0; i < k; i++) {
+                  QList<QListWidgetItem*> found = 
+                    myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
+                  QListWidgetItem* anItem;
+                  foreach(anItem, found) delete anItem;
+                }
+              }
+              catch (const SALOME::SALOME_Exception& ex) {
+                SalomeApp_Tools::QtCatchCorbaException(ex);
+              }
+            }
+          }
+        }
       }
     }
     else if (myCurrentLineEdit == myGroupLine) {
@@ -1763,20 +1809,20 @@ void SMESHGUI_GroupDlg::onRemove()
 
       SALOME_ListIteratorOfListIO anIt (aList);
       for ( ; anIt.More(); anIt.Next()) {
-	SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(anIt.Value());
-	if (aRes && !aGroup->_is_nil()) {
-	  // check if mesh is the same
-	  if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
-	    SMESH::long_array_var anElements = aGroup->GetListOfID();
-	    int k = anElements->length();
-	    for (int i = 0; i < k; i++) {
-	      QList<QListWidgetItem*> found = 
-		myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
-	      QListWidgetItem* anItem;
-	      foreach(anItem, found) delete anItem;
-	    }
-	  }
-	}
+        SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(anIt.Value());
+        if (aRes && !aGroup->_is_nil()) {
+          // check if mesh is the same
+          if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
+            SMESH::long_array_var anElements = aGroup->GetListOfID();
+            int k = anElements->length();
+            for (int i = 0; i < k; i++) {
+              QList<QListWidgetItem*> found = 
+                myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
+              QListWidgetItem* anItem;
+              foreach(anItem, found) delete anItem;
+            }
+          }
+        }
       }
     }
   }
@@ -1804,7 +1850,7 @@ void SMESHGUI_GroupDlg::onSort()
       int id = myElements->item(i)->text().toInt();
       anArray[i] = id;
       if (myElements->item(i)->isSelected())
-	aSelected.append(id);
+        aSelected.append(id);
     }
     // sort & update list
     std::sort(anArray.begin(), anArray.end());
@@ -1816,7 +1862,7 @@ void SMESHGUI_GroupDlg::onSort()
       anItem = new QListWidgetItem(QString::number(anArray[i]));
       myElements->addItem(anItem);
       if (aSelected.contains(anArray[i]))
-	listItemsToSel.push_back(anItem);
+        listItemsToSel.push_back(anItem);
     }
     bool blocked = myElements->signalsBlocked();
     myElements->blockSignals(true);
@@ -1834,6 +1880,15 @@ void SMESHGUI_GroupDlg::onSort()
 void SMESHGUI_GroupDlg::closeEvent (QCloseEvent*)
 {
   onClose();
+}
+
+//=================================================================================
+// function : onVisibilityChanged()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onVisibilityChanged()
+{
+  SetAppropriateActor();
 }
 
 //=================================================================================
@@ -1875,10 +1930,10 @@ void SMESHGUI_GroupDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr( "WRN_WARNING" ),
-			     tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
-			     arg(app->resourceMgr()->stringValue( "ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
+                             arg(app->resourceMgr()->stringValue( "ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -1979,7 +2034,7 @@ void SMESHGUI_GroupDlg::onGeomSelectionButton(bool isBtnOn)
       myCurrentLineEdit = myGeomGroupLine;
       QAction* a = myGeomPopup->exec( QCursor::pos() );
       if (!a || myActions[a] == DIRECT_GEOM_INDEX)
-	setSelectionMode(7);
+        setSelectionMode(7);
     }
   else if (!isBtnOn)
     {
@@ -1999,17 +2054,17 @@ void SMESHGUI_GroupDlg::onGeomPopup( QAction* a )
     {
       mySelectionMode = -1;
       if ( !myShapeByMeshOp ) {
-	myShapeByMeshOp = new SMESHGUI_ShapeByMeshOp(true);
-	connect(myShapeByMeshOp, SIGNAL(committed(SUIT_Operation*)),
-		SLOT(onPublishShapeByMeshDlg(SUIT_Operation*)));
-	connect(myShapeByMeshOp, SIGNAL(aborted(SUIT_Operation*)),
-		SLOT(onCloseShapeByMeshDlg(SUIT_Operation*)));
+        myShapeByMeshOp = new SMESHGUI_ShapeByMeshOp(true);
+        connect(myShapeByMeshOp, SIGNAL(committed(SUIT_Operation*)),
+                SLOT(onPublishShapeByMeshDlg(SUIT_Operation*)));
+        connect(myShapeByMeshOp, SIGNAL(aborted(SUIT_Operation*)),
+                SLOT(onCloseShapeByMeshDlg(SUIT_Operation*)));
       }
       // set mesh object to SMESHGUI_ShapeByMeshOp and start it
       if ( !myMesh->_is_nil() ) {
-	myIsBusy = true;
+        myIsBusy = true;
         hide(); // stop processing selection
-	myIsBusy = false;
+        myIsBusy = false;
         myShapeByMeshOp->setModule( mySMESHGUI );
         myShapeByMeshOp->setStudy( 0 ); // it's really necessary
         myShapeByMeshOp->SetMesh( myMesh );
@@ -2036,12 +2091,12 @@ void SMESHGUI_GroupDlg::onPublishShapeByMeshDlg(SUIT_Operation* op)
       QString ID = aGeomVar->GetStudyEntry();
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
       if ( _PTR(SObject) aGeomSO = aStudy->FindObjectID( ID.toLatin1().data() )) {
-	SALOME_ListIO anIOList;
-	Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
-	  ( aGeomSO->GetID().c_str(), "SMESH", aGeomSO->GetName().c_str() );
-	anIOList.Append( anIO );
-      	mySelectionMgr->setSelectedObjects( anIOList, false );
-	onObjectSelectionChanged();
+        SALOME_ListIO anIOList;
+        Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
+          ( aGeomSO->GetID().c_str(), "SMESH", aGeomSO->GetName().c_str() );
+        anIOList.Append( anIO );
+        mySelectionMgr->setSelectedObjects( anIOList, false );
+        onObjectSelectionChanged();
       }
     }
   }
@@ -2069,8 +2124,8 @@ void SMESHGUI_GroupDlg::onCloseShapeByMeshDlg(SUIT_Operation* op)
 void SMESHGUI_GroupDlg::setGroupColor( const SALOMEDS::Color& theColor )
 {
   QColor aQColor( (int)( theColor.R * 255.0 ),
-		  (int)( theColor.G * 255.0 ),
-		  (int)( theColor.B * 255.0 ) );
+                  (int)( theColor.G * 255.0 ),
+                  (int)( theColor.B * 255.0 ) );
   setGroupQColor( aQColor );
 }
 
@@ -2141,8 +2196,8 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
 
     SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
     aQColor.setRgb( (int)( aColor.R * 255.0 ),
-		    (int)( aColor.G * 255.0 ),
-		    (int)( aColor.B * 255.0 ) );
+                    (int)( aColor.G * 255.0 ),
+                    (int)( aColor.B * 255.0 ) );
 
   }
 
@@ -2158,81 +2213,78 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
 bool SMESHGUI_GroupDlg::SetAppropriateActor()
 {
   bool isActor = false;
+  myActorsList.clear();
 
   if (myMesh->_is_nil()) return false;
 
   SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView();
 
-  // try mesh actor
-  myActor = SMESH::FindActorByObject(myMesh);
-  if (myActor && myActor->hasIO())
-  {
-    isActor = true;
-    if (aViewWindow && !aViewWindow->isVisible(myActor->getIO()))
-        isActor = false;
-  }
-
-  // try current group actor
-  if (!isActor) {
-    if (!myGroup->_is_nil()) {
-      myActor = SMESH::FindActorByObject(myGroup);
-      if (myActor && myActor->hasIO())
-      {
-        isActor = true;
-        if (aViewWindow && !aViewWindow->isVisible(myActor->getIO()))
-            isActor = false;
+  if (myGeomGroupBtn->isChecked()) {   // try current group on geometry actor
+    if (!isActor) {
+      if (!myGroupOnGeom->_is_nil()) {
+        SMESH_Actor* anActor = SMESH::FindActorByObject(myGroupOnGeom);
+        if (anActor && anActor->hasIO())
+          {
+            isActor = true;
+            if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
+              isActor = false;
+            else
+              myActorsList.append(anActor);
+          }
       }
     }
-  }
-
-  // try current group on geometry actor
-  if (!isActor) {
-    if (!myGroupOnGeom->_is_nil()) {
-      myActor = SMESH::FindActorByObject(myGroupOnGeom);
-      if (myActor && myActor->hasIO())
+  } else {
+    // try mesh actor
+    SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
+    if (anActor && anActor->hasIO())
       {
         isActor = true;
-        if (aViewWindow && !aViewWindow->isVisible(myActor->getIO()))
+        if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
           isActor = false;
+        else
+          myActorsList.append(anActor);
       }
-    }
-  }
-
-  // try any visible actor of group or submesh of current mesh
-  if (!isActor && aViewWindow) {
-    // mesh entry
-    _PTR(SObject) aSObject = SMESH::FindSObject(myMesh);
-    if (aSObject) {
-      CORBA::String_var meshEntry = aSObject->GetID().c_str();
-      int len = strlen(meshEntry);
-
-      // iterate on all actors in current view window, search for
-      // any visible actor, that belongs to group or submesh of current mesh
-      VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
-      vtkActorCollection *aCollection = aCopy.GetActors();
-      int nbItems = aCollection->GetNumberOfItems();
-      for (int i=0; i<nbItems && !isActor; i++)
-      {
-        SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
-        if (anActor && anActor->hasIO()) {
-          Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-          if (aViewWindow->isVisible(anIO)) {
-            if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0) {
-              myActor = anActor;
-              isActor = true;
+    
+    // try any visible actor of group or submesh of current mesh
+    if (aViewWindow) {
+      // mesh entry
+      _PTR(SObject) aSObject = SMESH::FindSObject(myMesh);
+      if (aSObject) {
+        CORBA::String_var meshEntry = aSObject->GetID().c_str();
+        int len = strlen(meshEntry);
+        
+        // iterate on all actors in current view window, search for
+        // any visible actor, that belongs to group or submesh of current mesh
+        VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
+        vtkActorCollection *aCollection = aCopy.GetActors();
+        int nbItems = aCollection->GetNumberOfItems();
+        for (int i=0; i<nbItems && !isActor; i++)
+          {
+            SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
+            if (anActor && anActor->hasIO()) {
+              Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+              if (aViewWindow->isVisible(anIO)) {
+                if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0)
+                  myActorsList.append(anActor);
+              }
             }
           }
-        }
       }
     }
   }
-
-  if (isActor)
-    SMESH::SetPickable(myActor);
-
-  return isActor;
+  
+  if (myActorsList.count() > 0) {
+    QListIterator<SMESH_Actor*> it( myActorsList );
+    while ( it.hasNext() ) {
+      SMESH_Actor* anActor = it.next();
+      if ( IsActorVisible(anActor) )
+        anActor->SetPickable(true);
+    }
+  }
+  
+  return ( isActor || (myActorsList.count() > 0) );
 }
-
+  
 //=======================================================================
 //function : setShowEntityMode
 //purpose  : make shown only entity corresponding to my type
@@ -2265,4 +2317,16 @@ void SMESHGUI_GroupDlg::restoreShowEntityMode()
     }
   }
   myStoredShownEntity = 0;
+}
+
+//=======================================================================
+//function : IsActorVisible
+//purpose  : return visibility of the actor
+//=======================================================================
+bool SMESHGUI_GroupDlg::IsActorVisible( SMESH_Actor* theActor )
+{
+  SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView();
+  if (theActor && aViewWindow)
+    return aViewWindow->isVisible(theActor->getIO());
+  return false;
 }

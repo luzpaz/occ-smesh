@@ -59,10 +59,16 @@ public:
   SMESH::long_array_var          GetListOfIDs();
   void                           SetListOfIDs( SMESH::long_array_var );
 
-  void                           SetMainShapeEntry( const QString& theEntry );
-  const char*                    GetMainShapeEntry() { return myEntry.toLatin1().data();}
+  void                           SetGeomShapeEntry( const QString& theEntry );
+  const char*                    GetGeomShapeEntry() { return myEntry.toLatin1().data();}
 
+  void                           SetMainShapeEntry( const QString& theEntry );
+  const char*                    GetMainShapeEntry();
+
+  TopoDS_Shape                   GetGeomShape() { return myGeomShape; }
   TopoDS_Shape                   GetMainShape() { return myMainShape; }
+
+  QList<int>                     GetCorrectedListOfIDs( bool fromSubshapeToMainshape = true );
 
   static GEOM::GEOM_Object_var   GetGeomObjectByEntry( const QString& );
   static TopoDS_Shape            GetTopoDSByEntry( const QString& );
@@ -70,6 +76,8 @@ public:
   QString                        GetValue() const { return myParamValue; }
 
   void                           showPreview ( bool );
+
+  int                            GetListSize() { return myListOfIDs.size(); }
 
   void SetMaxSize(int aMaxSize) { myMaxSize = aMaxSize; }
   void SetSubShType(TopAbs_ShapeEnum aSubShType) { mySubShType = aSubShType; }
@@ -91,8 +99,10 @@ private:
   LightApp_SelectionMgr*         mySelectionMgr;          /* User shape selection */
   SVTK_Selector*                 mySelector;
   SMESH::SMESH_Mesh_var          myMesh;
+  TopoDS_Shape                   myGeomShape;
   TopoDS_Shape                   myMainShape;
   QString                        myEntry;
+  QString                        myMainEntry;
   vtkRenderer*                   myRenderer;
   
   QListWidget*                   myListWidget;
@@ -103,6 +113,7 @@ private:
   
   QString                        myParamValue;
   bool                           myIsShown;
+  bool                           myIsNotCorrected;
 
   // for manage possible size of myListOfIDs
   int                            myMaxSize;

@@ -1,3 +1,4 @@
+#  -*- coding: iso-8859-1 -*-
 #  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
@@ -129,5 +130,5 @@ for a in log:
             i2 = a.indexes[ii]
             ii = ii+1
             i3 = a.indexes[ii]
-            #ii = ii+1
+            ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)

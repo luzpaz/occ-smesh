@@ -36,7 +36,6 @@ salomeinclude_HEADERS = \
 	SMESH_DeviceActor.h \
 	SMESH_PreviewActorsCollection.h \
 	SMESH_ExtractGeometry.h \
-	SMESH_ActorUtils.h \
 	SMESH_FaceOrientationFilter.h
 
 # Libraries targets
@@ -77,5 +76,6 @@ libSMESHObject_la_LDFLAGS  = \
         ../SMDS/libSMDS.la \
         ../Controls/libSMESHControls.la \
         $(GUI_LDFLAGS) -lSalomeApp -lSalomeObject -lSVTK -lVTKViewer -lqtx -lsuit \
+	$(GEOM_LDFLAGS) -lGEOMObject \
 	$(CAS_KERNEL) \
         $(VTK_LIBS) $(QT_MT_LIBS)

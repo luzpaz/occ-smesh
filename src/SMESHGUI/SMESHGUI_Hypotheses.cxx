@@ -68,7 +68,7 @@ void SMESHGUI_GenericHypothesisCreator::setInitParamsHypothesis(SMESH::SMESH_Hyp
 }
 
 void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr initParamsHyp,
-						const QString& theHypName,
+                                                const QString& theHypName,
                                                 QWidget* parent, QObject* obj, const QString& slot )
 {
   MESSAGE( "Creation of hypothesis with initial params" );
@@ -77,8 +77,8 @@ void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr init
 }
 
 void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
-						const QString& theHypName,
-						QWidget* theParent, QObject* obj, const QString& slot )
+                                                const QString& theHypName,
+                                                QWidget* theParent, QObject* obj, const QString& slot )
 {
   MESSAGE( "Creation of hypothesis" );
 
@@ -97,8 +97,8 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
 }
 
 void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHypothesis,
-					      const QString& theHypName,
-					      QWidget* theParent, QObject* obj, const QString& slot )
+                                              const QString& theHypName,
+                                              QWidget* theParent, QObject* obj, const QString& slot )
 {
   if( CORBA::is_nil( theHypothesis ) )
     return;
@@ -111,8 +111,8 @@ void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHyp
 }
 
 void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h, 
-							const QString& theHypName,
-							QWidget* theParent,
+                                                        const QString& theHypName,
+                                                        QWidget* theParent,
                                                         QObject* obj, const QString& slot )
 {
   myHypName = theHypName;
@@ -173,7 +173,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       case QVariant::Int:
         {
           SalomeApp_IntSpinBox* sb = new SalomeApp_IntSpinBox( GroupC1 );
-	  sb->setObjectName( (*anIt).myName );
+          sb->setObjectName( (*anIt).myName );
           attuneStdWidget( sb, i );
           sb->setValue( (*anIt).myValue.toInt() );
           connect( sb, SIGNAL( valueChanged( int ) ), this, SLOT( onValueChanged() ) );
@@ -183,7 +183,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       case QVariant::Double:
         {
           SalomeApp_DoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
-	  sb->setObjectName( (*anIt).myName );
+          sb->setObjectName( (*anIt).myName );
           attuneStdWidget( sb, i );
           sb->setValue( (*anIt).myValue.toDouble() );
           connect( sb, SIGNAL( valueChanged( double ) ), this, SLOT( onValueChanged() ) );
@@ -275,20 +275,23 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
     if( listSOmesh.size() > 0 )
       for( int i = 0; i < listSOmesh.size(); i++ )
       {
-	_PTR(SObject) submSO = listSOmesh[i];
-	SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( submSO );
-	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( submSO );
-	if( !aSubMesh->_is_nil() )
-	  aMesh = aSubMesh->GetFather();
-	_PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
-	SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
+        _PTR(SObject) submSO = listSOmesh[i];
+        SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( submSO );
+        SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( submSO );
+        if( !aSubMesh->_is_nil() )
+          aMesh = aSubMesh->GetFather();
+        _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
+        SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
       }
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
   myHypo = SMESH::SMESH_Hypothesis::_nil();
   myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
-  myDlg->close(); myDlg = 0;
-  //delete myDlg; myDlg = 0;
+
+  disconnect( myDlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
+  myDlg->close();
+  //delete myDlg;
+  myDlg = 0;
   emit finished( result );
 }
 
@@ -507,7 +510,7 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "a1d_meshing_hypo_page.html#max_length_anchor";
   else if ( aHypType == "Arithmetic1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
-  else if ( aHypType == "FixedPointsc1D")
+  else if ( aHypType == "FixedPoints1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#fixed_points_1d_anchor";
   else if ( aHypType == "MaxElementArea")
     aHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
@@ -529,11 +532,16 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "projection_algos_page.html";
   else if ( aHypType == "NumberOfLayers")
     aHelpFileName = "radial_prism_algo_page.html";
+  else if ( aHypType == "NumberOfLayers2D")
+    aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
   else if ( aHypType == "LayerDistribution")
     aHelpFileName = "radial_prism_algo_page.html";
+  else if ( aHypType == "LayerDistribution2D")
+    aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
   else if ( aHypType == "SegmentLengthAroundVertex")
     aHelpFileName = "segments_around_vertex_algo_page.html";
-    
+  else if ( aHypType == "QuadrangleParams")
+    aHelpFileName = "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
   return aHelpFileName;
 }
 
@@ -623,10 +631,10 @@ void SMESHGUI_HypothesisDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -641,18 +649,18 @@ void SMESHGUI_HypothesisDlg::setType( const QString& t )
 }
 
 HypothesisData::HypothesisData( const QString& theTypeName,
-				const QString& thePluginName,
-				const QString& theServerLibName,
-				const QString& theClientLibName,
-				const QString& theLabel,
-				const QString& theIconId,
-				const QList<int>& theDim,
-				const bool theIsAux,
-				const QStringList& theNeededHypos,
-				const QStringList& theOptionalHypos,
-				const QStringList& theInputTypes,
-				const QStringList& theOutputTypes,
-				const bool theIsNeedGeometry,
+                                const QString& thePluginName,
+                                const QString& theServerLibName,
+                                const QString& theClientLibName,
+                                const QString& theLabel,
+                                const QString& theIconId,
+                                const QList<int>& theDim,
+                                const bool theIsAux,
+                                const QStringList& theNeededHypos,
+                                const QStringList& theOptionalHypos,
+                                const QStringList& theInputTypes,
+                                const QStringList& theOutputTypes,
+                                const bool theIsNeedGeometry,
                                 const bool supportSub)
   : TypeName( theTypeName ),
     PluginName( thePluginName ),
@@ -678,8 +686,8 @@ HypothesesSet::HypothesesSet( const QString& theSetName )
 }
 
 HypothesesSet::HypothesesSet( const QString&     theSetName,
-			      const QStringList& theHypoList,
-			      const QStringList& theAlgoList )
+                              const QStringList& theHypoList,
+                              const QStringList& theAlgoList )
   : myHypoSetName( theSetName ), 
     myHypoList( theHypoList ), 
     myAlgoList( theAlgoList ),

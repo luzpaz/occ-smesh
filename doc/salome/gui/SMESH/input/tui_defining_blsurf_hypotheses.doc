@@ -19,6 +19,11 @@ Face_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
 Edge_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["EDGE"])[0]
 Vertex_1 = geompy.SubShapeAllSorted(box, geompy.ShapeType["VERTEX"])[0]
 
+# /!\ Geom object with sizemaps on them must be published in study
+geompy.addToStudyInFather(box,Face_1, "Face_1")
+geompy.addToStudyInFather(box,Edge_1, "Edge_1")
+geompy.addToStudyInFather(box,Vertex_1, "Vertex_1")
+
 # create a mesh on the box
 blsurfMesh = smesh.Mesh(box,"box: BLSurf mesh")
 
@@ -43,6 +48,39 @@ BLSURF_Parameters.SetSizeMap(Vertex_1, 'def f(): return 2' )
 
 # compute the mesh
 blsurfMesh.Compute()
+
+# Add enforced vertex for Face_1 on (50, 50, 50)
+# The projection coordinates will be (50, 50, 0)
+BLSURF_Parameters.SetEnforcedVertex(Face_1, 50, 50, 50)
+
+# Add another enforced vertex on (150, 150, 150)
+BLSURF_Parameters.SetEnforcedVertex(Face_1, 150, 150, 150)
+
+# Retrieve and print the list of enforced vertices defines on Face_1
+enfList = BLSURF_Parameters.GetEnforcedVertices(Face_1)
+print "List of enforced vertices for Face_1: "
+print enfList
+
+# compute the mesh
+blsurfMesh.Compute()
+
+# Remove an enforced vertex and print the list
+BLSURF_Parameters.UnsetEnforcedVertex(Face_1, 50, 50, 50)
+enfList = BLSURF_Parameters.GetEnforcedVertices(Face_1)
+print "List of enforced vertices for Face_1: "
+print enfList
+
+# compute the mesh
+blsurfMesh.Compute()
+
+# Remove all enforced vertices defined on Face_1
+BLSURF_Parameters.UnsetEnforcedVertices(Face_1)
+
+# compute the mesh
+blsurfMesh.Compute()
+
+# End of script
+
 \endcode
 
 */

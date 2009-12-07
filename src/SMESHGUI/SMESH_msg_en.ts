@@ -202,6 +202,10 @@
             <translation>Convert to/from quadratic</translation>
         </message>
         <message>
+            <source>MEN_2D_FROM_3D</source>
+            <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
             <source>MEN_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -310,6 +314,10 @@
             <translation>Export to MED File</translation>
         </message>
         <message>
+            <source>MEN_EXPORT_SAUV</source>
+            <translation>Export to SAUV (ASCII) file</translation>
+        </message>
+        <message>
             <source>MEN_EXPORT_STL</source>
             <translation>Export to STL File</translation>
         </message>
@@ -392,6 +400,10 @@
         <message>
             <source>MEN_MED</source>
             <translation>MED file</translation>
+        </message>
+        <message>
+            <source>MEN_SAUV</source>
+            <translation>SAUV (ASCII) file</translation>
         </message>
         <message>
             <source>MEN_MERGE</source>
@@ -2044,6 +2056,10 @@ Consider saving your work before application crash</translation>
             <translation>Convert to/from quadratic</translation>
         </message>
         <message>
+            <source>STB_2D_FROM_3D</source>
+            <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
             <source>STB_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -2136,6 +2152,10 @@ Consider saving your work before application crash</translation>
             <translation>Export to MED file</translation>
         </message>
         <message>
+            <source>STB_EXPORT_SAUV</source>
+            <translation>Export to SAUV (ASCII) file</translation>
+        </message>
+        <message>
             <source>STB_EXPORT_STL</source>
             <translation>Export to STL file</translation>
         </message>
@@ -2208,6 +2228,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>STB_MED</source>
             <translation>Import MED file</translation>
+        </message>
+        <message>
+            <source>STB_SAUV</source>
+            <translation>Import SAUV (ASCII) file</translation>
         </message>
         <message>
             <source>STB_MERGE</source>
@@ -2538,6 +2562,10 @@ Consider saving your work before application crash</translation>
             <translation>Convert to/from quadratic</translation>
         </message>
         <message>
+            <source>TOP_2D_FROM_3D</source>
+            <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
             <source>TOP_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -2630,6 +2658,10 @@ Consider saving your work before application crash</translation>
             <translation>Export to MED file</translation>
         </message>
         <message>
+            <source>TOP_EXPORT_SAUV</source>
+            <translation>Export to SAUV (ASCII) file</translation>
+        </message>
+        <message>
             <source>TOP_EXPORT_STL</source>
             <translation>Export to STL file</translation>
         </message>
@@ -2702,6 +2734,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_MED</source>
             <translation>Import MED file</translation>
+        </message>
+        <message>
+            <source>TOP_SAUV</source>
+            <translation>Import SAUV (ASCII) file</translation>
         </message>
         <message>
             <source>TOP_MERGE</source>
@@ -3373,6 +3409,13 @@ Please specify it and try again</translation>
         <message>
             <source>REF_IS_NULL</source>
             <translation>No valid mesh object selected</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_Make2DFrom3DDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Create 2D mesh from 3D</translation>
         </message>
     </context>
     <context>

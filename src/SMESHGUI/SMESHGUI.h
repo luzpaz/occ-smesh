@@ -70,7 +70,6 @@ public :
   static SUIT_ResourceMgr*        resourceMgr();
   static SUIT_Desktop*            desktop();
   static SalomeApp_Study*         activeStudy();
-  static char*                    JoinObjectParameters(const QStringList& theParametersList);
   
   bool                            isActiveStudyLocked();
 
@@ -104,6 +103,7 @@ public :
   void                            EmitSignalDeactivateDialog();
   void                            EmitSignalStudyFrameChanged();
   void                            EmitSignalCloseAllDialogs();
+  void                            EmitSignalVisibilityChanged();
 
   virtual void                    contextMenuPopup( const QString&, QMenu*, QString& );
   virtual void                    createPreferences();
@@ -132,6 +132,7 @@ signals:
   void                            SignalDeactivateActiveDialog();
   void                            SignalStudyFrameChanged();
   void                            SignalCloseAllDialogs();
+  void                            SignalVisibilityChanged();
 
 protected:
   void                            createSMESHAction( const int,

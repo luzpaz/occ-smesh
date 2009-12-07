@@ -60,7 +60,14 @@ enum TCol {
 // =========================================================================================
 
 SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent)
-  : QGroupBox( tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full )
+: QGroupBox( tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full ),
+  myNbNode(0), my0DElem(0), myNbEdge(0), myNbLinEdge(0), myNbQuadEdge(0),
+  myNbTrai(0), myNbLinTrai(0), myNbQuadTrai(0), myNbQuad(0), myNbLinQuad(0),
+  myNbQuadQuad(0), myNbFace(0), myNbLinFace(0), myNbQuadFace(0), myNbPolyg(0),
+  myNbHexa(0), myNbLinHexa(0), myNbQuadHexa(0), myNbTetra(0), myNbLinTetra(0),
+  myNbQuadTetra(0), myNbPyra(0), myNbLinPyra(0), myNbQuadPyra(0), myNbPrism(0),
+  myNbLinPrism(0), myNbQuadPrism(0), myNbVolum(0), myNbLinVolum(0), myNbQuadVolum(0),
+  myNbPolyh(0)
 {
   QGridLayout* l = new QGridLayout(this);
   l->setMargin( MARGIN );
@@ -277,6 +284,17 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     myNbNode      = new QLabel( this );
     l->addWidget( myNbNode,      row, 1 );
 
+    // 0D elements
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_0DELEMS")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
+    my0DElem = new QLabel( this );
+    l->addWidget( my0DElem,      row, 1 );
+
+    addSeparator(this);          // add separator
+
     // edges
     row = l->rowCount();         // retrieve current row count
     // --
@@ -340,52 +358,52 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
 
   // edges
   myNbEdge     ->setText( QString("%1").arg( theInfo[SMDSEntity_Edge] +
-					    theInfo[SMDSEntity_Quad_Edge] ));
+                                            theInfo[SMDSEntity_Quad_Edge] ));
   myNbLinEdge  ->setText( QString("%1").arg( theInfo[SMDSEntity_Edge] ));
   myNbQuadEdge ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Edge] ));
 
   // faces
   myNbFace     ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-					    theInfo[SMDSEntity_Quad_Triangle] +
-					    theInfo[SMDSEntity_Quadrangle] +
-					    theInfo[SMDSEntity_Quad_Quadrangle] +
-					    theInfo[SMDSEntity_Polygon] ));
+                                            theInfo[SMDSEntity_Quad_Triangle] +
+                                            theInfo[SMDSEntity_Quadrangle] +
+                                            theInfo[SMDSEntity_Quad_Quadrangle] +
+                                            theInfo[SMDSEntity_Polygon] ));
   myNbLinFace  ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-					    theInfo[SMDSEntity_Quadrangle] +
-					    theInfo[SMDSEntity_Polygon] ));
+                                            theInfo[SMDSEntity_Quadrangle] +
+                                            theInfo[SMDSEntity_Polygon] ));
   myNbQuadFace ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] +
-					    theInfo[SMDSEntity_Quad_Quadrangle] ));
+                                            theInfo[SMDSEntity_Quad_Quadrangle] ));
 
   // volumes
   myNbVolum    ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
-					    theInfo[SMDSEntity_Quad_Tetra] +
-					    theInfo[SMDSEntity_Pyramid] +
-					    theInfo[SMDSEntity_Quad_Pyramid] +
-					    theInfo[SMDSEntity_Hexa] +
-					    theInfo[SMDSEntity_Quad_Hexa] +
-					    theInfo[SMDSEntity_Penta] +
-					    theInfo[SMDSEntity_Quad_Penta] +
-					    theInfo[SMDSEntity_Polyhedra] ));
+                                            theInfo[SMDSEntity_Quad_Tetra] +
+                                            theInfo[SMDSEntity_Pyramid] +
+                                            theInfo[SMDSEntity_Quad_Pyramid] +
+                                            theInfo[SMDSEntity_Hexa] +
+                                            theInfo[SMDSEntity_Quad_Hexa] +
+                                            theInfo[SMDSEntity_Penta] +
+                                            theInfo[SMDSEntity_Quad_Penta] +
+                                            theInfo[SMDSEntity_Polyhedra] ));
   myNbLinVolum ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
-					    theInfo[SMDSEntity_Pyramid] +
-					    theInfo[SMDSEntity_Hexa] +
-					    theInfo[SMDSEntity_Penta] +
-					    theInfo[SMDSEntity_Polyhedra] ));
+                                            theInfo[SMDSEntity_Pyramid] +
+                                            theInfo[SMDSEntity_Hexa] +
+                                            theInfo[SMDSEntity_Penta] +
+                                            theInfo[SMDSEntity_Polyhedra] ));
   myNbQuadVolum->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] +
-					    theInfo[SMDSEntity_Quad_Pyramid] +
-					    theInfo[SMDSEntity_Quad_Hexa] +
-					    theInfo[SMDSEntity_Quad_Penta] ));
+                                            theInfo[SMDSEntity_Quad_Pyramid] +
+                                            theInfo[SMDSEntity_Quad_Hexa] +
+                                            theInfo[SMDSEntity_Quad_Penta] ));
 
   if ( myFull )
   {
     // triangles
     myNbTrai     ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-					      theInfo[SMDSEntity_Quad_Triangle] ));
+                                              theInfo[SMDSEntity_Quad_Triangle] ));
     myNbLinTrai  ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] ));
     myNbQuadTrai ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] ));
     // quadrangles
     myNbQuad     ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] +
-					      theInfo[SMDSEntity_Quad_Quadrangle] ));
+                                              theInfo[SMDSEntity_Quad_Quadrangle] ));
     myNbLinQuad  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] ));
     myNbQuadQuad ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Quadrangle] ));
     // poligones
@@ -393,22 +411,22 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
 
     // tetras
     myNbTetra    ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
-					      theInfo[SMDSEntity_Quad_Tetra] ));
+                                              theInfo[SMDSEntity_Quad_Tetra] ));
     myNbLinTetra ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] ));
     myNbQuadTetra->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] ));
     // hexas
     myNbHexa     ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] +
-					      theInfo[SMDSEntity_Quad_Hexa] ));
+                                              theInfo[SMDSEntity_Quad_Hexa] ));
     myNbLinHexa  ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] ));
     myNbQuadHexa ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Hexa] ));
     // pyras
     myNbPyra     ->setText( QString("%1").arg( theInfo[SMDSEntity_Pyramid] +
-					    theInfo[SMDSEntity_Quad_Pyramid] ));
+                                            theInfo[SMDSEntity_Quad_Pyramid] ));
     myNbLinPyra  ->setText( QString("%1").arg( theInfo[SMDSEntity_Pyramid] ));
     myNbQuadPyra ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Pyramid] ));
     // prisms
     myNbPrism    ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] +
-					      theInfo[SMDSEntity_Quad_Penta] ));
+                                              theInfo[SMDSEntity_Quad_Penta] ));
     myNbLinPrism ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] ));
     myNbQuadPrism->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Penta] ));
     // polyedres

@@ -384,6 +384,12 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
     ok = ( w && w->IsOk() );
   }
+  else if ( hypType() == "QuadrangleParams" )
+  {
+    StdMeshersGUI_SubShapeSelectorWdg* w = 
+      widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+    ok = ( w->GetListSize() > 0 );
+  }
   return ok;
 }
 
@@ -415,9 +421,9 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       h->SetPrecision( params[1].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
     }
     else if( hypType()=="MaxLength" )
     {
@@ -425,7 +431,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         StdMeshers::StdMeshers_MaxLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       h->SetUsePreestimatedLength( widget< QCheckBox >( 1 )->isChecked() );
       if ( !h->HavePreestimatedLength() && !h->_is_equivalent( initParamsHypothesis() )) {
         StdMeshers::StdMeshers_MaxLength_var hInit =
@@ -439,7 +445,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
     }
     else if( hypType()=="Arithmetic1D" )
     {
@@ -450,13 +456,12 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 2 );
 
       h->SetStartLength( params[0].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       h->SetEndLength( params[1].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       if (w) {
         h->SetReversedEdges( w->GetListOfIDs() );
-        const char * entry = w->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
+        h->SetObjectEntry( w->GetMainShapeEntry() );
       }
     }
     else if( hypType()=="FixedPoints1D" )
@@ -471,21 +476,20 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 1 );
 
       if (w1) {
-        h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+        h->SetParameters(aVariablesList.join(":").toLatin1().constData());
         h->SetPoints( w1->GetListOfPoints() );
         h->SetNbSegments( w1->GetListOfSegments() );
       }
       if (w2) {
         h->SetReversedEdges( w2->GetListOfIDs() );
-        const char * entry = w2->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
+        h->SetObjectEntry( w2->GetMainShapeEntry() );
       }
     }
     else if( hypType()=="MaxElementArea" )
     {
       StdMeshers::StdMeshers_MaxElementArea_var h =
         StdMeshers::StdMeshers_MaxElementArea::_narrow( hypothesis() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       h->SetMaxElementArea( params[0].myValue.toDouble() );
     }
     else if( hypType()=="MaxElementVolume" )
@@ -494,7 +498,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         StdMeshers::StdMeshers_MaxElementVolume::_narrow( hypothesis() );
 
       h->SetMaxElementVolume( params[0].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
     }
     else if( hypType()=="StartEndLength" )
     {
@@ -505,9 +509,9 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 2 );
 
       h->SetStartLength( params[0].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       h->SetEndLength( params[1].myValue.toDouble() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       if (w) {
         h->SetReversedEdges( w->GetListOfIDs() );
         h->SetObjectEntry( w->GetMainShapeEntry() );
@@ -517,7 +521,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
     {
       StdMeshers::StdMeshers_Deflection1D_var h =
         StdMeshers::StdMeshers_Deflection1D::_narrow( hypothesis() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
       h->SetDeflection( params[0].myValue.toDouble() );
     }
     else if( hypType()=="AutomaticLength" )
@@ -533,7 +537,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         StdMeshers::StdMeshers_NumberOfLayers::_narrow( hypothesis() );
 
       h->SetNumberOfLayers( params[0].myValue.toInt() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
     }
     else if( hypType()=="LayerDistribution" )
     {
@@ -552,7 +556,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         StdMeshers::StdMeshers_NumberOfLayers2D::_narrow( hypothesis() );
 
       h->SetNumberOfLayers( params[0].myValue.toInt() );
-      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      h->SetParameters(aVariablesList.join(":").toLatin1().constData());
     }
     else if( hypType()=="LayerDistribution2D" )
     {
@@ -606,11 +610,11 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshersGUI_SubShapeSelectorWdg* w = 
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
       if (w) {
-        if( w->GetListOfIDs()->length()>0 ) {
-          h->SetTriaVertex( w->GetListOfIDs()[0] );
+        if( w->GetListSize() > 0 ) {
+          h->SetTriaVertex( w->GetListOfIDs()[0] ); // getlist must be called once
+          const char * entry = w->GetMainShapeEntry();
+          h->SetObjectEntry( entry );
         }
-        const char * entry = w->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
       }
     }
   }
@@ -736,10 +740,13 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
-    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    if ( anEntry == "" )
-      anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    QString aGeomEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    if ( aGeomEntry == "" )
+      aGeomEntry = h->GetObjectEntry();
+
+    aDirectionWidget->SetGeomShapeEntry( aGeomEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
@@ -769,9 +776,11 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetGeomShapeEntry( anEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
@@ -823,11 +832,12 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetGeomShapeEntry( anEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
-    aDirectionWidget->SetMainShapeEntry( h->GetObjectEntry() );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
   }
@@ -874,7 +884,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       aLastVarsList.append(QString(aParameters[i].in()));
 
     if(!aLastVarsList.isEmpty())
-      h->GetLayerDistribution()->SetLastParameters(SMESHGUI::JoinObjectParameters(aLastVarsList));
+      h->GetLayerDistribution()->SetLastParameters(aLastVarsList.join(":").toLatin1().constData());
     
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
@@ -900,7 +910,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       aLastVarsList.append(QString(aParameters[i].in()));
 
     if(!aLastVarsList.isEmpty())
-      h->GetLayerDistribution()->SetLastParameters(SMESHGUI::JoinObjectParameters(aLastVarsList));
+      h->GetLayerDistribution()->SetLastParameters(aLastVarsList.join(":").toLatin1().constData());
     
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
@@ -984,9 +994,11 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     aDirectionWidget->SetMaxSize(1);
     aDirectionWidget->SetSubShType(TopAbs_VERTEX);
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetGeomShapeEntry( anEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     SMESH::long_array_var aVec = new SMESH::long_array;
     int vertID = h->GetTriaVertex();
     if(vertID>0) {
@@ -1116,7 +1128,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "ProjectionSource3D", "PROJECTION_SOURCE_3D" );
     types.insert( "NumberOfLayers", "NUMBER_OF_LAYERS" );
     types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
-    types.insert( "NumberOfLayers2D", "NUMBER_OF_LAYERS" );
+    types.insert( "NumberOfLayers2D", "NUMBER_OF_LAYERS_2D" );
     types.insert( "LayerDistribution2D", "LAYER_DISTRIBUTION" );
     types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
     types.insert( "MaxLength", "MAX_LENGTH" );
