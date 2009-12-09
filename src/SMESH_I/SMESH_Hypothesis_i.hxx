@@ -65,11 +65,23 @@ public:
   // Get unique id of hypothesis
   CORBA::Long GetId();
   
+  // ...
+  virtual char* GetEntry();
+
+  // ...
+  virtual char* GetComponent();
+
+  // ...
+  virtual CORBA::Boolean IsValid();
+
   // Set list of parameters, used for Hypothesis creation
   virtual void SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters );
   
   // Return list of notebook variables used for Hypothesis creation
   virtual SALOME::StringArray* GetParameters();
+
+  // ...
+  virtual void Update( SALOME::Notebook_ptr theNotebook );
 
   //Return true if hypothesis was published in study
   bool IsPublished();
