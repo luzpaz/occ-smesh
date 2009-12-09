@@ -32,6 +32,8 @@
 
 #include "SMESHDS_Hypothesis.hxx"
 
+#include <list>
+
 class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
@@ -77,13 +79,9 @@ public:
   virtual const char* GetLibName() const;
   void  SetLibName(const char* theLibName);
 
-  void  SetParameters(const char *theParameters);
-  char* GetParameters() const;
+  void SetParameters(const std::list<std::string>& theParameters);
+  std::list<std::string> GetParameters() const;
 
-  void SetLastParameters(const char* theParameters);
-  char* GetLastParameters() const;
-  void ClearParameters();
-  
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
    *  \param theMesh - the built mesh
@@ -122,8 +120,7 @@ protected:
 
 private:
   std::string _libName;
-  std::string _parameters;
-  std::string _lastParameters;
+  std::list<std::string> _parameters;
 };
 
 #endif

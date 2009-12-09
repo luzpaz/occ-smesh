@@ -144,8 +144,10 @@ bool SMESH_Hypothesis_i::IsPublished(){
  *
  */
 //=============================================================================
-void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
+//void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
+void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters )
 {
+  /*
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   char * aParameters = CORBA::string_dup(theParameters);
   if(gen){
@@ -156,6 +158,7 @@ void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
       myBaseImpl->SetParameters(gen->ParseParameters(aParameters));
     }
   }
+  */
 }
 
 //=============================================================================
@@ -164,8 +167,10 @@ void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
  *
  */
 //=============================================================================
-char* SMESH_Hypothesis_i::GetParameters()
+//char* SMESH_Hypothesis_i::GetParameters()
+SALOME::StringArray* SMESH_Hypothesis_i::GetParameters()
 {
+  /*
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   char* aResult;
   if(IsPublished()) {
@@ -177,64 +182,8 @@ char* SMESH_Hypothesis_i::GetParameters()
     aResult = myBaseImpl->GetParameters(); 
   }
   return CORBA::string_dup(aResult);
-}
-
-//=============================================================================
-/*!
- *  SMESH_Hypothesis_i::GetLastParameters()
- *
- */
-//=============================================================================
-SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
-{
-  SMESH::ListOfParameters_var aResult = new SMESH::ListOfParameters();
-  /* ouv: temporarily disabled
-  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
-  if(gen) {
-    char *aParameters;
-    if(IsPublished())
-     aParameters = GetParameters();
-    else
-      aParameters = myBaseImpl->GetLastParameters();
-
-    SALOMEDS::Study_ptr aStudy = gen->GetCurrentStudy();
-    if(!aStudy->_is_nil()) {
-      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
-      if(aSections->length() > 0) {
-        SALOMEDS::ListOfStrings aVars = aSections[aSections->length()-1];
-        aResult->length(aVars.length());
-        for(int i = 0;i < aVars.length();i++)
-          aResult[i] = CORBA::string_dup( aVars[i]);
-      }
-    }
-  }
   */
-  return aResult._retn();
-}
-
-//=============================================================================
-/*!
- *  SMESH_Hypothesis_i::SetLastParameters()
- *
- */
-//=============================================================================
-void SMESH_Hypothesis_i::SetLastParameters(const char* theParameters)
-{
-  if(!IsPublished()) {
-    myBaseImpl->SetLastParameters(theParameters);
-  }
-}
-//=============================================================================
-/*!
- *  SMESH_Hypothesis_i::ClearParameters()
- *
- */
-//=============================================================================
-void SMESH_Hypothesis_i::ClearParameters()
-{
-  if(!IsPublished()) {
-    myBaseImpl->ClearParameters();
-  }
+  return NULL;
 }
 
 //=============================================================================

@@ -28,6 +28,7 @@
 
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
+#include "SALOME_Notebook.idl"
 #include "GEOM_Gen.idl"
 #include "MED.idl"
 
@@ -263,7 +264,7 @@ module SMESH
   interface SMESH_GroupOnGeom;
   interface SMESH_subMesh;
   interface SMESH_MeshEditor;
-  interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
+  interface SMESH_Mesh : SALOME::ParameterizedObject, SMESH_IDSource
   {
     /*!
      * Return true if there is a geometry to be meshed
@@ -760,22 +761,6 @@ module SMESH
 
     /*! Gets information about imported MED file */
     SALOME_MED::MedFileInfo GetMEDFileInfo();
-
-    /*!
-     *  Sets list of notebook variables used for Mesh operations separated by ":" symbol
-     *  \param theParameters is a string containing the notebook variables
-     */
-    void SetParameters (in string theParameters);
-
-    /*!
-     *  Returns list of notebook variables used for Mesh operations separated by ":" symbol
-     */
-    string GetParameters();
-
-    /*!
-     *  Returns list of notebook variables used for last Mesh operation
-     */
-    string_array GetLastParameters();
   };
 
   interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource

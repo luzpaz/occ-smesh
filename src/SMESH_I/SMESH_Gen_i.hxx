@@ -505,11 +505,6 @@ public:
    */
   SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
 
-  void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
-  char* GetParameters(CORBA::Object_ptr theObject);
-  char* ParseParameters(const char* theParameters);
-  
- 
 private:
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,

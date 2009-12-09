@@ -472,20 +472,14 @@ public:
   virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
   /*!
-   * Sets list of notebook variables used for Mesh operations separated by ":" symbol
+   * Sets list of notebook variables used for Mesh operations
    */
-  void SetParameters (const char* theParameters);
+  virtual void SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters );
   
   /*!
-   * Returns list of notebook variables used for Mesh operations separated by ":" symbol
+   * Returns list of notebook variables used for Mesh operations
    */
-  char* GetParameters();
-
-  /*!
-   * Returns list of notebook variables used for last Mesh operation
-   */
-  SMESH::string_array* GetLastParameters();
-
+  virtual SALOME::StringArray* GetParameters();
 
   /*!
    * Returns statistic of mesh elements

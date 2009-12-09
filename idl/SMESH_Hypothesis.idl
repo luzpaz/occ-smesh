@@ -28,6 +28,7 @@
 
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
+#include "SALOME_Notebook.idl"
 
 module SMESH
 {
@@ -41,7 +42,7 @@ module SMESH
   
   typedef sequence<string> ListOfParameters;
 
-  interface SMESH_Hypothesis : SALOME::GenericObj
+  interface SMESH_Hypothesis : SALOME::ParameterizedObject
   {
     
     /*!
@@ -58,35 +59,6 @@ module SMESH
      * Get the internal Id 
      */
     long GetId();
-
-    /*!
-     *  Set list of parameters
-     *  \param theParameters is a string containing the notebook variables separated by ":" symbol,
-     *         used for Hypothesis creation
-     */
-    void SetParameters (in string theParameters);
-
-    /*!
-     *  Return list of notebook variables used for Hypothesis creation separated by ":" symbol
-     */
-    string GetParameters();
-
-    /*!
-     *  Return list of last notebook variables used for Hypothesis creation.
-     */
-    ListOfParameters GetLastParameters();
-
-    /*!
-     *  Set list of parameters
-     *  \param theParameters is a string containing the last notebook variables separated by ":" symbol,
-     *         used for Hypothesis creation
-     */
-    void SetLastParameters(in string theParameters);
-    
-    /*!
-     * Clear parameters list
-     */
-    void ClearParameters();
 
     /*!
      * Verify whether hypothesis supports given entity type 
