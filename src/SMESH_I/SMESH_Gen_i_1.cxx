@@ -940,6 +940,7 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
 //=======================================================================
 char* SMESH_Gen_i::ParseParameters(const char* theParameters)
 {
+  /* ouv: temporarily disabled
   //const char* aParameters = theParameters;
 //   const char* aParameters = CORBA::string_dup(theParameters);
   TCollection_AsciiString anInputParams;
@@ -982,6 +983,8 @@ char* SMESH_Gen_i::ParseParameters(const char* theParameters)
     }
   }
   return CORBA::string_dup(anInputParams.ToCString());
+  */
+  return NULL;
 }
 
 //=======================================================================

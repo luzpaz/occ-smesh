@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // SALOME GUI includes
 #include <SALOME_InteractiveObject.hxx>
@@ -65,7 +66,7 @@ class QAction;
 // class    : SMESHGUI_RevolutionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_RevolutionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RevolutionDlg : public QDialog, public SMESHGUI_Helper
 { 
   Q_OBJECT
 

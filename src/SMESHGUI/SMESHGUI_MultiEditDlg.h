@@ -27,6 +27,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // Qt includes 
 #include <QDialog>
@@ -63,7 +64,7 @@ class QButtonGroup;
  *               union of two neighboring triangles
  */
 
-class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public QDialog, public SMESHGUI_Helper
 {
   Q_OBJECT
 

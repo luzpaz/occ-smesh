@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // Qt includes
 #include <QDialog>
@@ -56,7 +57,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_RotationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public QDialog, public SMESHGUI_Helper
 { 
   Q_OBJECT
 

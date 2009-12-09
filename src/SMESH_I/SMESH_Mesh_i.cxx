@@ -3408,6 +3408,7 @@ char* SMESH_Mesh_i::GetParameters()
 SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
 {
   SMESH::string_array_var aResult = new SMESH::string_array();
+  /* ouv: temporarily disabled
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   if(gen) {
     char *aParameters = GetParameters();
@@ -3422,6 +3423,7 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
       }
     }
   }
+  */
   return aResult._retn();
 }
 

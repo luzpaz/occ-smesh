@@ -90,6 +90,7 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 
 SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
@@ -1096,24 +1097,9 @@ void SMESHGUI_SymmetryDlg::setFilters()
 //=================================================================================
 bool SMESHGUI_SymmetryDlg::isValid()
 {
-  bool ok = true;
-  QString msg;
-
-  ok = SpinBox_X->isValid( msg, true ) && ok;
-  ok = SpinBox_Y->isValid( msg, true ) && ok;
-  ok = SpinBox_Z->isValid( msg, true ) && ok;
-  if (GetConstructorId() != 0) {
-    ok = SpinBox_DX->isValid( msg, true ) && ok;
-    ok = SpinBox_DY->isValid( msg, true ) && ok;
-    ok = SpinBox_DZ->isValid( msg, true ) && ok;
-  }
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  QList<QAbstractSpinBox*> aSpinBoxList;
+  aSpinBoxList << SpinBox_X << SpinBox_Y << SpinBox_Z;
+  if( GetConstructorId() != 0 )
+    aSpinBoxList << SpinBox_DX << SpinBox_DY << SpinBox_DZ;
+  return checkParameters( true, aSpinBoxList );
 }

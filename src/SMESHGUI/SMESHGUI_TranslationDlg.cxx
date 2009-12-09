@@ -107,6 +107,7 @@ private:
 //=================================================================================
 SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
@@ -1044,24 +1045,9 @@ void SMESHGUI_TranslationDlg::setFilters()
 //=================================================================================
 bool SMESHGUI_TranslationDlg::isValid()
 {
-  bool ok = true;
-  QString msg;
-
-  ok = SpinBox1_1->isValid( msg, true ) && ok;
-  ok = SpinBox1_2->isValid( msg, true ) && ok;
-  ok = SpinBox1_3->isValid( msg, true ) && ok;
-  if (GetConstructorId() == 0) {
-    ok = SpinBox2_1->isValid( msg, true ) && ok;
-    ok = SpinBox2_2->isValid( msg, true ) && ok;
-    ok = SpinBox2_3->isValid( msg, true ) && ok;
-  }
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  QList<QAbstractSpinBox*> aSpinBoxList;
+  aSpinBoxList << SpinBox1_1 << SpinBox1_2 << SpinBox1_3;
+  if( GetConstructorId() == 0 )
+    aSpinBoxList << SpinBox2_1 << SpinBox2_2 << SpinBox2_3;
+  return checkParameters( true, aSpinBoxList );
 }

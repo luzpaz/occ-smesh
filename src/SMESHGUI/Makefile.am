@@ -41,6 +41,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_PatternUtils.h \
 	SMESHGUI_GroupUtils.h \
 	SMESHGUI_PatternWidget.h \
+	SMESHGUI_Helper.h \
 	SMESHGUI_CreatePatternDlg.h \
 	SMESHGUI_MeshPatternDlg.h \
 	SMESHGUI_NodesDlg.h \
@@ -99,6 +100,7 @@ lib_LTLIBRARIES = libSMESH.la
 dist_libSMESH_la_SOURCES = \
 	SMESHGUI.cxx \
 	SMESHGUI_PatternWidget.cxx \
+	SMESHGUI_Helper.cxx \
 	SMESHGUI_CreatePatternDlg.cxx \
 	SMESHGUI_MeshPatternDlg.cxx \
 	SMESHGUI_SpinBox.cxx \

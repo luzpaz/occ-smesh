@@ -267,6 +267,7 @@ void SMESHGUI_MakeNodeAtPointDlg::ButtonToggled (bool on)
 //================================================================================
 
 SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
+  : SMESHGUI_Helper( getSMESHGUI() )
 {
   mySimulation = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
@@ -375,8 +376,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
   QString msg;
   if ( !isValid( msg ) ) { // node id is invalid
     if( !msg.isEmpty() )
-      SUIT_MessageBox::warning( dlg(), tr( "SMESH_WRN_WARNING" ),
-                                tr("INVALID_ID") );
+      SUIT_MessageBox::warning( dlg(), tr( "SMESH_WRN_WARNING" ), msg );
     dlg()->show();
     return false;
   }
@@ -442,6 +442,9 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
 
 bool SMESHGUI_MakeNodeAtPointOp::isValid( QString& msg )
 {
+  if( !checkParameters( !myNoPreview, 3, myDlg->myX, myDlg->myY, myDlg->myZ ) )
+    return false;
+
   bool ok = true;
   if ( myMeshActor &&
        myDlg->myMoveRBtn->isChecked() &&
@@ -455,11 +458,6 @@ bool SMESHGUI_MakeNodeAtPointOp::isValid( QString& msg )
     if( !ok )
       msg += tr("INVALID_ID") + "\n";
   }
-
-  ok = myDlg->myX->isValid( msg, !myNoPreview ) && ok;
-  ok = myDlg->myY->isValid( msg, !myNoPreview ) && ok;
-  ok = myDlg->myZ->isValid( msg, !myNoPreview ) && ok;
-
   return ok;
 }
 

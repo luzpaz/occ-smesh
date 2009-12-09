@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // SALOME GUI includes
 #include <SALOME_InteractiveObject.hxx>
@@ -61,7 +62,7 @@ class SalomeApp_IntSpinBox;
 // class    : SMESHGUI_ExtrusionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public QDialog, public SMESHGUI_Helper
 {
   Q_OBJECT
 

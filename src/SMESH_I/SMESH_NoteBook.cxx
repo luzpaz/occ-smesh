@@ -639,6 +639,7 @@ void SMESH_NoteBook::ReplaceVariables()
 //================================================================================
 void SMESH_NoteBook::InitObjectMap()
 {
+  /* ouv: temporarily disabled
   SMESH_Gen_i *aGen = SMESH_Gen_i::GetSMESHGen();
   if(!aGen)
     return;
@@ -700,6 +701,7 @@ void SMESH_NoteBook::InitObjectMap()
       _objectMap.insert(pair<TCollection_AsciiString,ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
     }
   }
+  */
 }
 
 //================================================================================
@@ -825,6 +827,7 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
 {
   bool ok = false;
 
+  /* ouv: temporarily disabled
   SMESH_Gen_i *aGen = SMESH_Gen_i::GetSMESHGen();
   if(!aGen)
     return ok;
@@ -844,7 +847,7 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
     theValue = aStudy->GetReal(aVarName.ToCString());
     ok = true;
   }
-
+  */
   return ok;
 }
 

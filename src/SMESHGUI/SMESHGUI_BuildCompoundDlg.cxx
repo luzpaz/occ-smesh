@@ -72,6 +72,7 @@
 //=================================================================================
 SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   : QDialog(SMESH::GetDesktop(theModule)),
+    SMESHGUI_Helper(theModule),
     mySMESHGUI(theModule),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule))
 {
@@ -513,17 +514,7 @@ void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
 //=================================================================================
 bool SMESHGUI_BuildCompoundDlg::isValid()
 {
-  QString msg;
-  bool ok=true;
-  if(CheckBoxMerge->isChecked())
-    ok = SpinBoxTol->isValid( msg, true );
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
+  if( CheckBoxMerge->isChecked() )
+    return checkParameters( true, 1, SpinBoxTol );
   return true;
 }

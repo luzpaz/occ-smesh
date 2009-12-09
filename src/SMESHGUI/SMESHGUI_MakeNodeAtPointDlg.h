@@ -27,6 +27,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
@@ -43,7 +44,7 @@ class SMESHGUI_MakeNodeAtPointDlg;
 /*!
  * \brief Operation to make a mesh pass through a point
  */
-class SMESHGUI_EXPORT SMESHGUI_MakeNodeAtPointOp: public SMESHGUI_SelectionOp
+class SMESHGUI_EXPORT SMESHGUI_MakeNodeAtPointOp: public SMESHGUI_SelectionOp, public SMESHGUI_Helper
 {
   Q_OBJECT
 

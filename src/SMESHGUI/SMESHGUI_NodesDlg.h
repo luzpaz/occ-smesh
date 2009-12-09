@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // Qt includes
 #include <QDialog>
@@ -55,7 +56,7 @@ namespace SMESH
 // class    : SMESHGUI_NodesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_NodesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_NodesDlg : public QDialog, public SMESHGUI_Helper
 { 
   Q_OBJECT
 

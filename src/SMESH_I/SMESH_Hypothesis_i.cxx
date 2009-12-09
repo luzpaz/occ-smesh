@@ -188,6 +188,7 @@ char* SMESH_Hypothesis_i::GetParameters()
 SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
 {
   SMESH::ListOfParameters_var aResult = new SMESH::ListOfParameters();
+  /* ouv: temporarily disabled
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   if(gen) {
     char *aParameters;
@@ -207,6 +208,7 @@ SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
       }
     }
   }
+  */
   return aResult._retn();
 }
 

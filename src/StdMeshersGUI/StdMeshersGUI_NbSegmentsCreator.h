@@ -64,7 +64,7 @@ public:
   StdMeshersGUI_NbSegmentsCreator();
   virtual ~StdMeshersGUI_NbSegmentsCreator();
 
-  virtual bool checkParams( QString& ) const;
+  virtual bool checkParams( QString&, QStringList& ) const;
 
 protected:
   virtual QFrame*  buildFrame();

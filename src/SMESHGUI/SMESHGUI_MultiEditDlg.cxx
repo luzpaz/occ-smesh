@@ -103,6 +103,7 @@ SMESHGUI_MultiEditDlg
                         const int theMode,
                         const bool the3d2d):
   QDialog(SMESH::GetDesktop(theModule)),
+  SMESHGUI_Helper(theModule),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
   mySMESHGUI(theModule)
@@ -1173,20 +1174,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::isValid (const bool theMess)
   bool ok = SMESHGUI_MultiEditDlg::isValid( theMess );
   if( !ok )
     return false;
-
-  QString msg;
-  ok = myMaxAngleSpin->isValid( msg, theMess );
-  if( !ok ) {
-    if( theMess ) {
-      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-      if ( !msg.isEmpty() )
-        str += "\n" + msg;
-      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    }
-    return false;
-  }
-
-  return ok;
+  return checkParameters( theMess, 1, myMaxAngleSpin );
 }
 
 bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,

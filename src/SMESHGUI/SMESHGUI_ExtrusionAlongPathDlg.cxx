@@ -109,6 +109,7 @@ private:
 //=================================================================================
 SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg( 0 )
@@ -1132,14 +1133,9 @@ int SMESHGUI_ExtrusionAlongPathDlg::GetConstructorId()
 //=======================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::OnAngleAdded()
 {
-  QString msg;
-  if( !AngleSpin->isValid( msg, true ) ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+  if( !checkParameters( true, 1, AngleSpin ) )
     return;
-  }
+
   AnglesList->addItem(AngleSpin->text());
   myAnglesList.append(AngleSpin->GetValue());
 
@@ -1242,20 +1238,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::setFilters()
 //=================================================================================
 bool SMESHGUI_ExtrusionAlongPathDlg::isValid()
 {
-  QString msg;
-  bool ok = true;
-  ok = XSpin->isValid( msg, true ) && ok;
-  ok = YSpin->isValid( msg, true ) && ok;
-  ok = ZSpin->isValid( msg, true ) && ok;
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  return checkParameters( true, 3, XSpin, YSpin, ZSpin );
 }
 
 //=================================================================================

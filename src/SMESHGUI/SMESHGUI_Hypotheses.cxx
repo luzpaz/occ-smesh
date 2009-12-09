@@ -40,6 +40,7 @@
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
+#include <SalomeApp_Application.h>
 #include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
@@ -192,6 +193,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
         break;
       case QVariant::String:
         {
+          /* ouv: temporarily disabled
           if((*anIt).isVariable) {
             _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
             QString aVar = (*anIt).myValue.toString();
@@ -213,13 +215,14 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
             }
           }
           else {
+          */
             QLineEdit* le = new QLineEdit( GroupC1 );
             le->setObjectName( (*anIt).myName );
             attuneStdWidget( le, i );
             le->setText( (*anIt).myValue.toString() );
             connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
             w = le;
-          }
+          //}
         }
         break;
       }
@@ -476,7 +479,7 @@ bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam&, QWi
   return false;
 }
 
-bool SMESHGUI_GenericHypothesisCreator::checkParams( QString& msg ) const
+bool SMESHGUI_GenericHypothesisCreator::checkParams( QString& msg, QStringList& absentParams ) const
 {
   bool ok = true;
   ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
@@ -485,12 +488,12 @@ bool SMESHGUI_GenericHypothesisCreator::checkParams( QString& msg ) const
     if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) )
     {
       SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
-      ok = sb->isValid( msg, true ) && ok;
+      ok = sb->isValid( msg, absentParams, true ) && ok;
     }
     else if( (*anIt)->inherits( "SalomeApp_DoubleSpinBox" ) )
     {
       SalomeApp_DoubleSpinBox* sb = ( SalomeApp_DoubleSpinBox* )( *anIt );
-      ok = sb->isValid( msg, true ) && ok;
+      ok = sb->isValid( msg, absentParams, true ) && ok;
     }
   }
   return ok;
@@ -599,8 +602,17 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 void SMESHGUI_HypothesisDlg::accept()
 {
   QString msg;
-  if ( myCreator && !myCreator->checkParams( msg ) )
+  QStringList absentParams;
+  if ( myCreator && !myCreator->checkParams( msg, absentParams ) )
   {
+    if( !absentParams.isEmpty() )
+    {
+      SalomeApp_Application* app =
+        dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+      if( app )
+        app->defineAbsentParameters( absentParams );
+      return;
+    }
     QString str( tr( "SMESH_INCORRECT_INPUT" ) );
     if ( !msg.isEmpty() )
       str += "\n" + msg;

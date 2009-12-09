@@ -89,6 +89,7 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 //=================================================================================
 SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
@@ -997,23 +998,8 @@ void SMESHGUI_RotationDlg::setFilters()
 //=================================================================================
 bool SMESHGUI_RotationDlg::isValid()
 {
-  bool ok = true;
-  QString msg;
-
-  ok = SpinBox_X->isValid( msg, true ) && ok;
-  ok = SpinBox_Y->isValid( msg, true ) && ok;
-  ok = SpinBox_Z->isValid( msg, true ) && ok;
-  ok = SpinBox_DX->isValid( msg, true ) && ok;
-  ok = SpinBox_DY->isValid( msg, true ) && ok;
-  ok = SpinBox_DZ->isValid( msg, true ) && ok;
-  ok = SpinBox_Angle->isValid( msg, true ) && ok;
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  return checkParameters( true, 7,
+                          SpinBox_X, SpinBox_Y, SpinBox_Z,
+                          SpinBox_DX, SpinBox_DY, SpinBox_DZ,
+                          SpinBox_Angle );
 }

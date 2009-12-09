@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // Qt includes
 #include <QDialog>
@@ -46,7 +47,7 @@ class LightApp_SelectionMgr;
 // class    : SMESHGUI_MoveNodesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_MoveNodesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MoveNodesDlg : public QDialog, public SMESHGUI_Helper
 { 
   Q_OBJECT
 

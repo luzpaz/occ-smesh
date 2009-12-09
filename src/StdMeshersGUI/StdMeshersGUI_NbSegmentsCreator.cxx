@@ -80,17 +80,17 @@ StdMeshersGUI_NbSegmentsCreator::~StdMeshersGUI_NbSegmentsCreator()
 {
 }
 
-bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg ) const
+bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg, QStringList& absentParams ) const
 {
-  if( !SMESHGUI_GenericHypothesisCreator::checkParams( msg ) )
+  if( !SMESHGUI_GenericHypothesisCreator::checkParams( msg, absentParams ) )
     return false;
   NbSegmentsHypothesisData data_old, data_new;
   readParamsFromHypo( data_old );
   readParamsFromWidgets( data_new );
   bool res = storeParamsToHypo( data_new );
   storeParamsToHypo( data_old );
-  res = myNbSeg->isValid( msg, true ) && res;
-  res = myScale->isValid( msg, true ) && res;
+  res = myNbSeg->isValid( msg, absentParams, true ) && res;
+  res = myScale->isValid( msg, absentParams, true ) && res;
   return res;
 }
 

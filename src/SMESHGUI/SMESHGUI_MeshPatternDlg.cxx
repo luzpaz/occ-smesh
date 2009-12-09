@@ -106,6 +106,7 @@
 //=======================================================================
 SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myBusy( false ),
@@ -413,20 +414,12 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
 {
   if (isRefine())
   {
-    QString msg;
-    bool ok = true;
-    ok = myNode1->isValid( msg, theMess ) && ok;
-    if (myType == Type_3d)
-      ok = myNode2->isValid( msg, theMess ) && ok;
-    if( !ok ) {
-      if( theMess ) {
-        QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-        if ( !msg.isEmpty() )
-          str += "\n" + msg;
-        SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-      }
+    QList<QAbstractSpinBox*> aSpinBoxList;
+    aSpinBoxList << myNode1;
+    if( myType == Type_3d )
+      aSpinBoxList << myNode2;
+    if( !checkParameters( theMess, aSpinBoxList ) )
       return false;
-    }
   }
 
   QList<int> ids;

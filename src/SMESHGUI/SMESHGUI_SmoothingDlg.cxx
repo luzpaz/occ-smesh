@@ -90,6 +90,7 @@
 //=================================================================================
 SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
@@ -826,17 +827,5 @@ void SMESHGUI_SmoothingDlg::setNodeFilters()
 //=================================================================================
 bool SMESHGUI_SmoothingDlg::isValid()
 {
-  QString msg;
-  bool ok = true;
-  ok = SpinBox_IterationLimit->isValid( msg, true ) && ok;
-  ok = SpinBox_AspectRatio->isValid( msg, true ) && ok;
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  return checkParameters( true, 2, SpinBox_IterationLimit, SpinBox_AspectRatio );
 }

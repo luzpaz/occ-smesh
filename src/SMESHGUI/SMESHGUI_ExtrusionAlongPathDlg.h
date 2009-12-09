@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_Helper.h"
 
 // Qt includes
 #include <QDialog>
@@ -59,7 +60,7 @@ class SUIT_SelectionFilter;
 // class    : SMESHGUI_ExtrusionAlongPathDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public QDialog, public SMESHGUI_Helper
 {
   Q_OBJECT
 

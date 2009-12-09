@@ -223,6 +223,7 @@ namespace SMESH
 //=================================================================================
 SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ): 
   QDialog( SMESH::GetDesktop( theModule ) ),
+  SMESHGUI_Helper( theModule ),
   mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
   mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
   mySMESHGUI( theModule )
@@ -610,18 +611,5 @@ void SMESHGUI_NodesDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 bool SMESHGUI_NodesDlg::isValid()
 {
-  QString msg;
-  bool ok = true;
-  ok = SpinBox_X->isValid( msg, true ) && ok;
-  ok = SpinBox_Y->isValid( msg, true ) && ok;
-  ok = SpinBox_Z->isValid( msg, true ) && ok;
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  return checkParameters( true, 3, SpinBox_X, SpinBox_Y, SpinBox_Z );
 }

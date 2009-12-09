@@ -41,7 +41,7 @@ public:
   StdMeshersGUI_StdHypothesisCreator( const QString& );
   virtual ~StdMeshersGUI_StdHypothesisCreator();
 
-  virtual bool checkParams( QString& ) const;
+  virtual bool checkParams( QString&, QStringList& ) const;
 
 protected:
   virtual QFrame*  buildFrame    ();

@@ -86,6 +86,7 @@
 //=================================================================================
 SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg(SMESHGUI* theModule):
   QDialog(SMESH::GetDesktop(theModule)),
+  SMESHGUI_Helper(theModule),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
   mySMESHGUI(theModule)
 {
@@ -281,23 +282,7 @@ bool SMESHGUI_MoveNodesDlg::isValid (const bool theMess)
                                    tr("NODE_ID_IS_NOT_DEFINED"));
     return false;
   }
-
-  QString msg;
-  bool ok = true;
-  ok = myX->isValid( msg, theMess ) && ok;
-  ok = myY->isValid( msg, theMess ) && ok;
-  ok = myZ->isValid( msg, theMess ) && ok;
-  if( !ok ) {
-    if( theMess ) {
-      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-      if ( !msg.isEmpty() )
-        str += "\n" + msg;
-      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    }
-    return false;
-  }
-
-  return true;
+  return checkParameters( theMess, 3, myX, myY, myZ );
 }
 
 //=======================================================================

@@ -88,6 +88,7 @@
 //=================================================================================
 SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   : QDialog( SMESH::GetDesktop( theModule ) ),
+    SMESHGUI_Helper( theModule ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg( 0 ),
@@ -1009,26 +1010,11 @@ void SMESHGUI_ExtrusionDlg::setFilters()
 //=================================================================================
 bool SMESHGUI_ExtrusionDlg::isValid()
 {
-  QString msg;
-  bool ok = true;
-  if ( RadioButton3->isChecked() ) {
-    ok = SpinBox_Dx->isValid( msg, true ) && ok;
-    ok = SpinBox_Dy->isValid( msg, true ) && ok;
-    ok = SpinBox_Dz->isValid( msg, true ) && ok;
-  } else if ( RadioButton4->isChecked() ) {
-    ok = SpinBox_Vx->isValid( msg, true ) && ok;
-    ok = SpinBox_Vy->isValid( msg, true ) && ok;
-    ok = SpinBox_Vz->isValid( msg, true ) && ok;
-    ok = SpinBox_VDist->isValid( msg, true ) && ok;
-  }
-  ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
+  QList<QAbstractSpinBox*> aSpinBoxList;
+  if ( RadioButton3->isChecked() )
+    aSpinBoxList << SpinBox_Dx << SpinBox_Dy << SpinBox_Dz;
+  else if ( RadioButton4->isChecked() )
+    aSpinBoxList << SpinBox_Vx << SpinBox_Vy << SpinBox_Vz;
+  aSpinBoxList << SpinBox_NbSteps;
+  return checkParameters( true, aSpinBoxList );
 }
