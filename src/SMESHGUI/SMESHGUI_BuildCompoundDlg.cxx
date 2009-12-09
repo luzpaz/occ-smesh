@@ -311,7 +311,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
                                                CheckBoxMerge->isChecked(), 
                                                SpinBoxTol->GetValue());
      
-      aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      //asl: aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
       mySMESHGUI->updateObjBrowser();

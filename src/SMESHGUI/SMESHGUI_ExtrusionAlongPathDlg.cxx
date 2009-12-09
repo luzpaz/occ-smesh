@@ -621,8 +621,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     }
 
 
-    if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    //asl: if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
+      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     //wc.stop();
     wc.suspend();

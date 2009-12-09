@@ -475,7 +475,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       aParameters << myNode1->text();
       if(myType == Type_3d )
         aParameters << myNode2->text();
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } else { // Applying a pattern to geometrical object
       if (myType == Type_2d)

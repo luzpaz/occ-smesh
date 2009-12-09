@@ -381,7 +381,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
                                         anIterationLimit, aMaxAspectRatio, aMethod);
       }
 
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } catch (...) {
     }

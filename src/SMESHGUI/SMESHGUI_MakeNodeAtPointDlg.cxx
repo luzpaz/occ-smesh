@@ -414,7 +414,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
       aParameters << myDlg->myX->text();
       aParameters << myDlg->myY->text();
       aParameters << myDlg->myZ->text();
-      aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      //asl: aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       myDlg->myId->setText("");
 

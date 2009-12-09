@@ -1186,7 +1186,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
   if( ok ) {
     QStringList aParameters;
     aParameters << myMaxAngleSpin->text();
-    myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
   }
   return ok;
 }
