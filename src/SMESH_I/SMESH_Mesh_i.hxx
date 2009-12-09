@@ -472,6 +472,21 @@ public:
   virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
   /*!
+   * ...
+   */
+  virtual char* GetEntry();
+
+  /*!
+   * ...
+   */
+  virtual char* GetComponent();
+
+  /*!
+   * ...
+   */
+  virtual CORBA::Boolean IsValid();
+
+  /*!
    * Sets list of notebook variables used for Mesh operations
    */
   virtual void SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters );
@@ -480,6 +495,11 @@ public:
    * Returns list of notebook variables used for Mesh operations
    */
   virtual SALOME::StringArray* GetParameters();
+
+  /*!
+   * ...
+   */
+  virtual void Update( SALOME::Notebook_ptr theNotebook );
 
   /*!
    * Returns statistic of mesh elements

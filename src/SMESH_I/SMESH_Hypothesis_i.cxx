@@ -163,7 +163,7 @@ char* SMESH_Hypothesis_i::GetComponent()
  *  SMESH_Hypothesis_i::IsValid()
  */
 //=============================================================================
-char* SMESH_Hypothesis_i::IsValid()
+CORBA::Boolean SMESH_Hypothesis_i::IsValid()
 {
   return true;
 }

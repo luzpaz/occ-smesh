@@ -3403,7 +3403,7 @@ char* SMESH_Mesh_i::GetComponent()
  * \brief ...
  */
 //=============================================================================
-char* SMESH_Mesh_i::IsValid()
+CORBA::Boolean SMESH_Mesh_i::IsValid()
 {
   return true;
 }
