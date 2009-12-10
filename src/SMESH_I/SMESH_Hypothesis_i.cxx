@@ -176,9 +176,9 @@ CORBA::Boolean SMESH_Hypothesis_i::IsValid()
  *
  */
 //=============================================================================
-//void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
 void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters )
 {
+  theNotebook->ClearDependencies( _this(), SALOME::Parameters );
   std::list<std::string> aParams;
   int n = theParameters.length();
   for( int i=0; i<n; i++ )
