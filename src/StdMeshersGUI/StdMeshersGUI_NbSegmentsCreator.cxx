@@ -88,10 +88,11 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg, QStringList& ab
   NbSegmentsHypothesisData data_old, data_new;
   readParamsFromHypo( data_old );
   readParamsFromWidgets( data_new );
-  bool res = storeParamsToHypo( data_new );
-  storeParamsToHypo( data_old );
+  bool res = true;
   res = myNbSeg->isValid( msg, absentParams, true ) && res;
   res = myScale->isValid( msg, absentParams, true ) && res;
+  res = res && storeParamsToHypo( data_new );
+  res = res && storeParamsToHypo( data_old );
   return res;
 }
 
