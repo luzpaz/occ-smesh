@@ -145,7 +145,9 @@ bool SMESH_Hypothesis_i::IsPublished(){
 //=============================================================================
 char* SMESH_Hypothesis_i::GetEntry()
 {
-  return NULL;
+  char aBuf[100];
+  sprintf( aBuf, "%i", GetId() );
+  return CORBA::string_dup( aBuf );
 }
 
 //=============================================================================
@@ -177,18 +179,11 @@ CORBA::Boolean SMESH_Hypothesis_i::IsValid()
 //void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
 void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters )
 {
-  /*
-  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
-  char * aParameters = CORBA::string_dup(theParameters);
-  if(gen){
-    if(IsPublished()) {
-      SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),aParameters);
-    }
-    else {
-      myBaseImpl->SetParameters(gen->ParseParameters(aParameters));
-    }
-  }
-  */
+  std::list<std::string> aParams;
+  int n = theParameters.length();
+  for( int i=0; i<n; i++ )
+    aParams.push_back( theParameters[i].in() );
+  myBaseImpl->SetParameters( aParams );
 }
 
 //=============================================================================
@@ -200,20 +195,13 @@ void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const 
 //char* SMESH_Hypothesis_i::GetParameters()
 SALOME::StringArray* SMESH_Hypothesis_i::GetParameters()
 {
-  /*
-  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
-  char* aResult;
-  if(IsPublished()) {
-    MESSAGE("SMESH_Hypothesis_i::GetParameters() : Get Parameters from SObject");
-    aResult = gen->GetParameters(SMESH::SMESH_Hypothesis::_narrow(_this()));
-  }
-  else {
-    MESSAGE("SMESH_Hypothesis_i::GetParameters() : Get local parameters");
-    aResult = myBaseImpl->GetParameters(); 
-  }
-  return CORBA::string_dup(aResult);
-  */
-  return NULL;
+  std::list<std::string> aParams = myBaseImpl->GetParameters();
+  SALOME::StringArray_var aRes = new SALOME::StringArray();
+  aRes->length( aParams.size() );
+  std::list<std::string>::const_iterator it = aParams.begin(), last = aParams.end();
+  for( int i=0; it!=last; it++, i++ )
+    aRes[i] = CORBA::string_dup( it->c_str() );
+  return aRes._retn();
 }
 
 //=============================================================================
