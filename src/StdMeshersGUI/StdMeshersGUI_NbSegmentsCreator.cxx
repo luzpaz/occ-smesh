@@ -39,6 +39,7 @@
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_Notebook.h>
 #include <QtxComboBox.h>
 
 // Qt includes
@@ -379,9 +380,9 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
 
-    /* ouv: temporarily disabled
-    h->SetParameters(aVariablesList.join(":").toLatin1().constData());
-    */
+    // temporal workaround
+    StdMeshersGUI_NbSegmentsCreator* that = const_cast<StdMeshersGUI_NbSegmentsCreator*>( this );
+    that->getNotebook()->setParameters( h, aVariablesList );
   }
   catch(const SALOME::SALOME_Exception& ex)
   {

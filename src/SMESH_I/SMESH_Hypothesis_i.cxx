@@ -182,7 +182,14 @@ void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const 
   std::list<std::string> aParams;
   int n = theParameters.length();
   for( int i=0; i<n; i++ )
-    aParams.push_back( theParameters[i].in() );
+  {
+    std::string aParam = CORBA::string_dup( theParameters[i] );
+    aParams.push_back( aParam );
+    
+    SALOME::Parameter_ptr aParamPtr = theNotebook->GetParameter( aParam.c_str() );
+    if( !CORBA::is_nil( aParamPtr ) )
+      theNotebook->AddDependency( _this(), aParamPtr );
+  }
   myBaseImpl->SetParameters( aParams );
 }
 
