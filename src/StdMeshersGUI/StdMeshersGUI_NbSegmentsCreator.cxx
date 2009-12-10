@@ -305,16 +305,16 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
 
   h_data.myNbSeg = (int) h->GetNumberOfSegments();
   
-  SMESH::ListOfParameters_var aParameters = h->GetLastParameters();
+  SALOME::StringArray* aParameters = h->GetParameters();
 
-  h_data.myNbSegVarName  = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+  h_data.myNbSegVarName  = (aParameters->length() > 0) ? QString(aParameters->operator[](0)) : QString("");
 
   int distr = (int) h->GetDistrType();
   h_data.myDistrType = distr;
   h_data.myScale = distr==1 ? h->GetScaleFactor() : 1.0;
   
   if(distr==1){
-    h_data.myScaleVarName  = (aParameters->length() > 1) ? QString(aParameters[1].in()) : QString("");
+    h_data.myScaleVarName  = (aParameters->length() > 1) ? QString(aParameters->operator[](1)) : QString("");
   }
   else 
     h_data.myScaleVarName = QString("");
@@ -379,7 +379,9 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
 
+    /* ouv: temporarily disabled
     h->SetParameters(aVariablesList.join(":").toLatin1().constData());
+    */
   }
   catch(const SALOME::SALOME_Exception& ex)
   {

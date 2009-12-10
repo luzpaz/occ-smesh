@@ -59,7 +59,7 @@ protected:
   virtual QWidget* getWidgetForParam( int paramIndex ) const;
   virtual ListOfWidgets* customWidgets() const;
   virtual void     onReject();
-  virtual bool     initVariableName(SMESH::ListOfParameters_var theParameters, StdParam& theParams, int order) const;
+  virtual bool     initVariableName(SALOME::StringArray* theParameters, StdParam& theParams, int order) const;
 
   virtual void     valueChanged( QWidget* );
 

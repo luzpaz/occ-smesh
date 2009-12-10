@@ -42,6 +42,8 @@
 #include <LightApp_Application.h>
 #include <SalomeApp_Application.h>
 #include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_Notebook.h>
+//#include <SalomeApp_Study.h>
 
 // Qt includes
 #include <QFrame>
@@ -54,7 +56,8 @@
 #define MARGIN  11
 
 SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& theHypType )
-  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
+  : SMESHGUI_Helper( SMESHGUI::GetSMESHGUI() ),
+    myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
 {
 }
 
@@ -193,11 +196,10 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
         break;
       case QVariant::String:
         {
-          /* ouv: temporarily disabled
           if((*anIt).isVariable) {
-            _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
             QString aVar = (*anIt).myValue.toString();
-            if(aStudy->IsInteger(aVar.toLatin1().constData())){
+            QVariant::Type aType = getNotebook()->getType( aVar );
+            if(aType == QVariant::Int) {
               SalomeApp_IntSpinBox* sb = new SalomeApp_IntSpinBox( GroupC1 );
               sb->setObjectName( (*anIt).myName );
               attuneStdWidget( sb, i );
@@ -205,7 +207,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
               connect( sb, SIGNAL( valueChanged( int ) ), this, SLOT( onValueChanged() ) );
               w = sb;
             }
-            else if(aStudy->IsReal(aVar.toLatin1().constData())){
+            else if( aType == QVariant::Double ) {
               SalomeApp_DoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
               sb->setObjectName( (*anIt).myName );
               attuneStdWidget( sb, i );
@@ -215,14 +217,13 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
             }
           }
           else {
-          */
             QLineEdit* le = new QLineEdit( GroupC1 );
             le->setObjectName( (*anIt).myName );
             attuneStdWidget( le, i );
             le->setText( (*anIt).myValue.toString() );
             connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
             w = le;
-          //}
+          }
         }
         break;
       }

@@ -29,6 +29,7 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 #include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_Helper.h"
 
 // Qt includes
 #include <QtxDialog.h>
@@ -43,7 +44,7 @@ class QEventLoop;
 /*!
  * \brief Auxiliary class for creation of hypotheses
 */
-class SMESHGUI_EXPORT SMESHGUI_GenericHypothesisCreator : public QObject
+class SMESHGUI_EXPORT SMESHGUI_GenericHypothesisCreator : public QObject, public SMESHGUI_Helper
 {
   Q_OBJECT
 
