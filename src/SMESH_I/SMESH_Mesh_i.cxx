@@ -3380,7 +3380,7 @@ void SMESH_Mesh_i::checkGroupNames()
 
 //=============================================================================
 /*!
- * \brief ...
+ * \brief Get internal entry of mesh
  */
 //=============================================================================
 char* SMESH_Mesh_i::GetEntry()
@@ -3390,7 +3390,7 @@ char* SMESH_Mesh_i::GetEntry()
 
 //=============================================================================
 /*!
- * \brief ...
+ * \brief Get name of the component
  */
 //=============================================================================
 char* SMESH_Mesh_i::GetComponent()
@@ -3400,7 +3400,7 @@ char* SMESH_Mesh_i::GetComponent()
 
 //=============================================================================
 /*!
- * \brief ...
+ * \brief Get validity status of mesh
  */
 //=============================================================================
 CORBA::Boolean SMESH_Mesh_i::IsValid()
@@ -3429,10 +3429,19 @@ SALOME::StringArray* SMESH_Mesh_i::GetParameters()
 
 //=============================================================================
 /*!
- * \brief ...
+ * \brief Update mesh according to the SALOME Notebook
  */
 //=============================================================================
 void SMESH_Mesh_i::Update( SALOME::Notebook_ptr theNotebook )
+{
+}
+
+//=============================================================================
+/*!
+ * \brief Update string attribute of mesh
+ */
+//=============================================================================
+void SMESH_Mesh_i::UpdateStringAttribute()
 {
 }
 

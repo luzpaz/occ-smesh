@@ -505,6 +505,9 @@ public:
    */
   SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
 
+  SALOMEDS::Study_ptr GetStudy(CORBA::Long theStudyID);
+  SALOME::Notebook_ptr GetNotebook(CORBA::Long theStudyID);
+
 private:
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,

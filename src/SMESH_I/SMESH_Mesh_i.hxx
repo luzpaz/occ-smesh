@@ -472,17 +472,17 @@ public:
   virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
   /*!
-   * ...
+   * Get internal entry of mesh
    */
   virtual char* GetEntry();
 
   /*!
-   * ...
+   * Get name of the component
    */
   virtual char* GetComponent();
 
   /*!
-   * ...
+   * Get validity status of mesh
    */
   virtual CORBA::Boolean IsValid();
 
@@ -497,9 +497,14 @@ public:
   virtual SALOME::StringArray* GetParameters();
 
   /*!
-   * ...
+   * Update mesh according to the SALOME Notebook
    */
   virtual void Update( SALOME::Notebook_ptr theNotebook );
+
+  /*!
+   * Update string attribute of mesh
+   */
+  virtual void UpdateStringAttribute();
 
   /*!
    * Returns statistic of mesh elements

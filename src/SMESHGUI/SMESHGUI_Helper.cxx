@@ -37,19 +37,14 @@
 #include <SalomeApp_IntSpinBox.h>
 #include <SalomeApp_Notebook.h>
 
-// IDL includes
-//#include <SALOMEconfig.h>
-//#include CORBA_SERVER_HEADER(SMESH_Mesh)
-//#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
-
 //=================================================================================
 // name    : SMESHGUI_Helper::SMESHGUI_Helper
 // Purpose :
 //=================================================================================
 SMESHGUI_Helper::SMESHGUI_Helper( SMESHGUI* theModule ) :
-  mySMESHGUI( theModule ),
-  myNotebook( 0 )
+  mySMESHGUI( theModule )
 {
+  myNotebook = new SalomeApp_Notebook( mySMESHGUI->activeStudy() );
 }
 
 //=======================================================================
@@ -129,9 +124,7 @@ bool SMESHGUI_Helper::checkParameters( bool theMess, const QList<QAbstractSpinBo
 // Function : getNotebook
 // Purpose  :
 //================================================================
-SalomeApp_Notebook* SMESHGUI_Helper::getNotebook()
+SalomeApp_Notebook* SMESHGUI_Helper::getNotebook() const
 {
-  if ( !myNotebook )
-    myNotebook = new SalomeApp_Notebook( mySMESHGUI->activeStudy() );
   return myNotebook;
 }

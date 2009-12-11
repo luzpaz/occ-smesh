@@ -91,8 +91,8 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg, QStringList& ab
   bool res = true;
   res = myNbSeg->isValid( msg, absentParams, true ) && res;
   res = myScale->isValid( msg, absentParams, true ) && res;
-  res = res && storeParamsToHypo( data_new );
-  res = res && storeParamsToHypo( data_old );
+  res = res && storeParamsToHypo( data_new, true );
+  storeParamsToHypo( data_old, true );
   return res;
 }
 
@@ -342,7 +342,7 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
   return true;
 }
 
-bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothesisData& h_data ) const
+bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothesisData& h_data, bool isOnlyCheck ) const
 {
   StdMeshers::StdMeshers_NumberOfSegments_var h =
     StdMeshers::StdMeshers_NumberOfSegments::_narrow( hypothesis() );
@@ -381,9 +381,8 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
 
-    // temporal workaround
-    StdMeshersGUI_NbSegmentsCreator* that = const_cast<StdMeshersGUI_NbSegmentsCreator*>( this );
-    that->getNotebook()->setParameters( h, aVariablesList );
+    if( !isOnlyCheck )
+      getNotebook()->setParameters( h, aVariablesList );
   }
   catch(const SALOME::SALOME_Exception& ex)
   {

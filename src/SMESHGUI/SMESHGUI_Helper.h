@@ -52,7 +52,7 @@ protected:
   bool                checkParameters( bool, int, QAbstractSpinBox*, ... );
   bool                checkParameters( bool, const QList<QAbstractSpinBox*>& );
 
-  SalomeApp_Notebook* getNotebook();
+  SalomeApp_Notebook* getNotebook() const;
 
 private:
   SMESHGUI*           mySMESHGUI;

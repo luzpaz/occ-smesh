@@ -40,8 +40,6 @@ module SMESH
     DIM_3D
   };
   
-  typedef sequence<string> ListOfParameters;
-
   interface SMESH_Hypothesis : SALOME::ParameterizedObject
   {
     

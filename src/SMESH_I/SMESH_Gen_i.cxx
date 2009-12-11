@@ -4341,6 +4341,29 @@ int SMESH_Gen_i::GetCurrentStudyID()
   return myCurrentStudy->_is_nil() || myCurrentStudy->_non_existent() ? -1 : myCurrentStudy->StudyId();
 }
     
+//=================================================================================
+// function : GetStudy()
+// purpose  : Returns a pointer to SALOMEDS Study object by its id
+//=================================================================================
+SALOMEDS::Study_ptr SMESH_Gen_i::GetStudy(CORBA::Long theStudyID)
+{
+  CORBA::Object_var aSMObject = GetNS()->Resolve( "/myStudyManager" );
+  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow( aSMObject );
+  SALOMEDS::Study_var aStudy = aStudyManager->GetStudyByID( theStudyID );
+  return aStudy._retn();
+}
+
+//=================================================================================
+// function : GetNotebook()
+// purpose  : Returns a pointer to SALOME Notebook object by an id of the study
+//=================================================================================
+SALOME::Notebook_ptr SMESH_Gen_i::GetNotebook( CORBA::Long theStudyID )
+{
+  SALOMEDS::Study_ptr aStudy = GetStudy( theStudyID );
+  SALOME::Notebook_var aNotebook = aStudy->GetNotebook();
+  return aNotebook._retn();
+}
+
 //=============================================================================
 /*! 
  *  SMESHEngine_factory

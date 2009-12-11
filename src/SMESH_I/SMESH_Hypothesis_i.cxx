@@ -191,6 +191,8 @@ void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const 
       theNotebook->AddDependency( _this(), aParamPtr );
   }
   myBaseImpl->SetParameters( aParams );
+
+  UpdateStringAttribute();
 }
 
 //=============================================================================
@@ -199,7 +201,6 @@ void SMESH_Hypothesis_i::SetParameters( SALOME::Notebook_ptr theNotebook, const 
  *
  */
 //=============================================================================
-//char* SMESH_Hypothesis_i::GetParameters()
 SALOME::StringArray* SMESH_Hypothesis_i::GetParameters()
 {
   std::list<std::string> aParams = myBaseImpl->GetParameters();
@@ -219,6 +220,46 @@ SALOME::StringArray* SMESH_Hypothesis_i::GetParameters()
 //=============================================================================
 void SMESH_Hypothesis_i::Update( SALOME::Notebook_ptr theNotebook )
 {
+}
+
+//=============================================================================
+/*!
+ * SMESH_Hypothesis_i::UpdateStringAttribute()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::UpdateStringAttribute()
+{
+  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+
+  SALOME::Notebook_ptr aNotebook = aSMESHGen->GetNotebook( myBaseImpl->GetStudyId() );
+
+  SALOME::StringArray* anObjectParameters = aNotebook->GetObjectParameters( GetComponent(), GetEntry() );
+  int aParametersLength = anObjectParameters ? anObjectParameters->length() : 0;
+  if( aParametersLength == 0 )
+    return;
+
+  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetStudy( myBaseImpl->GetStudyId() );
+  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+  SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject( aStudy, SMESH::SMESH_Hypothesis::_narrow( _this() ) );
+  if( CORBA::is_nil( aSObject ) )
+    return;
+
+  SALOMEDS::GenericAttribute_var anAttr = aStudyBuilder->FindOrCreateAttribute( aSObject, "AttributeString" );
+  SALOMEDS::AttributeString_var aStringAttrib = SALOMEDS::AttributeString::_narrow( anAttr );
+
+  std::string aString;
+  for( int i = 0, n = anObjectParameters->length(); i < n; i++ ) {
+    std::string aParameter = anObjectParameters->operator[](i).in();
+    if( aParameter != "" )
+    {
+      if( aString != "" )
+        aString += ", ";
+      aString += aParameter;
+    }
+  }
+  aStringAttrib->SetValue( aString.c_str() );
+  aStringAttrib->Destroy();
 }
 
 //=============================================================================

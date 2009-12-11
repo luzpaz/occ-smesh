@@ -77,7 +77,7 @@ protected slots:
 private:
   bool readParamsFromHypo( NbSegmentsHypothesisData& ) const;
   bool readParamsFromWidgets( NbSegmentsHypothesisData& ) const;
-  bool storeParamsToHypo( const NbSegmentsHypothesisData& ) const;
+  bool storeParamsToHypo( const NbSegmentsHypothesisData&, bool = false ) const;
 
 private:
   SalomeApp_IntSpinBox*   myNbSeg;

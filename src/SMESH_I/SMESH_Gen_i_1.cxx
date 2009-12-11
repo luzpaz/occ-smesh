@@ -749,6 +749,9 @@ SALOMEDS::SObject_ptr
     SetName( aHypSO, theName, aHypName );
   }
 
+  if( SMESH_Hypothesis_i* aServant = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( theHyp ).in() ) )
+    aServant->UpdateStringAttribute();
+
   if(MYDEBUG) MESSAGE("PublishHypothesis--END")
   return aHypSO._retn();
 }
