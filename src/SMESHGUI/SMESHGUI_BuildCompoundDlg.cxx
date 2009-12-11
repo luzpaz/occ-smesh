@@ -39,6 +39,7 @@
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
 #include <SalomeApp_Study.h>
+#include <SalomeApp_Notebook.h>
 #include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
@@ -293,8 +294,6 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   SMESH::SMESH_Mesh_var aCompoundMesh;
 
   if (!myMesh->_is_nil()) {
-    QStringList aParameters;
-    aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
     try {
       SUIT_OverrideCursor aWaitCursor;
 
@@ -311,7 +310,8 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
                                                CheckBoxMerge->isChecked(), 
                                                SpinBoxTol->GetValue());
      
-      //asl: aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      if( CheckBoxMerge->isChecked() )
+        getNotebook()->setParameters( aCompoundMesh, 1, SpinBoxTol );
 
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
       mySMESHGUI->updateObjBrowser();

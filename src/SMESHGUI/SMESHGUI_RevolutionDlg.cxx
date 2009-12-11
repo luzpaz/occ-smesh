@@ -50,6 +50,7 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Application.h>
+#include <SalomeApp_Notebook.h>
 #include <SalomeApp_IntSpinBox.h>
 
 #include <SVTK_ViewWindow.h>
@@ -503,17 +504,6 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     if ( GroupAngle->checkedId() == 1 )
       anAngle = anAngle/aNbSteps;
 
-    QStringList aParameters;
-    aParameters << SpinBox_X->text();
-    aParameters << SpinBox_Y->text();
-    aParameters << SpinBox_Z->text();
-    aParameters << SpinBox_DX->text();
-    aParameters << SpinBox_DY->text();
-    aParameters << SpinBox_DZ->text();
-    aParameters << SpinBox_Angle->text();
-    aParameters << SpinBox_NbSteps->text();
-    aParameters << SpinBox_Tolerance->text();
-
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
@@ -545,7 +535,10 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
           aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
       }
 
-      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      getNotebook()->setParameters( myMesh, 9,
+                                    SpinBox_X, SpinBox_Y, SpinBox_Z,
+                                    SpinBox_DX, SpinBox_DY, SpinBox_DZ,
+                                    SpinBox_Angle, SpinBox_NbSteps, SpinBox_Tolerance );
     } catch (...) {
     }
 

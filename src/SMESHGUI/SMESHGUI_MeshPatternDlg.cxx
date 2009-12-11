@@ -49,6 +49,7 @@
 #include <SUIT_MessageBox.h>
 
 #include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Notebook.h>
 #include <SalomeApp_Tools.h>
 #include <LightApp_Application.h>
 #include <SalomeApp_IntSpinBox.h>
@@ -475,7 +476,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       aParameters << myNode1->text();
       if(myType == Type_3d )
         aParameters << myNode2->text();
-      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      getNotebook()->setParameters( myMesh, aParameters );
 
     } else { // Applying a pattern to geometrical object
       if (myType == Type_2d)

@@ -248,6 +248,9 @@ public:
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
+  void SetParameters(const std::list<std::string>& theParameters);
+  std::list<std::string> GetParameters() const;
+
   //
   
   ostream& Dump(ostream & save);
@@ -273,6 +276,9 @@ protected:
   double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
+
+private:
+  std::list<std::string>     _parameters;
 
 protected:
   SMESH_Mesh() {};

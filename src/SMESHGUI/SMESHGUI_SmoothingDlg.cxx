@@ -50,6 +50,7 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_Notebook.h>
 #include <SalomeApp_IntSpinBox.h>
 
 #include <SVTK_ViewModel.h>
@@ -351,10 +352,6 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     long anIterationLimit = (long)SpinBox_IterationLimit->value();
     double aMaxAspectRatio = SpinBox_AspectRatio->GetValue();
 
-    QStringList aParameters;
-    aParameters << SpinBox_IterationLimit->text();
-    aParameters << SpinBox_AspectRatio->text();
-
     SMESH::SMESH_MeshEditor::Smooth_Method aMethod = SMESH::SMESH_MeshEditor::LAPLACIAN_SMOOTH;
     if (ComboBoxMethod->currentIndex() > 0)
       aMethod =  SMESH::SMESH_MeshEditor::CENTROIDAL_SMOOTH;
@@ -381,7 +378,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
                                         anIterationLimit, aMaxAspectRatio, aMethod);
       }
 
-      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      getNotebook()->setParameters( myMesh, 2, SpinBox_IterationLimit, SpinBox_AspectRatio );
 
     } catch (...) {
     }

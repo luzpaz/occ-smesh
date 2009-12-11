@@ -3385,7 +3385,9 @@ void SMESH_Mesh_i::checkGroupNames()
 //=============================================================================
 char* SMESH_Mesh_i::GetEntry()
 {
-  return NULL;
+  char aBuf[100];
+  sprintf( aBuf, "%i", GetId() );
+  return CORBA::string_dup( aBuf );
 }
 
 //=============================================================================
@@ -3415,6 +3417,21 @@ CORBA::Boolean SMESH_Mesh_i::IsValid()
 //=============================================================================
 void SMESH_Mesh_i::SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME::StringArray& theParameters )
 {
+  theNotebook->ClearDependencies( _this(), SALOME::Parameters );
+  std::list<std::string> aParams;
+  int n = theParameters.length();
+  for( int i=0; i<n; i++ )
+  {
+    std::string aParam = CORBA::string_dup( theParameters[i] );
+    aParams.push_back( aParam );
+    
+    SALOME::Parameter_ptr aParamPtr = theNotebook->GetParameter( aParam.c_str() );
+    if( !CORBA::is_nil( aParamPtr ) )
+      theNotebook->AddDependency( _this(), aParamPtr );
+  }
+  _impl->SetParameters( aParams );
+
+  UpdateStringAttribute();
 }
 
 //=============================================================================
@@ -3424,7 +3441,13 @@ void SMESH_Mesh_i::SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME
 //=============================================================================
 SALOME::StringArray* SMESH_Mesh_i::GetParameters()
 {
-  return NULL;
+  std::list<std::string> aParams = _impl->GetParameters();
+  SALOME::StringArray_var aRes = new SALOME::StringArray();
+  aRes->length( aParams.size() );
+  std::list<std::string>::const_iterator it = aParams.begin(), last = aParams.end();
+  for( int i=0; it!=last; it++, i++ )
+    aRes[i] = CORBA::string_dup( it->c_str() );
+  return aRes._retn();
 }
 
 //=============================================================================
@@ -3443,6 +3466,36 @@ void SMESH_Mesh_i::Update( SALOME::Notebook_ptr theNotebook )
 //=============================================================================
 void SMESH_Mesh_i::UpdateStringAttribute()
 {
+  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+
+  SALOME::Notebook_ptr aNotebook = aSMESHGen->GetNotebook( GetStudyId() );
+
+  SALOME::StringArray* anObjectParameters = aNotebook->GetObjectParameters( GetComponent(), GetEntry() );
+  int aParametersLength = anObjectParameters ? anObjectParameters->length() : 0;
+  if( aParametersLength == 0 )
+    return;
+
+  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetStudy( GetStudyId() );
+  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+  SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject( aStudy, SMESH::SMESH_Mesh::_narrow( _this() ) );
+  if( CORBA::is_nil( aSObject ) )
+    return;
+
+  SALOMEDS::GenericAttribute_var anAttr = aStudyBuilder->FindOrCreateAttribute( aSObject, "AttributeString" );
+  SALOMEDS::AttributeString_var aStringAttrib = SALOMEDS::AttributeString::_narrow( anAttr );
+
+  std::string aString;
+  for( int i = 0, n = anObjectParameters->length(); i < n; i++ ) {
+    std::string aParameter = anObjectParameters->operator[](i).in();
+    if( aParameter != "" )
+    {
+      if( aString != "" )
+        aString += ", ";
+      aString += aParameter;
+    }
+  }
+  aStringAttrib->SetValue( aString.c_str() );
+  aStringAttrib->Destroy();
 }
 
 //=============================================================================

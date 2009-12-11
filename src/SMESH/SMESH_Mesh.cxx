@@ -1580,3 +1580,20 @@ SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
   return aGroup;
 }
 
+//=======================================================================
+//function : SetParameters
+//purpose  : 
+//=======================================================================
+void SMESH_Mesh::SetParameters(const std::list<std::string>& theParameters)
+{
+  _parameters = theParameters;
+}
+
+//=======================================================================
+//function : GetParameters
+//purpose  : 
+//=======================================================================
+std::list<std::string> SMESH_Mesh::GetParameters() const
+{
+  return _parameters;
+}

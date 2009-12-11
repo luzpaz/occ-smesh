@@ -46,6 +46,7 @@
 #include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SVTK_ViewModel.h>
+#include <SalomeApp_Notebook.h>
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_TypeFilter.h>
 #include <SUIT_ResourceMgr.h>
@@ -410,11 +411,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     }
     if (aResult)
     {
-      QStringList aParameters;
-      aParameters << myDlg->myX->text();
-      aParameters << myDlg->myY->text();
-      aParameters << myDlg->myZ->text();
-      //asl: aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      getNotebook()->setParameters( aMesh, 3, myDlg->myX, myDlg->myY, myDlg->myZ );
 
       myDlg->myId->setText("");
 

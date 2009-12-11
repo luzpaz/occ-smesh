@@ -49,6 +49,8 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_Notebook.h>
+
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
@@ -500,8 +502,8 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         else
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
         
-        //asl: if( !myMesh->_is_nil())
-          //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          getNotebook()->setParameters( myMesh, aParameters );
         break;
       }
       case COPY_ELEMS_BUTTON: {
@@ -518,8 +520,8 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           else
             aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
         }
-        //asl: if( !myMesh->_is_nil())
-          //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          getNotebook()->setParameters( myMesh, aParameters );
         break;
         }
       case MAKE_MESH_BUTTON: {
@@ -530,8 +532,8 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         else
           mesh = aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-        //asl: if( !mesh->_is_nil())
-          //asl: mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !mesh->_is_nil())
+          getNotebook()->setParameters( mesh, aParameters );
         break;
       }
       }

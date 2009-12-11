@@ -49,6 +49,8 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_Notebook.h>
+
 #include <SVTK_ViewWindow.h>
 #include <VTKViewer_Algorithm.h>
 #include <VTKViewer_CellLocationsArray.h>
@@ -88,14 +90,15 @@
 
 namespace SMESH
 {
-  void AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z, const QStringList& theParameters )
+  void AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z,
+                SalomeApp_Notebook* theNotebook, const QStringList& theParameters )
   {
     SUIT_OverrideCursor wc;
     try {
       _PTR(SObject) aSobj = SMESH::FindSObject( theMesh );
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
       aMeshEditor->AddNode( x, y, z );
-      //asl: theMesh->SetParameters( theParameters.join(":").toLatin1().constData() );
+      theNotebook->setParameters( theMesh, theParameters );
       _PTR(Study) aStudy = GetActiveStudyDocument();
       CORBA::Long anId = aStudy->StudyId();
       if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( anId, aSobj->GetID().c_str() ) ) {
@@ -417,7 +420,7 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
   aParameters << SpinBox_Z->text();
 
   mySimulation->SetVisibility( false );
-  SMESH::AddNode( myMesh, x, y, z, aParameters );
+  SMESH::AddNode( myMesh, x, y, z, getNotebook(), aParameters );
   SMESH::SetPointRepresentation( true );
 
   // select myMesh

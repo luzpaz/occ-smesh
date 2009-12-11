@@ -46,6 +46,7 @@
 
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_Application.h>
+#include <SalomeApp_Notebook.h>
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
 
@@ -1184,9 +1185,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
   double aMaxAngle = myMaxAngleSpin->GetValue() * PI / 180.0;
   bool ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
   if( ok ) {
-    QStringList aParameters;
-    aParameters << myMaxAngleSpin->text();
-    //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    getNotebook()->setParameters( myMesh, 1, myMaxAngleSpin );
   }
   return ok;
 }

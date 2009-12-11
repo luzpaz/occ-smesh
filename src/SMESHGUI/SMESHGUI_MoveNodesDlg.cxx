@@ -39,6 +39,7 @@
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_Application.h>
+#include <SalomeApp_Notebook.h>
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
@@ -326,12 +327,7 @@ bool SMESHGUI_MoveNodesDlg::onApply()
   bool aResult = false;
   try {
     aResult = aMeshEditor->MoveNode(anId, myX->GetValue(), myY->GetValue(), myZ->GetValue());
-
-    QStringList aParameters;
-    aParameters << myX->text();
-    aParameters << myY->text();
-    aParameters << myZ->text();
-    //asl: aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    getNotebook()->setParameters( aMesh, 3, myX, myY, myZ );
   } catch (...) {
   }
 

@@ -49,6 +49,8 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_Notebook.h>
+
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
@@ -415,8 +417,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, false);
         else
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
-        //asl: if( !myMesh->_is_nil())
-          //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          getNotebook()->setParameters( myMesh, aParameters );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -432,8 +434,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           else 
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
         }
-        //asl: if( !myMesh->_is_nil())
-          //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          getNotebook()->setParameters( myMesh, aParameters );
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh;
@@ -443,8 +445,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         else 
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-        //asl: if( !mesh->_is_nil())
-          //asl: mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !mesh->_is_nil())
+          getNotebook()->setParameters( mesh, aParameters );
       }
     } catch (...) {
     }

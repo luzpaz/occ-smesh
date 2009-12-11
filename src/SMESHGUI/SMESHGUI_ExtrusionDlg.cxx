@@ -53,6 +53,7 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 
+#include <SalomeApp_Notebook.h>
 #include <SalomeApp_IntSpinBox.h>
 
 // OCCT includes
@@ -559,7 +560,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
           aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
       }
 
-      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      getNotebook()->setParameters( myMesh, aParameters );
 
     } catch (...) {
     }

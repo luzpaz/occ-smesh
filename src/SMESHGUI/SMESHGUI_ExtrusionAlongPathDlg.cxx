@@ -54,6 +54,8 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_Notebook.h>
+
 #include <SVTK_ViewWindow.h>
 
 // OCCT includes
@@ -621,8 +623,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     }
 
 
-    //asl: if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
-      //asl: myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
+      getNotebook()->setParameters( myMesh, aParameters );
 
     //wc.stop();
     wc.suspend();
