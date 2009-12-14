@@ -382,6 +382,11 @@ def ParseAngles(list):
     Parameters = Parameters[:len(Parameters)-1]
     return Result, Parameters
     
+## Wrapper for SetParameters method
+def SetParameters( obj, params ):
+    #obj.SetParameters( notebook.getNotebook(), params )
+    pass
+
 def IsEqual(val1, val2, tol=PrecisionConfusion):
     if abs(val1 - val2) < tol:
         return True
@@ -651,7 +656,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         else:
             aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
-        aSmeshMesh.SetParameters(Parameters)
+        SetParameters(aSmeshMesh, Parameters)
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
@@ -2039,7 +2044,7 @@ class Mesh:
     #  @ingroup l2_modif_add
     def AddNode(self, x, y, z):
         x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         return self.editor.AddNode( x, y, z)
 
     ## Creates a 0D element on a node with given number.
@@ -2203,7 +2208,7 @@ class Mesh:
     #  @ingroup l2_modif_movenode
     def MoveNode(self, NodeID, x, y, z):
         x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         return self.editor.MoveNode(NodeID, x, y, z)
 
     ## Finds the node closest to a point and moves it to a point location
@@ -2216,7 +2221,7 @@ class Mesh:
     #  @ingroup l2_modif_throughp
     def MoveClosestNodeToPoint(self, x, y, z, NodeID):
         x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         return self.editor.MoveClosestNodeToPoint(x, y, z, NodeID)
 
     ## Finds the node closest to a point
@@ -2304,7 +2309,7 @@ class Mesh:
             MaxAngle = DegreesToRadians(MaxAngle)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         Functor = 0
 	if ( isinstance( theCriterion, SMESH._objref_NumericalFunctor ) ):
             Functor = theCriterion
@@ -2529,7 +2534,7 @@ class Mesh:
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         MaxNbOfIterations,MaxAspectRatio,Parameters = geompyDC.ParseParameters(MaxNbOfIterations,MaxAspectRatio)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         return self.editor.Smooth(IDsOfElements, IDsOfFixedNodes,
                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
@@ -2563,7 +2568,7 @@ class Mesh:
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         MaxNbOfIterations,MaxAspectRatio,Parameters = geompyDC.ParseParameters(MaxNbOfIterations,MaxAspectRatio)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         return self.editor.SmoothParametric(IDsOfElements, IDsOfFixedNodes,
                                             MaxNbOfIterations, MaxAspectRatio, Method)
 
@@ -2641,7 +2646,7 @@ class Mesh:
             AngleInRadians /= NbOfSteps
         NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
         Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.RotationSweepMakeGroups(IDsOfElements, Axis,
                                                        AngleInRadians, NbOfSteps, Tolerance)
@@ -2676,7 +2681,7 @@ class Mesh:
             AngleInRadians /= NbOfSteps
         NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
         Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObjectMakeGroups(theObject, Axis, AngleInRadians,
                                                              NbOfSteps, Tolerance)
@@ -2711,7 +2716,7 @@ class Mesh:
             AngleInRadians /= NbOfSteps
         NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
         Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObject1DMakeGroups(theObject, Axis, AngleInRadians,
                                                                NbOfSteps, Tolerance)
@@ -2746,7 +2751,7 @@ class Mesh:
             AngleInRadians /= NbOfSteps
         NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
         Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObject2DMakeGroups(theObject, Axis, AngleInRadians,
                                                              NbOfSteps, Tolerance)
@@ -2768,7 +2773,7 @@ class Mesh:
         StepVector,StepVectorParameters = ParseDirStruct(StepVector)
         NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
         Parameters = StepVectorParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
         self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
@@ -2810,7 +2815,7 @@ class Mesh:
         StepVector,StepVectorParameters = ParseDirStruct(StepVector)
         NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
         Parameters = StepVectorParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
@@ -2831,7 +2836,7 @@ class Mesh:
         StepVector,StepVectorParameters = ParseDirStruct(StepVector)
         NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
         Parameters = StepVectorParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObject1DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject1D(theObject, StepVector, NbOfSteps)
@@ -2852,7 +2857,7 @@ class Mesh:
         StepVector,StepVectorParameters = ParseDirStruct(StepVector)
         NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
         Parameters = StepVectorParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObject2DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject2D(theObject, StepVector, NbOfSteps)
@@ -2887,7 +2892,7 @@ class Mesh:
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
         Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
 
         if isinstance(Base,list):
             IDsOfElements = []
@@ -2939,7 +2944,7 @@ class Mesh:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
         Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh,
                                                             PathShape, NodeStart, HasAngles,
@@ -2980,7 +2985,7 @@ class Mesh:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
         Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh,
                                                                   PathShape, NodeStart, HasAngles,
@@ -3022,7 +3027,7 @@ class Mesh:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
         Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObject1DMakeGroups(theObject, PathMesh,
                                                                     PathShape, NodeStart, HasAngles,
@@ -3064,7 +3069,7 @@ class Mesh:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
         Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObject2DMakeGroups(theObject, PathMesh,
                                                                     PathShape, NodeStart, HasAngles,
@@ -3088,7 +3093,7 @@ class Mesh:
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         Mirror,Parameters = ParseAxisStruct(Mirror)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorMakeGroups(IDsOfElements, Mirror, theMirrorType)
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
@@ -3111,7 +3116,7 @@ class Mesh:
         Mirror,Parameters = ParseAxisStruct(Mirror)
         mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
                                           MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        SetParameters(mesh, Parameters)
         return Mesh(self.smeshpyD,self.geompyD,mesh)
 
     ## Creates a symmetrical copy of the object
@@ -3129,7 +3134,7 @@ class Mesh:
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         Mirror,Parameters = ParseAxisStruct(Mirror)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorObjectMakeGroups(theObject, Mirror, theMirrorType)
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
@@ -3152,7 +3157,7 @@ class Mesh:
         Mirror,Parameters = ParseAxisStruct(Mirror)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
                                                 MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        SetParameters(mesh, Parameters)
         return Mesh( self.smeshpyD,self.geompyD,mesh )
 
     ## Translates the elements
@@ -3168,7 +3173,7 @@ class Mesh:
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         Vector,Parameters = ParseDirStruct(Vector)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateMakeGroups(IDsOfElements, Vector)
         self.editor.Translate(IDsOfElements, Vector, Copy)
@@ -3188,7 +3193,7 @@ class Mesh:
             Vector = self.smeshpyD.GetDirStruct(Vector)
         Vector,Parameters = ParseDirStruct(Vector)
         mesh = self.editor.TranslateMakeMesh(IDsOfElements, Vector, MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        SetParameters(mesh, Parameters)
         return Mesh ( self.smeshpyD, self.geompyD, mesh )
 
     ## Translates the object
@@ -3204,7 +3209,7 @@ class Mesh:
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         Vector,Parameters = ParseDirStruct(Vector)
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateObjectMakeGroups(theObject, Vector)
         self.editor.TranslateObject(theObject, Vector, Copy)
@@ -3224,7 +3229,7 @@ class Mesh:
             Vector = self.smeshpyD.GetDirStruct(Vector)
         Vector,Parameters = ParseDirStruct(Vector)
         mesh = self.editor.TranslateObjectMakeMesh(theObject, Vector, MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        SetParameters(mesh, Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Rotates the elements
@@ -3248,7 +3253,7 @@ class Mesh:
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         Axis,AxisParameters = ParseAxisStruct(Axis)
         Parameters = AxisParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateMakeGroups(IDsOfElements, Axis, AngleInRadians)
         self.editor.Rotate(IDsOfElements, Axis, AngleInRadians, Copy)
@@ -3277,7 +3282,7 @@ class Mesh:
         Parameters = AxisParameters + var_separator + Parameters
         mesh = self.editor.RotateMakeMesh(IDsOfElements, Axis, AngleInRadians,
                                           MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        SetParameters(mesh, Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Rotates the object
@@ -3301,7 +3306,7 @@ class Mesh:
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         Axis,AxisParameters = ParseAxisStruct(Axis)
         Parameters = AxisParameters + ":" + Parameters
-        self.mesh.SetParameters(Parameters)
+        SetParameters(self.mesh, Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateObjectMakeGroups(theObject, Axis, AngleInRadians)
         self.editor.RotateObject(theObject, Axis, AngleInRadians, Copy)
@@ -3330,7 +3335,7 @@ class Mesh:
         Parameters = AxisParameters + ":" + Parameters
         mesh = self.editor.RotateObjectMakeMesh(theObject, Axis, AngleInRadians,
                                                        MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        SetParameters(mesh, Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Finds groups of ajacent nodes within Tolerance.
@@ -5130,15 +5135,15 @@ class LocalLength(StdMeshers._objref_StdMeshers_LocalLength):
     ## Set Length parameter value
     #  @param length numerical value or name of variable from notebook
     def SetLength(self, length):
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,1,length)
-        StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetParameters(self),2,1,length)
+        #StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_LocalLength.SetLength(self,length)
 
    ## Set Precision parameter value
    #  @param precision numerical value or name of variable from notebook
     def SetPrecision(self, precision):
-        precision,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,2,precision)
-        StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
+        precision,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetParameters(self),2,2,precision)
+        #StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_LocalLength.SetPrecision(self, precision)
 
 #Registering the new proxy for LocalLength
@@ -5149,8 +5154,8 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryI
 class LayerDistribution(StdMeshers._objref_StdMeshers_LayerDistribution):
     
     def SetLayerDistribution(self, hypo):
-        StdMeshers._objref_StdMeshers_LayerDistribution.SetParameters(self,hypo.GetParameters())
-        hypo.ClearParameters();
+        #StdMeshers._objref_StdMeshers_LayerDistribution.SetParameters(self,hypo.GetParameters())
+        #hypo.ClearParameters();
         StdMeshers._objref_StdMeshers_LayerDistribution.SetLayerDistribution(self,hypo)
 
 #Registering the new proxy for LayerDistribution
@@ -5162,8 +5167,8 @@ class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroun
     ## Set Length parameter value
     #  @param length numerical value or name of variable from notebook    
     def SetLength(self, length):
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.GetLastParameters(self),1,1,length)
-        StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetParameters(self,parameters)
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.GetParameters(self),1,1,length)
+        #StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetLength(self,length)
 
 #Registering the new proxy for SegmentLengthAroundVertex
@@ -5180,8 +5185,8 @@ class Arithmetic1D(StdMeshers._objref_StdMeshers_Arithmetic1D):
         nb = 2
         if isStart:
             nb = 1
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetLastParameters(self),2,nb,length)
-        StdMeshers._objref_StdMeshers_Arithmetic1D.SetParameters(self,parameters)
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetParameters(self),2,nb,length)
+        #StdMeshers._objref_StdMeshers_Arithmetic1D.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_Arithmetic1D.SetLength(self,length,isStart)
         
 #Registering the new proxy for Arithmetic1D
@@ -5193,8 +5198,8 @@ class Deflection1D(StdMeshers._objref_StdMeshers_Deflection1D):
     ## Set Deflection parameter value
     #  @param deflection numerical value or name of variable from notebook    
     def SetDeflection(self, deflection):
-        deflection,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Deflection1D.GetLastParameters(self),1,1,deflection)
-        StdMeshers._objref_StdMeshers_Deflection1D.SetParameters(self,parameters)
+        deflection,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Deflection1D.GetParameters(self),1,1,deflection)
+        #StdMeshers._objref_StdMeshers_Deflection1D.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_Deflection1D.SetDeflection(self,deflection)
 
 #Registering the new proxy for Deflection1D
@@ -5210,8 +5215,8 @@ class StartEndLength(StdMeshers._objref_StdMeshers_StartEndLength):
         nb = 2
         if isStart:
             nb = 1
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_StartEndLength.GetLastParameters(self),2,nb,length)
-        StdMeshers._objref_StdMeshers_StartEndLength.SetParameters(self,parameters)
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_StartEndLength.GetParameters(self),2,nb,length)
+        #StdMeshers._objref_StdMeshers_StartEndLength.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_StartEndLength.SetLength(self,length,isStart)
         
 #Registering the new proxy for StartEndLength
@@ -5223,8 +5228,8 @@ class MaxElementArea(StdMeshers._objref_StdMeshers_MaxElementArea):
     ## Set Max Element Area parameter value
     #  @param area  numerical value or name of variable from notebook
     def SetMaxElementArea(self, area):
-        area ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementArea.GetLastParameters(self),1,1,area)
-        StdMeshers._objref_StdMeshers_MaxElementArea.SetParameters(self,parameters)
+        area ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementArea.GetParameters(self),1,1,area)
+        #StdMeshers._objref_StdMeshers_MaxElementArea.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_MaxElementArea.SetMaxElementArea(self,area)
         
 #Registering the new proxy for MaxElementArea
@@ -5237,8 +5242,8 @@ class MaxElementVolume(StdMeshers._objref_StdMeshers_MaxElementVolume):
     ## Set Max Element Volume parameter value
     #  @param volume numerical value or name of variable from notebook
     def SetMaxElementVolume(self, volume):
-        volume ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementVolume.GetLastParameters(self),1,1,volume)
-        StdMeshers._objref_StdMeshers_MaxElementVolume.SetParameters(self,parameters)
+        volume ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementVolume.GetParameters(self),1,1,volume)
+        #StdMeshers._objref_StdMeshers_MaxElementVolume.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_MaxElementVolume.SetMaxElementVolume(self,volume)
         
 #Registering the new proxy for MaxElementVolume
@@ -5251,8 +5256,8 @@ class NumberOfLayers(StdMeshers._objref_StdMeshers_NumberOfLayers):
     ## Set Number Of Layers parameter value
     #  @param nbLayers  numerical value or name of variable from notebook
     def SetNumberOfLayers(self, nbLayers):
-        nbLayers ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfLayers.GetLastParameters(self),1,1,nbLayers)
-        StdMeshers._objref_StdMeshers_NumberOfLayers.SetParameters(self,parameters)
+        nbLayers ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfLayers.GetParameters(self),1,1,nbLayers)
+        #StdMeshers._objref_StdMeshers_NumberOfLayers.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_NumberOfLayers.SetNumberOfLayers(self,nbLayers)
         
 #Registering the new proxy for NumberOfLayers
@@ -5264,16 +5269,16 @@ class NumberOfSegments(StdMeshers._objref_StdMeshers_NumberOfSegments):
     ## Set Number Of Segments parameter value
     #  @param nbSeg numerical value or name of variable from notebook
     def SetNumberOfSegments(self, nbSeg):
-        lastParameters = StdMeshers._objref_StdMeshers_NumberOfSegments.GetLastParameters(self)
+        lastParameters = StdMeshers._objref_StdMeshers_NumberOfSegments.GetParameters(self)
         nbSeg , parameters = ParseParameters(lastParameters,1,1,nbSeg)
-        StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
+        #StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_NumberOfSegments.SetNumberOfSegments(self,nbSeg)
         
     ## Set Scale Factor parameter value
     #  @param factor numerical value or name of variable from notebook
     def SetScaleFactor(self, factor):
-        factor, parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfSegments.GetLastParameters(self),2,2,factor)
-        StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
+        factor, parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfSegments.GetParameters(self),2,2,factor)
+        #StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
         StdMeshers._objref_StdMeshers_NumberOfSegments.SetScaleFactor(self,factor)
         
 #Registering the new proxy for NumberOfSegments
@@ -5286,33 +5291,33 @@ if not noNETGENPlugin:
         ## Set Max Size parameter value
         #  @param maxsize numerical value or name of variable from notebook
         def SetMaxSize(self, maxsize):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetParameters(self)
             maxsize, parameters = ParseParameters(lastParameters,4,1,maxsize)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetMaxSize(self,maxsize)
 
         ## Set Growth Rate parameter value
         #  @param value  numerical value or name of variable from notebook
         def SetGrowthRate(self, value):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetParameters(self)
             value, parameters = ParseParameters(lastParameters,4,2,value)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetGrowthRate(self,value)
 
         ## Set Number of Segments per Edge parameter value
         #  @param value  numerical value or name of variable from notebook
         def SetNbSegPerEdge(self, value):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetParameters(self)
             value, parameters = ParseParameters(lastParameters,4,3,value)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerEdge(self,value)
 
         ## Set Number of Segments per Radius parameter value
         #  @param value  numerical value or name of variable from notebook
         def SetNbSegPerRadius(self, value):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetParameters(self)
             value, parameters = ParseParameters(lastParameters,4,4,value)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerRadius(self,value)
 
     #Registering the new proxy for NETGENPlugin_Hypothesis
@@ -5332,32 +5337,32 @@ if not noNETGENPlugin:
         ## Set Number of Segments parameter value
         #  @param nbSeg numerical value or name of variable from notebook
         def SetNumberOfSegments(self, nbSeg):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetParameters(self)
             nbSeg, parameters = ParseParameters(lastParameters,2,1,nbSeg)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetNumberOfSegments(self, nbSeg)
 
         ## Set Local Length parameter value
         #  @param length numerical value or name of variable from notebook
         def SetLocalLength(self, length):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetParameters(self)
             length, parameters = ParseParameters(lastParameters,2,1,length)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetLocalLength(self, length)
 
         ## Set Max Element Area parameter value
         #  @param area numerical value or name of variable from notebook    
         def SetMaxElementArea(self, area):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetParameters(self)
             area, parameters = ParseParameters(lastParameters,2,2,area)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetMaxElementArea(self, area)
 
         def LengthFromEdges(self):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetParameters(self)
             value = 0;
             value, parameters = ParseParameters(lastParameters,2,2,value)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.LengthFromEdges(self)
 
     #Registering the new proxy for NETGEN_SimpleParameters_2D
@@ -5369,16 +5374,16 @@ if not noNETGENPlugin:
         ## Set Max Element Volume parameter value
         #  @param volume numerical value or name of variable from notebook    
         def SetMaxElementVolume(self, volume):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetParameters(self)
             volume, parameters = ParseParameters(lastParameters,3,3,volume)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetMaxElementVolume(self, volume)
 
         def LengthFromFaces(self):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetParameters(self)
             value = 0;
             value, parameters = ParseParameters(lastParameters,3,3,value)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+            #NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
             NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.LengthFromFaces(self)
 
     #Registering the new proxy for NETGEN_SimpleParameters_3D
@@ -5395,7 +5400,7 @@ class Pattern(SMESH._objref_SMESH_Pattern):
         theNodeIndexOnKeyPoint1,Parameters = geompyDC.ParseParameters(theNodeIndexOnKeyPoint1)
         if flag:
             theNodeIndexOnKeyPoint1 -= 1
-        theMesh.SetParameters(Parameters)
+        SetParameters(theMesh, Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToMeshFaces( self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse )
 
     def ApplyToHexahedrons(self, theMesh, theVolumesIDs, theNode000Index, theNode001Index):
@@ -5410,7 +5415,7 @@ class Pattern(SMESH._objref_SMESH_Pattern):
             theNode000Index -= 1
         if flag1:
             theNode001Index -= 1
-        theMesh.SetParameters(Parameters)
+        SetParameters(theMesh, Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToHexahedrons( self, theMesh, theVolumesIDs, theNode000Index, theNode001Index )
 
 #Registering the new proxy for Pattern
