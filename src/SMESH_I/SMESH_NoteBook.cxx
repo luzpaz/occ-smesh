@@ -258,12 +258,14 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod.IsEqual("SetLength")) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          // here and below IncrementState() is commented for hypothesis commands
+          // because at the current moment all hypotheses have only one state
+          //aStates->IncrementState();
         }
         else if(aMethod.IsEqual("SetPrecision")) {
           if(!aStates->GetCurrectState().at(1).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
       
@@ -273,7 +275,7 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetLength") {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
 
@@ -286,7 +288,7 @@ void SMESH_NoteBook::ReplaceVariables()
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
           else if(!aStates->GetCurrectState().at(1).IsEmpty())
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
       
@@ -295,7 +297,7 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetDeflection" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
       
@@ -314,7 +316,7 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetMaxElementArea" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
 
@@ -323,7 +325,7 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetMaxElementVolume" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
 
@@ -333,22 +335,22 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetMaxSize" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
         else if(aMethod == "SetGrowthRate" && aStates->GetCurrectState().size() >= 2) {
           if(!aStates->GetCurrectState().at(1).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
         else if(aMethod == "SetNbSegPerEdge" && aStates->GetCurrectState().size() >= 3) {
           if(!aStates->GetCurrectState().at(2).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(2));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         } 
         else if(aMethod == "SetNbSegPerRadius" && aStates->GetCurrectState().size() >= 4) {
           if(!aStates->GetCurrectState().at(3).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(3));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         } 
       }
 
@@ -360,29 +362,30 @@ void SMESH_NoteBook::ReplaceVariables()
            aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
         else if(aMethod == "SetMaxElementArea" && aStates->GetCurrectState().size() >= 2) {
           if(!aStates->GetCurrectState().at(1).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
         else if(aMethod == "SetMaxElementVolume" && aStates->GetCurrectState().size() >= 3) {
           if(!aStates->GetCurrectState().at(2).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(2));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
         else if(aMethod == "LengthFromEdges" || aMethod == "LengthFromFaces"){
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
       
-      // Case for NumberOfLayers hypothesis
-      else if(aStates->GetObjectType().IsEqual("NumberOfLayers")){
+      // Case for NumberOfLayers or NumberOfLayers2D hypothesis
+      else if(aStates->GetObjectType().IsEqual("NumberOfLayers") ||
+              aStates->GetObjectType().IsEqual("NumberOfLayers2D")){
         if(aMethod == "SetNumberOfLayers" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
 
@@ -391,13 +394,13 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetNumberOfSegments" && aStates->GetCurrectState().size() >= 1) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          if(aStates->GetCurrectState().size()==1)
-            aStates->IncrementState();
+          //if(aStates->GetCurrectState().size()==1)
+          //  aStates->IncrementState();
         }
         else if (aMethod == "SetScaleFactor" && aStates->GetCurrectState().size() >= 2) {
           if(!aStates->GetCurrectState().at(1).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
+          //aStates->IncrementState();
         }
       }
       
@@ -552,7 +555,9 @@ void SMESH_NoteBook::ReplaceVariables()
           }
           aStates->IncrementState();
         }
-        else if(aMethod.IsEqual("ExtrusionAlongPath") ||
+        else if(aMethod.IsEqual("ExtrusionAlongPathX") ||    // new version of extrusion along path (issue 20003)
+                aMethod.IsEqual("ExtrusionAlongPathObjX") || // no comments 0_o
+                aMethod.IsEqual("ExtrusionAlongPath") ||
                 aMethod.IsEqual("ExtrusionAlongPathObject") ||
                 aMethod.IsEqual("ExtrusionAlongPathObject1D") ||
                 aMethod.IsEqual("ExtrusionAlongPathObject2D") ||
@@ -570,26 +575,33 @@ void SMESH_NoteBook::ReplaceVariables()
           int anArgIndex = 0;
           for(int i = 1, n = aCmd->GetNbArgs(); i <= n; i++) {
             if(aCmd->GetArg(i).IsEqual("SMESH.PointStruct")) {
-              anArgIndex = i-1-aNbAngles;
+              anArgIndex = i-3;
               break;
             }
           }
-          if(anArgIndex > 0) {
-            int j = 0;
-            for(; j < aNbAngles; j++) {
-              if(!aCurrentState.at(j).IsEmpty()) {
-                aCmd->SetArg(anArgIndex+j-1, aCurrentState.at(j));
+          if(anArgIndex > 0) { // the argument should be parsed like that: [ 1, 2, 3 ] -> [ "a", 2, "b" ]
+            TCollection_AsciiString anAngleArg = aCmd->GetArg(anArgIndex);
+            for(int anIndex = 1; anIndex <= aNbAngles; anIndex++) {
+              int aPos1 = anIndex == 1 ? 1 : anAngleArg.Location(anIndex-1, ',', 1, anAngleArg.Length());
+              int aPos2 = anIndex == aNbAngles ? anAngleArg.Length() : anAngleArg.Location(anIndex, ',', 1, anAngleArg.Length());
+              TCollection_AsciiString aParameter = anAngleArg.SubString(aPos1+1, aPos2-1);
+              if(!aCurrentState.at(anIndex-1).IsEmpty()) {
+                TCollection_AsciiString aSubst = aCurrentState.at(anIndex-1);
+                aSubst.Prepend(TCollection_AsciiString(" "));
+                anAngleArg.Remove(aPos1+1, aPos2-aPos1-1);
+                anAngleArg.Insert(aPos1+1, aSubst);
               }
             }
-            for(; j < aNbAngles+3; j++) {
-              if(!aCurrentState.at(j).IsEmpty()) {
+            aCmd->SetArg(anArgIndex, anAngleArg);
+            for(int j = 0; j < 3; j++) {
+              if(!aCurrentState.at(j+aNbAngles).IsEmpty()) {
                 isSubstitute = true;
-                aCmd->SetArg(anArgIndex+j+2, aCurrentState.at(j));
+                aCmd->SetArg(anArgIndex+4+j, aCurrentState.at(j+aNbAngles));
               }
             }
           }
           if(isSubstitute)
-            aCmd->SetArg(anArgIndex + aNbAngles + 1,
+            aCmd->SetArg(anArgIndex + 3,
                          TCollection_AsciiString(SMESH_2smeshpy::SmeshpyName())+".PointStructStr");
           aStates->IncrementState();
         }
@@ -632,6 +644,51 @@ void SMESH_NoteBook::ReplaceVariables()
   
   ProcessLayerDistribution();
 }
+
+//============================================================================
+// function : splitString
+// purpose  : The functions returns a list of substring of initial string 
+//            divided by given separator include empty strings
+//============================================================================
+std::vector<std::string> splitString(const std::string& theValue, char sep)
+{
+  std::vector<std::string> aResult;
+  if(theValue[0] == sep ) aResult.push_back(std::string());
+  int pos = theValue.find(sep);
+  if(pos < 0 ) {
+    aResult.push_back(theValue);
+    return aResult;
+  }
+
+  std::string s = theValue;
+  if(s[0] == sep) s = s.substr(1, s.size());
+  while((pos = s.find(sep)) >= 0) {
+    aResult.push_back(s.substr(0, pos));
+    s = s.substr(pos+1, s.size());
+  }
+
+  if(!s.empty() && s[0] != sep) aResult.push_back(s);
+  if(theValue[theValue.size()-1] == sep) aResult.push_back(std::string());
+
+  return aResult;
+}
+
+//============================================================================
+// function : splitString
+// purpose  : The functions returns a list of lists of substrings of initial string 
+//            divided by two given separators include empty strings
+//============================================================================
+std::vector< std::vector<std::string> > splitString(const std::string& theValue, char sep1, char sep2)
+{
+  std::vector< std::vector<std::string> > aResult;
+  if(theValue.size() > 0) {
+    std::vector<std::string> aSections = splitString( theValue, sep1 );
+    for( int i = 0, n = aSections.size(); i < n; i++ )
+      aResult.push_back( splitString( aSections[i], sep2 ) );
+  }
+  return aResult;
+}
+
 //================================================================================
 /*!
  * \brief Private method
@@ -639,7 +696,6 @@ void SMESH_NoteBook::ReplaceVariables()
 //================================================================================
 void SMESH_NoteBook::InitObjectMap()
 {
-  /* ouv: temporarily disabled
   SMESH_Gen_i *aGen = SMESH_Gen_i::GetSMESHGen();
   if(!aGen)
     return;
@@ -653,13 +709,13 @@ void SMESH_NoteBook::InitObjectMap()
     return;
   
   SALOMEDS::ChildIterator_var Itr = aStudy->NewChildIterator(aSO);
-  char* aParameters;
+  std::string aParameters;
   for(Itr->InitEx(true); Itr->More(); Itr->Next()) {
     SALOMEDS::SObject_var aSObject = Itr->Value();
     SALOMEDS::GenericAttribute_var anAttr;
     if ( aSObject->FindAttribute(anAttr, "AttributeString")) {
       aParameters = SALOMEDS::AttributeString::_narrow(anAttr)->Value();
-      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
+      std::vector< std::vector<string> > aSections = splitString(aParameters, '|', ':');
       if(MYDEBUG) {
         cout<<"Entry : "<< aSObject->GetID()<<endl;
         cout<<"aParameters : "<<aParameters<<endl;
@@ -682,12 +738,12 @@ void SMESH_NoteBook::InitObjectMap()
       else
         aState = new  ObjectStates(anObjType);
       
-      for(int i = 0; i < aSections->length(); i++) {
+      for(int i = 0; i < aSections.size(); i++) {
         TState aVars;
-        SALOMEDS::ListOfStrings aListOfVars = aSections[i];
-        for(int j = 0;j<aListOfVars.length();j++) {
-          TCollection_AsciiString aVar(aListOfVars[j].in());
-          if(!aVar.IsEmpty() && aStudy->IsVariable(aVar.ToCString())) {
+        std::vector<string> aListOfVars = aSections[i];
+        for(int j = 0;j<aListOfVars.size();j++) {
+          TCollection_AsciiString aVar(aListOfVars[j].c_str());
+          if(!aVar.IsEmpty()) {
             aVar.InsertBefore(1,"\"");
             aVar.InsertAfter(aVar.Length(),"\"");
           }
@@ -701,7 +757,24 @@ void SMESH_NoteBook::InitObjectMap()
       _objectMap.insert(pair<TCollection_AsciiString,ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
     }
   }
-  */
+
+  if(MYDEBUG) {
+    printf( "_objectMap:\n" );
+    std::map<TCollection_AsciiString,ObjectStates*>::const_iterator it1 = _objectMap.begin();
+    for( ; it1 != _objectMap.end(); ++it1 ) {
+      TCollection_AsciiString aName = (*it1).first;
+      ObjectStates* aStates = (*it1).second;
+      printf( "  Name = %s\n", aName.ToCString() );
+      TAllStates anAllStates = aStates->GetAllStates();
+      for( int i = 0; i < anAllStates.size(); i++ ) {
+        TState aState = anAllStates[i];
+        printf( "  %d - ( ", i );
+        for( int j = 0; j < aState.size(); j++ )
+          printf( "%s ", aState[j].ToCString() );
+        printf( ")\n" );
+      }
+    }
+  }
 }
 
 //================================================================================

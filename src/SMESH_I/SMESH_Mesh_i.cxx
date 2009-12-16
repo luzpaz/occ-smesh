@@ -3431,7 +3431,7 @@ void SMESH_Mesh_i::SetParameters( SALOME::Notebook_ptr theNotebook, const SALOME
   }
   _impl->SetParameters( aParams );
 
-  UpdateStringAttribute();
+  UpdateStringAttribute( theParameters );
 }
 
 //=============================================================================
@@ -3464,16 +3464,11 @@ void SMESH_Mesh_i::Update( SALOME::Notebook_ptr theNotebook )
  * \brief Update string attribute of mesh
  */
 //=============================================================================
-void SMESH_Mesh_i::UpdateStringAttribute()
+void SMESH_Mesh_i::UpdateStringAttribute( const SALOME::StringArray& theParameters )
 {
+  // implementation of the method has been temporarily changed
+  // previous implementation can be found in revision 1.23.2.7.2.2.2.6
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-
-  SALOME::Notebook_ptr aNotebook = aSMESHGen->GetNotebook( GetStudyId() );
-
-  SALOME::StringArray* anObjectParameters = aNotebook->GetObjectParameters( GetComponent(), GetEntry() );
-  int aParametersLength = anObjectParameters ? anObjectParameters->length() : 0;
-  if( aParametersLength == 0 )
-    return;
 
   SALOMEDS::Study_ptr aStudy = aSMESHGen->GetStudy( GetStudyId() );
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
@@ -3484,16 +3479,18 @@ void SMESH_Mesh_i::UpdateStringAttribute()
   SALOMEDS::GenericAttribute_var anAttr = aStudyBuilder->FindOrCreateAttribute( aSObject, "AttributeString" );
   SALOMEDS::AttributeString_var aStringAttrib = SALOMEDS::AttributeString::_narrow( anAttr );
 
+  std::string aCurrentString = aStringAttrib->Value();
   std::string aString;
-  for( int i = 0, n = anObjectParameters->length(); i < n; i++ ) {
-    std::string aParameter = anObjectParameters->operator[](i).in();
-    if( aParameter != "" )
-    {
-      if( aString != "" )
-        aString += ", ";
-      aString += aParameter;
-    }
+  if( aCurrentString != "" )
+    aString = aCurrentString + "|";
+
+  for( int i = 0, n = theParameters.length(); i < n; i++ ) {
+    std::string aParameter = theParameters[i].in();
+    aString += aParameter;
+    if( i != n-1 )
+      aString += ":";
   }
+
   aStringAttrib->SetValue( aString.c_str() );
   aStringAttrib->Destroy();
 }

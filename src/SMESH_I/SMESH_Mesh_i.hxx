@@ -504,7 +504,7 @@ public:
   /*!
    * Update string attribute of mesh
    */
-  virtual void UpdateStringAttribute();
+  virtual void UpdateStringAttribute( const SALOME::StringArray& theParameters );
 
   /*!
    * Returns statistic of mesh elements

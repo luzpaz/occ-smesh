@@ -561,8 +561,9 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
   }
 
   // Update string attribute (to display used variables)
-  if( SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() ) )
-    aServant->UpdateStringAttribute();
+  // Temporarily commented (see implementation of SMESH_Mesh_i::UpdateStringAttribute())
+  //if( SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() ) )
+  //  aServant->UpdateStringAttribute();
 
   if(MYDEBUG) MESSAGE("PublishMesh_END");
   return aMeshSO._retn();

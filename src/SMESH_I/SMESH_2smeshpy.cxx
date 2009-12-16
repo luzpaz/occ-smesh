@@ -1074,6 +1074,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "RotationSweep","RotationSweepObject","RotationSweepObject1D","RotationSweepObject2D",
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
       "ExtrusionAlongPath","ExtrusionAlongPathObject","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
+      "ExtrusionAlongPathX","ExtrusionAlongPathObjX",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
       "FindCoincidentNodes","FindCoincidentNodesOnPart","MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
