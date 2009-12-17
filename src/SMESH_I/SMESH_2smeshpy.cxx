@@ -1379,6 +1379,10 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp = new _pyLayerDistributionHypo( theCreationCmd );
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialPrism_3D");
   }
+  else if ( hypType == "LayerDistribution2D" ) {
+    hyp = new _pyLayerDistributionHypo( theCreationCmd );
+    hyp->SetConvMethodAndType( "LayerDistribution2D", "RadialQuadrangle_1D2D");
+  }
 
   if ( algo->IsValid() ) {
     return algo;

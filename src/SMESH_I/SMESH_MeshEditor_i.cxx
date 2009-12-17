@@ -2556,7 +2556,7 @@ ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
     else
       aPythonDump <<"error";
 
-    aPythonDump << " = " << this << ".ExtrusionAlongPathObjX( "
+    aPythonDump << " = " << this << ".ExtrusionAlongPathX( "
                 << Object      << ", "
                 << Path        << ", "
                 << NodeStart   << ", "

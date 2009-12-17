@@ -3470,7 +3470,7 @@ void SMESH_Mesh_i::UpdateStringAttribute( const SALOME::StringArray& theParamete
   // previous implementation can be found in revision 1.23.2.7.2.2.2.6
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
 
-  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetStudy( GetStudyId() );
+  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
   SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject( aStudy, SMESH::SMESH_Mesh::_narrow( _this() ) );
   if( CORBA::is_nil( aSObject ) )

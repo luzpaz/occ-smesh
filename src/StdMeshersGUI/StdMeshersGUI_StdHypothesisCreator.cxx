@@ -545,10 +545,13 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
       
       h->SetLayerDistribution( w->GetHypothesis() );
-      /* ouv: temporarily disabled
-      h->SetParameters(w->GetHypothesis()->GetParameters());
-      w->GetHypothesis()->ClearParameters();
-      */
+
+      SALOME::StringArray* aParameters = w->GetHypothesis()->GetParameters();
+      QStringList aList;
+      for( int i = 0; i < aParameters->length(); i++ ) 
+        aList.append( QString( aParameters->operator[](i) ) );
+      getNotebook()->setParameters( h, aList );
+      getNotebook()->setParameters( w->GetHypothesis(), QStringList() );
     }
     else if( hypType()=="NumberOfLayers2D" )
     {
@@ -566,10 +569,13 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
       
       h->SetLayerDistribution( w->GetHypothesis() );
-      /* ouv: temporarily disabled
-      h->SetParameters(w->GetHypothesis()->GetParameters());
-      w->GetHypothesis()->ClearParameters();
-      */
+
+      SALOME::StringArray* aParameters = w->GetHypothesis()->GetParameters();
+      QStringList aList;
+      for( int i = 0; i < aParameters->length(); i++ ) 
+        aList.append( QString( aParameters->operator[](i) ) );
+      getNotebook()->setParameters( h, aList );
+      getNotebook()->setParameters( w->GetHypothesis(), QStringList() );
     }
     else if( hypType()=="ProjectionSource1D" )
     {
@@ -885,10 +891,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     for(int i = 0;i<aParameters->length();i++) 
       aLastVarsList.append(QString(aParameters->operator[](i)));
 
-    /* ouv: temporarily disabled
     if(!aLastVarsList.isEmpty())
-      h->GetLayerDistribution()->SetLastParameters(aLastVarsList.join(":").toLatin1().constData());
-    */
+      getNotebook()->setParameters( h->GetLayerDistribution(), aLastVarsList );
     
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
@@ -913,10 +917,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     for(int i = 0;i<aParameters->length();i++) 
       aLastVarsList.append(QString(aParameters->operator[](i)));
 
-    /* ouv: temporarily disabled
     if(!aLastVarsList.isEmpty())
-      h->GetLayerDistribution()->SetLastParameters(aLastVarsList.join(":").toLatin1().constData());
-    */
+      getNotebook()->setParameters( h->GetLayerDistribution(), aLastVarsList );
     
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));

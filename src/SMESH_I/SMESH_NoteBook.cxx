@@ -124,8 +124,8 @@ TCollection_AsciiString ObjectStates::GetObjectType() const{
  * \brief Constructor
  */
 //================================================================================
-LayerDistributionStates::LayerDistributionStates():
-  ObjectStates("LayerDistribution")
+LayerDistributionStates::LayerDistributionStates(TCollection_AsciiString theType):
+  ObjectStates(theType)
 {
 }
 //================================================================================
@@ -302,7 +302,8 @@ void SMESH_NoteBook::ReplaceVariables()
       }
       
       // Case for LayerDistribution hypothesis (not finished yet)
-      else if(aStates->GetObjectType() == "LayerDistribution") {
+      else if(aStates->GetObjectType() == "LayerDistribution" ||
+              aStates->GetObjectType() == "LayerDistribution2D") {
         if(aMethod == "SetLayerDistribution"){
           LayerDistributionStates* aLDStates = (LayerDistributionStates*)(aStates);
           aLDStates->AddDistribution(aCmd->GetArg(1));
@@ -732,8 +733,9 @@ void SMESH_NoteBook::InitObjectMap()
       if(MYDEBUG)
         cout<<"The object Type : "<<anObjType<<endl;
       ObjectStates *aState = NULL;
-      if(anObjType == "LayerDistribution") {
-        aState = new LayerDistributionStates();
+      if(anObjType == "LayerDistribution" ||
+         anObjType == "LayerDistribution2D") {
+        aState = new LayerDistributionStates(anObjType);
       }
       else
         aState = new  ObjectStates(anObjType);
@@ -839,11 +841,11 @@ void SMESH_NoteBook::ProcessLayerDistribution()
         if(aType == "LocalLength") {
           if(aMethod == "SetLength") {
             SetVariable(_commands[i], aLDS[j],0,1);
-            aLDS[j]->IncrementState();
+            //aLDS[j]->IncrementState();
           }
           else if(aMethod == "SetPrecision") {
             SetVariable(_commands[i], aLDS[j],1,1);
-            aLDS[j]->IncrementState();
+            //aLDS[j]->IncrementState();
           }
         }
 
@@ -851,19 +853,19 @@ void SMESH_NoteBook::ProcessLayerDistribution()
         else if(aType == "NumberOfSegments"){
           if(aMethod == "SetNumberOfSegments") {
             SetVariable(_commands[i], aLDS[j],0,1);
-            if(aLDS[j]->GetCurrectState().size()==1)
-              aLDS[j]->IncrementState();
+            //if(aLDS[j]->GetCurrectState().size()==1)
+            //  aLDS[j]->IncrementState();
           }
           else if (aMethod == "SetScaleFactor") {
             SetVariable(_commands[i], aLDS[j],1,1);
-            aLDS[j]->IncrementState();
+            //aLDS[j]->IncrementState();
           }
         }
         
         else if( aType == "Deflection1D" ){
           if(aMethod == "SetDeflection"){
             SetVariable(_commands[i], aLDS[j],0,1);
-            aLDS[j]->IncrementState();
+            //aLDS[j]->IncrementState();
           }
         }
         // Case for Arithmetic1D and StartEndLength hypothesis
@@ -871,8 +873,18 @@ void SMESH_NoteBook::ProcessLayerDistribution()
           if(aMethod == "SetLength") {
             int anArgNb = (_commands[i]->GetArg(2) == "1") ? 0 : 1;
             SetVariable(_commands[i], aLDS[j],anArgNb,1);
-            aLDS[j]->IncrementState();
+            //aLDS[j]->IncrementState();
           }
+          /* ouv: temporarily disabled (see limitation on LayerDistribution in SMESH help)
+          else if(aMethod == "SetStartLength"){
+            SetVariable(_commands[i], aLDS[j],0,1);
+            //aLDS[j]->IncrementState();
+          }
+          else if(aMethod == "SetEndLength"){
+            SetVariable(_commands[i], aLDS[j],1,1);
+            //aLDS[j]->IncrementState();
+          }
+          */
         }
       }
     }

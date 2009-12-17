@@ -234,7 +234,7 @@ void SMESH_Hypothesis_i::UpdateStringAttribute()
   // previous implementation can be found in revision 1.12.14.8
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
 
-  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetStudy( myBaseImpl->GetStudyId() );
+  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
   SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject( aStudy, SMESH::SMESH_Hypothesis::_narrow( _this() ) );
   if( CORBA::is_nil( aSObject ) )

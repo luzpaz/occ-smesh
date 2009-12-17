@@ -2917,6 +2917,8 @@ class Mesh:
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
+        if ( isinstance( Path, Mesh )):
+            Path = Path.GetMesh()
         Parameters = AnglesParameters + RefPointParameters
         geompyDC.SetParameters(self.mesh, Parameters)
 
@@ -2929,6 +2931,7 @@ class Mesh:
                                                    HasRefPoint, RefPoint, MakeGroups, ElemType)
         else:
             if isinstance(Base,Mesh):
+                Base = Base.GetMesh()
                 return self.editor.ExtrusionAlongPathObjX(Base, Path, NodeStart,
                                                           HasAngles, Angles, LinearVariation,
                                                           HasRefPoint, RefPoint, MakeGroups, ElemType)
@@ -5172,12 +5175,23 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryI
 class LayerDistribution(StdMeshers._objref_StdMeshers_LayerDistribution):
     
     def SetLayerDistribution(self, hypo):
-        #StdMeshers._objref_StdMeshers_LayerDistribution.SetParameters(self,hypo.GetParameters())
-        #hypo.ClearParameters();
+        geompyDC.SetParameters(self, hypo.GetParameters())
+        geompyDC.SetParameters(hypo, [])
         StdMeshers._objref_StdMeshers_LayerDistribution.SetLayerDistribution(self,hypo)
 
 #Registering the new proxy for LayerDistribution
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_LayerDistribution._NP_RepositoryId, LayerDistribution)
+
+#Wrapper class for StdMeshers_LayerDistribution2D hypothesis
+class LayerDistribution2D(StdMeshers._objref_StdMeshers_LayerDistribution2D):
+    
+    def SetLayerDistribution(self, hypo):
+        geompyDC.SetParameters(self, hypo.GetParameters())
+        geompyDC.SetParameters(hypo, [])
+        StdMeshers._objref_StdMeshers_LayerDistribution2D.SetLayerDistribution(self,hypo)
+
+#Registering the new proxy for LayerDistribution
+omniORB.registerObjref(StdMeshers._objref_StdMeshers_LayerDistribution2D._NP_RepositoryId, LayerDistribution2D)
 
 #Wrapper class for StdMeshers_SegmentLengthAroundVertex hypothesis
 class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex):
