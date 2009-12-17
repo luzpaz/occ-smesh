@@ -142,14 +142,14 @@ class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
 {
 private:
   SMDS_Mesh* myMesh;
-  int* myCells;
+  vtkIdType* myCells;
   int  myNcells;
   SMDSAbs_ElementType                                 myType;
   int  iter;
 
  public:
   SMDS_MeshNode_MyInvIterator(SMDS_Mesh *mesh,
-                              int* cells,
+                              vtkIdType* cells,
                               int ncells,
                               SMDSAbs_ElementType type):
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
@@ -186,7 +186,7 @@ class SMDS_MeshNode_MyIterator:public SMDS_ElemIterator
 {
 private:
   SMDS_Mesh* myMesh;
-  int* myCells;
+  vtkIdType* myCells;
   int  myNcells;
   SMDSAbs_ElementType                                 myType;
   int  iter;
@@ -194,7 +194,7 @@ private:
 
  public:
   SMDS_MeshNode_MyIterator(SMDS_Mesh *mesh,
-                           int* cells,
+                           vtkIdType* cells,
                            int ncells,
                            SMDSAbs_ElementType type):
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)

@@ -92,7 +92,7 @@ bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 
   // --- retreive nodes ID
 
-  vector<int> nodeIds;
+  vector<vtkIdType> nodeIds;
   SMDS_ElemIteratorPtr it = elem->nodesIterator();
   while(it->more())
   {
