@@ -1,11 +1,22 @@
 
+=============================== Hypothese de refonte de l'API de SMDS
+
+n'utiliser que vtkUnstructuredGrid, ne pas avor d'objets SMDS_MeshElement mais seulement des index de vtkUnstructuredGrid.
+2987 usages de SMDS_MeshNodes
+810            SMDS_MeshElement
+...
+==> en dernier ressort, lourd
+================================================================================
+
+Essai a API SMDS a peu près constante
+=====================================
 
 SMDS_Mesh
   static vector<SMDS_Mesh*> _meshList;     --> retrouver un SMDS_Mesh
   vtkUnstructuredGrid*      myGrid;
 
   vector<SMDS_MeshNode *>   myNodes;       --> meme index que dans le pointSet de myGrid
-  vector<SMDS_MeshCell *>   myCells;       --> meme index que dans le cellTypes de myGrid
+  vector<SMDS_MeshCell *>   myCells;       --> index = ID client, pas le meme index que dans le cellTypes de myGrid (ID vtk)
 
 
 
@@ -16,12 +27,22 @@ SMDS_MeshElement
                                                          
 
 SMDS_MeshNode: SMDS_MeshElement
-  SMDS_PositionPtr myPosition;             --> objet position dans la shape geom
-  ##vector<int> myInverseElements;         --> pour retrouver les elements, vtkCellLinks
+  SMDS_PositionPtr myPosition;             -->  A REVOIR : objet position dans la shape geom
+  ##vector<int> myInverseElements;         -->  SUPPRIME : pour retrouver les elements, vtkCellLinks
 
 
 SMDS_MeshCell: SMDS_MeshElement            --> generique pour tous les elements (cells)
+  int myVtkID                              --> A SUPPRIMER
 
+SMDS_MeshVolume: SMDS_MeshCell
+
+SMDS_VolumeOfNodes: SMDS_MeshVolume
+  const SMDS_MeshNode **myNodes;           --> A SUPPRIMER, utiliser myID
+  int                 myNbNodes;           --> A SUPPRIMER
+
+SMDS_MeshElementIDFactory: SMDS_MeshNodeIDFactory
+  vector<int> myIDElements; // index = ID client, value = ID vtk  --> A SUPPRIMER, ne sert que dans SMDS_MeshElementIDFactory
+  vector<int> myVtkIndex;   // index = ID vtk, value = ID client  --> A REPORTER dans SMDS_Mesh
 
 ========= TODO ============
 
@@ -29,3 +50,13 @@ enlever vtkId de SMDS_MeshCell, utiliser SMDS_MeshElementIDFactory.
 
 ajouter ID dans SMDS_Mesh::createTriangle 
 verifier ID dans SMDS_Mesh::Find*OrCreate
+
+========================
+occupation memoire cube 100*100*100 sans affichage
+
+Ubuntu 9.10 64 bits 15/12/2009
+/home/prascle/projets/SALOME/SMESH/BR_SMDS_MEMIMP/SMESH_SRC/src/SMESH/SMESH_Gen.cxx:143
+in use bytes     =   32843200 
+/home/prascle/projets/SALOME/SMESH/BR_SMDS_MEMIMP/SMESH_SRC/src/SMESH/SMESH_Gen.cxx [294] : VSR - SMESH_Gen::Compute() finished, OK = 1
+in use bytes     =  498773760
+delta = 460 Mo (45 Mo de plus que sur Sarge 64 bits ?)
