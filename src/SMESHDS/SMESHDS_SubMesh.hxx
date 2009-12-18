@@ -63,6 +63,7 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
   // clear the contents
   void Clear();
+  int getSize();
 
  private:
 

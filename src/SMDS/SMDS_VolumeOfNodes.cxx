@@ -132,11 +132,6 @@ SMDS_VolumeOfNodes::~SMDS_VolumeOfNodes()
   }
 }
 
-//=======================================================================
-//function : Print
-//purpose  : 
-//=======================================================================
-
 void SMDS_VolumeOfNodes::Print(ostream & OS) const
 {
         OS << "volume <" << GetID() << "> : ";
@@ -176,12 +171,9 @@ int SMDS_VolumeOfNodes::NbEdges() const
         return 0;
 }
 
-/// ===================================================================
 /*!
  * \brief Iterator on node of volume
  */
-/// ===================================================================
-
 class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 {
  public:
@@ -189,12 +181,9 @@ class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
     SMDS_NodeArrayElemIterator( s, & s[ l ]) {}
 };
 
-/// ===================================================================
 /*!
  * \brief Iterator on faces or edges of volume
  */
-/// ===================================================================
-
 class _MySubIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
@@ -251,6 +240,108 @@ SMDSAbs_EntityType SMDS_VolumeOfNodes::GetEntityType() const
 {
   SMDSAbs_EntityType aType = SMDSEntity_Tetra;
   switch(myNbNodes)
+  {
+  case 4: aType = SMDSEntity_Tetra;   break;
+  case 5: aType = SMDSEntity_Pyramid; break;
+  case 6: aType = SMDSEntity_Penta;   break;
+  case 8:
+  default: aType = SMDSEntity_Hexa;    break;
+  }
+  return aType;
+}
+
+
+// *************************************************************************************
+// 
+
+SMDS_VolumeVtkNodes::SMDS_VolumeVtkNodes()
+{
+}
+
+bool SMDS_VolumeVtkNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
+                                     const int            nbNodes)
+{
+  // utilise dans SMDS_Mesh
+  return true;
+}
+
+SMDS_VolumeVtkNodes::~SMDS_VolumeVtkNodes()
+{
+}
+
+void SMDS_VolumeVtkNodes::Print(ostream & OS) const
+{
+        OS << "volume <" << GetID() << "> : ";
+}
+
+int SMDS_VolumeVtkNodes::NbFaces() const
+{
+        switch(NbNodes())
+        {
+        case 4: return 4;
+        case 5: return 5;
+        case 6: return 5;
+        case 8: return 6;
+        default: MESSAGE("invalid number of nodes");
+        }
+        return 0;
+}
+
+int SMDS_VolumeVtkNodes::NbNodes() const
+{
+        return 0;
+}
+
+int SMDS_VolumeVtkNodes::NbEdges() const
+{
+        switch(NbNodes())
+        {
+        case 4: return 6;
+        case 5: return 8;
+        case 6: return 9;
+        case 8: return 12;
+        default: MESSAGE("invalid number of nodes");
+        }
+        return 0;
+}
+
+SMDS_ElemIteratorPtr SMDS_VolumeVtkNodes::elementsIterator(SMDSAbs_ElementType type) const
+{
+  switch(type)
+  {
+//   case SMDSAbs_Volume:
+//     return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);
+//   case SMDSAbs_Node:
+//     return SMDS_ElemIteratorPtr(new SMDS_VolumeVtkNodes_MyIterator(myNodes,myNbNodes));
+//   case SMDSAbs_Face:
+//     return SMDS_ElemIteratorPtr(new _MySubWNIterator(this,SMDSAbs_Face));
+//   case SMDSAbs_Edge:
+//     return SMDS_ElemIteratorPtr(new _MySubWNIterator(this,SMDSAbs_Edge));
+  default:
+    MESSAGE("ERROR : Iterator not implemented");
+    return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
+  }
+}
+
+SMDSAbs_ElementType SMDS_VolumeVtkNodes::GetType() const
+{
+        return SMDSAbs_Volume;
+}
+
+/*!
+ * \brief Return node by its index
+ * \param ind - node index
+ * \retval const SMDS_MeshNode* - the node
+ */
+const SMDS_MeshNode* SMDS_VolumeVtkNodes::GetNode(const int ind) const
+{
+  return 0;
+}
+
+SMDSAbs_EntityType SMDS_VolumeVtkNodes::GetEntityType() const
+{
+  SMDSAbs_EntityType aType = SMDSEntity_Tetra;
+  switch(NbNodes())
   {
   case 4: aType = SMDSEntity_Tetra;   break;
   case 5: aType = SMDSEntity_Pyramid; break;

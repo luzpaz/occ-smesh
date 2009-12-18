@@ -82,7 +82,37 @@ class SMDS_EXPORT SMDS_VolumeOfNodes:public SMDS_MeshVolume
   protected:
 	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
-	const SMDS_MeshNode** myNodes;
-	int                   myNbNodes;
+ 	const SMDS_MeshNode** myNodes;
+ 	int                   myNbNodes;
+
 };
+
+class SMDS_EXPORT SMDS_VolumeVtkNodes:public SMDS_MeshVolume
+{
+public:
+	SMDS_VolumeVtkNodes();
+        bool ChangeNodes(const SMDS_MeshNode* nodes[],
+                         const int            nbNodes);
+        ~SMDS_VolumeVtkNodes();
+
+	void Print(std::ostream & OS) const;
+	int NbFaces() const;
+	int NbNodes() const;
+	int NbEdges() const;
+	virtual SMDSAbs_ElementType GetType() const;	
+        virtual SMDSAbs_EntityType GetEntityType() const;
+
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
+   */
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+
+  protected:
+	SMDS_ElemIteratorPtr
+		elementsIterator(SMDSAbs_ElementType type) const;
+};
+
+
 #endif

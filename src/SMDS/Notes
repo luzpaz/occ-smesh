@@ -8,7 +8,7 @@ n'utiliser que vtkUnstructuredGrid, ne pas avor d'objets SMDS_MeshElement mais s
 ==> en dernier ressort, lourd
 ================================================================================
 
-Essai a API SMDS a peu près constante
+Essai a API SMDS a peu pres constante
 =====================================
 
 SMDS_Mesh
@@ -36,13 +36,20 @@ SMDS_MeshCell: SMDS_MeshElement            --> generique pour tous les elements 
 
 SMDS_MeshVolume: SMDS_MeshCell
 
-SMDS_VolumeOfNodes: SMDS_MeshVolume
-  const SMDS_MeshNode **myNodes;           --> A SUPPRIMER, utiliser myID
-  int                 myNbNodes;           --> A SUPPRIMER
+SMDS_VolumeOfNodes: SMDS_MeshVolume        --> Garder temporairement, utilisation dans StdMesher et SMDS_VolumeTool
+  const SMDS_MeshNode **myNodes;           --> Couteux
+  int                 myNbNodes;           -->  ""
+
+SMDS_VolumeVtkNodes: SMDS_MeshVolume       --> Utiliser systematiquement dans SMDS,
+                                           --> IMPLEMENTER.
+
 
 SMDS_MeshElementIDFactory: SMDS_MeshNodeIDFactory
   vector<int> myIDElements; // index = ID client, value = ID vtk  --> A SUPPRIMER, ne sert que dans SMDS_MeshElementIDFactory
   vector<int> myVtkIndex;   // index = ID vtk, value = ID client  --> A REPORTER dans SMDS_Mesh
+
+
+
 
 ========= TODO ============
 
@@ -60,3 +67,8 @@ in use bytes     =   32843200
 /home/prascle/projets/SALOME/SMESH/BR_SMDS_MEMIMP/SMESH_SRC/src/SMESH/SMESH_Gen.cxx [294] : VSR - SMESH_Gen::Compute() finished, OK = 1
 in use bytes     =  498773760
 delta = 460 Mo (45 Mo de plus que sur Sarge 64 bits ?)
+
+Debian Sarge 64 bits
+in use bytes     =   17076352
+in use bytes     =  431600032
+delta = 415 Mo

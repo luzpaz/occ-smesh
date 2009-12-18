@@ -293,6 +293,17 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
   MEMOSTAT;
+
+  SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
+  list<int> listind = myMesh->SubMeshIndices();
+  list<int>::iterator it = listind.begin();
+  int total = 0;
+  for(; it != listind.end(); ++it)
+    {
+      ::SMESHDS_SubMesh *subMesh = myMesh->MeshElements(*it);
+      total +=  subMesh->getSize();
+    }
+  cerr << "total elements and nodes in submesh sets:" << total << endl;
   return ret;
 }
 
