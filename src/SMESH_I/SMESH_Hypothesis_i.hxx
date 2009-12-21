@@ -34,7 +34,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
 #include "SMESH_Hypothesis.hxx"
-#include "SALOME_GenericObj_i.hh"
+#include "SALOME_ParameterizedObject.hxx"
 
 #include "SMESH_Gen.hxx"
 
@@ -43,7 +43,7 @@
 // ======================================================
 class SMESH_I_EXPORT SMESH_Hypothesis_i:
   public virtual POA_SMESH::SMESH_Hypothesis,
-  public virtual SALOME::GenericObj_i
+  public virtual SALOME_ParameterizedObject
 {
 public:
   // Constructor : placed in protected section to prohibit creation of generic class instance

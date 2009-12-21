@@ -96,8 +96,9 @@ int SMESH_Mesh_i::myIdGenerator = 0;
 
 SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                             SMESH_Gen_i*            gen_i,
-                            CORBA::Long studyId )
-: SALOME::GenericObj_i( thePOA )
+                            CORBA::Long             studyId,
+                            SALOME::Notebook_ptr    theNotebook )
+: SALOME_ParameterizedObject( theNotebook )
 {
   MESSAGE("SMESH_Mesh_i");
   _impl = NULL;
@@ -417,9 +418,11 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr aSubS
   Unexpect aCatch(SALOME_SalomeException);
   SMESH_Hypothesis::Hypothesis_Status status = addHypothesis( aSubShapeObject, anHyp );
 
-  if ( !SMESH_Hypothesis::IsStatusFatal(status) )
+  if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
     _gen_i->AddHypothesisToShape(_gen_i->GetCurrentStudy(), _this(),
                                  aSubShapeObject, anHyp );
+    StoreDependencies( GetNotebook() );
+  }
 
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
@@ -3385,8 +3388,20 @@ void SMESH_Mesh_i::checkGroupNames()
 //=============================================================================
 char* SMESH_Mesh_i::GetEntry()
 {
+  int anId = 0;
+  SALOME::Notebook_ptr aNotebook = GetNotebook();
+  if( !CORBA::is_nil( aNotebook ) )
+  {
+    SALOMEDS::Study_ptr aStudy = aNotebook->GetStudy();
+    if( StudyContext* aStudyContext = GetGen()->GetStudyContext( aStudy->StudyId() ) )
+    {
+      CORBA::String_var anIOR = GetGen()->GetORB()->object_to_string( _this() );
+      anId = aStudyContext->findId( anIOR.in() );
+    }
+  }
+
   char aBuf[100];
-  sprintf( aBuf, "%i", GetId() );
+  sprintf( aBuf, "%i", anId );
   return CORBA::string_dup( aBuf );
 }
 
@@ -3493,6 +3508,51 @@ void SMESH_Mesh_i::UpdateStringAttribute( const SALOME::StringArray& theParamete
 
   aStringAttrib->SetValue( aString.c_str() );
   aStringAttrib->Destroy();
+}
+
+//=============================================================================
+/*!
+ * \brief Internal method for storing dependencies for mesh
+ */
+//=============================================================================
+void SMESH_Mesh_i::StoreDependenciesForShape( SALOME::Notebook_ptr theNotebook,
+                                              GEOM::GEOM_Object_ptr theShapeObject,
+                                              bool theIsStoreShape )
+{
+  SMESH::ListOfHypothesis_var aHypList = GetHypothesisList( theShapeObject );
+  for( int i = 0, n = aHypList->length(); i < n; i++ )
+  {
+    SMESH::SMESH_Hypothesis_ptr aHypothesis = aHypList[i];
+    if( CORBA::is_nil( aHypothesis ) )
+      continue;
+    SMESH::SMESH_Algo_ptr anAlgo = SMESH::SMESH_Algo::_narrow( aHypothesis );
+    if( !CORBA::is_nil( anAlgo ) ) // don't take into account algorithms
+      continue;
+    theNotebook->AddDependency( _this(), aHypothesis );
+  }
+
+  if( theIsStoreShape )
+    theNotebook->AddDependency( _this(), theShapeObject );
+}
+
+//=============================================================================
+/*!
+ * \brief Store dependencies for mesh
+ */
+//=============================================================================
+void SMESH_Mesh_i::StoreDependencies( SALOME::Notebook_ptr theNotebook )
+{
+  theNotebook->ClearDependencies( _this(), SALOME::Objects );
+
+  GEOM::GEOM_Object_ptr aShapeObject = GetShapeToMesh();
+  StoreDependenciesForShape( theNotebook, aShapeObject, true );
+
+  std::map<int, SMESH::SMESH_subMesh_ptr>::iterator it = _mapSubMeshIor.begin(), itEnd = _mapSubMeshIor.end();
+  for( ; it != itEnd; it++ ) {
+    SMESH::SMESH_subMesh_ptr aSubMesh = it->second;
+    GEOM::GEOM_Object_ptr aSubShape = aSubMesh->GetSubShape();
+    StoreDependenciesForShape( theNotebook, aSubShape, false );
+  }
 }
 
 //=============================================================================

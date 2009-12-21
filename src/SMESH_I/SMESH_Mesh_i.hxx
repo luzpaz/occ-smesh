@@ -41,7 +41,7 @@
 //#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include "SALOME_GenericObj_i.hh"
+#include "SALOME_ParameterizedObject.hxx"
 
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
@@ -51,14 +51,15 @@ class SMESH_subMesh_i;
 
 class SMESH_I_EXPORT SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
-  public virtual SALOME::GenericObj_i
+  public virtual SALOME_ParameterizedObject
 {
   SMESH_Mesh_i();
   SMESH_Mesh_i(const SMESH_Mesh_i&);
 public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                 SMESH_Gen_i*            myGen_i,
-              CORBA::Long             studyId );
+                CORBA::Long             studyId,
+                SALOME::Notebook_ptr    theNotebook );
 
   virtual ~SMESH_Mesh_i();
 
@@ -507,6 +508,11 @@ public:
   virtual void UpdateStringAttribute( const SALOME::StringArray& theParameters );
 
   /*!
+   * Store dependencies for mesh
+   */
+  virtual void StoreDependencies( SALOME::Notebook_ptr theNotebook );
+
+  /*!
    * Returns statistic of mesh elements
    * Result array of number enityties
    * Inherited from SMESH_IDSource
@@ -528,6 +534,13 @@ private:
    * Check and correct names of mesh groups
    */
   void checkGroupNames();
+
+  /*!
+   * Store dependencies for mesh
+   */
+  virtual void StoreDependenciesForShape( SALOME::Notebook_ptr theNotebook,
+                                          GEOM::GEOM_Object_ptr theShapeObject,
+                                          bool theIsStoreShape );
 
 private:
 

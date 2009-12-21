@@ -42,7 +42,7 @@ using namespace std;
 //=============================================================================
 
 SMESH_Hypothesis_i::SMESH_Hypothesis_i( PortableServer::POA_ptr thePOA )
-     : SALOME::GenericObj_i( thePOA )
+     : SALOME_ParameterizedObject()
 {
   MESSAGE( "SMESH_Hypothesis_i::SMESH_Hypothesis_i / Début" );
   myBaseImpl = 0;
@@ -145,8 +145,23 @@ bool SMESH_Hypothesis_i::IsPublished(){
 //=============================================================================
 char* SMESH_Hypothesis_i::GetEntry()
 {
+  int anId = 0;
+  SALOME::Notebook_ptr aNotebook = GetNotebook();
+  if( !CORBA::is_nil( aNotebook ) )
+  {
+    SALOMEDS::Study_ptr aStudy = aNotebook->GetStudy();
+    if( SMESH_Gen_i* aGen = SMESH_Gen_i::GetSMESHGen() )
+    {
+      if( StudyContext* aStudyContext = aGen->GetStudyContext( aStudy->StudyId() ) )
+      {
+        CORBA::String_var anIOR = aGen->GetORB()->object_to_string( _this() );
+        anId = aStudyContext->findId( anIOR.in() );
+      }
+    }
+  }
+
   char aBuf[100];
-  sprintf( aBuf, "%i", GetId() );
+  sprintf( aBuf, "%i", anId );
   return CORBA::string_dup( aBuf );
 }
 

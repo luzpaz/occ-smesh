@@ -420,6 +420,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     myHypothesis_i =
       myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
     myHypothesis_i->SetLibName(aPlatformLibName/*theLibName*/); // for persistency assurance
+    myHypothesis_i->SetNotebook(GetNotebook(GetCurrentStudyID()));
   }
   catch (SALOME_Exception& S_ex)
   {
@@ -456,7 +457,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
   // Get or create the GEOM_Client instance
   try {
     // create a new mesh object servant, store it in a map in study context
-    SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID() );
+    SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID(),
+                                                  GetNotebook( GetCurrentStudyID() ) );
     // create a new mesh object
     meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID(), myIsEmbeddedMode ));
 
@@ -609,6 +611,20 @@ SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 
 //=============================================================================
 /*!
+ *  SMESH_Gen_i::GetStudyContext 
+ *
+ *  Get study context by study id
+ */
+//=============================================================================
+StudyContext* SMESH_Gen_i::GetStudyContext( int theStudyId )
+{
+  if ( myStudyContextMap.find( theStudyId ) != myStudyContextMap.end() )
+    return myStudyContextMap[ theStudyId ];
+  return 0;
+}
+
+//=============================================================================
+/*!
  *  SMESH_Gen_i::GetCurrentStudyContext 
  *
  *  Get current study context
@@ -616,11 +632,9 @@ SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 //=============================================================================
 StudyContext* SMESH_Gen_i::GetCurrentStudyContext()
 {
-  if ( !CORBA::is_nil( myCurrentStudy ) &&
-      myStudyContextMap.find( GetCurrentStudyID() ) != myStudyContextMap.end() )
-    return myStudyContextMap[ myCurrentStudy->StudyId() ];
-  else
-    return 0;
+  if ( !CORBA::is_nil( myCurrentStudy ) )
+    return GetStudyContext( GetCurrentStudyID() );
+  return 0;
 }
 
 //=============================================================================
@@ -4362,6 +4376,36 @@ SALOME::Notebook_ptr SMESH_Gen_i::GetNotebook( CORBA::Long theStudyID )
   SALOMEDS::Study_ptr aStudy = GetStudy( theStudyID );
   SALOME::Notebook_var aNotebook = aStudy->GetNotebook();
   return aNotebook._retn();
+}
+
+//=================================================================================
+// function : FindObjectByInternalEntry()
+// purpose  :
+//=================================================================================
+SALOME::GenericObj_ptr SMESH_Gen_i::FindObjectByInternalEntry( CORBA::Long theStudyID, const char* theEntry )
+{
+  map<int, StudyContext*>::iterator it = myStudyContextMap.find( theStudyID );
+  if ( it == myStudyContextMap.end() )
+    return NULL;
+
+  StudyContext* aStudyContext = it->second;
+  if ( !aStudyContext )
+    return NULL;
+
+  int id = atoi( theEntry );
+  string anIOR = aStudyContext->getIORbyId( id );
+  if ( !anIOR.empty() ) {
+    CORBA::Object_var anObject = GetORB()->string_to_object( anIOR.c_str() );
+    if ( !CORBA::is_nil( anObject ) ) {
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+      if ( !aHyp->_is_nil() )
+        return aHyp._retn();
+      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( anObject );
+      if ( !aMesh->_is_nil() )
+        return aMesh._retn();
+    }
+  }
+  return NULL;
 }
 
 //=============================================================================

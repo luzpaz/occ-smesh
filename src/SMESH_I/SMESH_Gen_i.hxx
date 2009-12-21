@@ -102,7 +102,11 @@ public:
   }
   // maps old object id to the new one (used when restoring data)
   void mapOldToNew( const int oldId, const int newId ) {
-    mapIdToId[ oldId ] = newId;
+    if ( mapIdToIOR.find( newId ) != mapIdToIOR.end() ) {
+      mapIdToIOR[ oldId ] = mapIdToIOR[ newId ];
+      mapIdToIOR.erase( newId );
+    }
+    mapIdToId[ oldId ] = oldId;
   }
   // get old id by a new one
   int getOldId( const int newId ) {
@@ -476,7 +480,10 @@ public:
   static void SetPixMap(SALOMEDS::SObject_ptr theSObject,
                         const char*           thePixMap);
 
-  //  Get study context
+  // Get study context
+  StudyContext* GetStudyContext( int theStudyId );
+
+  // Get current study context
   StudyContext* GetCurrentStudyContext();
 
   // Register an object in a StudyContext; return object id
@@ -507,6 +514,8 @@ public:
 
   SALOMEDS::Study_ptr GetStudy(CORBA::Long theStudyID);
   SALOME::Notebook_ptr GetNotebook(CORBA::Long theStudyID);
+
+  virtual SALOME::GenericObj_ptr FindObjectByInternalEntry( CORBA::Long theStudyID, const char* theEntry );
 
 private:
   // Create hypothesis of given type
