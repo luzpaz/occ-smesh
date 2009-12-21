@@ -5220,6 +5220,20 @@ class Arithmetic1D(StdMeshers._objref_StdMeshers_Arithmetic1D):
         length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetParameters(self),2,nb,length)
         geompyDC.SetParameters(self, parameters)
         StdMeshers._objref_StdMeshers_Arithmetic1D.SetLength(self,length,isStart)
+
+    ## Set Start Length parameter value
+    #  @param length numerical value or name of variable from notebook
+    def SetStartLength(self, length):
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetParameters(self),2,1,length)
+        geompyDC.SetParameters(self, parameters)
+        StdMeshers._objref_StdMeshers_Arithmetic1D.SetStartLength(self,length)
+
+   ## Set End Length parameter value
+   #  @param length numerical value or name of variable from notebook
+    def SetEndLength(self, length):
+        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetParameters(self),2,2,length)
+        geompyDC.SetParameters(self, parameters)
+        StdMeshers._objref_StdMeshers_Arithmetic1D.SetEndLength(self,length)
         
 #Registering the new proxy for Arithmetic1D
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_Arithmetic1D._NP_RepositoryId, Arithmetic1D)

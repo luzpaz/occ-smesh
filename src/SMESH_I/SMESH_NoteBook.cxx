@@ -290,6 +290,16 @@ void SMESH_NoteBook::ReplaceVariables()
             aCmd->SetArg(1,aStates->GetCurrectState().at(1));
           //aStates->IncrementState();
         }
+        if(aMethod == "SetStartLength" &&
+           aStates->GetCurrectState().size() >= 2) {
+          if(!aStates->GetCurrectState().at(0).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+        }
+        if(aMethod == "SetEndLength" &&
+           aStates->GetCurrectState().size() >= 2) {
+          if(!aStates->GetCurrectState().at(1).IsEmpty() )
+            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+        }
       }
       
       //Case for Deflection1D hypothesis
