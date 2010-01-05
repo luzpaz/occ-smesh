@@ -325,14 +325,14 @@ void SMESHDS_SubMesh::Clear()
 
 int SMESHDS_SubMesh::getSize()
 {
-  int a = sizeof(myElements);
-  int b = sizeof(myNodes);
+//  int a = sizeof(myElements);
+//  int b = sizeof(myNodes);
   int c = NbNodes();
   int d = NbElements();
   cerr << "SMESHDS_SubMesh::NbNodes " << c << endl;
   cerr << "SMESHDS_SubMesh::NbElements " << d << endl;
-  cerr << "SMESHDS_SubMesh::myNodes " << b << endl;
-  cerr << "SMESHDS_SubMesh::myElements " << a << endl;
+//  cerr << "SMESHDS_SubMesh::myNodes " << b << endl;
+//  cerr << "SMESHDS_SubMesh::myElements " << a << endl;
   return c+d;
 }
 

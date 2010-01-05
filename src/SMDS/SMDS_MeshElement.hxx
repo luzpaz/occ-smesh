@@ -41,7 +41,8 @@ typedef short ShortType;
 
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
-class SMDS_MeshFace;	
+class SMDS_MeshFace;
+class SMDS_Mesh;
 
 // ============================================================
 /*!
@@ -73,7 +74,8 @@ public:
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
 
   friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
-  friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
+  friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement* elem);
+  friend class SMDS_Mesh;
 
   // ===========================
   //  Access to nodes by index
@@ -119,7 +121,7 @@ public:
    */
   int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
-  inline int getId() {return myID; };
+  inline int getId() const {return myID; };
   inline UShortType getMeshId() {return myMeshId; };
   inline ShortType getshapeId() {return myShapeId; };
   inline void setShapeId(UShortType shapeId) {myShapeId = shapeId; };
@@ -130,7 +132,7 @@ protected:
   virtual void Print(std::ostream & OS) const;
 
   int myID;        // --- element index 
-  UShortType myMeshId;
+  ShortType myMeshId;
   ShortType myShapeId;
 };
 
@@ -144,8 +146,10 @@ class SMDS_EXPORT SMDS_MeshCell:public SMDS_MeshElement
 {
 public:
     SMDS_MeshCell();
-    inline void setVtkId(int vtkId) { myVtkID = vtkId; };
+    virtual ~SMDS_MeshCell();
+   inline void setVtkId(int vtkId) { myVtkID = vtkId; };
     inline int getVtkId() const {return myVtkID; };
+    static int nbCells;
 protected:
     int myVtkID;
 };

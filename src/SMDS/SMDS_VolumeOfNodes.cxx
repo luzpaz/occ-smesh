@@ -29,7 +29,10 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMDS_Mesh.hxx"
 #include "utilities.h"
+
+#include <vtkCell.h>
 
 #include <vector>
 
@@ -258,6 +261,17 @@ SMDS_VolumeVtkNodes::SMDS_VolumeVtkNodes()
 {
 }
 
+SMDS_VolumeVtkNodes::SMDS_VolumeVtkNodes(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+{
+  init(nodeIds, mesh);
+}
+
+void SMDS_VolumeVtkNodes::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+{
+  vtkUnstructuredGrid* grid = mesh->getGrid();
+  myVtkID = grid->InsertNextLinkedCell(GetType(), nodeIds.size(), &nodeIds[0]);
+}
+
 bool SMDS_VolumeVtkNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
                                      const int            nbNodes)
 {
@@ -289,7 +303,9 @@ int SMDS_VolumeVtkNodes::NbFaces() const
 
 int SMDS_VolumeVtkNodes::NbNodes() const
 {
-        return 0;
+  vtkUnstructuredGrid* grid =SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  int nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
+  return nbPoints;
 }
 
 int SMDS_VolumeVtkNodes::NbEdges() const

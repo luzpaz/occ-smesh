@@ -511,7 +511,7 @@ static bool fixCommonVertexUV (R2 &                 theUV,
         if ( theCreateQuadratic && SMESH_MesherHelper::IsMedium( node, SMDSAbs_Edge ))
           continue;
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = epos->GetUParameter();
         if ( u < umin )
           umin = u;

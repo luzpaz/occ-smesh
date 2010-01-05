@@ -37,6 +37,8 @@
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
+#include "SMDS_VolumeOfNodes.hxx"
+#include "ObjectPool.hxx"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -48,7 +50,9 @@ class vtkUnstructuredGrid;
 
 class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
-
+  friend class SMDS_MeshElementIDFactory;
+  friend class SMDS_MeshVolumeVtkNodes;
+  
   static std::vector<SMDS_Mesh*> _meshList;    // --- to find the SMDS_mesh from its elements
 
   SMDS_Mesh();
@@ -549,8 +553,11 @@ public:
   typedef std::vector<SMDS_MeshCell *> SetOfCells;
 
   void updateNodeMinMax();
-  int fromVtkToSmds(int vtkid) { return myElementIDFactory->fromVtkToSmds(vtkid); };
+  int fromVtkToSmds(int vtkid) { return myVtkIndex[vtkid]; };
 
+  void incrementNodesCapacity(int nbNodes);
+  void incrementCellsCapacity(int nbCells);
+  
   int myCellLinksSize;
 
   static int chunkSize;
@@ -595,14 +602,12 @@ private:
   int myMeshId;                           // --- index for this mesh in the vector
   vtkUnstructuredGrid*      myGrid;
 
-
+  ObjectPool<SMDS_MeshNode>* myNodePool;
+  ObjectPool<SMDS_VolumeVtkNodes>* myVolumePool;
   SetOfNodes             myNodes;
   SetOfCells             myCells;
-
-//   SetOf0DElements        my0DElements;
-//   SetOfEdges             myEdges;
-//   SetOfFaces             myFaces;
-//   SetOfVolumes           myVolumes;
+  std::vector<int>       myIDElements; // index = ID client, value = ID vtk
+  std::vector<int>       myVtkIndex;   // index = ID vtk, value = ID client
 
   SMDS_Mesh *            myParent;
   std::list<SMDS_Mesh *> myChildren;

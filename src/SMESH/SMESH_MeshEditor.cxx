@@ -337,7 +337,7 @@ int SMESH_MeshEditor::FindShape (const SMDS_MeshElement * theElem)
   if ( theElem->GetType() == SMDSAbs_Node ) {
     const SMDS_PositionPtr& aPosition =
       static_cast<const SMDS_MeshNode*>( theElem )->GetPosition();
-    if ( aPosition.get() )
+    if ( aPosition )
       return aPosition->GetShapeId();
     else
       return 0;
@@ -348,7 +348,7 @@ int SMESH_MeshEditor::FindShape (const SMDS_MeshElement * theElem)
   while ( nodeIt->more() ) {
     const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
     const SMDS_PositionPtr& aPosition = node->GetPosition();
-    if ( aPosition.get() ) {
+    if ( aPosition ) {
       int aShapeID = aPosition->GetShapeId();
       SMESHDS_SubMesh * sm = aMesh->MeshElements( aShapeID );
       if ( sm ) {
@@ -2345,7 +2345,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
       while ( nn++ < nbn ) {
         node = static_cast<const SMDS_MeshNode*>( itN->next() );
         const SMDS_PositionPtr& pos = node->GetPosition();
-        posType = pos.get() ? pos->GetTypeOfPosition() : SMDS_TOP_3DSPACE;
+        posType = pos ? pos->GetTypeOfPosition() : SMDS_TOP_3DSPACE;
         if (posType != SMDS_TOP_EDGE &&
             posType != SMDS_TOP_VERTEX &&
             theFixedNodes.find( node ) == theFixedNodes.end())
@@ -2403,11 +2403,11 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         node = *n;
         gp_XY uv( 0, 0 );
         const SMDS_PositionPtr& pos = node->GetPosition();
-        posType = pos.get() ? pos->GetTypeOfPosition() : SMDS_TOP_3DSPACE;
+        posType = pos ? pos->GetTypeOfPosition() : SMDS_TOP_3DSPACE;
         // get existing UV
         switch ( posType ) {
         case SMDS_TOP_FACE: {
-          SMDS_FacePosition* fPos = ( SMDS_FacePosition* ) pos.get();
+          SMDS_FacePosition* fPos = ( SMDS_FacePosition* ) pos;
           uv.SetCoord( fPos->GetUParameter(), fPos->GetVParameter() );
           break;
         }
@@ -2417,7 +2417,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
           if ( !S.IsNull() && S.ShapeType() == TopAbs_EDGE )
             pcurve = BRep_Tool::CurveOnSurface( TopoDS::Edge( S ), face, f,l );
           if ( !pcurve.IsNull() ) {
-            double u = (( SMDS_EdgePosition* ) pos.get() )->GetUParameter();
+            double u = (( SMDS_EdgePosition* ) pos )->GetUParameter();
             uv = pcurve->Value( u ).XY();
           }
           break;
@@ -4020,7 +4020,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     while ( aItN->more() ) {
       const SMDS_MeshNode* pNode = aItN->next();
       const SMDS_EdgePosition* pEPos =
-        static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+        static_cast<const SMDS_EdgePosition*>( pNode->GetPosition() );
       double aT = pEPos->GetUParameter();
       aPrms.push_back( aT );
     }
@@ -4064,7 +4064,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         while ( aItN->more() ) {
           const SMDS_MeshNode* pNode = aItN->next();
           const SMDS_EdgePosition* pEPos =
-            static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+            static_cast<const SMDS_EdgePosition*>( pNode->GetPosition() );
           double aT = pEPos->GetUParameter();
           aPrms.push_back( aT );
         }
@@ -4192,7 +4192,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
       const SMDS_MeshNode* pNode = aItN->next();
       if( pNode==aN1 || pNode==aN2 ) continue;
       const SMDS_EdgePosition* pEPos =
-        static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+        static_cast<const SMDS_EdgePosition*>( pNode->GetPosition() );
       double aT = pEPos->GetUParameter();
       aPrms.push_back( aT );
     }
@@ -4239,7 +4239,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         while ( aItN->more() ) {
           const SMDS_MeshNode* pNode = aItN->next();
           const SMDS_EdgePosition* pEPos =
-            static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+            static_cast<const SMDS_EdgePosition*>( pNode->GetPosition() );
           double aT = pEPos->GetUParameter();
           aPrms.push_back( aT );
         }

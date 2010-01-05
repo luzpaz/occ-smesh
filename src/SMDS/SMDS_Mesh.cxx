@@ -51,7 +51,8 @@ using namespace std;
 #define CHECKMEMORY_INTERVAL 1000
 
 vector<SMDS_Mesh*> SMDS_Mesh::_meshList = vector<SMDS_Mesh*>();
-int SMDS_Mesh::chunkSize = 1000;
+int SMDS_Mesh::chunkSize = 1024;
+
 
 //================================================================================
 /*!
@@ -113,15 +114,21 @@ SMDS_Mesh::SMDS_Mesh()
          myElementIDFactory(new SMDS_MeshElementIDFactory()),
          myHasConstructionEdges(false), myHasConstructionFaces(false),
          myHasInverseElements(true),
-         myNodeMin(0), myNodeMax(0), myCellLinksSize(0)
+         myNodeMin(0), myNodeMax(0), myCellLinksSize(0),
+         myNodePool(0), myVolumePool(0)
 {
   myMeshId = _meshList.size();         // --- index of the mesh to push back in the vector
   MESSAGE("myMeshId=" << myMeshId);
   myNodeIDFactory->SetMesh(this);
   myElementIDFactory->SetMesh(this);
   _meshList.push_back(this);
+  myNodePool = new ObjectPool<SMDS_MeshNode>(SMDS_Mesh::chunkSize);
+  myVolumePool = new ObjectPool<SMDS_VolumeVtkNodes>(SMDS_Mesh::chunkSize);
+
   myNodes.clear();
   myCells.clear();
+  myIDElements.clear();
+  myVtkIndex.clear();
   myGrid = vtkUnstructuredGrid::New();
   myGrid->Initialize();
   myGrid->Allocate();
@@ -139,9 +146,11 @@ SMDS_Mesh::SMDS_Mesh()
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_Mesh::SMDS_Mesh(SMDS_Mesh * parent)
         :myParent(parent), myNodeIDFactory(parent->myNodeIDFactory),
-        myElementIDFactory(parent->myElementIDFactory),
-        myHasConstructionEdges(false), myHasConstructionFaces(false),
-        myHasInverseElements(true)
+         myElementIDFactory(parent->myElementIDFactory),
+         myHasConstructionEdges(false), myHasConstructionFaces(false),
+         myHasInverseElements(true),
+         myNodePool(parent->myNodePool),
+         myVolumePool(parent->myVolumePool)
 {
 }
 
@@ -178,7 +187,9 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
   const SMDS_MeshElement *node = myNodeIDFactory->MeshElement(ID);
   if(!node){
     //if ( myNodes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
-    SMDS_MeshNode * node=new SMDS_MeshNode(ID, myMeshId, -1, x, y, z);
+    //SMDS_MeshNode * node=new SMDS_MeshNode(ID, myMeshId, -1, x, y, z);
+    SMDS_MeshNode * node = myNodePool->getNew();
+    node->init(ID, myMeshId, -1, x, y, z);
     if (ID >= myNodes.size())
     {
         myNodes.resize(ID+SMDS_Mesh::chunkSize, 0);
@@ -842,13 +853,27 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     return NULL;
   }
   else {
-//    volume=new SMDS_HexahedronOfNodes(n1,n2,n3,n4,n5,n6,n7,n8);
-    volume=new SMDS_VolumeOfNodes(n1,n2,n3,n4,n5,n6,n7,n8);
+    // --- retreive nodes ID
+    vector<vtkIdType> nodeIds;
+    nodeIds.clear();
+    nodeIds.push_back(n1->getId());
+    nodeIds.push_back(n2->getId());
+    nodeIds.push_back(n3->getId());
+    nodeIds.push_back(n4->getId());
+    nodeIds.push_back(n5->getId());
+    nodeIds.push_back(n6->getId());
+    nodeIds.push_back(n7->getId());
+    nodeIds.push_back(n8->getId());
+
+    //volume = new SMDS_VolumeVtkNodes(nodeIds, this);
+    SMDS_VolumeVtkNodes *volvtk = myVolumePool->getNew();
+    volvtk->init(nodeIds, this);
+    volume = volvtk;
     adjustmyCellsCapacity(ID);
     myCells[ID] = volume;
     myInfo.myNbHexas++;
   }
-
+ 
   if (!registerElement(ID, volume)) {
     RemoveElement(volume, false);
     volume = NULL;
@@ -1130,14 +1155,42 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolume
 ///////////////////////////////////////////////////////////////////////////////
 /// Registers element with the given ID, maintains inverse connections
 ///////////////////////////////////////////////////////////////////////////////
-bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement * element)
+bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
 {
-    //MESSAGE("registerElement " << ID)
-  if (myElementIDFactory->BindID(ID, element)) {
-    return true;
+  //MESSAGE("registerElement " << ID)
+  if ((ID < myIDElements.size()) && myIDElements[ID] >= 0) // --- already bound
+  {
+    MESSAGE(" --------------------------------- already bound "<< ID << " " << myIDElements[ID]);
+    return false;
   }
-  MESSAGE("BindID " << ID << " false!---------------");
-  return false;
+
+  element->myID = ID;
+  element->myMeshId = myMeshId;
+
+  SMDS_MeshCell *cell = dynamic_cast<SMDS_MeshCell*>(element);
+  assert(cell);
+  int vtkId = cell->getVtkId();  
+  if (vtkId == -1)
+    vtkId = myElementIDFactory->SetInVtkGrid(element);
+  
+  if (ID >= myIDElements.size()) // --- resize local vector
+  {
+    MESSAGE(" ------------------- resize myIDElements " << ID << " --> " << ID + SMDS_Mesh::chunkSize);
+    myIDElements.resize(ID + SMDS_Mesh::chunkSize, -1); // fill new elements with -1
+  }
+
+  myIDElements[ID] = vtkId;
+  //MESSAGE("smds:" << ID << " vtk:" << cellId );
+
+  if (vtkId >= myVtkIndex.size()) // --- resize local vector
+  {
+    MESSAGE(" --------------------- resize myVtkIndex " << vtkId << " --> " << vtkId + SMDS_Mesh::chunkSize);
+    myVtkIndex.resize(vtkId + SMDS_Mesh::chunkSize, -1);
+  }
+  myVtkIndex[vtkId] = ID;
+
+  myElementIDFactory->updateMinMax(ID);
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3404,4 +3457,24 @@ void SMDS_Mesh::updateNodeMinMax()
   myNodeMax=myNodes.size()-1;
   while (!myNodes[myNodeMax] && (myNodeMin>=0))
     myNodeMin--;
+}
+
+void SMDS_Mesh::incrementNodesCapacity(int nbNodes)
+{
+  int val = myIDElements.size();
+  MESSAGE(" ------------------- resize myIDElements " << val << " --> " << val + nbNodes);
+  myIDElements.resize(val + nbNodes, -1); // fill new elements with -1
+  val = myNodes.size();
+  MESSAGE(" ------------------- resize myNodes " << val << " --> " << val + nbNodes);
+  myNodes.resize(val +nbNodes, 0);
+}
+
+void SMDS_Mesh::incrementCellsCapacity(int nbCells)
+{
+  int val = myVtkIndex.size();
+  MESSAGE(" ------------------- resize myVtkIndex " << val << " --> " << val + nbCells);
+  myVtkIndex.resize(val + nbCells, -1); // fill new elements with -1
+  val = myCells.size();
+  MESSAGE(" ------------------- resize myCells " << val << " --> " << val + nbCells);
+  myNodes.resize(val +nbCells, 0);
 }

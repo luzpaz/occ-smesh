@@ -733,7 +733,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         {
           const SMDS_MeshNode* node = smdsNode( nIt->next() );
           const SMDS_EdgePosition* epos =
-            static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+            static_cast<const SMDS_EdgePosition*>(node->GetPosition());
           double u = epos->GetUParameter();
           paramNodeMap.insert( make_pair( u, node ));
         }
@@ -850,7 +850,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           p->myInitUV = project( node, projector );
         else {
           const SMDS_FacePosition* pos =
-            static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
+            static_cast<const SMDS_FacePosition*>(node->GetPosition());
           p->myInitUV.SetCoord( pos->GetUParameter(), pos->GetVParameter() );
         }
         p->myInitXYZ.SetCoord( p->myInitUV.X(), p->myInitUV.Y(), 0 );
@@ -3208,7 +3208,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
       {
         const SMDS_MeshNode* node = smdsNode( nIt->next() );
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = ( epos->GetUParameter() - f ) / ( l - f );
         (*pIt)->myInitXYZ.SetCoord( iCoord, isForward ? u : 1 - u );
       }

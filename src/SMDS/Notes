@@ -58,17 +58,92 @@ enlever vtkId de SMDS_MeshCell, utiliser SMDS_MeshElementIDFactory.
 ajouter ID dans SMDS_Mesh::createTriangle 
 verifier ID dans SMDS_Mesh::Find*OrCreate
 
-========================
+===================================================
 occupation memoire cube 100*100*100 sans affichage
 
-Ubuntu 9.10 64 bits 15/12/2009
-/home/prascle/projets/SALOME/SMESH/BR_SMDS_MEMIMP/SMESH_SRC/src/SMESH/SMESH_Gen.cxx:143
-in use bytes     =   32843200 
-/home/prascle/projets/SALOME/SMESH/BR_SMDS_MEMIMP/SMESH_SRC/src/SMESH/SMESH_Gen.cxx [294] : VSR - SMESH_Gen::Compute() finished, OK = 1
-in use bytes     =  498773760
-delta = 460 Mo (45 Mo de plus que sur Sarge 64 bits ?)
+Reference : V513 Debian Sarge 64 bits: --> 463 - 33 = 430 Mo
+-------------------------------------
+Total (incl. mmap):
+system bytes     =   43757568
+in use bytes     =   32909584 = 33M
+max mmap regions =         41
+max mmap bytes   =   16371712
+----
+Total (incl. mmap):
+system bytes     =  464670720
+in use bytes     =  463105120 = 463M
+max mmap regions =         47
+max mmap bytes   =   28188672
 
-Debian Sarge 64 bits
-in use bytes     =   17076352
-in use bytes     =  431600032
-delta = 415 Mo
+Debian Sarge 64 bits, vtkUnstructuredGrid nodes et hexa, 4 janvier 2010 --> 512 - 41 = 471M
+-----------------------------------
+
+Total (incl. mmap):
+system bytes     =   52133888
+in use bytes     =   41340320 : 41M
+max mmap regions =         72
+max mmap bytes   =   24625152
+----
+Total (incl. mmap):
+system bytes     =  520560640
+in use bytes     =  518735584 : 512M
+max mmap regions =         88
+max mmap bytes   =  198385664
+
+idem avec pool SMDS_MeshNodes --> 483 -33 = 450M
+-----------------------------
+Total (incl. mmap):
+system bytes     =   43696128
+in use bytes     =   32915184 : 33M 
+max mmap regions =         41
+max mmap bytes   =   16371712
+----
+Total (incl. mmap):
+system bytes     =  484806656
+in use bytes     =  482980992 : 483M
+max mmap regions =         58
+max mmap bytes   =  184557568
+
+idem ci-dessus + pool SMDS_VolumeVtkNodes --> 475 -33 = 442M (git: add ObjectPool.hxx)
+-----------------------------------------
+
+Total (incl. mmap):
+system bytes     =   43200512
+in use bytes     =   32908576 : 33M
+max mmap regions =         41
+max mmap bytes   =   16371712
+----
+Total (incl. mmap):
+system bytes     =  478068736
+in use bytes     =  475144400 : 475M
+max mmap regions =         59
+max mmap bytes   =  184692736
+
+remplacement SMDS_PositionPtr: (boost::shared_ptr<SMDS_Position> --> SMDS_Position*) --> 436 - 35 = 401M (git SMDS_Position)
+------------------------------------------------------------------------------------
+Total (incl. mmap):
+system bytes     =   45408256
+in use bytes     =   35097680 : 35M
+max mmap regions =         47
+max mmap bytes   =   18116608
+----
+Total (incl. mmap):
+system bytes     =  438935552
+in use bytes     =  436116560 : 436M
+max mmap regions =         65
+max mmap bytes   =  186437632
+
+simplification SMDS_SpacePosition (pas de double[3]) --> 418 -33 = 385M (git SMDS_SpacePosition)
+----------------------------------------------------
+Total (incl. mmap):
+system bytes     =   42582016
+in use bytes     =   32883552 : 33M
+max mmap regions =         41
+max mmap bytes   =   16371712
+----
+Total (incl. mmap):
+system bytes     =  421728256
+in use bytes     =  418378000 : 418M
+max mmap regions =         58
+max mmap bytes   =  183640064
+

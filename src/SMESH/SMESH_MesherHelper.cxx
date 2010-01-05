@@ -343,7 +343,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
   {
     // node has position on face
     const SMDS_FacePosition* fpos =
-      static_cast<const SMDS_FacePosition*>(n->GetPosition().get());
+      static_cast<const SMDS_FacePosition*>(n->GetPosition());
     uv.SetCoord(fpos->GetUParameter(),fpos->GetVParameter());
     uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( F ));
   }
@@ -353,7 +353,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     // corresponding edge from face, get pcurve for this
     // edge and retrieve value from this pcurve
     const SMDS_EdgePosition* epos =
-      static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
+      static_cast<const SMDS_EdgePosition*>(n->GetPosition());
     int edgeID = Pos->GetShapeId();
     TopoDS_Edge E = TopoDS::Edge(GetMeshDS()->IndexToShape(edgeID));
     double f, l, u = epos->GetUParameter();
@@ -548,7 +548,7 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
   const SMDS_PositionPtr Pos = n->GetPosition();
   if(Pos->GetTypeOfPosition()==SMDS_TOP_EDGE) {
     const SMDS_EdgePosition* epos =
-      static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
+      static_cast<const SMDS_EdgePosition*>(n->GetPosition());
     param =  epos->GetUParameter();
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX) {
@@ -1176,7 +1176,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
     if(IsMedium(node, SMDSAbs_Edge))
       continue;
     const SMDS_EdgePosition* pos =
-      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
+      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition() );
     if ( !pos ) {
       return false;
     }
@@ -1198,7 +1198,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
     if(IsMedium(node))
       continue;
     const SMDS_EdgePosition* pos =
-      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
+      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition() );
     if ( !pos ) {
       return false;
     }

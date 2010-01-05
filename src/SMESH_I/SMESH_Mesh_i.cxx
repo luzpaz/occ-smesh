@@ -2949,15 +2949,15 @@ SMESH::NodePosition* SMESH_Mesh_i::GetNodePosition(CORBA::Long NodeID)
         aNodePosition->shapeType = GEOM::EDGE;
         aNodePosition->params.length(1);
         aNodePosition->params[0] =
-          static_cast<SMDS_EdgePosition*>( pos.get() )->GetUParameter();
+          static_cast<SMDS_EdgePosition*>( pos )->GetUParameter();
         break;
       case SMDS_TOP_FACE:
         aNodePosition->shapeType = GEOM::FACE;
         aNodePosition->params.length(2);
         aNodePosition->params[0] =
-          static_cast<SMDS_FacePosition*>( pos.get() )->GetUParameter();
+          static_cast<SMDS_FacePosition*>( pos )->GetUParameter();
         aNodePosition->params[1] =
-          static_cast<SMDS_FacePosition*>( pos.get() )->GetVParameter();
+          static_cast<SMDS_FacePosition*>( pos )->GetVParameter();
         break;
       case SMDS_TOP_VERTEX:
         aNodePosition->shapeType = GEOM::VERTEX;

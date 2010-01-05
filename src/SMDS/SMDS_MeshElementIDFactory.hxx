@@ -33,18 +33,21 @@
 #include <vector>
 
 class SMDS_MeshElement;
+class SMDS_Mesh;
 
 class SMDS_EXPORT SMDS_MeshElementIDFactory:public SMDS_MeshNodeIDFactory
 {
 public:
+  friend class SMDS_Mesh;
+  
   SMDS_MeshElementIDFactory();
   bool BindID(int ID, SMDS_MeshElement * elem);
+  int SetInVtkGrid(SMDS_MeshElement * elem);
   SMDS_MeshElement * MeshElement(int ID);
   virtual void ReleaseID(int ID);
   SMDS_ElemIteratorPtr elementsIterator() const;
   virtual void Clear();
   int GetVtkCellType(int SMDSType);
-  int fromVtkToSmds(int vtkid) { return myVtkIndex[vtkid]; };
 
 protected:
   void updateMinMax() const;
@@ -54,8 +57,6 @@ protected:
     if (id < myMin) myMin = id;
   }
 
-  std::vector<int> myIDElements; // index = ID client, value = ID vtk
-  std::vector<int> myVtkIndex;   // index = ID vtk, value = ID client
   std::vector<int> myVtkCellTypes;
 
 };

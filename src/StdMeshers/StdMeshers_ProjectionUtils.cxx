@@ -1750,7 +1750,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
       while ( nIt->more() ) {
         const SMDS_MeshNode* node = nIt->next();
         const SMDS_EdgePosition* pos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         pos2nodes.insert( make_pair( pos->GetUParameter(), node ));
       }
       if ( pos2nodes.size() != edgeSM->NbNodes() )

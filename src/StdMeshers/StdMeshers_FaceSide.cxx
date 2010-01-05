@@ -238,7 +238,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
           continue;
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = epos->GetUParameter();
         // paramSize is signed so orientation is taken into account
         double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
@@ -288,7 +288,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
       const SMDS_EdgePosition* epos =
-        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition().get());
+        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
       if ( epos ) {
         uvPt.param = epos->GetUParameter();
       }

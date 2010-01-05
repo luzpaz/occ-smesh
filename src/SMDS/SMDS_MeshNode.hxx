@@ -36,8 +36,12 @@ class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 {
 
 public:
+  SMDS_MeshNode();
   SMDS_MeshNode(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
+  virtual ~SMDS_MeshNode();
 
+  void init(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
+  
   double* getCoord() const;
 
   void Print(std::ostream & OS) const;
@@ -64,7 +68,7 @@ public:
    * \retval const SMDS_MeshNode* - the node
    */
   virtual const SMDS_MeshNode* GetNode(const int) const { return this; }
-
+  static int nbNodes;
 protected:
   SMDS_ElemIteratorPtr
   elementsIterator(SMDSAbs_ElementType type) const;

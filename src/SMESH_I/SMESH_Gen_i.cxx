@@ -2983,7 +2983,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       const SMDS_PositionPtr pos = node->GetPosition();
                       if ( onFace ) { // on FACE
                         const SMDS_FacePosition* fPos =
-                          dynamic_cast<const SMDS_FacePosition*>( pos.get() );
+                          dynamic_cast<const SMDS_FacePosition*>( pos );
                         if ( fPos ) {
                           aUPos[ iNode ] = fPos->GetUParameter();
                           aVPos[ iNode ] = fPos->GetVParameter();
@@ -2994,7 +2994,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       }
                       else { // on EDGE
                         const SMDS_EdgePosition* ePos =
-                          dynamic_cast<const SMDS_EdgePosition*>( pos.get() );
+                          dynamic_cast<const SMDS_EdgePosition*>( pos );
                         if ( ePos ) {
                           aUPos[ iNode ] = ePos->GetUParameter();
                           iNode++;
@@ -3973,7 +3973,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 // not fixed bugs in SMDS_MeshInfo
                 if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
                   SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                    ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
+                    ( static_cast<const SMDS_FacePosition*>( aPos ));
                   fPos->SetUParameter( aUPos[ iNode ]);
                   fPos->SetVParameter( aVPos[ iNode ]);
                 }
@@ -3982,7 +3982,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
                 if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
                   SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                    ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
+                    ( static_cast<const SMDS_EdgePosition*>( aPos ));
                   fPos->SetUParameter( aUPos[ iNode ]);
                 }
               }

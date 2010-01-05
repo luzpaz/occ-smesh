@@ -46,8 +46,8 @@ using namespace std;
 SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():
   SMDS_MeshNodeIDFactory()
 {
-    myIDElements.clear();
-    myVtkIndex.clear();
+//    myIDElements.clear();
+//    myVtkIndex.clear();
     myVtkCellTypes.clear();
     myVtkCellTypes.reserve(SMDSEntity_Last);
     myVtkCellTypes[SMDSEntity_Node]            = VTK_VERTEX;
@@ -72,25 +72,9 @@ SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():
     myVtkCellTypes[SMDSEntity_Quad_Polyhedra]  = VTK_CONVEX_POINT_SET;
 }
 
-//=======================================================================
-//function : BindID
-//purpose  : 
-//=======================================================================
-bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
+int SMDS_MeshElementIDFactory::SetInVtkGrid(SMDS_MeshElement * elem)
 {
-  if ((ID < myIDElements.size()) && myIDElements[ID] >= 0) // --- already bound
-  {
-    MESSAGE(" --------------------------------- already bound "<< ID << " " << myIDElements[ID]);
-      return false;
-  }
-
-  if (ID >= myIDElements.size()) // --- resize local vector
-  {
-    //MESSAGE(" ------------------- resize myIDElements " << ID << " --> " << ID+SMDS_Mesh::chunkSize);
-    myIDElements.resize(ID+SMDS_Mesh::chunkSize,-1); // fill new elements with -1
-  }
-
-  // --- retreive nodes ID
+   // --- retreive nodes ID
 
   vector<vtkIdType> nodeIds;
   SMDS_ElemIteratorPtr it = elem->nodesIterator();
@@ -106,25 +90,23 @@ bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
   vtkUnstructuredGrid * grid = myMesh->getGrid();
   int typ = GetVtkCellType(elem->GetType());
   int cellId = grid->InsertNextLinkedCell(typ, nodeIds.size(), &nodeIds[0]);
-
-  // --- fill local vector
-
-  myIDElements[ID] = cellId;
-  //MESSAGE("smds:" << ID << " vtk:" << cellId );
-
-  if (cellId >= myVtkIndex.size()) // --- resize local vector
-  {
-    //MESSAGE(" --------------------- resize myVtkIndex " << cellId << " --> " << cellId+SMDS_Mesh::chunkSize);
-    myVtkIndex.resize(cellId+SMDS_Mesh::chunkSize, -1);
-  }
-  myVtkIndex[cellId] = ID;
-
-  elem->myID=ID;
   SMDS_MeshCell *cell = dynamic_cast<SMDS_MeshCell*>(elem);
   assert(cell);
-  cell->setVtkId(cellId);
-  updateMinMax (ID);
-  return true;
+  cell->setVtkId(cellId); 
+  //MESSAGE("SMDS_MeshElementIDFactory::SetInVtkGrid " << cellId);
+  return cellId;
+}
+
+//=======================================================================
+//function : BindID
+//purpose  : 
+//=======================================================================
+
+bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
+{
+  MESSAGE("SMDS_MeshElementIDFactory::BindID " << ID);
+  SetInVtkGrid(elem);
+  return myMesh->registerElement(ID, elem);
 }
 
 //=======================================================================
@@ -133,7 +115,7 @@ bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 //=======================================================================
 SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 {
-  if ((ID<0) || (ID>myMax) || (myIDElements[ID]<0))
+  if ((ID<0) || (ID>myMax) || (myMesh->myIDElements[ID]<0))
     return NULL;
   const SMDS_MeshElement* elem = GetMesh()->FindElement(ID);
   return (SMDS_MeshElement*)(elem);
@@ -145,7 +127,7 @@ SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 //=======================================================================
 void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
 {
-  myIDElements[ID] = -1;
+  myMesh->myIDElements[ID] = -1;
   SMDS_MeshIDFactory::ReleaseID(ID);
   if (ID == myMax)
     myMax = 0;
@@ -162,8 +144,8 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
 {
   myMin = IntegerLast();
   myMax = 0;
-  for (int i=0; i<myIDElements.size(); i++)
-      if (int id=myIDElements[i] >=0)
+  for (int i=0; i<myMesh->myIDElements.size(); i++)
+      if (int id=myMesh->myIDElements[i] >=0)
       {
         if (id > myMax) myMax = id;
         if (id < myMin) myMin = id;
@@ -184,7 +166,7 @@ SMDS_ElemIteratorPtr SMDS_MeshElementIDFactory::elementsIterator() const
 
 void SMDS_MeshElementIDFactory::Clear()
 {
-  myIDElements.clear();
+  myMesh->myIDElements.clear();
   myMin = myMax = 0;
   SMDS_MeshIDFactory::Clear();
 }

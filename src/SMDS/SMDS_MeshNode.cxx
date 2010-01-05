@@ -39,15 +39,31 @@
 
 using namespace std;
 
+int SMDS_MeshNode::nbNodes =0;
+
 //=======================================================================
 //function : SMDS_MeshNode
 //purpose  : 
 //=======================================================================
+SMDS_MeshNode::SMDS_MeshNode() :
+  SMDS_MeshElement(-1, -1, -1),
+  myPosition(SMDS_SpacePosition::originSpacePosition())
+{
+}
 
 SMDS_MeshNode::SMDS_MeshNode(int id, int meshId, int shapeId, double x, double y, double z):
   SMDS_MeshElement(id, meshId, shapeId),
   myPosition(SMDS_SpacePosition::originSpacePosition())
 {
+  init(id, meshId, shapeId, x, y ,z);
+}
+
+void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, double z)
+{
+  nbNodes++;
+  myID = id;
+  myMeshId = meshId;
+  myShapeId = shapeId;
   //MESSAGE("Node " << myID << " (" << x << ", " << y << ", " << z << ")");
   SMDS_Mesh* mesh = SMDS_Mesh::_meshList[myMeshId];
   vtkUnstructuredGrid * grid = mesh->getGrid();
@@ -88,6 +104,11 @@ SMDS_MeshNode::SMDS_MeshNode(int id, int meshId, int shapeId, double x, double y
       //MESSAGE(" -------------------------------------- resize CellLinks " << myID << " --> " << mesh->myCellLinksSize);
   }
   //setXYZ(x, y, z);
+}
+
+SMDS_MeshNode::~SMDS_MeshNode()
+{
+  nbNodes--;
 }
 
 //=======================================================================
