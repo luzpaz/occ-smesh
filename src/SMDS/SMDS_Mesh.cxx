@@ -36,6 +36,7 @@
 #include "SMDS_QuadraticEdge.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_QuadraticVolumeOfNodes.hxx"
+#include "SMDS_SpacePosition.hxx"
 
 #include <vtkUnstructuredGrid.h>
 
@@ -119,6 +120,12 @@ SMDS_Mesh::SMDS_Mesh()
 {
   myMeshId = _meshList.size();         // --- index of the mesh to push back in the vector
   MESSAGE("myMeshId=" << myMeshId);
+  MESSAGE("sizeof(SMDS_MeshElement) " << sizeof(SMDS_MeshElement) );
+  MESSAGE("sizeof(SMDS_MeshNode) " << sizeof(SMDS_MeshNode) );
+  MESSAGE("sizeof(SMDS_MeshCell) " << sizeof(SMDS_MeshCell) );
+  MESSAGE("sizeof(SMDS_VolumeVtkNodes) " << sizeof(SMDS_VolumeVtkNodes) );
+  MESSAGE("sizeof(SMDS_Position) " << sizeof(SMDS_Position) );
+  MESSAGE("sizeof(SMDS_SpacePosition) " << sizeof(SMDS_SpacePosition) );
   myNodeIDFactory->SetMesh(this);
   myElementIDFactory->SetMesh(this);
   _meshList.push_back(this);

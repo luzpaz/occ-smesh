@@ -147,3 +147,31 @@ in use bytes     =  418378000 : 418M
 max mmap regions =         58
 max mmap bytes   =  183640064
 
+sizeof(SMDS_MeshElement) 16
+sizeof(SMDS_MeshNode) 24
+sizeof(SMDS_MeshCell) 24
+sizeof(SMDS_VolumeVtkNodes) 24
+sizeof(SMDS_Position) 16
+sizeof(SMDS_SpacePosition) 16
+
+impact d'un int en plus dans SMDS_MeshElement --> 426 - 33 = 393M
+---------------------------------------------
+
+sizeof(SMDS_MeshElement) 24
+sizeof(SMDS_MeshNode) 32       --> on retrouve bien les 8M
+sizeof(SMDS_MeshCell) 24
+sizeof(SMDS_VolumeVtkNodes) 24
+sizeof(SMDS_Position) 16
+sizeof(SMDS_SpacePosition) 16
+
+Total (incl. mmap):
+system bytes     =   43192320
+in use bytes     =   32681088 : 33M
+max mmap regions =         41
+max mmap bytes   =   16371712
+----
+Total (incl. mmap):
+system bytes     =  429334528
+in use bytes     =  426424576 : 426M
+max mmap regions =         59
+max mmap bytes   =  184692736

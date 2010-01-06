@@ -36,12 +36,12 @@ using namespace std;
 
 int SMDS_MeshCell::nbCells = 0;
 
-SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID), myMeshId(-1), myShapeId(-1)
+SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID), myMeshId(-1), myShapeId(-1), myIdInShape(-1)
 {
 }
 
-SMDS_MeshElement::SMDS_MeshElement(int id, UShortType meshId, ShortType shapeId):
-  myID(id), myMeshId(meshId), myShapeId(shapeId)
+SMDS_MeshElement::SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId):
+  myID(id), myMeshId(meshId), myShapeId(shapeId), myIdInShape(-1)
 {
 }
 
@@ -246,7 +246,7 @@ int SMDS_MeshElement::GetNodeIndex( const SMDS_MeshNode* node ) const
   return -1;
 }
 
-SMDS_MeshCell::SMDS_MeshCell()
+SMDS_MeshCell::SMDS_MeshCell() : SMDS_MeshElement(-1)
 {
   nbCells++;
   myVtkID = -1;

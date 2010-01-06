@@ -30,6 +30,7 @@
 
 #include "SMDS_Mesh.hxx"
 #include <set>
+#include <vector>
 
 class SMESHDS_SubMesh;
 typedef SMDS_Iterator<const SMESHDS_SubMesh*> SMESHDS_SubMeshIterator;
@@ -38,6 +39,7 @@ typedef boost::shared_ptr< SMESHDS_SubMeshIterator > SMESHDS_SubMeshIteratorPtr;
 class SMESHDS_EXPORT SMESHDS_SubMesh
 {
  public:
+  SMESHDS_SubMesh();
 
   bool IsComplexSubmesh() const { return !mySubMeshes.empty(); }
 
@@ -67,8 +69,13 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
  private:
 
-  typedef std::set<const SMDS_MeshElement*, TIDCompare > TElemSet;
-  TElemSet myElements, myNodes;
+  typedef std::vector<const SMDS_MeshElement*> TElemSet;
+
+  TElemSet myElements;
+  TElemSet myNodes;
+
+  int myUnusedIdNodes;
+  int myUnusedIdElements;
 
   std::set<const SMESHDS_SubMesh*> mySubMeshes;
 };
