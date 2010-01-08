@@ -38,6 +38,7 @@ salomeinclude_HEADERS = \
 	SMDS_Mesh0DElement.hxx \
 	SMDS_MeshEdge.hxx \
 	SMDS_MeshElement.hxx \
+	SMDS_MeshElement.cxx \
 	SMDS_MeshElementIDFactory.hxx \
 	SMDS_MeshFace.hxx \
 	SMDS_MeshGroup.hxx \
@@ -53,6 +54,8 @@ salomeinclude_HEADERS = \
 	SMDS_IteratorOfElements.hxx \
 	SMDS_VolumeOfFaces.hxx \
 	SMDS_VolumeOfNodes.hxx \
+	SMDS_VtkVolume.hxx \
+	SMDS_VtkCellIterator.hxx \
 	SMDS_PolyhedralVolumeOfNodes.hxx \
 	SMDS_FaceOfEdges.hxx \
 	SMDS_FaceOfNodes.hxx \
@@ -72,6 +75,7 @@ lib_LTLIBRARIES = libSMDS.la
 dist_libSMDS_la_SOURCES = \
 	SMDS_MeshObject.cxx \
 	SMDS_MeshElement.cxx \
+	SMDS_MeshCell.cxx \
 	SMDS_Position.cxx \
 	SMDS_EdgePosition.cxx \
 	SMDS_FacePosition.cxx \
@@ -90,6 +94,8 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_IteratorOfElements.cxx \
 	SMDS_VolumeOfFaces.cxx \
 	SMDS_VolumeOfNodes.cxx \
+	SMDS_VtkVolume.cxx \
+	SMDS_VtkCellIterator.cxx \
 	SMDS_PolyhedralVolumeOfNodes.cxx \
 	SMDS_FaceOfEdges.cxx \
 	SMDS_FaceOfNodes.cxx \

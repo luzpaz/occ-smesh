@@ -123,14 +123,14 @@ SMDS_Mesh::SMDS_Mesh()
   MESSAGE("sizeof(SMDS_MeshElement) " << sizeof(SMDS_MeshElement) );
   MESSAGE("sizeof(SMDS_MeshNode) " << sizeof(SMDS_MeshNode) );
   MESSAGE("sizeof(SMDS_MeshCell) " << sizeof(SMDS_MeshCell) );
-  MESSAGE("sizeof(SMDS_VolumeVtkNodes) " << sizeof(SMDS_VolumeVtkNodes) );
+  MESSAGE("sizeof(SMDS_VtkVolume) " << sizeof(SMDS_VtkVolume) );
   MESSAGE("sizeof(SMDS_Position) " << sizeof(SMDS_Position) );
   MESSAGE("sizeof(SMDS_SpacePosition) " << sizeof(SMDS_SpacePosition) );
   myNodeIDFactory->SetMesh(this);
   myElementIDFactory->SetMesh(this);
   _meshList.push_back(this);
   myNodePool = new ObjectPool<SMDS_MeshNode>(SMDS_Mesh::chunkSize);
-  myVolumePool = new ObjectPool<SMDS_VolumeVtkNodes>(SMDS_Mesh::chunkSize);
+  myVolumePool = new ObjectPool<SMDS_VtkVolume>(SMDS_Mesh::chunkSize);
 
   myNodes.clear();
   myCells.clear();
@@ -872,8 +872,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     nodeIds.push_back(n7->getId());
     nodeIds.push_back(n8->getId());
 
-    //volume = new SMDS_VolumeVtkNodes(nodeIds, this);
-    SMDS_VolumeVtkNodes *volvtk = myVolumePool->getNew();
+    SMDS_VtkVolume *volvtk = myVolumePool->getNew();
     volvtk->init(nodeIds, this);
     volume = volvtk;
     adjustmyCellsCapacity(ID);

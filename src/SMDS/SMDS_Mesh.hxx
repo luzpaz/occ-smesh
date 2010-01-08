@@ -29,6 +29,7 @@
 #include "SMESH_SMDS.hxx"
 
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshCell.hxx"
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
@@ -38,6 +39,7 @@
 #include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_VolumeOfNodes.hxx"
+#include "SMDS_VtkVolume.hxx"
 #include "ObjectPool.hxx"
 
 #include <boost/shared_ptr.hpp>
@@ -52,12 +54,15 @@ class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
   friend class SMDS_MeshElementIDFactory;
   friend class SMDS_MeshVolumeVtkNodes;
-  
-  static std::vector<SMDS_Mesh*> _meshList;    // --- to find the SMDS_mesh from its elements
 
   SMDS_Mesh();
+  
+  //! to retreive this SMDS_Mesh instance from its elements (index stored in SMDS_Elements)
+  static std::vector<SMDS_Mesh*> _meshList;
 
+  //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
   inline vtkUnstructuredGrid* getGrid() {return myGrid; };
+  inline int getMeshId() {return myMeshId; };
 
   SMDS_NodeIteratorPtr nodesIterator() const;
   SMDS_0DElementIteratorPtr elements0dIterator() const;
@@ -553,7 +558,7 @@ public:
   typedef std::vector<SMDS_MeshCell *> SetOfCells;
 
   void updateNodeMinMax();
-  int fromVtkToSmds(int vtkid) { return myVtkIndex[vtkid]; };
+  inline int fromVtkToSmds(int vtkid) { return myVtkIndex[vtkid]; };
 
   void incrementNodesCapacity(int nbNodes);
   void incrementCellsCapacity(int nbCells);
@@ -599,15 +604,29 @@ private:
 
   // Fields PRIVATE
 
-  int myMeshId;                           // --- index for this mesh in the vector
+  //! index of this SMDS_mesh in the static vector<SMDS_Mesh*> _meshList
+  int myMeshId;
+
+  //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
   vtkUnstructuredGrid*      myGrid;
 
+  //! Small objects like SMDS_MeshNode are allocated by chunks to limit memory costs of new
   ObjectPool<SMDS_MeshNode>* myNodePool;
-  ObjectPool<SMDS_VolumeVtkNodes>* myVolumePool;
+
+  //! Small objects like SMDS_VtkVolume are allocated by chunks to limit memory costs of new
+  ObjectPool<SMDS_VtkVolume>* myVolumePool;
+
+  //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and subshape
   SetOfNodes             myNodes;
+
+  //! SMDS_MeshCells refer to vtk cells (vtk id != index in myCells),store reference to this mesh, and subshape
   SetOfCells             myCells;
-  std::vector<int>       myIDElements; // index = ID client, value = ID vtk
-  std::vector<int>       myVtkIndex;   // index = ID vtk, value = ID client
+
+  //! for cells only: index = ID for SMDS users, value = ID in vtkUnstructuredGrid
+  std::vector<int>       myIDElements;
+
+  //! for cells only: index = ID in vtkUnstructuredGrid, value = ID for SMDS users
+  std::vector<int>       myVtkIndex;
 
   SMDS_Mesh *            myParent;
   std::list<SMDS_Mesh *> myChildren;

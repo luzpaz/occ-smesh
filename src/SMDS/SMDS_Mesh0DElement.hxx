@@ -28,7 +28,7 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshCell.hxx"
 
 #include <iostream>
 

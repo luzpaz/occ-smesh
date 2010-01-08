@@ -60,6 +60,12 @@ verifier ID dans SMDS_Mesh::Find*OrCreate
 
 ===================================================
 occupation memoire cube 100*100*100 sans affichage
+NOTES:
+- sur Debian Sarge 64 bits, les mesures malloc_stat() semblent coherentes
+  avec une mesure externe globale(recherche du passage en swap du process).
+- sur Ubuntu 9.10 64 bits, les mesures malloc_stat() donnent des resultats bizarres (surestimation ?),
+  mais la mesure avec l'outil KDE de surveillance systeme est OK avec la recherche du swap.
+
 
 Reference : V513 Debian Sarge 64 bits: --> 463 - 33 = 430 Mo
 -------------------------------------
@@ -175,3 +181,29 @@ system bytes     =  429334528
 in use bytes     =  426424576 : 426M
 max mmap regions =         59
 max mmap bytes   =  184692736
+
+remplacement std::set par std::vector dans SMESHDS_SubMesh --> 347 - 35 = 312M
+----------------------------------------------------------
+sizeof(SMDS_MeshElement) 24
+sizeof(SMDS_MeshNode) 32
+sizeof(SMDS_MeshCell) 24
+sizeof(SMDS_VolumeVtkNodes) 24
+sizeof(SMDS_Position) 16
+sizeof(SMDS_SpacePosition) 16
+
+Total (incl. mmap):
+system bytes     =   45404160
+in use bytes     =   35132160 --> 35M
+max mmap regions =         49
+max mmap bytes   =   17723392
+----
+Total (incl. mmap):
+system bytes     =  349831168
+in use bytes     =  346885424 --> 347M
+max mmap regions =         73
+max mmap bytes   =  204148736
+
+Ce resultat est coherent avec une recherche de swap sur une machine a 8Go de memoire:
+Cube a 270**3 mailles (~20M mailles) --> 6.2 Go (idem Debian Sarge et Ubuntu 9.10, 64 bits)
+Le meme avec V5.1.3 --> 14 Go (swap)
+
