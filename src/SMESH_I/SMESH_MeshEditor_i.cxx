@@ -27,7 +27,7 @@
 #include "SMESH_MeshEditor_i.hxx"
 
 #include "SMDS_Mesh0DElement.hxx"
-#include "SMDS_MeshEdge.hxx"
+#include "SMDS_LinearEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
@@ -3663,7 +3663,7 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
       TIDSortedElemSet::iterator nIt = linkedNodes.begin();
       for ( ; nIt != linkedNodes.end(); ++nIt )
       {
-        SMDS_MeshEdge edge( node, cast2Node( *nIt ));
+        SMDS_LinearEdge edge( node, cast2Node( *nIt ));
         tmpMesh.Copy( &edge );
       }
       // move copied node

@@ -350,24 +350,24 @@ namespace SMESH
         MESSAGE ( "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
                << ", usedMB=" << usedMB );
 #endif
-        bool continu = false;
-        if ( usedMB * 10 > freeMB )
-          // even dont try to show
-          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-                                   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
-        else
-          // there is a chance to succeed
-          continu = SUIT_MessageBox::warning
-            (SMESHGUI::desktop(),
-             QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
-             SUIT_MessageBox::Yes | SUIT_MessageBox::No, 
-             SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
-        if ( !continu ) {
-          // remove the corresponding actors from all views
-          RemoveVisualObjectWithActors( theEntry );
-          aVisualObj.reset();
-        }
+//        bool continu = false;
+//        if ( usedMB * 10 > freeMB )
+//          // even dont try to show
+//          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+//                                   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
+//        else
+//          // there is a chance to succeed
+//          continu = SUIT_MessageBox::warning
+//            (SMESHGUI::desktop(),
+//             QObject::tr("SMESH_WRN_WARNING"),
+//             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
+//             SUIT_MessageBox::Yes | SUIT_MessageBox::No,
+//             SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
+//        if ( !continu ) {
+//          // remove the corresponding actors from all views
+//          RemoveVisualObjectWithActors( theEntry );
+//          aVisualObj.reset();
+//        }
       }
     }
 

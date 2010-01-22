@@ -40,6 +40,7 @@ class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshCell
   void Print (std::ostream & OS) const;
 
   SMDSAbs_ElementType GetType() const;
+  virtual vtkIdType GetVtkType() const;
   SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_0D;}
   int NbNodes() const;
   int NbEdges() const;

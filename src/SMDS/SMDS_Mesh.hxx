@@ -39,6 +39,8 @@
 #include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_VolumeOfNodes.hxx"
+#include "SMDS_VtkEdge.hxx"
+#include "SMDS_VtkFace.hxx"
 #include "SMDS_VtkVolume.hxx"
 #include "ObjectPool.hxx"
 
@@ -47,6 +49,9 @@
 #include <list>
 #include <vector>
 #include <vtkSystemIncludes.h>
+
+#include "Utils_SALOME_Exception.hxx"
+#define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
 
 class vtkUnstructuredGrid;
 
@@ -558,7 +563,8 @@ public:
   typedef std::vector<SMDS_MeshCell *> SetOfCells;
 
   void updateNodeMinMax();
-  inline int fromVtkToSmds(int vtkid) { return myVtkIndex[vtkid]; };
+  inline int fromVtkToSmds(int vtkid) { MYASSERT(vtkid>=0); return myVtkIndex[vtkid]; };
+  inline int fromSmdsToVtk(int smdsid) { MYASSERT(smdsid>=0); return myIDElements[smdsid]; };
 
   void incrementNodesCapacity(int nbNodes);
   void incrementCellsCapacity(int nbCells);
@@ -572,7 +578,8 @@ private:
 
   SMDS_MeshFace * createTriangle(const SMDS_MeshNode * node1,
                                  const SMDS_MeshNode * node2,
-                                 const SMDS_MeshNode * node3);
+                                 const SMDS_MeshNode * node3,
+                                 int ID);
   SMDS_MeshFace * createQuadrangle(const SMDS_MeshNode * node1,
                                    const SMDS_MeshNode * node2,
                                    const SMDS_MeshNode * node3,
@@ -615,6 +622,8 @@ private:
 
   //! Small objects like SMDS_VtkVolume are allocated by chunks to limit memory costs of new
   ObjectPool<SMDS_VtkVolume>* myVolumePool;
+  ObjectPool<SMDS_VtkFace>* myFacePool;
+  ObjectPool<SMDS_VtkEdge>* myEdgePool;
 
   //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and subshape
   SetOfNodes             myNodes;

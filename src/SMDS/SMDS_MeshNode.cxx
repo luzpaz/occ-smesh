@@ -64,6 +64,7 @@ void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, do
   myID = id;
   myMeshId = meshId;
   myShapeId = shapeId;
+  myIdInShape = -1;
   //MESSAGE("Node " << myID << " (" << x << ", " << y << ", " << z << ")");
   SMDS_Mesh* mesh = SMDS_Mesh::_meshList[myMeshId];
   vtkUnstructuredGrid * grid = mesh->getGrid();
@@ -118,8 +119,10 @@ SMDS_MeshNode::~SMDS_MeshNode()
 
 void SMDS_MeshNode::RemoveInverseElement(const SMDS_MeshElement * parent)
 {
-    MESSAGE("RemoveInverseElement " << myID << " " << parent->GetID());
-    SMDS_Mesh::_meshList[myMeshId]->getGrid()->RemoveReferenceToCell(myID, parent->GetID()); // -PR- GetVtkID ?
+    //MESSAGE("RemoveInverseElement " << myID << " " << parent->GetID());
+    const SMDS_MeshCell* cell = dynamic_cast<const SMDS_MeshCell*>(parent);
+    MYASSERT(cell);
+    SMDS_Mesh::_meshList[myMeshId]->getGrid()->RemoveReferenceToCell(myID, cell->getVtkId());
 }
 
 //=======================================================================
@@ -297,6 +300,11 @@ void SMDS_MeshNode::setXYZ(double x, double y, double z)
 SMDSAbs_ElementType SMDS_MeshNode::GetType() const
 {
 	return SMDSAbs_Node;
+}
+
+vtkIdType SMDS_MeshNode::GetVtkType() const
+{
+  return VTK_VERTEX;
 }
 
 //=======================================================================

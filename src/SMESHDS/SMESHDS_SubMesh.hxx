@@ -69,10 +69,8 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
  private:
 
-  typedef std::vector<const SMDS_MeshElement*> TElemSet;
-
-  TElemSet myElements;
-  TElemSet myNodes;
+  std::vector<const SMDS_MeshElement*> myElements;
+  std::vector<const SMDS_MeshNode*> myNodes;
 
   int myUnusedIdNodes;
   int myUnusedIdElements;

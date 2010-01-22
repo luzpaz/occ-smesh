@@ -29,6 +29,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
+	ObjectPool.hxx \
 	SMDS_TypeOfPosition.hxx \
 	SMDSAbs_ElementType.hxx \
 	SMDS_EdgePosition.hxx \
@@ -36,10 +37,12 @@ salomeinclude_HEADERS = \
 	SMDS_FacePosition.hxx \
 	SMDS_Mesh.hxx \
 	SMDS_Mesh0DElement.hxx \
+	SMDS_LinearEdge.hxx \
 	SMDS_MeshEdge.hxx \
 	SMDS_MeshElement.hxx \
 	SMDS_MeshElement.cxx \
 	SMDS_MeshElementIDFactory.hxx \
+	SMDS_MeshCell.hxx \
 	SMDS_MeshFace.hxx \
 	SMDS_MeshGroup.hxx \
 	SMDS_MeshIDFactory.hxx \
@@ -54,6 +57,8 @@ salomeinclude_HEADERS = \
 	SMDS_IteratorOfElements.hxx \
 	SMDS_VolumeOfFaces.hxx \
 	SMDS_VolumeOfNodes.hxx \
+	SMDS_VtkEdge.hxx \
+	SMDS_VtkFace.hxx \
 	SMDS_VtkVolume.hxx \
 	SMDS_VtkCellIterator.hxx \
 	SMDS_PolyhedralVolumeOfNodes.hxx \
@@ -83,6 +88,7 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_VertexPosition.cxx \
 	SMDS_MeshNode.cxx \
 	SMDS_Mesh0DElement.cxx \
+	SMDS_LinearEdge.cxx \
 	SMDS_MeshEdge.cxx \
 	SMDS_MeshFace.cxx \
 	SMDS_MeshVolume.cxx \
@@ -94,6 +100,8 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_IteratorOfElements.cxx \
 	SMDS_VolumeOfFaces.cxx \
 	SMDS_VolumeOfNodes.cxx \
+	SMDS_VtkEdge.cxx \
+	SMDS_VtkFace.cxx \
 	SMDS_VtkVolume.cxx \
 	SMDS_VtkCellIterator.cxx \
 	SMDS_PolyhedralVolumeOfNodes.cxx \

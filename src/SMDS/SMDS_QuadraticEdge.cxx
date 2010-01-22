@@ -40,7 +40,7 @@ using namespace std;
 SMDS_QuadraticEdge::SMDS_QuadraticEdge(const SMDS_MeshNode * node1,
                                        const SMDS_MeshNode * node2,
                                        const SMDS_MeshNode * node12)
-     :SMDS_MeshEdge(node1,node2)
+     :SMDS_LinearEdge(node1,node2)
 {	
   myNodes[2]=node12;
 }

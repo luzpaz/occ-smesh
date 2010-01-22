@@ -81,6 +81,11 @@ SMDSAbs_ElementType SMDS_Mesh0DElement::GetType() const
   return SMDSAbs_0DElement;
 }
 
+vtkIdType SMDS_Mesh0DElement::GetVtkType() const
+{
+  return VTK_VERTEX;
+}
+
 //=======================================================================
 //function : elementsIterator
 //purpose  :

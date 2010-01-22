@@ -57,6 +57,7 @@ public:
   void SetPosition(const SMDS_PositionPtr& aPos);
   const SMDS_PositionPtr& GetPosition() const;
   SMDSAbs_ElementType GetType() const;
+  virtual vtkIdType GetVtkType() const;
   SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_Node;}
   int NbNodes() const;
   void setXYZ(double x, double y, double z);

@@ -36,6 +36,9 @@
 #include <vector>
 #include <iostream>
 
+#include <vtkType.h>
+#include <vtkCellType.h>
+
 //typedef unsigned short UShortType;
 typedef short ShortType;
 
@@ -49,6 +52,7 @@ class SMDS_Mesh;
  * \brief Base class for elements
  */
 // ============================================================
+
 
 class SMDS_EXPORT SMDS_MeshElement:public SMDS_MeshObject
 {
@@ -66,6 +70,7 @@ public:
 
   ///Return the type of the current element
   virtual SMDSAbs_ElementType GetType() const = 0;
+  virtual vtkIdType GetVtkType() const = 0;
   virtual bool IsPoly() const { return false; };
   virtual bool IsQuadratic() const;
   //! Return type of entity

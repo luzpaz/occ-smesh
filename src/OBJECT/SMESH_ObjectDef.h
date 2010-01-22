@@ -85,17 +85,17 @@ public:
   
 protected:
 
-  void                      createPoints( vtkPoints* );
+//  void                      createPoints( vtkPoints* );
   void                      buildPrs();
-  void                      buildNodePrs();
-  void                      buildElemPrs();
+//  void                      buildNodePrs();
+//  void                      buildElemPrs();
   
 private:                                   
 
-  TMapOfIds                 mySMDS2VTKNodes;
-  TMapOfIds                 myVTK2SMDSNodes;
-  TMapOfIds                 mySMDS2VTKElems;
-  TMapOfIds                 myVTK2SMDSElems;
+//  TMapOfIds                 mySMDS2VTKNodes;
+//  TMapOfIds                 myVTK2SMDSNodes;
+//  TMapOfIds                 mySMDS2VTKElems;
+//  TMapOfIds                 myVTK2SMDSElems;
 
   vtkUnstructuredGrid*      myGrid;
 };

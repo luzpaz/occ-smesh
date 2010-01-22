@@ -43,6 +43,9 @@ SMDS_CellLinks::~SMDS_CellLinks()
 {
 }
 
+/*! initialize an SMDS_CellLinks instance instead of a vtkCellLinks instance
+ *
+ */
 void SMDS_UnstructuredGrid::BuildLinks()
 {
   // Remove the old links if they are already built

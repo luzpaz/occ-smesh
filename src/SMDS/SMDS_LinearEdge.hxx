@@ -20,38 +20,31 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  SMESH SMDS : implementaion of Salome mesh data structure
+//  File   : SMDS_LinearEdge.hxx
+//  Module : SMESH
 //
-#ifndef _SMDS_FaceOfEdges_HeaderFile
-#define _SMDS_FaceOfEdges_HeaderFile
+#ifndef _SMDS_LinearEdge_HeaderFile
+#define _SMDS_LinearEdge_HeaderFile
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshEdge.hxx"
-#include "SMDS_Iterator.hxx"
-
 #include <iostream>
 
-
-class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
+class SMDS_EXPORT SMDS_LinearEdge:public SMDS_MeshEdge
 {
+
   public:
+	SMDS_LinearEdge(const SMDS_MeshNode * node1,
+                      const SMDS_MeshNode * node2);
+        bool ChangeNodes(const SMDS_MeshNode * node1,
+                         const SMDS_MeshNode * node2);
 	void Print(std::ostream & OS) const;
-	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
-                         const SMDS_MeshEdge* edge2,
-                         const SMDS_MeshEdge* edge3);
-	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
-                         const SMDS_MeshEdge* edge2,
-                         const SMDS_MeshEdge* edge3,
-                         const SMDS_MeshEdge* edge4);
-		
-	SMDSAbs_ElementType GetType() const;
-  virtual SMDSAbs_EntityType   GetEntityType() const;
+
+	virtual SMDSAbs_EntityType GetEntityType() const { return SMDSEntity_Edge; }
 	int NbNodes() const;
 	int NbEdges() const;
-	int NbFaces() const;
-//	friend bool operator<(const SMDS_FaceOfEdges& e1, const SMDS_FaceOfEdges& e2);
-
+	friend bool operator<(const SMDS_LinearEdge& e1, const SMDS_LinearEdge& e2);
 
   /*!
    * \brief Return node by its index
@@ -61,13 +54,11 @@ class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
   protected:
-  	SMDS_ElemIteratorPtr
+	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
-  private:
-	const SMDS_MeshEdge* myEdges[4];
-        int                  myNbEdges;
+  protected:
+	const SMDS_MeshNode* myNodes[3];
 
 };
-
 #endif

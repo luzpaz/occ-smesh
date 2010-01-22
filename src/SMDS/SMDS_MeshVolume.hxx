@@ -35,5 +35,6 @@ class SMDS_EXPORT SMDS_MeshVolume:public SMDS_MeshCell
 	
   public:
 	SMDSAbs_ElementType GetType() const;
+  virtual vtkIdType GetVtkType() const;
 };
 #endif

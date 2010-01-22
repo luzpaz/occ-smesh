@@ -1,27 +1,26 @@
-#ifndef _SMDS_VTKVOLUME_HXX_
-#define _SMDS_VTKVOLUME_HXX_
+#ifndef _SMDS_VTKFACE_HXX_
+#define _SMDS_VTKFACE_HXX_
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshVolume.hxx"
+#include "SMDS_MeshFace.hxx"
 #include <vtkUnstructuredGrid.h>
 #include <vector>
 
-class SMDS_EXPORT SMDS_VtkVolume:public SMDS_MeshVolume
+class SMDS_EXPORT SMDS_VtkFace: public SMDS_MeshFace
 {
 public:
-  SMDS_VtkVolume();
-  SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
-  ~SMDS_VtkVolume();
+  SMDS_VtkFace();
+  SMDS_VtkFace(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
+  ~SMDS_VtkFace();
   void init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
-  bool ChangeNodes(const SMDS_MeshNode* nodes[],
-                   const int            nbNodes);
+  bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
 
   void Print(std::ostream & OS) const;
+  int NbEdges() const;
   int NbFaces() const;
   int NbNodes() const;
-  int NbEdges() const;
-  virtual SMDSAbs_ElementType GetType() const;
+
   virtual vtkIdType GetVtkType() const;
   virtual SMDSAbs_EntityType GetEntityType() const;
   virtual const SMDS_MeshNode* GetNode(const int ind) const;

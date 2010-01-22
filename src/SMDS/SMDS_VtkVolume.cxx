@@ -21,8 +21,18 @@ SMDS_VtkVolume::SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
   vtkUnstructuredGrid* grid = mesh->getGrid();
+  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
-  myVtkID = grid->InsertNextLinkedCell(GetType(), nodeIds.size(), &nodeIds[0]);
+  vtkIdType aType = VTK_TETRA;
+  switch(nodeIds.size())
+    {
+    case 4: aType = VTK_TETRA;   break;
+    case 5: aType = VTK_PYRAMID; break;
+    case 6: aType = VTK_WEDGE;   break;
+    case 8:
+    default: aType = VTK_HEXAHEDRON;    break;
+    }
+  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
 }
 
 bool SMDS_VtkVolume::ChangeNodes(const SMDS_MeshNode* nodes[],
@@ -79,7 +89,7 @@ SMDS_ElemIteratorPtr SMDS_VtkVolume::elementsIterator(SMDSAbs_ElementType type) 
   switch(type)
     {
     case SMDSAbs_Node:
-      return SMDS_ElemIteratorPtr(new SMDS_VtkCellIterator(SMDS_Mesh::_meshList[myMeshId], myVtkID));
+      return SMDS_ElemIteratorPtr(new SMDS_VtkCellIterator(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
     default:
       MESSAGE("ERROR : Iterator not implemented");
       return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
@@ -110,7 +120,21 @@ SMDSAbs_EntityType SMDS_VtkVolume::GetEntityType() const
     case 5: aType = SMDSEntity_Pyramid; break;
     case 6: aType = SMDSEntity_Penta;   break;
     case 8:
-    default: aType = SMDSEntity_Hexa;    break;
+    default: aType = SMDSEntity_Hexa;   break;
     }
   return aType;
+}
+
+vtkIdType SMDS_VtkVolume::GetVtkType() const
+{
+  vtkIdType aType = VTK_TETRA;
+  switch(NbNodes())
+    {
+    case 4: aType = VTK_TETRA;   break;
+    case 5: aType = VTK_PYRAMID; break;
+    case 6: aType = VTK_WEDGE;   break;
+    case 8:
+    default: aType = VTK_HEXAHEDRON;    break;
+    }
+ return aType;
 }

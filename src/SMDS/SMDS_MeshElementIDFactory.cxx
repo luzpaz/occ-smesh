@@ -127,7 +127,9 @@ SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 //=======================================================================
 void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
 {
+  int vtkId = myMesh->myIDElements[ID];
   myMesh->myIDElements[ID] = -1;
+  myMesh->myVtkIndex[vtkId] = -1;
   SMDS_MeshIDFactory::ReleaseID(ID);
   if (ID == myMax)
     myMax = 0;
