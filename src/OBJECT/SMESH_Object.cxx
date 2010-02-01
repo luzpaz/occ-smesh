@@ -63,7 +63,7 @@ using namespace std;
 #endif
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 static int MYDEBUGWITHFILES = 0;
 #else
 static int MYDEBUG = 0;
@@ -132,11 +132,13 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
 //=================================================================================
 SMESH_VisualObjDef::SMESH_VisualObjDef()
 {
+  MESSAGE("---------------------------------------------SMESH_VisualObjDef::SMESH_VisualObjDef");
   myGrid = vtkUnstructuredGrid::New();
 }
 SMESH_VisualObjDef::~SMESH_VisualObjDef()
 {
-  if ( MYDEBUG )
+  MESSAGE("---------------------------------------------SMESH_VisualObjDef::~SMESH_VisualObjDef");
+  //if ( MYDEBUG )
     MESSAGE( "~SMESH_MeshObj - myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
   myGrid->Delete();
 }
@@ -236,9 +238,12 @@ void SMESH_VisualObjDef::buildPrs()
 //    myGrid->SetCells( 0, 0, 0 );
 //    throw;
 //  }
-  myGrid = GetMesh()->getGrid();
-  
-  if( MYDEBUG ) MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
+  MESSAGE("----------------------------------------------------------SMESH_VisualObjDef::buildPrs");
+  vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
+  myGrid->ShallowCopy(theGrid);
+  MESSAGE(myGrid->GetReferenceCount());
+  MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
+  MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
   if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"/tmp/buildPrs" );
 }
 

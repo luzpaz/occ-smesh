@@ -295,6 +295,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   MEMOSTAT;
 
   SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
+  myMesh->adjustStructure();
   list<int> listind = myMesh->SubMeshIndices();
   list<int>::iterator it = listind.begin();
   int total = 0;

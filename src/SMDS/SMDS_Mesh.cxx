@@ -39,6 +39,7 @@
 #include "SMDS_SpacePosition.hxx"
 
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <algorithm>
 #include <map>
@@ -2783,7 +2784,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
 void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
 {
   int elemId = elem->GetID();
-  //MESSAGE("SMDS_Mesh::RemoveFreeElement " << elemId);
+  MESSAGE("SMDS_Mesh::RemoveFreeElement " << elemId);
   SMDSAbs_ElementType aType = elem->GetType();
   SMDS_MeshElement* todest = (SMDS_MeshElement*)(elem);
   if (aType == SMDSAbs_Node) {
@@ -2800,6 +2801,8 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
     if (hasConstructionEdges() || hasConstructionFaces())
       // this methods is only for meshes without descendants
       return;
+
+    int vtkid = this->fromSmdsToVtk(elemId);
 
     // Remove element from <InverseElements> of its nodes
     SMDS_ElemIteratorPtr itn = elem->nodesIterator();
@@ -2835,6 +2838,9 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
       break;
     }
     myElementIDFactory->ReleaseID(elemId);
+
+    this->myGrid->GetCellTypesArray()->SetValue(vtkid, VTK_EMPTY_CELL);
+    // --- to do: keep vtkid in a list of reusable cells
   }
 }
 
@@ -3582,3 +3588,9 @@ void SMDS_Mesh::incrementCellsCapacity(int nbCells)
   MESSAGE(" ------------------- resize myCells " << val << " --> " << val + nbCells);
   myNodes.resize(val +nbCells, 0);
 }
+
+void SMDS_Mesh::adjustStructure()
+{
+  myGrid->GetPoints()->GetData()->SetNumberOfTuples(myNodeIDFactory->GetMaxID()+1);
+}
+

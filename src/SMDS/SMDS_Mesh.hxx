@@ -568,6 +568,7 @@ public:
 
   void incrementNodesCapacity(int nbNodes);
   void incrementCellsCapacity(int nbCells);
+  void adjustStructure();
   
   int myCellLinksSize;
 

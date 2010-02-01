@@ -29,6 +29,8 @@ public:
     void BuildLinks(); // initialise un SMDS_CellLinks;
     SMDS_CellLinks* GetCellLinks();
 
+    vtkIdType GetCellArraySize() { return (this->Connectivity ? this->Connectivity->GetSize() : 0); };
+
     //virtual void Delete();
     static SMDS_UnstructuredGrid* New();
 protected:
