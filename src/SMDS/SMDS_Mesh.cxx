@@ -39,10 +39,16 @@
 #include "SMDS_SpacePosition.hxx"
 
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridWriter.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkCell.h>
+#include <vtkCellLinks.h>
+#include <vtkIdList.h>
 
 #include <algorithm>
 #include <map>
+#include <iostream>
+#include <fstream>
 using namespace std;
 
 #ifndef WIN32
@@ -358,7 +364,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
                                         int ID)
 {
     //MESSAGE("AddFaceWithID " << ID)
-  SMDS_MeshFace * face=createTriangle(n1, n2, n3, myElementIDFactory->GetFreeID());
+  SMDS_MeshFace * face=createTriangle(n1, n2, n3, ID);
 
   if (face && !registerElement(ID, face)) {
     RemoveElement(face, false);
@@ -1208,7 +1214,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolume
 ///////////////////////////////////////////////////////////////////////////////
 bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
 {
-  //MESSAGE("registerElement " << ID)
+  //MESSAGE("registerElement " << ID);
   if ((ID < myIDElements.size()) && myIDElements[ID] >= 0) // --- already bound
   {
     MESSAGE(" --------------------------------- already bound "<< ID << " " << myIDElements[ID]);
@@ -1231,7 +1237,7 @@ bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
   }
 
   myIDElements[ID] = vtkId;
-  //MESSAGE("smds:" << ID << " vtk:" << cellId );
+  //MESSAGE("smds:" << ID << " vtk:" << vtkId );
 
   if (vtkId >= myVtkIndex.size()) // --- resize local vector
   {
@@ -1297,6 +1303,7 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
     face = facevtk;
     adjustmyCellsCapacity(ID);
     myCells[ID] = face;
+    //MESSAGE("createTriangle " << ID << " " << face);
     myInfo.myNbTriangles++;
     return face;
   }
@@ -2129,7 +2136,10 @@ void SMDS_Mesh::DebugStats() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::NbNodes() const
 {
-        return myNodes.size();
+	//MESSAGE(myGrid->GetNumberOfPoints());
+	//MESSAGE(myInfo.NbNodes());
+	//MESSAGE(myNodeMax);
+    return myInfo.NbNodes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3562,6 +3572,11 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 void SMDS_Mesh::updateNodeMinMax()
 {
   myNodeMin = 0;
+  if (myNodes.size() == 0)
+  {
+	myNodeMax=0;
+	return;
+  }
   while (!myNodes[myNodeMin] && (myNodeMin<myNodes.size()))
     myNodeMin++;
   myNodeMax=myNodes.size()-1;
@@ -3594,3 +3609,51 @@ void SMDS_Mesh::adjustStructure()
   myGrid->GetPoints()->GetData()->SetNumberOfTuples(myNodeIDFactory->GetMaxID()+1);
 }
 
+void SMDS_Mesh::dumpGrid(string ficdump)
+{
+	MESSAGE("SMDS_Mesh::dumpGrid " << ficdump);
+  vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
+  aWriter->SetFileName(ficdump.c_str());
+  aWriter->SetInput(myGrid);
+  if(myGrid->GetNumberOfCells())
+  {
+    aWriter->Write();
+  }
+  aWriter->Delete();
+  ficdump = ficdump + "_connectivity";
+  ofstream ficcon(ficdump.c_str(), ios::out);
+  int nbPoints = myGrid->GetNumberOfPoints();
+  ficcon << "-------------------------------- points " <<  nbPoints << endl;
+  for (int i=0; i<nbPoints; i++)
+  {
+  	ficcon << i << " " << *(myGrid->GetPoint(i)) << " " << *(myGrid->GetPoint(i)+1) << " " << " " << *(myGrid->GetPoint(i)+2) << endl;
+  }
+  int nbCells = myGrid->GetNumberOfCells();
+  ficcon << "-------------------------------- cells " <<  nbCells << endl;
+  for (int i=0; i<nbCells; i++)
+  {
+  	ficcon << i << " - " << myGrid->GetCell(i)->GetCellType() << " -";
+  	int nbptcell = myGrid->GetCell(i)->GetNumberOfPoints();
+  	vtkIdList *listid = myGrid->GetCell(i)->GetPointIds();
+  	for (int j=0; j<nbptcell; j++)
+  	{
+  		ficcon << " " <<  listid->GetId(j);
+  	}
+  	ficcon << endl;
+  }
+  ficcon << "-------------------------------- connectivity " <<  nbPoints << endl;
+	vtkCellLinks *links = myGrid->GetCellLinks();
+  for (int i=0; i<nbPoints; i++)
+  {
+  	int ncells = links->GetNcells(i);
+  	vtkIdType *cells = links->GetCells(i);
+  	ficcon << i << " - " << ncells << " -";
+  	for (int j=0; j<ncells; j++)
+  	{
+  		ficcon << " " << cells[j];
+  	}
+  	ficcon << endl;
+  }
+  ficcon.close();
+
+}

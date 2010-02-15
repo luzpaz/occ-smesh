@@ -36,6 +36,8 @@
 #define protected protected
 
 #include "utilities.h"
+#include "Utils_SALOME_Exception.hxx"
+#include <cassert>
 
 using namespace std;
 
@@ -191,6 +193,12 @@ private:
       int vtkId = myCells[iter];
       int smdsId = myMesh->fromVtkToSmds(vtkId);
       const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
+      if (!elem)
+      {
+    	  assert(0);
+    	  throw SALOME_Exception("SMDS_MeshNode_MyInvIterator problem Null element");
+      }
+      //MESSAGE("vtkId " << vtkId << " smdsId " << smdsId << " " << (elem!=0));
       iter++;
       return elem;
   }	
@@ -200,7 +208,7 @@ SMDS_ElemIteratorPtr SMDS_MeshNode::
 	GetInverseElementIterator(SMDSAbs_ElementType type) const
 {
     vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetCellLinks()->GetLink(myID);
-    //MESSAGE("ncells " << l.ncells);
+    //MESSAGE("myID " << myID << " ncells " << l.ncells);
     return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(SMDS_Mesh::_meshList[myMeshId], l.cells, l.ncells, type));
 }
 
@@ -223,16 +231,19 @@ private:
                            SMDSAbs_ElementType type):
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
   {
-        for (; iter<ncells; iter++)
+  	//MESSAGE("myNcells " << myNcells);
+       for (; iter<ncells; iter++)
         {
            int vtkId = myCells[iter];
            int smdsId = myMesh->fromVtkToSmds(vtkId);
+           //MESSAGE("vtkId " << vtkId << " smdsId " << smdsId);
            const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
            if (elem->GetType() == type)
                myFiltCells.push_back((SMDS_MeshElement*)elem);
         }
         myNcells = myFiltCells.size();
-        iter = 0;
+       	//MESSAGE("myNcells " << myNcells);
+       iter = 0;
         //MESSAGE("SMDS_MeshNode_MyIterator (filter) " << ncells << " " << myNcells);
   }
 

@@ -569,6 +569,7 @@ public:
   void incrementNodesCapacity(int nbNodes);
   void incrementCellsCapacity(int nbCells);
   void adjustStructure();
+  void dumpGrid(string ficdump="dumpGrid");
   
   int myCellLinksSize;
 

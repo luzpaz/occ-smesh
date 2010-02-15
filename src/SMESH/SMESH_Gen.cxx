@@ -307,6 +307,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   cerr << "total elements and nodes in submesh sets:" << total << endl;
   cerr << "Number of node objects " << SMDS_MeshNode::nbNodes << endl;
   cerr << "Number of cell objects " << SMDS_MeshCell::nbCells << endl;
+  //myMesh->dumpGrid();
   return ret;
 }
 
