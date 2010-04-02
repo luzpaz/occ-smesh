@@ -64,6 +64,7 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 //=======================================================================
 bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted)
 {
+//	MESSAGE("--------------------------------------> RemoveElement " << isElemDeleted);
 //  if ( !IsComplexSubmesh() && NbElements() ) {
 
   if (!isElemDeleted) // alive element has valid ID and can be found
@@ -173,30 +174,53 @@ int SMESHDS_SubMesh::NbNodes() const
   return nbElems;
 }
 
-// =====================
-// class MySetIterator
-// =====================
-
-  template <class ELEM, typename TSET> class MySetIterator : public SMDS_Iterator<ELEM>
+/*!
+ * template class used for iteration on submesh elements. Interface of iterator remains
+ * unchanged after redesign of SMDS to avoid modification everywhere in SMESH.
+ * instances are stored in shared_ptr for automatic destruction.
+ * Container is copied for iteration, because original can be modified
+ * by addition of elements, for instance, and then reallocated (vector)
+ */
+template <class ELEM, typename TSET> class MySetIterator : public SMDS_Iterator<ELEM>
 {
 protected:
   typename TSET::const_iterator _it, _end;
+  TSET _table;
+//  int _ind;
 public:
   MySetIterator(const TSET& table)
-  : _it(table.begin()), _end(table.end())
+//  : _it(table.begin()), _end(table.end())
   {
+//	  MESSAGE("table.size()="<< table.size());
+	  _table = table;
+	  _it = _table.begin();
+	  _end = _table.end();
+//	  for (int i=0; i< _table.size(); i++)
+//		  if (_table[i]) { MESSAGE("_table["<< i << "]="<< _table[i]);}
+//		  else
+//		  { MESSAGE("_table["<< i << "]=NULL"); }
+//	  _ind = 0;
   }
 
   virtual bool more()
   {
     while((_it != _end) && (*_it == 0))
+    {
       _it++;
+//      _ind++;
+    }
+//    MESSAGE("more _ind=" << _ind);
     return (_it != _end);
   }
 
   virtual ELEM next()
   {
-    return *_it++;
+	ELEM e=*_it;
+//	if (e) { MESSAGE("next _ind=" << _ind << " *_it=" << *_it);}
+//	else { MESSAGE("next _ind=" << _ind << " *_it=NULL");}
+//	_ind++;
+	_it++;
+	return e;
   }
 };
 
@@ -272,7 +296,6 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
 {
   if ( IsComplexSubmesh() )
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
-
   return SMDS_ElemIteratorPtr(new MySetIterator<const SMDS_MeshElement*, std::vector<const SMDS_MeshElement*> >(myElements));
 }
 

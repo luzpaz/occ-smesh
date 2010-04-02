@@ -24,6 +24,7 @@ public:
   virtual vtkIdType GetVtkType() const;
   virtual SMDSAbs_EntityType GetEntityType() const;
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
+  virtual bool IsQuadratic() const;
 
 protected:
   SMDS_ElemIteratorPtr

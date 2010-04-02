@@ -49,10 +49,10 @@ int SMDS_MeshIDFactory::GetFreeID()
         }
 	else
 	{
-                set<int>::iterator i = myPoolOfID.begin();
+		set<int>::iterator i = myPoolOfID.begin();
 		newid = *i;//myPoolOfID.top();
 		myPoolOfID.erase( i );//myPoolOfID.pop();
-                MESSAGE("GetFreeID pool " << newid);
+		//MESSAGE("GetFreeID pool " << newid);
 	}
     return newid;
 }

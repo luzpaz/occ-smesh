@@ -71,7 +71,8 @@ salomeinclude_HEADERS = \
 	SMDS_QuadraticVolumeOfNodes.hxx \
 	SMDS_SetIterator.hxx \
 	SMESH_SMDS.hxx \
-	SMDS_MeshInfo.hxx
+	SMDS_MeshInfo.hxx \
+	SMDS_UnstructuredGrid.hxx
 
 
 # Libraries targets
@@ -111,7 +112,8 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_VolumeTool.cxx \
 	SMDS_QuadraticEdge.cxx \
 	SMDS_QuadraticFaceOfNodes.cxx \
-	SMDS_QuadraticVolumeOfNodes.cxx
+	SMDS_QuadraticVolumeOfNodes.cxx \
+	SMDS_UnstructuredGrid.cxx
 
 # additionnal information to compil and link file
 libSMDS_la_CPPFLAGS = \

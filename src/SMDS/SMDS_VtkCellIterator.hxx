@@ -15,6 +15,9 @@ public:
   virtual ~SMDS_VtkCellIterator();
   virtual bool more();
   virtual const SMDS_MeshElement* next();
+  inline void exchange(vtkIdType a, vtkIdType b) { vtkIdType t = _vtkIdList->GetId(a);
+												   _vtkIdList->SetId(a, _vtkIdList->GetId(b));
+                                                   _vtkIdList->SetId(b, t); };
 protected:
   SMDS_Mesh* _mesh;
   int _cellId;
