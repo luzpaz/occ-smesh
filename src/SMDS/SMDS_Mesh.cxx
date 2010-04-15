@@ -123,7 +123,7 @@ SMDS_Mesh::SMDS_Mesh()
          myElementIDFactory(new SMDS_MeshElementIDFactory()),
          myHasConstructionEdges(false), myHasConstructionFaces(false),
          myHasInverseElements(true),
-         myNodeMin(0), myNodeMax(0), myCellLinksSize(0),
+         myNodeMin(0), myNodeMax(0),
          myNodePool(0), myEdgePool(0), myFacePool(0), myVolumePool(0)
 {
   myMeshId = _meshList.size();         // --- index of the mesh to push back in the vector
@@ -796,11 +796,11 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     vector<vtkIdType> nodeIds;
     nodeIds.clear();
     nodeIds.push_back(n1->getId());
-    nodeIds.push_back(n3->getId());
     nodeIds.push_back(n2->getId());
+    nodeIds.push_back(n3->getId());
     nodeIds.push_back(n4->getId());
-    nodeIds.push_back(n6->getId());
     nodeIds.push_back(n5->getId());
+    nodeIds.push_back(n6->getId());
 
     SMDS_VtkVolume *volvtk = myVolumePool->getNew();
     volvtk->init(nodeIds, this);
@@ -1979,6 +1979,7 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
   if ((IDelem < 0) || IDelem >= myCells.size())
   {
     MESSAGE("----------------------------------- bad IDelem " << IDelem << " " << myCells.size());
+    assert(0);
     return 0;
   }
   return myCells[IDelem];
@@ -2687,7 +2688,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
                               list<const SMDS_MeshElement *>& removedNodes,
                               bool                            removenodes)
 {
-  MESSAGE("SMDS_Mesh::RemoveElement " << elem->GetID() << " " << removenodes);
+  //MESSAGE("SMDS_Mesh::RemoveElement " << elem->GetID() << " " << removenodes);
   // get finite elements built on elem
   set<const SMDS_MeshElement*> * s1;
   if (elem->GetType() == SMDSAbs_0DElement ||
@@ -3530,24 +3531,24 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
   vector<vtkIdType> nodeIds;
   nodeIds.clear();
   nodeIds.push_back(n1->getId());
-  nodeIds.push_back(n3->getId());
   nodeIds.push_back(n2->getId());
+  nodeIds.push_back(n3->getId());
 
   nodeIds.push_back(n4->getId());
-  nodeIds.push_back(n6->getId());
   nodeIds.push_back(n5->getId());
+  nodeIds.push_back(n6->getId());
 
-  nodeIds.push_back(n31->getId());
-  nodeIds.push_back(n23->getId());
   nodeIds.push_back(n12->getId());
+  nodeIds.push_back(n23->getId());
+  nodeIds.push_back(n31->getId());
 
-  nodeIds.push_back(n64->getId());
-  nodeIds.push_back(n56->getId());
   nodeIds.push_back(n45->getId());
+  nodeIds.push_back(n56->getId());
+  nodeIds.push_back(n64->getId());
 
   nodeIds.push_back(n14->getId());
-  nodeIds.push_back(n36->getId());
   nodeIds.push_back(n25->getId());
+  nodeIds.push_back(n36->getId());
 
   SMDS_VtkVolume *volvtk = myVolumePool->getNew();
   volvtk->init(nodeIds, this);
@@ -3747,14 +3748,14 @@ void SMDS_Mesh::adjustStructure()
 void SMDS_Mesh::dumpGrid(string ficdump)
 {
 	MESSAGE("SMDS_Mesh::dumpGrid " << ficdump);
-  vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
-  aWriter->SetFileName(ficdump.c_str());
-  aWriter->SetInput(myGrid);
-  if(myGrid->GetNumberOfCells())
-  {
-    aWriter->Write();
-  }
-  aWriter->Delete();
+//  vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
+//  aWriter->SetFileName(ficdump.c_str());
+//  aWriter->SetInput(myGrid);
+//  if(myGrid->GetNumberOfCells())
+//  {
+//    aWriter->Write();
+//  }
+//  aWriter->Delete();
   ficdump = ficdump + "_connectivity";
   ofstream ficcon(ficdump.c_str(), ios::out);
   int nbPoints = myGrid->GetNumberOfPoints();
@@ -3767,6 +3768,8 @@ void SMDS_Mesh::dumpGrid(string ficdump)
   ficcon << "-------------------------------- cells " <<  nbCells << endl;
   for (int i=0; i<nbCells; i++)
   {
+//	MESSAGE(i << " " << myGrid->GetCell(i));
+//	MESSAGE("  " << myGrid->GetCell(i)->GetCellType());
   	ficcon << i << " - " << myGrid->GetCell(i)->GetCellType() << " -";
   	int nbptcell = myGrid->GetCell(i)->GetNumberOfPoints();
   	vtkIdList *listid = myGrid->GetCell(i)->GetPointIds();

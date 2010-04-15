@@ -1775,4 +1775,92 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                          ID);
 }
 
+void SMESHDS_Mesh::compactMesh()
+{
+	int newNodeSize = 0;
+	int nbNodes = myNodes.size();
+	vector<int> idNodesOldToNew;
+	idNodesOldToNew.clear();
+	idNodesOldToNew.resize(nbNodes, -1); // all unused id will be -1
+
+	bool areNodesModified = ! myNodeIDFactory->isPoolIdEmpty();
+	MESSAGE("------------------------------------------------- SMESHDS_Mesh::compactMesh " << areNodesModified);
+	if (areNodesModified)
+	{
+		for (int i=0; i<nbNodes; i++)
+		{
+			if (myNodes[i])
+				{
+					idNodesOldToNew[i] = i;  // all valid id are >= 0
+					newNodeSize++;
+				}
+		}
+	}
+	else
+	{
+		for (int i=0; i<nbNodes; i++)
+			idNodesOldToNew[i] = i;
+	}
+
+	int newCellSize = 0;
+	int nbCells = myCells.size();
+	vector<int> idCellsOldToNew;
+	idCellsOldToNew.clear();
+	idCellsOldToNew.resize(nbCells, -1);             // all unused id will be -1
+
+	for (int i=0; i<nbCells; i++)
+	{
+		if (myCells[i])
+			{
+				idCellsOldToNew[i] = myVtkIndex[i];  // valid vtk indexes are > = 0
+				newCellSize++;
+			}
+	}
+	myGrid->compactGrid(idNodesOldToNew, newNodeSize, idCellsOldToNew, newCellSize);
+
+	// --- SMDS_MeshNode and myNodes (id in SMDS and in VTK are the same), myNodeIdFactory
+
+	if (areNodesModified)
+	{
+		MESSAGE("-------------- modify myNodes");
+		for (int i=0; i<nbNodes; i++)
+		{
+			if (myNodes[i])
+			{
+				int newid = idNodesOldToNew[i];
+				if (newid != i)
+				{
+					MESSAGE(i << " --> " << newid);
+					myNodes[i]->setId(newid);
+					ASSERT(!myNodes[newid]);
+					myNodes[newid] = myNodes[i];
+				}
+			}
+		}
+		this->myNodeIDFactory->emptyPool(newNodeSize);
+	}
+
+	// --- SMDS_MeshCell, myIDElements and myVtkIndex (myCells and myElementIdFactory are not compacted)
+
+	for (int oldVtkId=0; oldVtkId<nbCells; oldVtkId++)
+	{
+		int smdsId = this->myVtkIndex[oldVtkId];
+		if (smdsId >=0)
+		{
+			int newVtkId = idCellsOldToNew[oldVtkId];
+			myCells[smdsId]->setVtkId(newVtkId);
+			myIDElements[smdsId] = newVtkId;
+			myVtkIndex[newVtkId] = smdsId;
+		}
+	}
+
+	// ---TODO: myNodes, myElements in submeshes
+
+//    map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.begin();
+//    for(; it != myShapeIndexToSubMesh.end(); ++it)
+//    {
+//    	(*it).second->compactList(idNodesOldToNew, newNodeSize, idCellsOldToNew, newCellSize);
+//    }
+
+}
 

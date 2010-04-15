@@ -412,8 +412,12 @@ int SMESHDS_SubMesh::getSize()
 {
   int c = NbNodes();
   int d = NbElements();
-  cerr << "SMESHDS_SubMesh::NbNodes " << c << endl;
-  cerr << "SMESHDS_SubMesh::NbElements " << d << endl;
+  //cerr << "SMESHDS_SubMesh::NbNodes " << c << endl;
+  //cerr << "SMESHDS_SubMesh::NbElements " << d << endl;
   return c+d;
 }
 
+void SMESHDS_SubMesh::compactList()
+{
+	// todo : compact vector of nodes and elements
+}

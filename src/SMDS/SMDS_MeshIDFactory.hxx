@@ -42,6 +42,8 @@ public:
 
   void SetMesh(SMDS_Mesh *mesh);
   SMDS_Mesh* GetMesh();
+  inline bool isPoolIdEmpty() { return myPoolOfID.empty(); };
+  void emptyPool(int maxId);
 protected:
   SMDS_MeshIDFactory();
   int myMaxID;

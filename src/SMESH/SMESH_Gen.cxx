@@ -296,6 +296,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
   myMesh->adjustStructure();
+  myMesh->compactMesh();
+  //myMesh->adjustStructure();
   list<int> listind = myMesh->SubMeshIndices();
   list<int>::iterator it = listind.begin();
   int total = 0;
@@ -304,9 +306,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       ::SMESHDS_SubMesh *subMesh = myMesh->MeshElements(*it);
       total +=  subMesh->getSize();
     }
-  cerr << "total elements and nodes in submesh sets:" << total << endl;
-  cerr << "Number of node objects " << SMDS_MeshNode::nbNodes << endl;
-  cerr << "Number of cell objects " << SMDS_MeshCell::nbCells << endl;
+  MESSAGE("total elements and nodes in submesh sets:" << total);
+  MESSAGE("Number of node objects " << SMDS_MeshNode::nbNodes);
+  MESSAGE("Number of cell objects " << SMDS_MeshCell::nbCells);
   //myMesh->dumpGrid();
   return ret;
 }

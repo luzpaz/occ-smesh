@@ -81,6 +81,7 @@ public:
   friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
   friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement* elem);
   friend class SMDS_Mesh;
+  friend class SMESHDS_Mesh;
 
   // ===========================
   //  Access to nodes by index
@@ -134,6 +135,7 @@ public:
   inline void setIdInShape(int id) { myIdInShape = id; };
 
 protected:
+  inline void setId(int id) {myID = id; };
   SMDS_MeshElement(int ID=-1);
   SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId=-1);
   virtual void Print(std::ostream & OS) const;

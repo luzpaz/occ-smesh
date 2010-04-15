@@ -43,6 +43,7 @@
 #include "SMDS_VtkFace.hxx"
 #include "SMDS_VtkVolume.hxx"
 #include "ObjectPool.hxx"
+#include "SMDS_UnstructuredGrid.hxx"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -52,8 +53,6 @@
 
 #include "Utils_SALOME_Exception.hxx"
 #define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
-
-class vtkUnstructuredGrid;
 
 class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
@@ -570,12 +569,10 @@ public:
   void incrementCellsCapacity(int nbCells);
   void adjustStructure();
   void dumpGrid(string ficdump="dumpGrid");
-  
-  int myCellLinksSize;
 
   static int chunkSize;
 
-private:
+protected:
   SMDS_Mesh(SMDS_Mesh * parent);
 
   SMDS_MeshFace * createTriangle(const SMDS_MeshNode * node1,
@@ -617,7 +614,7 @@ private:
   int myMeshId;
 
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
-  vtkUnstructuredGrid*      myGrid;
+  SMDS_UnstructuredGrid*      myGrid;
 
   //! Small objects like SMDS_MeshNode are allocated by chunks to limit memory costs of new
   ObjectPool<SMDS_MeshNode>* myNodePool;

@@ -71,42 +71,10 @@ void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, do
   SMDS_Mesh* mesh = SMDS_Mesh::_meshList[myMeshId];
   vtkUnstructuredGrid * grid = mesh->getGrid();
   vtkPoints *points = grid->GetPoints();
-  //int nbp = points->GetNumberOfPoints();
   points->InsertPoint(myID, x, y, z);
-  if (myID >= mesh->myCellLinksSize)
-  {
-      //points->SetNumberOfPoints(myID+SMDS_Mesh::chunkSize);
-      vtkCellLinks *cellLinks = grid->GetCellLinks();
-
-//      int imax = cellLinks->Size;
-//      for (int i =0; i<imax; i++)
-//      {
-//        vtkCellLinks::Link &ilink = cellLinks->GetLink(i);
-//        int ncells = ilink.ncells;
-//        int *cells = ilink.cells;
-//        MESSAGE("NODE " << i << " " << cellLinks << " " << cells << " " << ncells);
-//        for (int j=0; j< ncells; j++)
-//          MESSAGE("             " << j << " " << cells[j]);
-//      }
-
-      cellLinks->Resize(myID+SMDS_Mesh::chunkSize);
-
-//      cellLinks = grid->GetCellLinks();
-//      imax = cellLinks->Size;
-//      for (int i =0; i<imax; i++)
-//      {
-//        vtkCellLinks::Link &ilink = cellLinks->GetLink(i);
-//        int ncells = ilink.ncells;
-//        int *cells = ilink.cells;
-//        MESSAGE("NODE " << i << " " << cellLinks << " " << cells << " " << ncells);
-//        for (int j=0; j< ncells; j++)
-//          MESSAGE("             " << j << " " << cells[j]);
-//      }
-
-      mesh->myCellLinksSize = cellLinks->Size;
-      //MESSAGE(" -------------------------------------- resize CellLinks " << myID << " --> " << mesh->myCellLinksSize);
-  }
-  //setXYZ(x, y, z);
+  vtkCellLinks *cellLinks = grid->GetCellLinks();
+  if (myID >=cellLinks->Size)
+	  cellLinks->Resize(myID+SMDS_Mesh::chunkSize);
 }
 
 SMDS_MeshNode::~SMDS_MeshNode()

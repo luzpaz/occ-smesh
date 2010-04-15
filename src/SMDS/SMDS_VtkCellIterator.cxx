@@ -22,8 +22,8 @@ SMDS_VtkCellIterator::SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSA
     }
     case SMDSEntity_Penta:
     {
-      this->exchange(1, 2);
-      this->exchange(4, 5);
+      //this->exchange(1, 2);
+      //this->exchange(4, 5);
       break;
     }
     case SMDSEntity_Hexa:
@@ -49,11 +49,11 @@ SMDS_VtkCellIterator::SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSA
     }
     case SMDSEntity_Quad_Penta:
     {
-      this->exchange(1, 2);
-      this->exchange(4, 5);
-      this->exchange(6, 8);
-      this->exchange(9, 11);
-      this->exchange(13, 14);
+      //this->exchange(1, 2);
+      //this->exchange(4, 5);
+      //this->exchange(6, 8);
+      //this->exchange(9, 11);
+      //this->exchange(13, 14);
       break;
     }
     case SMDSEntity_Quad_Hexa:

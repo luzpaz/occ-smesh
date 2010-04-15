@@ -438,6 +438,8 @@ public:
 
   bool IsGroupOfSubShapes (const TopoDS_Shape& aSubShape) const;
 
+  void compactMesh();
+
   ~SMESHDS_Mesh();
   
 private:

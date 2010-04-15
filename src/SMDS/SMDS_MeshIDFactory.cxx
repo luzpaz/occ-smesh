@@ -90,16 +90,23 @@ void SMDS_MeshIDFactory::ReleaseID(const int ID)
 
 void SMDS_MeshIDFactory::Clear()
 {
-  myMaxID = -1;
-  myPoolOfID.clear();
+	myMaxID = -1;
+	myPoolOfID.clear();
 }
 
-  void SMDS_MeshIDFactory::SetMesh(SMDS_Mesh *mesh)
-  {
-      myMesh = mesh;
-  }
+void SMDS_MeshIDFactory::SetMesh(SMDS_Mesh *mesh)
+{
+	myMesh = mesh;
+}
 
-  SMDS_Mesh* SMDS_MeshIDFactory::GetMesh()
-  {
-      return myMesh;
-  }
+SMDS_Mesh* SMDS_MeshIDFactory::GetMesh()
+{
+	return myMesh;
+}
+
+void SMDS_MeshIDFactory::emptyPool(int maxId)
+{
+	MESSAGE("SMDS_MeshIDFactory::emptyPool " << myMaxID << " --> " << maxId-1);
+	myMaxID = maxId-1;
+	myPoolOfID.clear();
+}
