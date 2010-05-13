@@ -2255,47 +2255,52 @@ SMDS_Mesh::~SMDS_Mesh()
 
 void SMDS_Mesh::Clear()
 {
-  if (myParent!=NULL) {
+  if (myParent!=NULL)
+    {
     SMDS_ElemIteratorPtr eIt = elementsIterator();
     while ( eIt->more() )
       myElementIDFactory->ReleaseID(eIt->next()->GetID());
     SMDS_NodeIteratorPtr itn = nodesIterator();
     while (itn->more())
       myNodeIDFactory->ReleaseID(itn->next()->GetID());
-  }
-  else {
+    }
+  else
+    {
     myNodeIDFactory->Clear();
     myElementIDFactory->Clear();
-  }
+    }
 
   SMDS_ElemIteratorPtr itv = elementsIterator();
   while (itv->more())
-    delete itv->next();
+    {
+      SMDS_MeshElement* elem = (SMDS_MeshElement*)(itv->next());
+      SMDSAbs_ElementType aType = elem->GetType();
+      switch (aType)
+      {
+        case SMDSAbs_0DElement:
+          delete elem;
+          break;
+        case SMDSAbs_Edge:
+           myEdgePool->destroy(static_cast<SMDS_VtkEdge*>(elem));
+          break;
+        case SMDSAbs_Face:
+          myFacePool->destroy(static_cast<SMDS_VtkFace*>(elem));
+          break;
+        case SMDSAbs_Volume:
+          myVolumePool->destroy(static_cast<SMDS_VtkVolume*>(elem));
+          break;
+        default:
+          break;
+      }
+    }
   myCells.clear();
-
-//  SMDS_VolumeIteratorPtr itv = volumesIterator();
-//  while (itv->more())
-//    delete itv->next();
-//  myVolumes.Clear();
-//
-//  SMDS_FaceIteratorPtr itf = facesIterator();
-//  while (itf->more())
-//    delete itf->next();
-//  myFaces.Clear();
-//
-//  SMDS_EdgeIteratorPtr ite = edgesIterator();
-//  while (ite->more())
-//    delete ite->next();
-//  myEdges.Clear();
-//
-//  SMDS_0DElementIteratorPtr it0d = elements0dIterator();
-//  while (it0d->more())
-//    delete it0d->next();
-//  my0DElements.Clear();
 
   SMDS_NodeIteratorPtr itn = nodesIterator();
   while (itn->more())
-    delete itn->next();
+    {
+      SMDS_MeshNode *node = (SMDS_MeshNode*)(itn->next());
+      myNodePool->destroy(node);
+    }
   myNodes.clear();
 
   list<SMDS_Mesh*>::iterator itc=myChildren.begin();
@@ -2303,6 +2308,14 @@ void SMDS_Mesh::Clear()
     (*itc)->Clear();
 
   myInfo.Clear();
+
+  myGrid->Initialize();
+  myGrid->Allocate();
+  vtkPoints* points = vtkPoints::New();
+  points->SetNumberOfPoints(SMDS_Mesh::chunkSize);
+  myGrid->SetPoints( points );
+  points->Delete();
+  myGrid->BuildLinks();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

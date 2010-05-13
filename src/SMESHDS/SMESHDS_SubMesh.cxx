@@ -70,7 +70,7 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
   if (!isElemDeleted) // alive element has valid ID and can be found
       {
         int idInSubShape = ME->getIdInShape();
-        //MESSAGE("SMESHDS_SubMesh::RemoveElement " << idInSubShape << " " << ME->GetID());
+        //MESSAGE("SMESHDS_SubMesh::RemoveElement " << idInSubShape << " " << ME->GetID() << " " << myUnusedIdElements);
         assert(idInSubShape >= 0);
         assert(idInSubShape < myElements.size());
         myElements[idInSubShape] = 0; // this vector entry is no more used

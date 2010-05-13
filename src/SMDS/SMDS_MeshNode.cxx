@@ -51,18 +51,19 @@ SMDS_MeshNode::SMDS_MeshNode() :
   SMDS_MeshElement(-1, -1, -1),
   myPosition(SMDS_SpacePosition::originSpacePosition())
 {
+  nbNodes++;
 }
 
 SMDS_MeshNode::SMDS_MeshNode(int id, int meshId, int shapeId, double x, double y, double z):
   SMDS_MeshElement(id, meshId, shapeId),
   myPosition(SMDS_SpacePosition::originSpacePosition())
 {
+  nbNodes++;
   init(id, meshId, shapeId, x, y ,z);
 }
 
 void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, double z)
 {
-  nbNodes++;
   myID = id;
   myMeshId = meshId;
   myShapeId = shapeId;

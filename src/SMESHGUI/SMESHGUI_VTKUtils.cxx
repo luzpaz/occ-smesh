@@ -252,7 +252,7 @@ namespace SMESH
    */
   //================================================================================
 
-  TVisualObjPtr GetVisualObj(int theStudyId, const char* theEntry){
+  TVisualObjPtr GetVisualObj(int theStudyId, const char* theEntry, bool nulData){
     TVisualObjPtr aVisualObj;
     TVisualObjCont::key_type aKey(theStudyId,theEntry);
     try{
@@ -326,7 +326,11 @@ namespace SMESH
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
 #endif
-        objModified = aVisualObj->Update();
+        MESSAGE("GetVisualObj");
+        if (nulData)
+        	objModified = aVisualObj->NulData();
+        else
+          objModified = aVisualObj->Update();
       }
       catch (...) {
 #ifdef _DEBUG_
@@ -662,6 +666,7 @@ namespace SMESH
 
   bool UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
+  	MESSAGE("UpdateView");
     bool OK = false;
     SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd);
     if (!aViewWnd)
@@ -736,6 +741,7 @@ namespace SMESH
 
 
   bool UpdateView(EDisplaing theAction, const char* theEntry){
+  	MESSAGE("UpdateView");
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
     SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
@@ -774,6 +780,7 @@ namespace SMESH
 
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
+  	MESSAGE("Update");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
@@ -784,6 +791,18 @@ namespace SMESH
     return false;
   }
 
+  bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
+  {
+  	MESSAGE("UpdateNulData");
+    _PTR(Study) aStudy = GetActiveStudyDocument();
+    CORBA::Long anId = aStudy->StudyId();
+    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {
+      if ( theDisplay )
+        UpdateView(SMESH::eDisplay,theIO->getEntry());
+      return true;
+    }
+    return false;
+  }
 
   void UpdateSelectionProp( SMESHGUI* theModule ) {
     if( !theModule )

@@ -6,6 +6,7 @@
 #include "utilities.h"
 
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
@@ -48,6 +49,7 @@ int SMDS_VtkEdge::NbNodes() const
 {
 	vtkUnstructuredGrid* grid =SMDS_Mesh::_meshList[myMeshId]->getGrid();
 	int nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
+	assert(nbPoints >=2);
 	return nbPoints;
 }
 

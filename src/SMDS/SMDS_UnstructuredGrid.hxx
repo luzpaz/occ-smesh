@@ -19,6 +19,7 @@ public:
 					 std::vector<int>& idCellsOldToNew, int newCellSize);
 
 	virtual unsigned long GetMTime();
+	virtual void Update();
 	virtual void UpdateInformation();
 
     static SMDS_UnstructuredGrid* New();

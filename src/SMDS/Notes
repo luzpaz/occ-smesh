@@ -1,3 +1,16 @@
+Problemes en cours
+==================
+
+- visualisation de groupe (type d'element): on voit tout le maillage, mais le groupe est OK
+- inversion d'un volume (tetra): exception
+- script de creation de noeuds et d'elements: OK, mais pas compatible avec version precedente (numerotation noeuds differente)
+- affichage numeros noeuds: numeros en trop sur O (enlever dans vtkUnstructuredGrid)    
+
+A tester, non pris en compte
+============================
+- engine standalone
+- polyedres (attendre vtk)
+
 
 =============================== Hypothese de refonte de l'API de SMDS
 

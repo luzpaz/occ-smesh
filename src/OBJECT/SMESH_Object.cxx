@@ -532,12 +532,20 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
   return true;
 }
 
+vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
+{
+	MESSAGE("SMESH_VisualObjDef::GetUnstructuredGrid " << myGrid);
+	return myGrid;
+}
+
+
 //=================================================================================
 // function : IsValid
 // purpose  : Return true if there are some entities
 //=================================================================================
 bool SMESH_VisualObjDef::IsValid() const
 {
+	MESSAGE("SMESH_VisualObjDef::IsValid");
   return GetNbEntities(SMDSAbs_Node) > 0      || 
          GetNbEntities(SMDSAbs_0DElement) > 0 || 
          GetNbEntities(SMDSAbs_Edge) > 0      || 
@@ -557,6 +565,7 @@ bool SMESH_VisualObjDef::IsValid() const
 SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh):
   myClient(SalomeApp_Application::orb(),theMesh)
 {
+	myEmptyGrid = 0;
   if ( MYDEBUG ) 
     MESSAGE("SMESH_MeshObj - this = "<<this<<"; theMesh->_is_nil() = "<<theMesh->_is_nil());
 }
@@ -578,6 +587,7 @@ SMESH_MeshObj::~SMESH_MeshObj()
 bool SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
+	MESSAGE("SMESH_MeshObj::Update");
   if ( myClient.Update(theIsClear) || GetUnstructuredGrid()->GetNumberOfPoints()==0) {
     buildPrs();  // Fill unstructured grid
     return true;
@@ -585,6 +595,22 @@ bool SMESH_MeshObj::Update( int theIsClear )
   return false;
 }
 
+bool SMESH_MeshObj::NulData()
+{
+	MESSAGE ("SMESH_MeshObj::NulData() ==================================================================================");
+	if (!myEmptyGrid)
+	{
+	  myEmptyGrid = SMDS_UnstructuredGrid::New();
+	  myEmptyGrid->Initialize();
+	  myEmptyGrid->Allocate();
+	  vtkPoints* points = vtkPoints::New();
+	  points->SetNumberOfPoints(0);
+	  myEmptyGrid->SetPoints( points );
+	  points->Delete();
+	  myEmptyGrid->BuildLinks();
+	}
+	myGrid->ShallowCopy(myEmptyGrid);
+}
 //=================================================================================
 // function : GetElemDimension
 // purpose  : Get dimension of element

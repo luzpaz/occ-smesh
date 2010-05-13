@@ -128,6 +128,7 @@ SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
 {
   int vtkId = myMesh->myIDElements[ID];
+  //MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID smdsId vtkId " << ID << " " << vtkId);
   myMesh->myIDElements[ID] = -1;
   myMesh->myVtkIndex[vtkId] = -1;
   SMDS_MeshIDFactory::ReleaseID(ID);
