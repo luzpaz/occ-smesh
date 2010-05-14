@@ -77,7 +77,7 @@ public:
                                           int&      theNodeId1,
                                           int&      theNodeId2 ) const;
 
-  virtual vtkUnstructuredGrid* GetUnstructuredGrid(); // { return myGrid; }
+  virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   
   virtual vtkIdType         GetNodeObjId( int theVTKID );
   virtual vtkIdType         GetNodeVTKId( int theObjID );
@@ -86,17 +86,18 @@ public:
   
 protected:
 
-//  void                      createPoints( vtkPoints* );
-  void                      buildPrs();
-//  void                      buildNodePrs();
-//  void                      buildElemPrs();
+  void                      createPoints( vtkPoints* );
+  void                      buildPrs(bool buildGrid = false);
+  void                      buildNodePrs();
+  void                      buildElemPrs();
   
 //private:
 
-//  TMapOfIds                 mySMDS2VTKNodes;
-//  TMapOfIds                 myVTK2SMDSNodes;
-//  TMapOfIds                 mySMDS2VTKElems;
-//  TMapOfIds                 myVTK2SMDSElems;
+  TMapOfIds                 mySMDS2VTKNodes;
+  TMapOfIds                 myVTK2SMDSNodes;
+  TMapOfIds                 mySMDS2VTKElems;
+  TMapOfIds                 myVTK2SMDSElems;
+  bool                      myLocalGrid;
 
   vtkUnstructuredGrid*      myGrid;
 };

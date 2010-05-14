@@ -1,10 +1,14 @@
 Problemes en cours
 ==================
+- a faire
++ en cours, OK mais perfectible
+* OK
 
-- visualisation de groupe (type d'element): on voit tout le maillage, mais le groupe est OK
++ visualisation de groupe (type d'element): on voit tout le maillage, mais le groupe est OK
+  creation d'une structure vtkUnstructuredGrid locale : iteration un peu lourde, et pas de partage avec la structure du maillage (pas evident)
 - inversion d'un volume (tetra): exception
 - script de creation de noeuds et d'elements: OK, mais pas compatible avec version precedente (numerotation noeuds differente)
-- affichage numeros noeuds: numeros en trop sur O (enlever dans vtkUnstructuredGrid)    
+- affichage numeros noeuds: numeros en trop sur (O,0,0) pas systematique, trouver la condition (enlever dans vtkUnstructuredGrid ?)    
 
 A tester, non pris en compte
 ============================

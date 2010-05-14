@@ -603,6 +603,7 @@ namespace SMESH
         }
       }
     }
+    MESSAGE("CreateActor " << anActor);
     return anActor;
   }
 
@@ -613,6 +614,7 @@ namespace SMESH
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
 #endif
+        MESSAGE("DisplayActor " << theActor);
         vtkWnd->AddActor(theActor);
         vtkWnd->Repaint();
       }
@@ -628,6 +630,7 @@ namespace SMESH
 
   void RemoveActor( SUIT_ViewWindow *theWnd, SMESH_Actor* theActor){
     if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(theWnd)){
+    	MESSAGE("RemoveActor " << theActor);
       vtkWnd->RemoveActor(theActor);
       if(theActor->hasIO()){
         Handle(SALOME_InteractiveObject) anIO = theActor->getIO();
@@ -683,6 +686,7 @@ namespace SMESH
       case eDisplayAll: {
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
+          	MESSAGE("--- display " << anActor);
             anActor->SetVisibility(true);
           }
         }
@@ -690,8 +694,10 @@ namespace SMESH
       }
       case eDisplayOnly:
       case eEraseAll: {
+      	MESSAGE("---case eDisplayOnly");
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
+           	MESSAGE("--- erase " << anActor);
             anActor->SetVisibility(false);
           }
         }
@@ -701,10 +707,12 @@ namespace SMESH
           switch (theAction) {
             case eDisplay:
             case eDisplayOnly:
+            	MESSAGE("--- display " << anActor);
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
               break;
             case eErase:
+             	MESSAGE("--- erase " << anActor);
               anActor->SetVisibility(false);
               break;
           }
@@ -713,6 +721,7 @@ namespace SMESH
           case eDisplay:
           case eDisplayOnly:
             {
+            	MESSAGE("---");
               SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
               _PTR(Study) aDocument = aStudy->studyDS();
               // Pass non-visual objects (hypotheses, etc.), return true in this case
