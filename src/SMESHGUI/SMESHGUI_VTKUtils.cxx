@@ -326,7 +326,7 @@ namespace SMESH
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
 #endif
-        MESSAGE("GetVisualObj");
+        //MESSAGE("GetVisualObj");
         if (nulData)
         	objModified = aVisualObj->NulData();
         else
@@ -669,7 +669,7 @@ namespace SMESH
 
   bool UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
-  	MESSAGE("UpdateView");
+  	//MESSAGE("UpdateView");
     bool OK = false;
     SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd);
     if (!aViewWnd)
@@ -694,10 +694,10 @@ namespace SMESH
       }
       case eDisplayOnly:
       case eEraseAll: {
-      	MESSAGE("---case eDisplayOnly");
+      	//MESSAGE("---case eDisplayOnly");
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
-           	MESSAGE("--- erase " << anActor);
+           	//MESSAGE("--- erase " << anActor);
             anActor->SetVisibility(false);
           }
         }
@@ -707,12 +707,12 @@ namespace SMESH
           switch (theAction) {
             case eDisplay:
             case eDisplayOnly:
-            	MESSAGE("--- display " << anActor);
+            	//MESSAGE("--- display " << anActor);
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
               break;
             case eErase:
-             	MESSAGE("--- erase " << anActor);
+             	//MESSAGE("--- erase " << anActor);
               anActor->SetVisibility(false);
               break;
           }
@@ -721,7 +721,7 @@ namespace SMESH
           case eDisplay:
           case eDisplayOnly:
             {
-            	MESSAGE("---");
+            	//MESSAGE("---");
               SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
               _PTR(Study) aDocument = aStudy->studyDS();
               // Pass non-visual objects (hypotheses, etc.), return true in this case
@@ -750,7 +750,7 @@ namespace SMESH
 
 
   bool UpdateView(EDisplaing theAction, const char* theEntry){
-  	MESSAGE("UpdateView");
+  	//MESSAGE("UpdateView");
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
     SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();

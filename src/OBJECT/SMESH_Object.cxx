@@ -264,9 +264,9 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
   	myLocalGrid = false;
   	vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
   	myGrid->ShallowCopy(theGrid);
-  	MESSAGE(myGrid->GetReferenceCount());
-  	MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
-  	MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
+  	//MESSAGE(myGrid->GetReferenceCount());
+  	//MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
+  	//MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
   	if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"/tmp/buildPrs" );
   }
 }
@@ -558,7 +558,7 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
 
 vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 {
-	MESSAGE("SMESH_VisualObjDef::GetUnstructuredGrid " << myGrid);
+	//MESSAGE("SMESH_VisualObjDef::GetUnstructuredGrid " << myGrid);
 	return myGrid;
 }
 
@@ -569,7 +569,7 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 //=================================================================================
 bool SMESH_VisualObjDef::IsValid() const
 {
-	MESSAGE("SMESH_VisualObjDef::IsValid");
+	//MESSAGE("SMESH_VisualObjDef::IsValid");
   return GetNbEntities(SMDSAbs_Node) > 0      || 
          GetNbEntities(SMDSAbs_0DElement) > 0 || 
          GetNbEntities(SMDSAbs_Edge) > 0      || 
@@ -611,7 +611,7 @@ SMESH_MeshObj::~SMESH_MeshObj()
 bool SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
-	MESSAGE("SMESH_MeshObj::Update " << this);
+	//MESSAGE("SMESH_MeshObj::Update " << this);
   if ( myClient.Update(theIsClear) || GetUnstructuredGrid()->GetNumberOfPoints()==0) {
     buildPrs();  // Fill unstructured grid
     return true;

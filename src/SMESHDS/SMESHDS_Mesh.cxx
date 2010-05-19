@@ -1782,10 +1782,11 @@ void SMESHDS_Mesh::compactMesh()
 	int nbNodes = myNodes.size();
 	int nbVtkNodes = myGrid->GetNumberOfPoints();
 	MESSAGE("nbNodes=" << nbNodes << " nbVtkNodes=" << nbVtkNodes);
-	if (nbNodes > nbVtkNodes) nbVtkNodes = nbNodes;
+	int nbNodeTemp = nbVtkNodes;
+	if (nbNodes > nbVtkNodes) nbNodeTemp = nbNodes;
 	vector<int> idNodesOldToNew;
 	idNodesOldToNew.clear();
-	idNodesOldToNew.resize(nbVtkNodes, -1); // all unused id will be -1
+	idNodesOldToNew.resize(nbNodeTemp, -1); // all unused id will be -1
 
 	bool areNodesModified = ! myNodeIDFactory->isPoolIdEmpty();
 	MESSAGE("------------------------------------------------- SMESHDS_Mesh::compactMesh " << areNodesModified);
@@ -1804,16 +1805,19 @@ void SMESHDS_Mesh::compactMesh()
 	{
 		for (int i=0; i<nbNodes; i++)
 			idNodesOldToNew[i] = i;
+		if (nbNodes > nbVtkNodes)
+			newNodeSize = nbVtkNodes; // else 0 means nothing to change (no need to compact vtkPoints)
 	}
 
 	int newCellSize = 0;
 	int nbCells = myCells.size();
 	int nbVtkCells = myGrid->GetNumberOfCells();
 	MESSAGE("nbCells=" << nbCells << " nbVtkCells=" << nbVtkCells);
-	if (nbCells > nbVtkCells) nbVtkCells = nbCells;
+	int nbCellTemp = nbVtkCells;
+	if (nbCells > nbVtkCells) nbCellTemp = nbCells;
 	vector<int> idCellsOldToNew;
 	idCellsOldToNew.clear();
-	idCellsOldToNew.resize(nbVtkCells, -1);             // all unused id will be -1
+	idCellsOldToNew.resize(nbCellTemp, -1);             // all unused id will be -1
 
 	for (int i=0; i<nbCells; i++)
 	{
@@ -1830,20 +1834,20 @@ void SMESHDS_Mesh::compactMesh()
 	if (areNodesModified)
 	{
 		MESSAGE("-------------- modify myNodes");
+		SetOfNodes newNodes;
+		newNodes.resize(newNodeSize);
+
 		for (int i=0; i<nbNodes; i++)
 		{
 			if (myNodes[i])
 			{
 				int newid = idNodesOldToNew[i];
-				if (newid != i)
-				{
-					MESSAGE(i << " --> " << newid);
-					myNodes[i]->setId(newid);
-					ASSERT(!myNodes[newid]);
-					myNodes[newid] = myNodes[i];
-				}
+				//MESSAGE(i << " --> " << newid);;
+				myNodes[i]->setId(newid);
+				newNodes[newid] = myNodes[i];
 			}
 		}
+		myNodes.swap(newNodes);
 		this->myNodeIDFactory->emptyPool(newNodeSize);
 	}
 
@@ -1882,6 +1886,7 @@ void SMESHDS_Mesh::compactMesh()
 	{
 		if (myCells[i])
 		{
+		//MESSAGE(newSmdsId << " " << i);
 	    newCells[newSmdsId] = myCells[i];
 	    int idvtk = myCells[i]->getVtkId();
 	    newSmdsToVtk[newSmdsId] = idvtk;

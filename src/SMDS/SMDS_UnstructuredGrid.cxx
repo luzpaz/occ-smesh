@@ -56,6 +56,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 	int startBloc = 0;
 	int endBloc = 0;
 	int alreadyCopied = 0;
+	int holes = 0;
 
 	typedef enum {lookHoleStart, lookHoleEnd, lookBlocEnd} enumState;
 	enumState compactState = lookHoleStart;
@@ -71,7 +72,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 	vtkPoints *newPoints = 0;
 	if (newNodeSize)
 	{
-		MESSAGE("-------------- compactGrid, newNodeSize");
+		MESSAGE("-------------- compactGrid, newNodeSize " << newNodeSize);
 		newPoints = vtkPoints::New();
 		newPoints->Initialize();
 		newPoints->Allocate(newNodeSize);
@@ -87,6 +88,11 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 				{
 					MESSAGE("-------------- newNodeSize, startHole " << i <<  " " << oldNodeSize);
 					startHole = i;
+					if (!alreadyCopied) // copy the first bloc
+					{
+						MESSAGE("--------- copy first nodes before hole " << i << " " << oldNodeSize);
+						copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, startHole);
+					}
 					compactState = lookHoleEnd;
 				}
 				break;
@@ -105,12 +111,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 				if (endBloc)
 				{
 					MESSAGE("-------------- newNodeSize, endbloc " << endBloc <<  " " << oldNodeSize);
-					void *target = newPoints->GetVoidPointer(3*alreadyCopied);
-					void *source = this->Points->GetVoidPointer(3*startBloc);
-					int nbPoints = endBloc - startBloc;
-					memcpy(target, source, 3*sizeof(float)*nbPoints);
-					for (int j=startBloc; j<endBloc; j++)
-						idNodesOldToNew[j] = alreadyCopied++;
+					copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
 					compactState = lookHoleStart;
 					startHole = i;
 					endHole = 0;
@@ -122,12 +123,10 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 		}
 		if (!alreadyCopied) // no hole, but shorter, no need to modify idNodesOldToNew
 		{
-			MESSAGE("------------- newNodeSize, shorter " << oldNodeSize)
-			void *target = newPoints->GetVoidPointer(0);
-			void *source = this->Points->GetVoidPointer(0);
-			int nbPoints = newNodeSize;
-			memcpy(target, source, 3*sizeof(float)*nbPoints);
+			MESSAGE("------------- newNodeSize, shorter " << oldNodeSize);
+			copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, newNodeSize);
 		}
+		newPoints->Squeeze();
 	}
 
 	// --- create new compacted Connectivity, Locations and Types
@@ -155,6 +154,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 	startBloc = 0;
 	endBloc = 0;
 	alreadyCopied = 0;
+	holes = 0;
 	compactState = lookHoleStart;
 
 	vtkIdType tmpid[50];
@@ -167,45 +167,36 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 		case lookHoleStart:
 			if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
 			{
-		    	MESSAGE(" -------- newCellSize, startHole " << i << " " << oldCellSize);
+		    MESSAGE(" -------- newCellSize, startHole " << i << " " << oldCellSize);
 				startHole = i;
 				compactState = lookHoleEnd;
+				if (!alreadyCopied) // copy the first bloc
+				{
+					MESSAGE("--------- copy first bloc before hole " << i << " " << oldCellSize);
+					copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell, alreadyCopied, 0, startHole);
+				}
 			}
 			break;
 		case lookHoleEnd:
 			if (this->Types->GetValue(i) != VTK_EMPTY_CELL)
 			{
-		    	MESSAGE(" -------- newCellSize, EndHole " << i << " " << oldCellSize);
+		    MESSAGE(" -------- newCellSize, EndHole " << i << " " << oldCellSize);
 				endHole = i;
 				startBloc = i;
 				compactState = lookBlocEnd;
+				holes += endHole - startHole;
+				//alreadyCopied = startBloc -holes;
 			}
 			break;
 		case lookBlocEnd:
+			endBloc =0;
 			if (this->Types->GetValue(i) == VTK_EMPTY_CELL) endBloc =i;
 			else if (i == (oldCellSize-1)) endBloc = i+1;
 			if (endBloc)
 			{
-		    	MESSAGE(" -------- newCellSize, endBloc " << endBloc << " " << oldCellSize);
-				for (int j=startBloc; j<endBloc; j++)
-				{
-					newTypes->SetValue(alreadyCopied, this->Types->GetValue(j));
-					idCellsOldToNew[j] = alreadyCopied;
-					vtkIdType oldLoc = this->Locations->GetValue(j);
-					vtkIdType nbpts;
-					vtkIdType *oldPtsCell = 0;
-					this->Connectivity->GetCell(oldLoc, nbpts, oldPtsCell);
-					for (int l=0; l<nbpts; l++)
-					{
-						int oldval = oldPtsCell[l];
-						pointsCell[l] = idNodesOldToNew[oldval];
-					}
-					int newcnt = newConnectivity->InsertNextCell(nbpts, pointsCell);
-					int newLoc = newConnectivity->GetInsertLocation(nbpts);
-					newLocations->SetValue(alreadyCopied, newLoc);
-					alreadyCopied++;
-				}
-			compactState = lookHoleStart;
+		  	MESSAGE(" -------- newCellSize, endBloc " << endBloc << " " << oldCellSize);
+		   	copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell, alreadyCopied, startBloc, endBloc);
+  			compactState = lookHoleStart;
 			}
 			break;
 		}
@@ -213,27 +204,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
     if (!alreadyCopied) // no hole, but shorter
     {
     	MESSAGE(" -------- newCellSize, shorter " << oldCellSize);
-		for (int j=0; j<oldCellSize; j++)
-		{
-			newTypes->SetValue(alreadyCopied, this->Types->GetValue(j));
-			idCellsOldToNew[j] = alreadyCopied;
-			vtkIdType oldLoc = this->Locations->GetValue(j);
-			vtkIdType nbpts;
-			vtkIdType *oldPtsCell = 0;
-			this->Connectivity->GetCell(oldLoc, nbpts, oldPtsCell);
-			//MESSAGE(j << " " << alreadyCopied << " " << (int)this->Types->GetValue(j) << " " << oldLoc << " " << nbpts );
-			for (int l=0; l<nbpts; l++)
-			{
-				int oldval = oldPtsCell[l];
-				pointsCell[l] = idNodesOldToNew[oldval];
-				//MESSAGE("   " << oldval << " " << pointsCell[l]);
-			}
-			int newcnt = newConnectivity->InsertNextCell(nbpts, pointsCell);
-			int newLoc = newConnectivity->GetInsertLocation(nbpts);
-			//MESSAGE(newcnt << " " << newLoc);
-			newLocations->SetValue(alreadyCopied, newLoc);
-			alreadyCopied++;
-		}
+    	copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell, alreadyCopied, 0, oldCellSize);
     }
 
     newConnectivity->Squeeze();
@@ -244,7 +215,60 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
     {
     	MESSAGE("------- newNodeSize, setPoints");
     	this->SetPoints(newPoints);
+    	MESSAGE("NumberOfPoints: " << this->GetNumberOfPoints());
     }
     this->SetCells(newTypes, newLocations, newConnectivity);
     this->BuildLinks();
+}
+
+void SMDS_UnstructuredGrid::copyNodes(vtkPoints *newPoints,
+		std::vector<int>& idNodesOldToNew,
+		int& alreadyCopied,
+		int start,
+		int end)
+{
+	MESSAGE("copyNodes " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
+	void *target = newPoints->GetVoidPointer(3*alreadyCopied);
+	void *source = this->Points->GetVoidPointer(3*start);
+	int nbPoints = end - start;
+	if (nbPoints >0)
+	{
+		memcpy(target, source, 3*sizeof(float)*nbPoints);
+		for (int j=start; j<end; j++)
+			idNodesOldToNew[j] = alreadyCopied++;
+	}
+}
+
+void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes,
+		std::vector<int>& idCellsOldToNew,
+		std::vector<int>& idNodesOldToNew,
+		vtkCellArray* newConnectivity,
+		vtkIdTypeArray* newLocations,
+		vtkIdType* pointsCell,
+		int& alreadyCopied,
+		int start,
+		int end)
+{
+	MESSAGE("copyBloc " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
+	for (int j=start; j<end; j++)
+	{
+		newTypes->SetValue(alreadyCopied, this->Types->GetValue(j));
+		idCellsOldToNew[j] = alreadyCopied;
+		vtkIdType oldLoc = this->Locations->GetValue(j);
+		vtkIdType nbpts;
+		vtkIdType *oldPtsCell = 0;
+		this->Connectivity->GetCell(oldLoc, nbpts, oldPtsCell);
+		//MESSAGE(j << " " << alreadyCopied << " " << (int)this->Types->GetValue(j) << " " << oldLoc << " " << nbpts );
+		for (int l=0; l<nbpts; l++)
+		{
+			int oldval = oldPtsCell[l];
+			pointsCell[l] = idNodesOldToNew[oldval];
+			//MESSAGE("   " << oldval << " " << pointsCell[l]);
+		}
+		int newcnt = newConnectivity->InsertNextCell(nbpts, pointsCell);
+		int newLoc = newConnectivity->GetInsertLocation(nbpts);
+		//MESSAGE(newcnt << " " << newLoc);
+		newLocations->SetValue(alreadyCopied, newLoc);
+		alreadyCopied++;
+	}
 }

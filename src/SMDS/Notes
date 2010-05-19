@@ -8,7 +8,13 @@ Problemes en cours
   creation d'une structure vtkUnstructuredGrid locale : iteration un peu lourde, et pas de partage avec la structure du maillage (pas evident)
 - inversion d'un volume (tetra): exception
 - script de creation de noeuds et d'elements: OK, mais pas compatible avec version precedente (numerotation noeuds differente)
-- affichage numeros noeuds: numeros en trop sur (O,0,0) pas systematique, trouver la condition (enlever dans vtkUnstructuredGrid ?)    
++ affichage numeros noeuds: numeros en trop sur (O,0,0) pas systematique, trouver la condition (enlever dans vtkUnstructuredGrid ?)
+  ==> purge systematique noeuds et cellules en trop dans compactage grid.
++ gestion du mode embedded mal faite lors d'un script python : journal commandes intempestif
+- affichage des noeuds apres changement lineaire <--> quadratique à l'IHM : pas pris en compte, alors que maillage OK,
+  mais script OK
+  ==> cassé apres mode embedded ou elimination noeuds en trop ?
+- extrusion elements 2D along a path : affichage apres calcul pas toujours OK (filaire)
 
 A tester, non pris en compte
 ============================
