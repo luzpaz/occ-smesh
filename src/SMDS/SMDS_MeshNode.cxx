@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //
 #ifdef _MSC_VER
@@ -103,8 +104,8 @@ void SMDS_MeshNode::RemoveInverseElement(const SMDS_MeshElement * parent)
 
 void SMDS_MeshNode::Print(ostream & OS) const
 {
-	OS << "Node <" << myID << "> : X = " << X() << " Y = "
-		<< Y() << " Z = " << Z() << endl;
+        OS << "Node <" << myID << "> : X = " << X() << " Y = "
+                << Y() << " Z = " << Z() << endl;
 }
 
 //=======================================================================
@@ -114,7 +115,7 @@ void SMDS_MeshNode::Print(ostream & OS) const
 
 void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 {
-	myPosition = aPos;
+        myPosition = aPos;
 }
 
 //=======================================================================
@@ -124,7 +125,7 @@ void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 
 const SMDS_PositionPtr& SMDS_MeshNode::GetPosition() const
 {
-	return myPosition;
+        return myPosition;
 }
 
 //=======================================================================
@@ -164,17 +165,17 @@ private:
       const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
       if (!elem)
       {
-    	  assert(0);
-    	  throw SALOME_Exception("SMDS_MeshNode_MyInvIterator problem Null element");
+          assert(0);
+          throw SALOME_Exception("SMDS_MeshNode_MyInvIterator problem Null element");
       }
       //MESSAGE("vtkId " << vtkId << " smdsId " << smdsId << " " << (elem!=0));
       iter++;
       return elem;
-  }	
+  }
 };
 
 SMDS_ElemIteratorPtr SMDS_MeshNode::
-	GetInverseElementIterator(SMDSAbs_ElementType type) const
+        GetInverseElementIterator(SMDSAbs_ElementType type) const
 {
     vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetCellLinks()->GetLink(myID);
     //MESSAGE("myID " << myID << " ncells " << l.ncells);
@@ -230,7 +231,7 @@ private:
 };
 
 SMDS_ElemIteratorPtr SMDS_MeshNode::
-	elementsIterator(SMDSAbs_ElementType type) const
+        elementsIterator(SMDSAbs_ElementType type) const
 {
   if(type==SMDSAbs_Node)
     return SMDS_MeshElement::elementsIterator(SMDSAbs_Node); 
@@ -243,7 +244,7 @@ SMDS_ElemIteratorPtr SMDS_MeshNode::
 
 int SMDS_MeshNode::NbNodes() const
 {
-	return 1;
+        return 1;
 }
 
 
@@ -279,7 +280,7 @@ void SMDS_MeshNode::setXYZ(double x, double y, double z)
 
 SMDSAbs_ElementType SMDS_MeshNode::GetType() const
 {
-	return SMDSAbs_Node;
+        return SMDSAbs_Node;
 }
 
 vtkIdType SMDS_MeshNode::GetVtkType() const
@@ -342,14 +343,14 @@ int SMDS_MeshNode::NbInverseElements(SMDSAbs_ElementType type) const
 ///////////////////////////////////////////////////////////////////////////////
 bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2)
 {
-	return e1.GetID()<e2.GetID();
-	/*if(e1.myX<e2.myX) return true;
-	else if(e1.myX==e2.myX)
-	{
-	 	if(e1.myY<e2.myY) return true;
-		else if(e1.myY==e2.myY) return (e1.myZ<e2.myZ);
-		else return false;
-	}
-	else return false;*/
+        return e1.GetID()<e2.GetID();
+        /*if(e1.myX<e2.myX) return true;
+        else if(e1.myX==e2.myX)
+        {
+                if(e1.myY<e2.myY) return true;
+                else if(e1.myY==e2.myY) return (e1.myZ<e2.myZ);
+                else return false;
+        }
+        else return false;*/
 }
 

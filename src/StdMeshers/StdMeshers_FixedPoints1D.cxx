@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_FixedPoints1D.cxx
 //  Author : Damien COQUERET, OCC
@@ -123,13 +121,13 @@ ostream & StdMeshers_FixedPoints1D::SaveTo(ostream & save)
   }
 
   listSize = _nbsegs.size();
-  save << listSize;
+  save << " " << listSize;
   if ( listSize > 0 ) {
     for ( int i = 0; i < listSize; i++) save << " " << _nbsegs[i];
   }
 
   listSize = _edgeIDs.size();
-  save << listSize;
+  save << " " << listSize;
   if ( listSize > 0 ) {
     for ( int i = 0; i < listSize; i++)
       save << " " << _edgeIDs[i];
@@ -154,6 +152,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
+    _params.clear();
     _params.reserve( intVal );
     for (int i = 0; i < _params.capacity() && isOK; i++) {
       isOK = (load >> dblVal);
@@ -163,6 +162,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
+    _nbsegs.clear();
     _nbsegs.reserve( intVal );
     for (int i = 0; i < _nbsegs.capacity() && isOK; i++) {
       isOK = (load >> intVal);
@@ -172,6 +172,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
+    _edgeIDs.clear();
     _edgeIDs.reserve( intVal );
     for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
       isOK = (load >> intVal);

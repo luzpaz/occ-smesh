@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH DriverMED : driver to read and write 'med' files
 //  File   : DriverMED_W_SMESHDS_Mesh.cxx
 //  Module : SMESH
@@ -392,7 +393,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           }
       }
 
-      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
+      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator(/*idInceasingOrder=*/true);
       switch(aMeshDimension){
       case 3:
         aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_EditMeshDlg.h
 // Author : Open CASCADE S.A.S.
@@ -49,6 +50,7 @@ class QPushButton;
 class QRadioButton;
 class QCheckBox;
 class QListWidget;
+class QButtonGroup;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
@@ -102,6 +104,7 @@ private:
 
   int                       myAction;
   bool                      myIsBusy;
+  int                       myTypeId;
 
   // Widgets
   QGroupBox*                GroupConstructors;
@@ -119,6 +122,7 @@ private:
   QLineEdit*                LineEditMesh;
 
   QGroupBox*                GroupCoincident;
+  QWidget*                  GroupCoincidentWidget;
   QLabel*                   TextLabelTolerance;
   SMESHGUI_SpinBox*         SpinBoxTolerance;
   QPushButton*              DetectButton;
@@ -132,6 +136,9 @@ private:
   QPushButton*              AddElemButton;
   QPushButton*              RemoveElemButton;
   QPushButton*              SetFirstButton;
+
+  QGroupBox*                TypeBox;
+  QButtonGroup*             GroupType;
     
   QString                   myHelpFileName;
 
@@ -154,6 +161,7 @@ private:
   void                      SelectionIntoArgument();
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
+  void                      onTypeChanged(int);
 };
 
 #endif // SMESHGUI_EDITMESHDLG_H

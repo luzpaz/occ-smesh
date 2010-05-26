@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_QuadrangleParams.hxx
 //  Author : Sergey KUUL, OCC
@@ -52,9 +50,9 @@ public:
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
   friend std::ostream& operator << (std::ostream & save,
-				    StdMeshers_QuadrangleParams & hyp);
+                                    StdMeshers_QuadrangleParams & hyp);
   friend std::istream& operator >> (std::istream & load,
-				    StdMeshers_QuadrangleParams & hyp);
+                                    StdMeshers_QuadrangleParams & hyp);
 
   /*!
    * \brief Initialize start and end length by the mesh built on the geometry
@@ -63,14 +61,14 @@ public:
     * \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
-				   const TopoDS_Shape& theShape);
+                                   const TopoDS_Shape& theShape);
 
   /*!
    * \brief Initialize my parameter values by default parameters.
    *  \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByDefaults(const TDefaults& dflts,
-				       const SMESH_Mesh* theMesh=0);
+                                       const SMESH_Mesh* theMesh=0);
 
 protected:
   int         _triaVertexID;

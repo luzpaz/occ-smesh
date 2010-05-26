@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESHDS : management of mesh data and SMESH document
 //  File   : SMESH_Mesh.cxx
 //  Author : Yves FRICAUD, OCC
@@ -34,8 +35,10 @@
 #include "SMDS_SpacePosition.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 
-#include <TopExp_Explorer.hxx>
+#include <Standard_ErrorHandler.hxx>
+#include <Standard_OutOfRange.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS_Iterator.hxx>
 
 #include "utilities.h"
@@ -1236,7 +1239,15 @@ int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
 //=======================================================================
 const TopoDS_Shape& SMESHDS_Mesh::IndexToShape(int ShapeIndex) const
 {
-        return myIndexToShape.FindKey(ShapeIndex);
+  try
+  {
+    return myIndexToShape.FindKey(ShapeIndex);
+  }
+  catch ( Standard_OutOfRange )
+  {
+  }
+  static TopoDS_Shape nullShape;
+  return nullShape;
 }
 
 //=======================================================================

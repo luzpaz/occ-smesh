@@ -1,6 +1,6 @@
 <!DOCTYPE TS>
 <!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 
   Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
   CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -206,6 +206,10 @@
             <translation>Create 2D mesh from 3D</translation>
         </message>
         <message>
+            <source>MEN_MESH_ORDER</source>
+            <translation>Change submesh priority</translation>
+        </message>
+        <message>
             <source>MEN_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -342,6 +346,14 @@
             <translation>File</translation>
         </message>
         <message>
+            <source>MEN_FIND_ELEM</source>
+            <translation>Find Element by Point</translation>
+        </message>
+        <message>
+            <source>TOP_FIND_ELEM</source>
+            <translation>Find Element by Point</translation>
+        </message>
+        <message>
             <source>MEN_FREE_BORDER</source>
             <translation>Free Borders</translation>
         </message>
@@ -413,6 +425,7 @@
             <source>MEN_MERGE_ELEMENTS</source>
             <translation>Merge Elements</translation>
         </message>
+
         <message>
             <source>MEN_MESH</source>
             <translation>Mesh</translation>
@@ -630,6 +643,10 @@
             <translation>Translation</translation>
         </message>
         <message>
+            <source>MEN_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>MEN_TRANSF</source>
             <translation>Transformation</translation>
         </message>
@@ -694,6 +711,18 @@
             <translation>Wireframe</translation>
         </message>
         <message>
+            <source>MEN_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
+            <source>TOP_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
+            <source>STB_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
             <source>MESHERS_FILE_CANT_OPEN</source>
             <translation>Can not open resource file</translation>
         </message>
@@ -729,6 +758,16 @@ Please, select a mesh and try again</translation>
         <message>
             <source>MULTI_BORDERS</source>
             <translation>Borders at Multi-Connections</translation>
+        </message>
+        <message>
+            <source>GROUP_NAME_IS_EMPTY</source>
+            <translation>Name of group is not specified.
+Please enter a name of new group to be created or choose an existing one.</translation>
+        </message>
+        <message>
+            <source>MESH_STANDALONE_GRP_CHOSEN</source>
+            <translation>Group on geometry is chosen: %1.
+Do you want to convert it to the standalone group?</translation>
         </message>
         <message>
             <source>NODE_ID</source>
@@ -794,7 +833,7 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_ADD_HYP_WRN</source>
             <translation>"%1" assigned but:
-</translation>
+        </translation>
         </message>
         <message>
             <source>SMESH_ADD_POLYGON</source>
@@ -851,6 +890,10 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_ADD_TETRAS_TITLE</source>
             <translation>Add Tetrahedron</translation>
+        </message>
+        <message>
+            <source>SMESH_ADD_TO_GROUP</source>
+            <translation>Add to group</translation>
         </message>
         <message>
             <source>SMESH_ADD_TRIANGLE</source>
@@ -947,6 +990,10 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_BUT_OK</source>
             <translation>&amp;Ok</translation>
+        </message>
+        <message>
+            <source>SMESH_BUT_OVERWRITE</source>
+            <translation>Over&amp;write</translation>
         </message>
         <message>
             <source>SMESH_BUT_APPLY_AND_CLOSE</source>
@@ -1157,11 +1204,30 @@ will not match ones in the study.
 Do you want to continue ?</translation>
         </message>
         <message>
+            <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
+            <translation>There are some meshes with the same names in the selection.
+The result file may be incorrect.
+Do you want to continue ?</translation>
+        </message>
+        <message>
             <source>SMESH_EXPORT_MED_V2_1</source>
             <translation>During export mesh with name - "%1" to MED 2.1
 polygons and polyhedrons elements will be missed
 For correct export use MED 2.2
 Are you sure want to export to MED 2.1 ?</translation>
+        </message>
+        <message>
+            <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
+            <translation>MED version of the file "%1"
+is unknown or doesn't match the selected version.
+Overwrite the file?</translation>
+        </message>
+        <message>
+            <source>SMESH_EXPORT_MED_MESH_NAMES_COLLISION</source>
+            <translation>The selected file already contains
+meshes with the following names: %1
+The result file may be incorrect.
+Overwrite the file?</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_STL1</source>
@@ -1199,6 +1265,12 @@ Are you sure want to export to MED 2.1 ?</translation>
         <message>
             <source>SMESH_FEATUREEDGES</source>
             <translation>Feature Edges</translation>
+        </message>
+        <message>
+            <source>SMESH_FILE_EXISTS</source>
+            <translation>The file "%1" already exists.
+Do you want to overwrite it or
+add the exported data to its contents?</translation>
         </message>
         <message>
             <source>SMESH_FONT_ARIAL</source>
@@ -1286,7 +1358,7 @@ Are you sure want to export to MED 2.1 ?</translation>
         </message>
         <message>
             <source>SMESH_HYP_12</source>
-            <translation>Geomerty mismatches algorithm's expectation</translation>
+            <translation>Geometry mismatches algorithm's expectation\nCheck algorithm documentation for supported geometry</translation>
         </message>
         <message>
             <source>SMESH_HYP_13</source>
@@ -1424,9 +1496,37 @@ Are you sure want to export to MED 2.1 ?</translation>
             <source>SMESH_MEN_SubMeshesOnVertex</source>
             <translation>SubMeshes On Vertex</translation>
         </message>
+	<message>
+            <source>SMESH_AUTOMATIC</source>
+            <translation>Automatic</translation>
+        </message>
+	<message>
+            <source>SMESH_MANUAL</source>
+            <translation>Manual</translation>
+        </message>
         <message>
             <source>SMESH_MERGE_ELEMENTS</source>
             <translation>Merge elements</translation>
+        </message>
+	<message>
+            <source>SMESH_MODE</source>
+            <translation>Mode</translation>
+        </message>
+	<message>
+            <source>SMESH_MERGED_ELEMENTS</source>
+            <translation>%1 elements successfully merged.</translation>
+        </message>
+	<message>
+            <source>SMESH_MERGED_NODES</source>
+            <translation>%1 nodes successfully merged.</translation>
+        </message>
+	<message>
+            <source>SMESH_NO_ELEMENTS_DETECTED</source>
+            <translation>There are no elements to merge.</translation>
+        </message>
+	<message>
+            <source>SMESH_NO_NODES_DETECTED</source>
+            <translation>There are no nodes to merge.</translation>
         </message>
         <message>
             <source>SMESH_MERGE_NODES</source>
@@ -1637,6 +1737,10 @@ Are you sure want to export to MED 2.1 ?</translation>
             <translation>Point 2</translation>
         </message>
         <message>
+            <source>SMESH_BASE_POINT</source>
+            <translation>Base Point</translation>
+        </message>
+        <message>
             <source>SMESH_POLYEDRE_CREATE_ERROR</source>
             <translation>Polyedron creation error</translation>
         </message>
@@ -1836,6 +1940,30 @@ Are you sure want to export to MED 2.1 ?</translation>
         <message>
             <source>SMESH_TRANSLATION</source>
             <translation>Translation</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_TITLE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE</source>
+            <translation>Scale</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR</source>
+            <translation>Scale Factor :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_X</source>
+            <translation>Scale Factor X :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_Y</source>
+            <translation>Scale Factor Y :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_Z</source>
+            <translation>Scale Factor Z :</translation>
         </message>
         <message>
             <source>SMESH_TRANSPARENCY_OPAQUE</source>
@@ -2058,6 +2186,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>STB_2D_FROM_3D</source>
             <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
+            <source>STB_MESH_ORDER</source>
+            <translation>Change submesh priority</translation>
         </message>
         <message>
             <source>STB_CREATE_GROUP</source>
@@ -2410,6 +2542,10 @@ Consider saving your work before application crash</translation>
             <translation>Translation</translation>
         </message>
         <message>
+            <source>STB_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>STB_TRANSP</source>
             <translation>Transparency</translation>
         </message>
@@ -2564,6 +2700,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_2D_FROM_3D</source>
             <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
+            <source>TOP_MESH_ORDER</source>
+            <translation>Change submesh priority</translation>
         </message>
         <message>
             <source>TOP_CREATE_GROUP</source>
@@ -2916,6 +3056,10 @@ Consider saving your work before application crash</translation>
             <translation>Translation</translation>
         </message>
         <message>
+            <source>TOP_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>TOP_TRANSP</source>
             <translation>Transparency</translation>
         </message>
@@ -3023,6 +3167,40 @@ Consider saving your work before application crash</translation>
             <source>NO_MESH_SELECTED</source>
             <translation>No mesh selected</translation>
         </message>
+        <message>
+            <source>SMESH_PREF_def_precision</source>
+            <translation>Default precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_length_precision</source>
+            <translation>Length precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_angle_precision</source>
+            <translation>Angular precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_len_tol_precision</source>
+            <translation>Length tolerance precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_parametric_precision</source>
+            <translation>Parametric precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_area_precision</source>
+            <translation>Area precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_vol_precision</source>
+            <translation>Volume precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PRECISION_HINT</source>
+            <translation>
+Input value precision can be adjusted using
+'%1' parameter in Mesh module preferences.</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI</name>
@@ -3104,6 +3282,10 @@ Please, create VTK viewer and try again</translation>
             <translation>Show a computation result notification</translation>
         </message>
         <message>
+            <source>SMESH_PREF_GROUP_PRECISION</source>
+            <translation>Input fields precision</translation>
+        </message>
+        <message>
             <source>PREF_GROUP_ELEMENTS</source>
             <translation>Elements</translation>
         </message>
@@ -3152,6 +3334,10 @@ Please, create VTK viewer and try again</translation>
             <translation>Labels color</translation>
         </message>
         <message>
+            <source>PREF_MARKER_SCALE</source>
+            <translation>Scale of marker</translation>
+        </message>
+        <message>
             <source>PREF_NODES</source>
             <translation>Nodes</translation>
         </message>
@@ -3184,10 +3370,6 @@ Please, create VTK viewer and try again</translation>
             <translation>Shrink coef.</translation>
         </message>
         <message>
-            <source>PREF_SIZE</source>
-            <translation>Size</translation>
-        </message>
-        <message>
             <source>PREF_TAB_GENERAL</source>
             <translation>General</translation>
         </message>
@@ -3202,6 +3384,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>PREF_TITLE_COLOR</source>
             <translation>Title color</translation>
+        </message>
+        <message>
+            <source>PREF_TYPE_OF_MARKER</source>
+            <translation>Type of marker</translation>
         </message>
         <message>
             <source>PREF_COLOR_0D</source>
@@ -3374,6 +3560,15 @@ Please, create VTK viewer and try again</translation>
             <translation>A temporary submeshes on the selected geometry
  created during preview operation.
  Do you want to remove all this submeshes?</translation>
+        </message>
+        <message>
+            <source>SMESH_WRN_NOTHING_PREVIEW</source>
+            <translation>No mesh preview is available</translation>
+        </message>
+        <message>
+            <source>SMESH_REJECT_MESH_ORDER</source>
+            <translation>The submesh priority changed during preview operation.
+Do you want to restore original submesh priority?</translation>
         </message>
     </context>
     <context>
@@ -4265,6 +4460,37 @@ Please specify them and try again</translation>
         </message>
     </context>
     <context>
+        <name>SMESHGUI_FindElemByPointDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Find Element by Point</translation>
+        </message>
+        <message>
+            <source>CREATE_NEW_METHOD</source>
+            <translation>Create a node</translation>
+        </message>
+        <message>
+            <source>MESH_PASS_THROUGH_POINT</source>
+            <translation>Make a node at point</translation>
+        </message>
+        <message>
+            <source>METHOD</source>
+            <translation>Method</translation>
+        </message>
+        <message>
+            <source>MOVE_EXISTING_METHOD</source>
+            <translation>Move a node</translation>
+        </message>
+        <message>
+            <source>NODE_2MOVE</source>
+            <translation>Node to move</translation>
+        </message>
+        <message>
+            <source>NODE_2MOVE_ID</source>
+            <translation>ID</translation>
+        </message>
+    </context>
+    <context>
         <name>SMESHGUI_MeshDlg</name>
         <message>
             <source>CREATE_MESH</source>
@@ -4593,6 +4819,25 @@ It is impossible to read point coordinates from file</translation>
         </message>
     </context>
     <context>
+        <name>SMESHGUI_CuttingIntoTetraDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Splitting volumes into tetrahedra</translation>
+        </message>
+        <message>
+            <source>SPLIT_METHOD</source>
+            <translation>Split hexahedron</translation>
+        </message>
+        <message>
+            <source>SPLIT_HEX_TO_5_TETRA</source>
+            <translation>Into 5 tetrahedra</translation>
+        </message>
+        <message>
+            <source>SPLIT_HEX_TO_6_TETRA</source>
+            <translation>Into 6 tetrahedra</translation>
+        </message>
+    </context>
+    <context>
         <name>SMESHGUI_PrecisionDlg</name>
         <message>
             <source>CAPTION</source>
@@ -4712,6 +4957,7 @@ It is impossible to read point coordinates from file</translation>
             <source>MERGE_EQUAL_ELEMENTS</source>
             <translation>Merge equal elements</translation>
         </message>
+
         <message>
             <source>NODE1_TO_MERGE</source>
             <translation>Node 1 To Merge</translation>
@@ -4862,6 +5108,79 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
             <translation>Create Groups from Geometry</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_MeshOrderDlg</name>
+        <message>
+            <source>SMESH_MESHORDER_TITLE</source>
+            <translation>Order of submesh in meshing process</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_MeshOrderOp</name>
+        <message>
+            <source>SMESH_NO_CONCURENT_MESH</source>
+            <translation>No concurent submeshes detected</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_ClippingDlg</name>
+       <message>
+            <source>CLIP_PLANES</source>
+            <translation>Clipping planes</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_X_Y2Z</source>
+            <translation>Rotation around X (Y to Z):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Y_X2Z</source>
+            <translation>Rotation around Y (X to Z):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Z_Y2X</source>
+            <translation>Rotation around Z (Y to X):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_X_Z2Y</source>
+            <translation>Rotation around X (Z to Y):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Y_Z2X</source>
+            <translation>Rotation around Y (Z to X):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Z_X2Y</source>
+            <translation>Rotation around Z (X to Y):</translation>
+        </message>
+        <message>
+            <source>SHOW_PREVIEW</source>
+            <translation>Show preview</translation>
+        </message>
+        <message>
+            <source>AUTO_APPLY</source>
+            <translation>Auto Apply</translation>
+        </message>
+        <message>
+            <source>ALONG_XY</source>
+            <translation>|| X-Y</translation>
+        </message>
+        <message>
+            <source>ALONG_YZ</source>
+            <translation>|| Y-Z</translation>
+        </message>
+        <message>
+            <source>ALONG_ZX</source>
+            <translation>|| Z-X</translation>
+        </message>
+        <message>
+            <source>PLANE_NUM</source>
+            <translation>Plane# %1</translation>
+        </message>
+        <message>
+            <source>NO_PLANES</source>
+            <translation>No planes</translation>
         </message>
     </context>
 </TS>

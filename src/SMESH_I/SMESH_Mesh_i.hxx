@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Mesh_i.hxx
 //  Author : Paul RASCLE, EDF
@@ -58,7 +59,7 @@ class SMESH_I_EXPORT SMESH_Mesh_i:
 public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                 SMESH_Gen_i*            myGen_i,
-              CORBA::Long             studyId );
+                CORBA::Long             studyId );
 
   virtual ~SMESH_Mesh_i();
 
@@ -206,6 +207,8 @@ public:
    */
   char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
+  void ExportToMEDX( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion, CORBA::Boolean overwrite )
+    throw (SALOME::SALOME_Exception);
   void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
     throw (SALOME::SALOME_Exception);
   void ExportMED( const char* file, CORBA::Boolean auto_groups )
@@ -305,6 +308,9 @@ public:
   SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
+  SMESH::EntityType GetElementGeomType( CORBA::Long id )
+    throw (SALOME::SALOME_Exception);
+  
   /*!
    * Returns ID of elements for given submesh
    */
@@ -338,7 +344,7 @@ public:
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
-  static void PrepareForWriting (const char* file);
+  static void PrepareForWriting (const char* file, bool overwrite = true);
 
   //int importMEDFile( const char* theFileName, const char* theMeshName );
 
@@ -450,7 +456,16 @@ public:
    * Returns number of faces for given element
    */
   CORBA::Long ElemNbFaces(CORBA::Long id);
-  
+  /*!
+   * Returns nodes of given face (counted from zero) for given element.
+   */
+  SMESH::long_array* GetElemFaceNodes(CORBA::Long elemId, CORBA::Short faceIndex);
+
+  /*!
+   * Returns an element based on all given nodes.
+   */
+  CORBA::Long FindElementByNodes(const SMESH::long_array& nodes);
+
   /*!
    * Returns true if given element is polygon
    */
@@ -500,6 +515,16 @@ public:
   static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
                               SMESH::long_array&         theInfo);
                           
+
+  /*!
+   * \brief Return submesh objects list in meshing order
+   */
+  virtual SMESH::submesh_array_array* GetMeshOrder();
+  /*!
+   * \brief Set submesh object order
+   */
+  virtual ::CORBA::Boolean SetMeshOrder(const SMESH::submesh_array_array& theSubMeshArray);
+
   
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
@@ -509,6 +534,13 @@ private:
    * Check and correct names of mesh groups
    */
   void checkGroupNames();
+
+  /*!
+   * Convert submesh ids into submesh interfaces
+   */
+  void convertMeshOrder(const TListOfListOfInt&     theIdsOrder,
+                        SMESH::submesh_array_array& theSubMeshOrder,
+                        const bool                  theIsDump);
 
 private:
 

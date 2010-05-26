@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MeshEditor_i.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-
+//
 #include "SMESH_MeshEditor_i.hxx"
 
 #include "SMDS_Mesh0DElement.hxx"
@@ -271,6 +272,27 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
   }
 }
 
+//=======================================================================
+//function : MakeIDSource
+//purpose  : Wrap a sequence of ids in a SMESH_IDSource
+//=======================================================================
+
+struct _IDSource : public POA_SMESH::SMESH_IDSource
+{
+  SMESH::long_array _ids;
+  SMESH::long_array* GetIDs()      { return new SMESH::long_array( _ids ); }
+  SMESH::long_array* GetMeshInfo() { return 0; }
+};
+
+SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids)
+{
+  _IDSource* anIDSource = new _IDSource;
+  anIDSource->_ids = ids;
+  SMESH::SMESH_IDSource_var anIDSourceVar = anIDSource->_this();
+  
+  return anIDSourceVar._retn();
+}
+
 //=============================================================================
 /*!
  *
@@ -290,9 +312,6 @@ SMESH_MeshEditor_i::RemoveElements(const SMESH::long_array & IDsOfElements)
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".RemoveElements( " << IDsOfElements << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'RemoveElements: ', isDone";
-#endif
   // Remove Elements
   return anEditor.Remove( IdList, false );
 }
@@ -314,9 +333,6 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNo
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".RemoveNodes( " << IDsOfNodes << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'RemoveNodes: ', isDone";
-#endif
 
   return anEditor.Remove( IdList, true );
 }
@@ -468,14 +484,8 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsO
 
   // Update Python script
   TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'AddPolygonalFace: ', faceID";
-#endif
 
-  if(elem)
-    return elem->GetID();
-
-  return 0;
+  return elem ? elem->GetID() : 0;
 }
 
 //=============================================================================
@@ -517,9 +527,6 @@ CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
 
   // Update Python script
   TPythonDump() << "volID = " << this << ".AddVolume( " << IDsOfNodes << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'AddVolume: ', volID";
-#endif
 
   if(elem)
     return elem->GetID();
@@ -552,14 +559,8 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolume (const SMESH::long_array & I
   // Update Python script
   TPythonDump() << "volID = " << this << ".AddPolyhedralVolume( "
                 << IDsOfNodes << ", " << Quantities << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'AddPolyhedralVolume: ', volID";
-#endif
 
-  if(elem)
-    return elem->GetID();
-
-  return 0;
+  return elem ? elem->GetID() : 0;
 }
 
 //=============================================================================
@@ -590,14 +591,8 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces (const SMESH::long_ar
   // Update Python script
   TPythonDump() << "volID = " << this << ".AddPolyhedralVolumeByFaces( "
                 << IdsOfFaces << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'AddPolyhedralVolume: ', volID";
-#endif
 
-  if(elem)
-    return elem->GetID();
-
-  return 0;
+  return elem ? elem->GetID() : 0;
 }
 
 //=============================================================================
@@ -932,9 +927,6 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
   // Update Python script
   TPythonDump() << "isDone = " << this << ".TriToQuad( "
                 << IDsOfElements << ", " << aNumericalFunctor << ", " << MaxAngle << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'TriToQuad: ', isDone";
-#endif
 
   ::SMESH_MeshEditor anEditor( myMesh );
 
@@ -963,9 +955,6 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
   // Clear python line(s), created by TriToQuad()
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#ifdef _DEBUG_
-  aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#endif
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
     SMESH::DownCast<SMESH::NumericalFunctor_i*>( Criterion );
@@ -973,9 +962,6 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
   // Update Python script
   TPythonDump() << "isDone = " << this << ".TriToQuadObject("
                 << theObject << ", " << aNumericalFunctor << ", " << MaxAngle << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'TriToQuadObject: ', isDone";
-#endif
 
   return isDone;
 }
@@ -1006,9 +992,6 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".QuadToTri( " << IDsOfElements << ", " << aNumericalFunctor << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'QuadToTri: ', isDone";
-#endif
 
   ::SMESH_MeshEditor anEditor( myMesh );
   CORBA::Boolean stat = anEditor.QuadToTri( faces, aCrit );
@@ -1035,18 +1018,12 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   
   // Clear python line(s), created by QuadToTri()
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#ifdef _DEBUG_
-  aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#endif
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
     SMESH::DownCast<SMESH::NumericalFunctor_i*>( Criterion );
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".QuadToTriObject( " << theObject << ", " << aNumericalFunctor << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'QuadToTriObject: ', isDone";
-#endif
 
   return isDone;
 }
@@ -1069,9 +1046,6 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
   // Update Python script
   TPythonDump() << "isDone = " << this << ".SplitQuad( "
                 << IDsOfElements << ", " << Diag13 << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'SplitQuad: ', isDone";
-#endif
 
   ::SMESH_MeshEditor anEditor( myMesh );
   CORBA::Boolean stat = anEditor.QuadToTri( faces, Diag13 );
@@ -1098,16 +1072,10 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr th
   // Clear python line(s), created by SplitQuad()
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#ifdef _DEBUG_
-  aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#endif
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".SplitQuadObject( "
                 << theObject << ", " << Diag13 << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'SplitQuadObject: ', isDone";
-#endif
 
   return isDone;
 }
@@ -1138,6 +1106,28 @@ CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
   return -1;
 }
 
+//================================================================================
+/*!
+ * \brief Split volumic elements into tetrahedrons
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
+                                                CORBA::Short              methodFlags)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESH::long_array_var anElementsId = elems->GetIDs();
+  TIDSortedElemSet elemSet;
+  arrayToSet( anElementsId, GetMeshDS(), elemSet, SMDSAbs_Volume );
+  
+  ::SMESH_MeshEditor anEditor (myMesh);
+  anEditor.SplitVolumesIntoTetra( elemSet, int( methodFlags ));
+
+  TPythonDump() << this << ".SplitVolumesIntoTetra( "
+                << elems << ", " << methodFlags << " )";
+}
 
 //=======================================================================
 //function : Smooth
@@ -1253,9 +1243,6 @@ SMESH_MeshEditor_i::smooth(const SMESH::long_array &              IDsOfElements,
                 << "SMESH.SMESH_MeshEditor."
                 << ( Method == SMESH::SMESH_MeshEditor::CENTROIDAL_SMOOTH ?
                      "CENTROIDAL_SMOOTH )" : "LAPLACIAN_SMOOTH )");
-#ifdef _DEBUG_
-  TPythonDump() << "print 'Smooth: ', isDone";
-#endif
 
   return true;
 }
@@ -1284,9 +1271,6 @@ SMESH_MeshEditor_i::smoothObject(SMESH::SMESH_IDSource_ptr              theObjec
   // Clear python line(s), created by Smooth()
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#ifdef _DEBUG_
-  aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
-#endif
 
   // Update Python script
   TPythonDump() << "isDone = " << this << "."
@@ -1296,9 +1280,6 @@ SMESH_MeshEditor_i::smoothObject(SMESH::SMESH_IDSource_ptr              theObjec
                 << "SMESH.SMESH_MeshEditor."
                 << ( Method == SMESH::SMESH_MeshEditor::CENTROIDAL_SMOOTH ?
                      "CENTROIDAL_SMOOTH )" : "LAPLACIAN_SMOOTH )");
-#ifdef _DEBUG_
-  TPythonDump() << "print 'SmoothObject: ', isDone";
-#endif
 
   return isDone;
 }
@@ -3346,6 +3327,140 @@ SMESH_MeshEditor_i::RotateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
   return mesh._retn();
 }
 
+
+//=======================================================================
+//function : scale
+//purpose  : 
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::scale(const SMESH::long_array &  theIDsOfElements,
+                          const SMESH::PointStruct&  thePoint,
+                          const SMESH::double_array& theScaleFact,
+                          CORBA::Boolean             theCopy,
+                          const bool                 theMakeGroups,
+                          ::SMESH_Mesh*              theTargetMesh)
+{
+  initData();
+
+  TIDSortedElemSet elements;
+  arrayToSet(theIDsOfElements, GetMeshDS(), elements);
+
+  gp_Pnt aPnt( thePoint.x, thePoint.y, thePoint.z );
+  list<double> aScaleFact;
+  for (int i = 0; i < theScaleFact.length(); i++) {
+    aScaleFact.push_back( theScaleFact[i] );
+  }
+
+  ::SMESH_MeshEditor anEditor( myMesh );
+  ::SMESH_MeshEditor::PGroupIDs groupIds =
+      anEditor.Scale (elements, aPnt, aScaleFact, theCopy,
+                      theMakeGroups, theTargetMesh);
+
+  if(theCopy)
+    storeResult(anEditor);
+
+  return theMakeGroups ? getGroups(groupIds.get()) : 0;
+}
+
+
+//=======================================================================
+//function : Scale
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::Scale(SMESH::SMESH_IDSource_ptr  theObject,
+                               const SMESH::PointStruct&  thePoint,
+                               const SMESH::double_array& theScaleFact,
+                               CORBA::Boolean             theCopy)
+{
+  if ( !myPreviewMode ) {
+    TPythonDump() << this << ".Scale( "
+                  << theObject << ", "
+                  << "SMESH.PointStruct( "  << thePoint.x << ", "
+                  << thePoint.y << ", " << thePoint.z << " ) ,"
+                  << theScaleFact << ", "
+                  << theCopy << " )";
+  }
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  scale(anElementsId, thePoint, theScaleFact, theCopy, false);
+}
+
+
+//=======================================================================
+//function : ScaleMakeGroups
+//purpose  : 
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::ScaleMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
+                                    const SMESH::PointStruct&  thePoint,
+                                    const SMESH::double_array& theScaleFact)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  SMESH::ListOfGroups * aGroups = 
+    scale(anElementsId, thePoint, theScaleFact, true, true);
+
+  if ( !myPreviewMode ) {
+
+    TPythonDump aPythonDump;
+    DumpGroupsList(aPythonDump,aGroups);
+    aPythonDump << this << ".Scale("
+                << theObject << ","
+                << "SMESH.PointStruct(" <<thePoint.x << ","
+                << thePoint.y << "," << thePoint.z << "),"
+                << theScaleFact << ",True,True)";
+  }
+  return aGroups;
+}
+
+
+//=======================================================================
+//function : ScaleMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
+                                  const SMESH::PointStruct&  thePoint,
+                                  const SMESH::double_array& theScaleFact,
+                                  CORBA::Boolean             theCopyGroups,
+                                  const char*                theMeshName)
+{
+  SMESH_Mesh_i* mesh_i;
+  SMESH::SMESH_Mesh_var mesh;
+  { // open new scope to dump "MakeMesh" command
+    // and then "GetGroups" using SMESH_Mesh::GetGroups()
+
+    TPythonDump pydump; // to prevent dump at mesh creation
+    mesh = makeMesh( theMeshName );
+    mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+
+    if ( mesh_i ) {
+      SMESH::long_array_var anElementsId = theObject->GetIDs();
+      scale(anElementsId, thePoint, theScaleFact,
+            false, theCopyGroups, & mesh_i->GetImpl());
+      mesh_i->CreateGroupServants();
+    }
+    if ( !myPreviewMode ) {
+      pydump << mesh << " = " << this << ".ScaleMakeMesh( "
+             << theObject << ", "
+             << "SMESH.PointStruct( "  << thePoint.x << ", "
+             << thePoint.y << ", " << thePoint.z << " ) ,"
+             << theScaleFact << ", "
+             << theCopyGroups << ", '"
+             << theMeshName << "' )";
+    }
+  }
+
+  //dump "GetGroups"
+  if(!myPreviewMode && mesh_i)
+    mesh_i->GetGroups();
+
+  return mesh._retn();
+}
+
+
 //=======================================================================
 //function : FindCoincidentNodes
 //purpose  :
@@ -3732,6 +3847,24 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
 }
 
 //=======================================================================
+//function : GetPointState
+//purpose  : Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+//           TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+//=======================================================================
+
+CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
+                                               CORBA::Double y,
+                                               CORBA::Double z)
+{
+  theSearchersDeleter.Set( myMesh );
+  if ( !theElementSearcher ) {
+    ::SMESH_MeshEditor anEditor( myMesh );
+    theElementSearcher = anEditor.GetElementSearcher();
+  }
+  return CORBA::Short( theElementSearcher->GetPointState( gp_Pnt( x,y,z )));
+}
+
+//=======================================================================
 //function : convError
 //purpose  :
 //=======================================================================
@@ -4017,9 +4150,6 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
   }
   TPythonDump() << "isDone = " << this << ".ChangeElemNodes( "
                 << ide << ", " << newIDs << " )";
-#ifdef _DEBUG_
-  TPythonDump() << "print 'ChangeElemNodes: ', isDone";
-#endif
 
   return GetMeshDS()->ChangeElementNodes( elem, & aNodes[0], nbn1+1 );
 }
@@ -4573,7 +4703,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroups(
   storeResult( aMeshEditor) ;
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodeGroups( " << &theElems << ", "
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroups( " << &theElems << ", "
     << &theNodesNot << ", " << &theAffectedElems << " )";
   return aResult;
 }

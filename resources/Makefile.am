@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # -* Makefile *- 
 # Author : Patrick GOLDBRONN (CEA)
 # Date : 28/06/2001
@@ -55,6 +53,7 @@ dist_salomeres_DATA = \
 	mesh_init.png \
 	mesh_length.png \
 	mesh_length_2d.png \
+	mesh_find_elem_by_point.png \
 	mesh_free_edges.png \
 	mesh_free_edges_2d.png \
 	mesh_free_nodes.png \
@@ -166,7 +165,10 @@ dist_salomeres_DATA = \
 	mesh_extractGroup.png \
 	mesh_precompute.png \
 	mesh_2d_from_3d.png \
-        mesh_free_faces.png
+        mesh_free_faces.png \
+        scale.png \
+        scale_along_axes.png \
+	split_into_tetra.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
 nodist_salomeres_SCRIPTS = SMESHCatalog.xml

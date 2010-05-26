@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //
 #ifdef _MSC_VER
@@ -42,17 +43,17 @@ using namespace std;
 
 int SMDS_FaceOfNodes::NbEdges() const
 {
-	return NbNodes();
+        return NbNodes();
 }
 
 int SMDS_FaceOfNodes::NbFaces() const
 {
-	return 1;
+        return 1;
 }
 
 int SMDS_FaceOfNodes::NbNodes() const
 {
-	return myNbNodes;
+        return myNbNodes;
 }
 
 //=======================================================================
@@ -62,10 +63,10 @@ int SMDS_FaceOfNodes::NbNodes() const
 
 void SMDS_FaceOfNodes::Print(ostream & OS) const
 {
-	OS << "face <" << GetID() << " > : ";
-	int i;
-	for (i = 0; i < NbNodes() - 1; i++) OS << myNodes[i] << ",";
-	OS << myNodes[i] << ") " << endl;
+        OS << "face <" << GetID() << " > : ";
+        int i;
+        for (i = 0; i < NbNodes() - 1; i++) OS << myNodes[i] << ",";
+        OS << myNodes[i] << ") " << endl;
 }
 
 //=======================================================================
@@ -132,11 +133,11 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                                    const SMDS_MeshNode* node2,
                                    const SMDS_MeshNode* node3)
 {
-	myNbNodes = 3;
-	myNodes[0]=node1;
-	myNodes[1]=node2;
-	myNodes[2]=node3;
-	myNodes[3]=0;
+        myNbNodes = 3;
+        myNodes[0]=node1;
+        myNodes[1]=node2;
+        myNodes[2]=node3;
+        myNodes[3]=0;
 }
 
 SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
@@ -144,11 +145,11 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                                    const SMDS_MeshNode* node3,
                                    const SMDS_MeshNode* node4)
 {
-	myNbNodes = 4;
-	myNodes[0]=node1;
-	myNodes[1]=node2;
-	myNodes[2]=node3;
-	myNodes[3]=node4;	
+        myNbNodes = 4;
+        myNodes[0]=node1;
+        myNodes[1]=node2;
+        myNodes[2]=node3;
+        myNodes[3]=node4;       
 }
 bool SMDS_FaceOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
                                    const int            nbNodes)

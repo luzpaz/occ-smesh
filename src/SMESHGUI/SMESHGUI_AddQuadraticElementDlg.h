@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_AddMeshElementDlg.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -36,7 +37,9 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class QComboBox;
 class QGroupBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
@@ -68,6 +71,8 @@ public:
   ~SMESHGUI_AddQuadraticElementDlg();
   
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+
   void                        Init();
   void                        closeEvent( QCloseEvent* );
   void                        hideEvent( QHideEvent* );    /* ESC key */
@@ -78,6 +83,8 @@ private:
   bool                        IsValid();
   void                        updateButtons();
 
+  bool                        isValid();
+  
   SMESHGUI*                   mySMESHGUI;       /* Current SMESHGUI object */
   LightApp_SelectionMgr*      mySelectionMgr;   /* User shape selection */
   int                         myNbCorners;      /* The required number of corners */
@@ -87,6 +94,8 @@ private:
   SMESH::SMESH_Mesh_var       myMesh;
   SMESH_Actor*                myActor;
   SMESH::TElementSimulation*  mySimulation;
+  QString                     myEntry;
+  GrpList                     myGroups;
   
   int                         myType;
   bool                        myIsEditCorners;
@@ -100,6 +109,10 @@ private:
   QTableWidget*               myTable;
   QCheckBox*                  myReverseCB;
   
+  QGroupBox*                  GroupGroups;
+  QLabel*                     TextLabel_GroupName;
+  QComboBox*                  ComboBox_GroupName;
+
   QGroupBox*                  GroupButtons;
   QPushButton*                buttonOk;
   QPushButton*                buttonCancel;

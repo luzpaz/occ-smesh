@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_subMesh.cxx
 //  Author : Paul RASCLE, EDF
@@ -39,6 +40,7 @@
 
 #include "utilities.h"
 #include "OpUtil.hxx"
+#include "Basics_Utils.hxx"
 
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
@@ -53,6 +55,8 @@
 
 #include <Standard_OutOfMemory.hxx>
 #include <Standard_ErrorHandler.hxx>
+
+#include <numeric>
 
 using namespace std;
 
@@ -1368,6 +1372,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           algo->InitComputeError();
           MemoryReserve aMemoryReserve;
           SMDS_Mesh::CheckMemory();
+          Kernel_Utils::Localizer loc;
           if ( !_father->HasShapeToMesh() ) // no shape
           {
             SMESH_MesherHelper helper( *_father );
@@ -1598,11 +1603,9 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   bool ret = true;
 
   if (_subShape.ShapeType() == TopAbs_VERTEX) {
-    std::vector<int> aVec(SMDSEntity_Last);
-    for(int i= SMDSEntity_Node; i < SMDSEntity_Last; i++)
-      aVec[i] = 0;
+    vector<int> aVec(SMDSEntity_Last,0);
     aVec[SMDSEntity_Node] = 1;
-    aResMap.insert(std::make_pair(this,aVec));
+    aResMap.insert(make_pair(this,aVec));
     return ret;
   }
 
@@ -1611,15 +1614,32 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   SMESH_Hypothesis::Hypothesis_Status hyp_status;
 
   algo = gen->GetAlgo((*_father), _subShape);
-  if(algo) {
+  if(algo && !aResMap.count(this) )
+  {
     ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
     if (!ret) return false;
 
-    TopoDS_Shape shape = _subShape;
-
+    if (_father->HasShapeToMesh() && algo->NeedDescretBoundary())
+    {
+      // check submeshes needed
+      bool subMeshEvaluated = true;
+      int dimToCheck = SMESH_Gen::GetShapeDim( _subShape ) - 1;
+      SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,/*complexShapeFirst=*/true);
+      while ( smIt->more() && subMeshEvaluated )
+      {
+        SMESH_subMesh* sm = smIt->next();
+        int dim = SMESH_Gen::GetShapeDim( sm->GetSubShape() );
+        if (dim < dimToCheck) break; // the rest subMeshes are all of less dimension
+        const vector<int> & nbs = aResMap[ sm ];
+        subMeshEvaluated = (std::accumulate( nbs.begin(), nbs.end(), 0 ) > 0 );
+      }
+      if ( !subMeshEvaluated )
+        return false;
+    }
     _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
+    ret = algo->Evaluate((*_father), _subShape, aResMap);
 
-    ret = algo->Evaluate((*_father), shape, aResMap);
+    aResMap.insert( make_pair( this,vector<int>(0)));
   }
 
   return ret;
@@ -2190,4 +2210,30 @@ SMESH_subMeshIteratorPtr SMESH_subMesh::getDependsOnIterator(const bool includeS
     return SMESH_subMeshIteratorPtr
       ( new _Iterator( new SMDS_mapIterator<TMap>( DependsOn() ), prepend, append ));
   }
+}
+
+//================================================================================
+/*!
+ * \brief  Find common submeshes (based on shared subshapes with other
+  * \param theOther submesh to check
+  * \param theSetOfCommon set of common submesh
+ */
+//================================================================================
+
+bool SMESH_subMesh::FindIntersection(const SMESH_subMesh* theOther,
+                                     std::set<const SMESH_subMesh*>& theSetOfCommon ) const
+{
+  int oldNb = theSetOfCommon.size();
+  // check main submeshes
+  const map <int, SMESH_subMesh*>::const_iterator otherEnd = theOther->_mapDepend.end();
+  if ( theOther->_mapDepend.find(this->GetId()) != otherEnd )
+    theSetOfCommon.insert( this );
+  if ( _mapDepend.find(theOther->GetId()) != _mapDepend.end() )
+    theSetOfCommon.insert( theOther );
+  // check common submeshes
+  map <int, SMESH_subMesh*>::const_iterator mapIt = _mapDepend.begin();
+  for( ; mapIt != _mapDepend.end(); mapIt++ )
+    if ( theOther->_mapDepend.find((*mapIt).first) != otherEnd )
+      theSetOfCommon.insert( (*mapIt).second );
+  return oldNb < theSetOfCommon.size();
 }

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //
 #include "SMESH_SMDS.hxx"
@@ -35,22 +36,22 @@ class SMDS_EXPORT SMDS_IteratorOfElements:public SMDS_ElemIterator
 /// Create an iterator which look for elements of type type which are linked 
 /// to the element element. it is the iterator to get connectivity of element
 //////////////////////////////////////////////////////////////////////////////
-	SMDS_IteratorOfElements(const SMDS_MeshElement * element,
+        SMDS_IteratorOfElements(const SMDS_MeshElement * element,
                                 SMDSAbs_ElementType type,
                                 const SMDS_ElemIteratorPtr& it);
-	bool more();
-	const SMDS_MeshElement * next();
+        bool more();
+        const SMDS_MeshElement * next();
 
   private:
-	SMDS_ElemIteratorPtr t2Iterator;
-	SMDS_ElemIteratorPtr t1Iterator;
-	SMDSAbs_ElementType myType;	
-	const SMDS_MeshElement * myProxyElement;
-	const SMDS_MeshElement * myElement;		
-	bool myReverseIteration;
+        SMDS_ElemIteratorPtr t2Iterator;
+        SMDS_ElemIteratorPtr t1Iterator;
+        SMDSAbs_ElementType myType;     
+        const SMDS_MeshElement * myProxyElement;
+        const SMDS_MeshElement * myElement;             
+        bool myReverseIteration;
 
-	std::set<const SMDS_MeshElement*> alreadyReturnedElements;
-	std::set<const SMDS_MeshElement*>::iterator itAlreadyReturned;	
-	bool subMore();
-	const SMDS_MeshElement * subNext();
+        std::set<const SMDS_MeshElement*> alreadyReturnedElements;
+        std::set<const SMDS_MeshElement*>::iterator itAlreadyReturned;  
+        bool subMore();
+        const SMDS_MeshElement * subNext();
 };

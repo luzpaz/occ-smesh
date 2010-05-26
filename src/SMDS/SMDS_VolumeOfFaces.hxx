@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_VolumeOfFaces.hxx
 //  Module : SMESH
@@ -36,33 +37,33 @@
 
 class SMDS_EXPORT SMDS_VolumeOfFaces:public SMDS_MeshVolume
 {
-	
+        
   public:
-	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+        SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                            const SMDS_MeshFace * face2,
                            const SMDS_MeshFace * face3,
                            const SMDS_MeshFace * face4);
-	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+        SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                            const SMDS_MeshFace * face2,
                            const SMDS_MeshFace * face3,
                            const SMDS_MeshFace * face4,
                            const SMDS_MeshFace * face5);
-	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+        SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                            const SMDS_MeshFace * face2,
                            const SMDS_MeshFace * face3,
                            const SMDS_MeshFace * face4,
                            const SMDS_MeshFace * face5,
                            const SMDS_MeshFace * face6);
 
-  virtual SMDSAbs_EntityType GetEntityType() const;
-	void Print(std::ostream & OS) const;
-	
-	int NbFaces() const;
+        virtual SMDSAbs_EntityType GetEntityType() const;
+        void Print(std::ostream & OS) const;
+
+        int NbFaces() const;
 
   protected:
-	SMDS_ElemIteratorPtr
-		elementsIterator(SMDSAbs_ElementType type) const;
-	const SMDS_MeshFace * myFaces[6];
-	int                   myNbFaces;
+        SMDS_ElemIteratorPtr
+                elementsIterator(SMDSAbs_ElementType type) const;
+        const SMDS_MeshFace * myFaces[6];
+        int                   myNbFaces;
 };
 #endif

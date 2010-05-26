@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_QuadrangleParams.cxx
 //  Author : Sergey KUUL, OCC
@@ -48,7 +46,7 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_QuadrangleParams::StdMeshers_QuadrangleParams(int hypId, int studyId,
-							 SMESH_Gen * gen)
+                                                         SMESH_Gen * gen)
   :SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = "QuadrangleParams";
@@ -142,7 +140,7 @@ istream & operator >>(istream & load, StdMeshers_QuadrangleParams & hyp)
 //================================================================================
 
 bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
-						      const TopoDS_Shape& theShape)
+                                                      const TopoDS_Shape& theShape)
 {
   if ( !theMesh || theShape.IsNull() )
     return false;
@@ -158,7 +156,7 @@ bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
 //================================================================================
 
 bool StdMeshers_QuadrangleParams::SetParametersByDefaults(const TDefaults&  dflts,
-							  const SMESH_Mesh* /*mesh*/)
+                                                          const SMESH_Mesh* /*mesh*/)
 {
   return true;
 }

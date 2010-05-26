@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  File   : Makefile.in
 #  Author : Patrick GOLDBRONN (CEA)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
@@ -49,10 +47,11 @@ if SMESH_ENABLE_GUI
 	OBJECT \
 	SMESHFiltersSelection \
 	SMESHGUI \
+	PluginUtils \
 	SMESH_SWIG_WITHIHM \
 	StdMeshersGUI
 endif
 
 DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL SMESH	\
 		SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT		\
-		SMESHFiltersSelection SMESHGUI SMESH_SWIG_WITHIHM StdMeshersGUI
+		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI

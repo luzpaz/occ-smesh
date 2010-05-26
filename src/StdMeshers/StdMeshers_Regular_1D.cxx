@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,13 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Regular_1D.cxx
 //           Moved here from SMESH_Regular_1D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-
+//
 #include "StdMeshers_Regular_1D.hxx"
 #include "StdMeshers_Distribution.hxx"
 
@@ -325,6 +326,8 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
       return false;
     prevU = U;
   }
+  if ( theReverse )
+    theParams.reverse();
   return true;
 }
 
@@ -804,38 +807,83 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       }
       if(!IsExist) Params.InsertBefore(j,aPnts[i]);
     }
-    double pf, pl, par2, par1, psize;
-    if (theReverse) {
-      pf = l;
-      pl = f;
+    double par2, par1, lp;
+    par1 = f;
+    lp = l;
+    double sign = 1.0;
+    if(theReverse) {
+      par1 = l;
+      lp = f;
+      sign = -1.0;
     }
-    else {
-      pf = f;
-      pl = l;
-    }
-    psize = pl - pf;
-    par1 = pf;
-    //cout<<"aPnts.size() = "<<aPnts.size()<<"  Params.Length() = "
-    //    <<Params.Length()<<"   nbsegs.size() = "<<nbsegs.size()<<endl;
+    double eltSize, segmentSize = 0.;
+    double currAbscissa = 0;
     for(i=0; i<Params.Length(); i++) {
-      par2 = pf + Params.Value(i+1)*psize;
       int nbseg = ( i > nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
-      double dp = (par2-par1)/nbseg;
-      int j = 1;
-      for(; j<=nbseg; j++) {
-        double param = par1 + dp*j;
-        theParams.push_back( param );
+      segmentSize = Params.Value(i+1)*theLength - currAbscissa;
+      currAbscissa += segmentSize;
+      GCPnts_AbscissaPoint APnt(theC3d, sign*segmentSize, par1);
+      if( !APnt.IsDone() )
+        return error( "GCPnts_AbscissaPoint failed");
+      par2 = APnt.Parameter();
+      eltSize = segmentSize/nbseg;
+      GCPnts_UniformAbscissa Discret(theC3d, eltSize, par1, par2);
+      if(theReverse)
+        Discret.Initialize(theC3d, eltSize, par2, par1);
+      else
+        Discret.Initialize(theC3d, eltSize, par1, par2);
+      if ( !Discret.IsDone() )
+        return error( "GCPnts_UniformAbscissa failed");
+      int NbPoints = Discret.NbPoints();
+      list<double> tmpParams;
+      for(int i=2; i<NbPoints; i++) {
+        double param = Discret.Parameter(i);
+        tmpParams.push_back( param );
       }
+      if (theReverse) {
+        compensateError( eltSize, eltSize, par2, par1, segmentSize, theC3d, tmpParams );
+        tmpParams.reverse();
+      }
+      else {
+        compensateError( eltSize, eltSize, par1, par2, segmentSize, theC3d, tmpParams );
+      }
+      list<double>::iterator itP = tmpParams.begin();
+      for(; itP != tmpParams.end(); itP++) {
+        theParams.push_back( *(itP) );
+      }
+      theParams.push_back( par2 );
+
       par1 = par2;
     }
     // add for last
     int nbseg = ( nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
-    double dp = (pl-par1)/nbseg;
-    int j = 1;
-    for(; j<nbseg; j++) {
-      double param = par1 + dp*j;
-      theParams.push_back( param );
+    segmentSize = theLength - currAbscissa;
+    eltSize = segmentSize/nbseg;
+    GCPnts_UniformAbscissa Discret;
+    if(theReverse)
+      Discret.Initialize(theC3d, eltSize, par1, lp);
+    else
+      Discret.Initialize(theC3d, eltSize, lp, par1);
+    if ( !Discret.IsDone() )
+      return error( "GCPnts_UniformAbscissa failed");
+    int NbPoints = Discret.NbPoints();
+    list<double> tmpParams;
+    for(int i=2; i<NbPoints; i++) {
+      double param = Discret.Parameter(i);
+      tmpParams.push_back( param );
     }
+    if (theReverse) {
+      compensateError( eltSize, eltSize, lp, par1, segmentSize, theC3d, tmpParams );
+      tmpParams.reverse();
+    }
+    else {
+      compensateError( eltSize, eltSize, par1, lp, segmentSize, theC3d, tmpParams );
+    }
+    list<double>::iterator itP = tmpParams.begin();
+    for(; itP != tmpParams.end(); itP++) {
+      theParams.push_back( *(itP) );
+    }
+
     if (theReverse) {
       theParams.reverse(); // NPAL18025
     }
@@ -1048,8 +1096,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   ASSERT(!VFirst.IsNull());
   ASSERT(!VLast.IsNull());
 
-  std::vector<int> aVec(SMDSEntity_Last);
-  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last,0);
 
   if (!Curve.IsNull()) {
     list< double > params;

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_NumberOfSegments_i.cxx
 //           Moved here from SMESH_NumberOfSegments_i.cxx
@@ -46,15 +47,15 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i( PortableServer::POA_ptr thePOA,
-						    int                     theStudyId,
-						    ::SMESH_Gen*            theGenImpl )
+                                                    int                     theStudyId,
+                                                    ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i" );
   myBaseImpl = new ::StdMeshers_NumberOfSegments( theGenImpl->GetANewId(),
-					     theStudyId,
-					     theGenImpl );
+                                             theStudyId,
+                                             theGenImpl );
 }
 
 //=============================================================================
@@ -78,8 +79,8 @@ StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i()
  */
 //=============================================================================
 SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, 
-									   CORBA::Long nbSeg, 
-									   CORBA::Long conv )
+                                                                           CORBA::Long nbSeg, 
+                                                                           CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
@@ -99,8 +100,8 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const
 }
 
 SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
-									  CORBA::Long nbSeg, 
-									  CORBA::Long conv )
+                                                                          CORBA::Long nbSeg, 
+                                                                          CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
@@ -141,7 +142,7 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegments
   }
   catch (SALOME_Exception& S_ex) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script
@@ -183,7 +184,7 @@ void StdMeshers_NumberOfSegments_i::SetReversedEdges( const SMESH::long_array& t
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script
@@ -274,7 +275,7 @@ void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -308,7 +309,7 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -330,7 +331,7 @@ CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   return scale;
 }
@@ -354,7 +355,7 @@ void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& 
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -373,7 +374,7 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   SMESH::double_array_var aRes = new SMESH::double_array();
   aRes->length(tbl->size());
@@ -398,7 +399,7 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -417,7 +418,7 @@ char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   return CORBA::string_dup(expr);
 }
@@ -438,7 +439,7 @@ void StdMeshers_NumberOfSegments_i::SetConversionMode(CORBA::Long conv )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -457,7 +458,7 @@ CORBA::Long StdMeshers_NumberOfSegments_i::ConversionMode()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   return conv;
 }

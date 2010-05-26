@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH StdMeshers : implementaion of point distribution algorithm
 //  File   : StdMeshers_Distribution.hxx
 //  Author : Alexandre SOLOVYOV
@@ -102,16 +103,16 @@ private:
 
 STDMESHERS_EXPORT
 bool buildDistribution( const Function& f,
-		        const double start, const double end,
-		        const int nbSeg,
-		        std::vector<double>& data,
-		        const double eps );
+                        const double start, const double end,
+                        const int nbSeg,
+                        std::vector<double>& data,
+                        const double eps );
 
 STDMESHERS_EXPORT
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
-		        const int nbSeg, std::vector<double>& data, const double eps );
+                        const int nbSeg, std::vector<double>& data, const double eps );
 STDMESHERS_EXPORT
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
-		        const int nbSeg, std::vector<double>& data, const double eps );
+                        const int nbSeg, std::vector<double>& data, const double eps );
 
 #endif

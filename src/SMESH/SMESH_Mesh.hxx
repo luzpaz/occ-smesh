@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Mesh.hxx
 //  Author : Paul RASCLE, EDF
@@ -40,8 +41,13 @@
 #include <TopoDS_Shape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 
-#include <list>
 #include <map>
+#include <list>
+
+#ifdef WNT
+#pragma warning(disable:4251) // Warning DLL Interface ...
+#pragma warning(disable:4290) // Warning Exception ...
+#endif
 
 class SMESH_Gen;
 class SMESHDS_Document;
@@ -50,6 +56,9 @@ class TopTools_ListOfShape;
 class SMESH_subMesh;
 class SMESH_HypoFilter;
 class TopoDS_Solid;
+
+typedef std::list<int> TListOfInt;
+typedef std::list<TListOfInt> TListOfListOfInt;
 
 class SMESH_EXPORT SMESH_Mesh
 {
@@ -248,11 +257,26 @@ public:
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
+  void ClearMeshOrder();
+  void SetMeshOrder(const TListOfListOfInt& theOrder );
+  const TListOfListOfInt& GetMeshOrder() const;
+
+  /*!
+   * \brief sort submeshes according to stored mesh order
+   * \param theListToSort in out list to be sorted
+   * \return FALSE if nothing sorted
+   */
+  bool SortByMeshOrder(std::list<SMESH_subMesh*>& theListToSort) const;
+
   //
   
   ostream& Dump(ostream & save);
   
 private:
+
+  void fillAncestorsMap(const TopoDS_Shape& theShape);
+  std::list<SMESH_subMesh*> getAncestorsSubMeshes
+    (const TopoDS_Shape& theSubShape) const;
   
 protected:
   int                        _id;           // id given by creator (unique within the creator instance)
@@ -267,12 +291,14 @@ protected:
   std::map <int, SMESH_subMesh*> _mapSubMesh;
   std::map <int, SMESH_Group*>   _mapGroup;
   SMESH_Gen *                _gen;
-
+  
   bool                       _isAutoColor;
 
   double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
+
+  TListOfListOfInt           _mySubMeshOrder;
 
 protected:
   SMESH_Mesh() {};

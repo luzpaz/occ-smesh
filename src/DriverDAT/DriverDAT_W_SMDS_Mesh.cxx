@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <stdio.h>
 
 #include "DriverDAT_W_SMDS_Mesh.h"
@@ -77,11 +78,11 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   fprintf(stdout, "(************************)\n");
   
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
-  while(itNodes->more()){		
+  while(itNodes->more()){               
     const SMDS_MeshNode * node = itNodes->next();
     fprintf(aFileId, "%d %e %e %e\n", node->GetID(), node->X(), node->Y(), node->Z());
   }
-	
+        
   /****************************************************************************
    *                       ECRITURE DES ELEMENTS                                *
    ****************************************************************************/

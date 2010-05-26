@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_VertexPosition.cxx
 //  Author : Jean-Michel BOULCOURT
@@ -36,7 +37,7 @@ using namespace std;
 //=======================================================================
 
 SMDS_VertexPosition:: SMDS_VertexPosition(const int aVertexId)
-	:SMDS_Position(aVertexId)
+        :SMDS_Position(aVertexId)
 {
 }
 
@@ -47,13 +48,13 @@ SMDS_VertexPosition:: SMDS_VertexPosition(const int aVertexId)
 
 const double *SMDS_VertexPosition::Coords() const
 {
-	const static double origin[]={0,0,0};
-	MESSAGE("SMDS_VertexPosition::Coords not implemented");
-	return origin;
+        const static double origin[]={0,0,0};
+        MESSAGE("SMDS_VertexPosition::Coords not implemented");
+        return origin;
 }
 
 
 SMDS_TypeOfPosition SMDS_VertexPosition::GetTypeOfPosition() const
 {
-	return SMDS_TOP_VERTEX;
+        return SMDS_TOP_VERTEX;
 }

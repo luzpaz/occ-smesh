@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_subMesh.hxx
 //  Author : Paul RASCLE, EDF
@@ -228,6 +229,15 @@ public:
   void SetIsAlwaysComputed(bool isAlCo);
   bool IsAlwaysComputed() { return _alwaysComputed; }
 
+  
+  /*!
+   * \brief  Find common submeshes (based on shared subshapes with other
+   * \param theOther submesh to check
+   * \param theCommonIds set of common submesh IDs
+   * NOTE: this method does not cleat set before collect common IDs
+   */
+  bool FindIntersection( const SMESH_subMesh *           theOther,
+                         std::set<const SMESH_subMesh*>& theSetOfCommon ) const;
 
 protected:
   // ==================================================================

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_AddMeshElementDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -30,6 +31,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
 #include <SMESH_Actor.h>
@@ -69,6 +71,7 @@
 #include <vtkCellType.h>
 
 // Qt includes
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -506,6 +509,20 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   aGroupArgumentsLayout->addWidget(myReverseCB,       2, 0, 1, 3);
   
   /***************************************************************/
+  GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
+  GroupGroups->setCheckable( true );
+  QHBoxLayout* GroupGroupsLayout = new QHBoxLayout(GroupGroups);
+  GroupGroupsLayout->setSpacing(SPACING);
+  GroupGroupsLayout->setMargin(MARGIN);
+
+  TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
+  ComboBox_GroupName = new QComboBox( GroupGroups );
+  ComboBox_GroupName->setEditable( true );
+
+  GroupGroupsLayout->addWidget( TextLabel_GroupName );
+  GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
+
+  /***************************************************************/
   GroupButtons = new QGroupBox(this);
   QHBoxLayout* aGroupButtonsLayout = new QHBoxLayout(GroupButtons);
   aGroupButtonsLayout->setSpacing(SPACING);
@@ -532,6 +549,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   /***************************************************************/
   aDialogLayout->addWidget(GroupConstructors);
   aDialogLayout->addWidget(GroupArguments);
+  aDialogLayout->addWidget(GroupGroups);
   aDialogLayout->addWidget(GroupButtons);
 
   Init(); /* Initialisations */
@@ -555,6 +573,9 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   myRadioButton1->setChecked(true);
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   
+  /* reset "Add to group" control */
+  GroupGroups->setChecked( false );
+
   myActor = 0;
 
   int aNumRows;
@@ -661,6 +682,9 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
 {
+  if( !isValid() )
+    return;
+
   if ( mySMESHGUI->isActiveStudyLocked() || myBusy || !IsValid() )
     return;
 
@@ -696,20 +720,81 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   for (int i = 0; i < aNumberOfIds; i++)
     anArrayOfIdeces[i] = anIds[ i ];
 
+  bool addToGroup = GroupGroups->isChecked();
+  QString aGroupName;
+  
+  SMESH::SMESH_GroupBase_var aGroup;
+  int idx = 0;
+  if( addToGroup ) {
+    aGroupName = ComboBox_GroupName->currentText();
+    for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
+      QString aName = ComboBox_GroupName->itemText( i );
+      if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
+	idx = i;
+    }
+    if ( idx > 0 ) {
+      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
+      if ( !aGeomGroup->_is_nil() ) {
+	int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+					     tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+					     tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+	if ( res == 1 ) return;
+      }
+      aGroup = myGroups[idx-1];
+    }
+  }
+
+  SMESH::ElementType anElementType;
+  long anElemId = -1;
   SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
   switch (myType) {
   case QUAD_EDGE:
-    aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
+    anElementType = SMESH::EDGE;
+    anElemId = aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
   case QUAD_TRIANGLE:
   case QUAD_QUADRANGLE:
-    aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
+    anElementType = SMESH::FACE;
+    anElemId = aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
   case QUAD_TETRAHEDRON:
   case QUAD_PYRAMID:
   case QUAD_PENTAHEDRON: 
   case QUAD_HEXAHEDRON:
-    aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
+    anElementType = SMESH::VOLUME;
+    anElemId = aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
+  default: break;
   }
     
+  if ( anElemId != -1 && addToGroup && !aGroupName.isEmpty() ) {
+    SMESH::SMESH_Group_var aGroupUsed;
+    if ( aGroup->_is_nil() ) {
+      // create new group 
+      aGroupUsed = SMESH::AddGroup( myMesh, anElementType, aGroupName );
+      if ( !aGroupUsed->_is_nil() ) {
+	myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
+	ComboBox_GroupName->addItem( aGroupName );
+      }
+    }
+    else {
+      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+      if ( !aGeomGroup->_is_nil() ) {
+	aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+	if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+	  myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+	  SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+	}
+      }
+      else
+	aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
+    }
+    
+    if ( !aGroupUsed->_is_nil() ) {
+      SMESH::long_array_var anIdList = new SMESH::long_array;
+      anIdList->length( 1 );
+      anIdList[0] = anElemId;
+      aGroupUsed->Add( anIdList.inout() );
+    }
+  }
+
   SALOME_ListIO aList; aList.Append( myActor->getIO() );
   mySelector->ClearIndex();
   mySelectionMgr->setSelectedObjects( aList, false );
@@ -827,6 +912,8 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
   if (myBusy) return;
   BusyLocker lock( myBusy );
   
+  QString aCurrentEntry = myEntry;
+
   if ( myIsEditCorners )
   {
     // clear
@@ -851,6 +938,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     }
       
     Handle(SALOME_InteractiveObject) anIO = aList.First();
+    myEntry = anIO->getEntry();
     myMesh = SMESH::GetMeshByIO(anIO);
     if (myMesh->_is_nil()) {
       updateButtons();
@@ -859,6 +947,37 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
       
     myActor = SMESH::FindActorByEntry(anIO->getEntry());
   
+  }
+
+  // process groups
+  if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
+    SMESH::ElementType anElementType;
+    switch ( myType ) {
+    case QUAD_EDGE:
+      anElementType = SMESH::EDGE; break;
+    case QUAD_TRIANGLE:
+    case QUAD_QUADRANGLE:
+      anElementType = SMESH::FACE; break;
+    case QUAD_TETRAHEDRON:
+    case QUAD_PYRAMID:
+    case QUAD_PENTAHEDRON: 
+    case QUAD_HEXAHEDRON:
+      anElementType = SMESH::VOLUME; break;
+    }
+    myGroups.clear();
+    ComboBox_GroupName->clear();
+    ComboBox_GroupName->addItem( QString() );
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+    for ( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+      SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
+      if ( !aGroup->_is_nil() && aGroup->GetType() == anElementType ) {
+	QString aGroupName( aGroup->GetName() );
+	if ( !aGroupName.isEmpty() ) {
+	  myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+	  ComboBox_GroupName->addItem( aGroupName );
+	}
+      }
+    }
   }
   
   if (!myActor) {
@@ -1168,4 +1287,17 @@ void SMESHGUI_AddQuadraticElementDlg::updateButtons()
   bool valid = IsValid();
   buttonOk->setEnabled( valid );
   buttonApply->setEnabled( valid );
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_AddQuadraticElementDlg::isValid()
+{
+  if( GroupGroups->isChecked() && ComboBox_GroupName->currentText().isEmpty() ) {
+    SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ), tr( "GROUP_NAME_IS_EMPTY" ) );
+    return false;
+  }
+  return true;
 }

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI_Selection
 // File   : SMESHGUI_Selection.cxx
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
@@ -86,7 +87,7 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 //function : processOwner
 //purpose  : 
 //=======================================================================
-void SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
+bool SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
 {
   const LightApp_SVTKDataOwner* owner =
     dynamic_cast<const LightApp_SVTKDataOwner*> ( ow );
@@ -94,6 +95,7 @@ void SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
     myActors.append( dynamic_cast<SMESH_Actor*>( owner->GetActor() ) );
   else
     myActors.append( 0 );
+  return true;
 }
 
 //=======================================================================

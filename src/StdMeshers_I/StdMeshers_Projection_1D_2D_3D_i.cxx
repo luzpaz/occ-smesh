@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_Projection_3D_i.cxx
 //           Moved here from SMESH_Projection_3D_i.cxx
@@ -53,8 +54,8 @@ StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i" );
   myBaseImpl = new ::StdMeshers_Projection_3D( theGenImpl->GetANewId(),
-				    theStudyId,
-				    theGenImpl );
+                                    theStudyId,
+                                    theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -87,8 +88,8 @@ StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i" );
   myBaseImpl = new ::StdMeshers_Projection_2D( theGenImpl->GetANewId(),
-				    theStudyId,
-				    theGenImpl );
+                                    theStudyId,
+                                    theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -121,8 +122,8 @@ StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i" );
   myBaseImpl = new ::StdMeshers_Projection_1D( theGenImpl->GetANewId(),
-				    theStudyId,
-				    theGenImpl );
+                                    theStudyId,
+                                    theGenImpl );
 }
 //-----------------------------------------------------------------------------
 

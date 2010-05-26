@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,13 +19,14 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_Utilities_HeaderFile
 #define MED_Utilities_HeaderFile
 
 #include "SMESH_DriverUNV.hxx"
 
-#include <iostream>	
-#include <sstream>	
+#include <iostream>     
+#include <sstream>      
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -62,14 +63,14 @@ namespace UNV{
        * a "-1" followed by a number means the beginning of a dataset
        * stop combing at the end of the file
        */
-      while( ((olds != "-1") || (news == "-1") ) && !in_file.eof() ){	  
-	olds = news;
-	in_file >> news;
+      while( ((olds != "-1") || (news == "-1") ) && !in_file.eof() ){     
+        olds = news;
+        in_file >> news;
       }
       if(in_file.eof())
-	return false;
+        return false;
       if (news == ds_name)
-	return true;
+        return true;
     }
     // should never end up here
     return false;

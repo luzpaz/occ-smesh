@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  SMESH SMDS : implementaion of Salome mesh data structure
 #  File   : Makefile.in
 #  Author : Patrick GOLDBRONN (CEA)
@@ -72,7 +70,8 @@ salomeinclude_HEADERS = \
 	SMDS_SetIterator.hxx \
 	SMESH_SMDS.hxx \
 	SMDS_MeshInfo.hxx \
-	SMDS_UnstructuredGrid.hxx
+	SMDS_UnstructuredGrid.hxx \
+	SMDS_StdIterator.hxx
 
 
 # Libraries targets
@@ -134,3 +133,5 @@ dist_SMDS_MemoryLimit_SOURCES = \
 
 SMDS_MemoryLimit_LDADD = \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
+
+#libSMDS_la_LDFLAGS += -L/data/eap/S5_MV/INSTALL/SMESH/lib/salome -lPerfmeter

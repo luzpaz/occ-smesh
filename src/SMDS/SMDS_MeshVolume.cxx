@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_MeshVolume.cxx
 //  Author : Jean-Michel BOULCOURT
@@ -32,7 +33,7 @@
 
 SMDSAbs_ElementType SMDS_MeshVolume::GetType() const
 {
-	return SMDSAbs_Volume;
+        return SMDSAbs_Volume;
 }
 
 vtkIdType SMDS_MeshVolume::GetVtkType() const

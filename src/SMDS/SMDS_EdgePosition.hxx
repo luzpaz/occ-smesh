@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_EdgePosition.hxx
 //  Module : SMESH
@@ -34,15 +35,15 @@ class SMDS_EXPORT SMDS_EdgePosition:public SMDS_Position
 {
 
   public:
-	SMDS_EdgePosition(const int aEdgeId=0, const double aUParam=0);
-	const virtual double * Coords() const;
-	SMDS_TypeOfPosition GetTypeOfPosition() const;
-	void SetUParameter(double aUparam);
-	double GetUParameter() const;
+        SMDS_EdgePosition(const int aEdgeId=0, const double aUParam=0);
+        const virtual double * Coords() const;
+        SMDS_TypeOfPosition GetTypeOfPosition() const;
+        void SetUParameter(double aUparam);
+        double GetUParameter() const;
 
   private:
 
-	double myUParameter;
+        double myUParameter;
 
 };
 

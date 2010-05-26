@@ -1,5 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -20,6 +20,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  File        : SMESH_testExtrusion3D.py
 #  Module      : SMESH
 #  Description : Create meshes to test extrusion of mesh elements along path
@@ -50,6 +51,7 @@ idcircle = geompy.addToStudy(circle, "Circle")
 idface   = geompy.addToStudy(face,   "Circular face")
 
 
+smesh.SetCurrentStudy(salome.myStudy)
 
 # init a Mesh with the circular face
 mesh1 = smesh.Mesh(face, "Mesh on circular face")

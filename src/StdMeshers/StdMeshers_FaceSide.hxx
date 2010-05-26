@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
@@ -28,14 +29,13 @@
 #ifndef StdMeshers_FaceSide_HeaderFile
 #define StdMeshers_FaceSide_HeaderFile
 
-#include <gp_Pnt2d.hxx>
+#include <Geom2d_Curve.hxx>
+#include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <Geom2d_Curve.hxx>
-#include <TopExp.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMESH_Algo.hxx"
 
 #include <vector>
 #include <list>
@@ -47,7 +47,7 @@ class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
 class TopoDS_Face;
-class SMESH_ComputeError;
+struct SMESH_ComputeError;
 
 typedef struct uvPtStruct
 {
@@ -124,7 +124,7 @@ public:
    */
   SMESH_Mesh* GetMesh() const { return myMesh; }
   /*!
-   * \brief Return true if there vertices without nodes
+   * \brief Return true if there are vertices without nodes
    */
   bool MissVertexNode() const { return myMissingVertexNodes; }
   /*!
@@ -170,11 +170,11 @@ public:
   /*!
    * \brief Return 1st vertex of the i-the edge (count starts from zero)
    */
-  inline TopoDS_Vertex FirstVertex(int i=0) const;
+  TopoDS_Vertex FirstVertex(int i=0) const;
   /*!
    * \brief Return last vertex of the i-the edge (count starts from zero)
    */
-  inline TopoDS_Vertex LastVertex(int i=-1) const;
+  TopoDS_Vertex LastVertex(int i=-1) const;
   /*!
    * \brief Return first normalized parameter of the i-the edge (count starts from zero)
    */
@@ -198,11 +198,16 @@ public:
   
 
 protected:
+
+  // DON't FORGET tO update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
   std::vector<Handle(Geom2d_Curve)> myC2d;
+  std::vector<GeomAdaptor_Curve>    myC3dAdaptor;
   std::vector<double>               myFirst, myLast;
   std::vector<double>               myNormPar;
+  std::vector<double>               myEdgeLength;
+  std::vector<double>               myIsUniform;
   double                            myLength;
   int                               myNbPonits, myNbSegments;
   SMESH_Mesh*                       myMesh;
@@ -241,28 +246,6 @@ inline double StdMeshers_FaceSide::Parameter(double U, TopoDS_Edge & edge) const
   double prevU = i ? myNormPar[ i-1 ] : 0;
   double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
   return myFirst[i] * ( 1 - r ) + myLast[i] * r;
-}
-
-//================================================================================
-/*!
- * \brief Return 1st vertex of the i-the edge
- */
-//================================================================================
-
-inline TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
-{
-  return i < myEdge.size() ? TopExp::FirstVertex( myEdge[i], 1 ) : TopoDS_Vertex();
-}
-
-//================================================================================
-/*!
- * \brief Return last vertex of the i-the edge
- */
-//================================================================================
-
-inline TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
-{
-  return i<0 ? TopExp::LastVertex( myEdge.back(), 1) : i<myEdge.size() ? TopExp::LastVertex( myEdge[i], 1 ) : TopoDS_Vertex();
 }
 
 //================================================================================

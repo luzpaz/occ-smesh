@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_FacePosition.cxx
 //  Author : Jean-Michel BOULCOURT
@@ -36,8 +37,8 @@ using namespace std;
 //=======================================================================
 
 SMDS_FacePosition::SMDS_FacePosition(const int aEdgeId,
-				     const double aUParam,
-				     const double aVParam)
+                                     const double aUParam,
+                                     const double aVParam)
   :SMDS_Position(aEdgeId),
    myUParameter(aUParam),myVParameter(aVParam)
 {
@@ -49,21 +50,21 @@ SMDS_FacePosition::SMDS_FacePosition(const int aEdgeId,
 //=======================================================================
 const double *SMDS_FacePosition::Coords() const
 {
-	static double origin[]={0,0,0};
-	MESSAGE("SMDS_EdgePosition::Coords not implemented");
-	return origin;
+        static double origin[]={0,0,0};
+        MESSAGE("SMDS_EdgePosition::Coords not implemented");
+        return origin;
 }
 
 /**
 */
 SMDS_TypeOfPosition SMDS_FacePosition::GetTypeOfPosition() const
 {
-	return SMDS_TOP_FACE;
+        return SMDS_TOP_FACE;
 }
 
 void SMDS_FacePosition::SetUParameter(double aUparam)
 {
-	myUParameter = aUparam;
+        myUParameter = aUparam;
 }
 
 //=======================================================================
@@ -73,7 +74,7 @@ void SMDS_FacePosition::SetUParameter(double aUparam)
 
 void SMDS_FacePosition::SetVParameter(double aVparam)
 {
-	myVParameter = aVparam;
+        myVParameter = aVparam;
 }
 
 //=======================================================================
@@ -83,7 +84,7 @@ void SMDS_FacePosition::SetVParameter(double aVparam)
 
 double SMDS_FacePosition::GetUParameter() const 
 {
-	return myUParameter;
+        return myUParameter;
 }
 
 //=======================================================================
@@ -93,5 +94,5 @@ double SMDS_FacePosition::GetUParameter() const
 
 double SMDS_FacePosition::GetVParameter() const 
 {
-	return myVParameter;
+        return myVParameter;
 }

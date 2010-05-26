@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_CreatePolyhedralVolumeDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -30,6 +31,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
 #include <SMESH_Actor.h>
@@ -63,6 +65,7 @@
 // Qt includes
 #include <QApplication>
 #include <QButtonGroup>
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -247,6 +250,20 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
   GroupContentLayout->addWidget( Preview,              5, 0, 1, 4 );
 
   /***************************************************************/
+  GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
+  GroupGroups->setCheckable( true );
+  QHBoxLayout* GroupGroupsLayout = new QHBoxLayout(GroupGroups);
+  GroupGroupsLayout->setSpacing(SPACING);
+  GroupGroupsLayout->setMargin(MARGIN);
+
+  TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
+  ComboBox_GroupName = new QComboBox( GroupGroups );
+  ComboBox_GroupName->setEditable( true );
+
+  GroupGroupsLayout->addWidget( TextLabel_GroupName );
+  GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
+
+  /***************************************************************/
   GroupButtons = new QGroupBox( this );
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout( GroupButtons );
   GroupButtonsLayout->setSpacing( SPACING );
@@ -273,6 +290,7 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
   /***************************************************************/
   topLayout->addWidget( ConstructorsBox );
   topLayout->addWidget( GroupContent );
+  topLayout->addWidget( GroupGroups );
   topLayout->addWidget( GroupButtons );
   
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
@@ -305,6 +323,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
 {
   myEditCurrentArgument = LineEditElements;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this );
+
+  /* reset "Add to group" control */
+  GroupGroups->setChecked( false );
 
   myNbOkElements = 0;
   myActor = 0;
@@ -420,10 +441,39 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnPreview(bool theToggled){
 //=================================================================================
 void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 {
+  if( !isValid() )
+    return;
+
   if ( myNbOkElements>0 && !mySMESHGUI->isActiveStudyLocked())
     {
       if(checkEditLine(false) == -1) {return;}
       busy = true;
+      long anElemId = -1;
+
+      bool addToGroup = GroupGroups->isChecked();
+      QString aGroupName;
+      
+      SMESH::SMESH_GroupBase_var aGroup;
+      int idx = 0;
+      if( addToGroup ) {
+	aGroupName = ComboBox_GroupName->currentText();
+	for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
+	  QString aName = ComboBox_GroupName->itemText( i );
+	  if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
+	    idx = i;
+	}
+	if ( idx > 0 ) {
+	  SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
+	  if ( !aGeomGroup->_is_nil() ) {
+	    int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+						 tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+						 tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+	    if ( res == 1 ) return;
+	  }
+	  aGroup = myGroups[idx-1];
+	}
+      }
+
       if (GetConstructorId() == 0)
         {
           SMESH::long_array_var anIdsOfNodes = new SMESH::long_array;
@@ -453,7 +503,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
           try{
             SUIT_OverrideCursor aWaitCursor;
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-            aMeshEditor->AddPolyhedralVolume(anIdsOfNodes, aQuantities);
+            anElemId = aMeshEditor->AddPolyhedralVolume(anIdsOfNodes, aQuantities);
           }catch(SALOME::SALOME_Exception& exc){
             INFOS("Follow exception was cought:\n\t"<<exc.details.text);
           }catch(std::exception& exc){
@@ -474,7 +524,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
           try{
             SUIT_OverrideCursor aWaitCursor;
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-            aMeshEditor->AddPolyhedralVolumeByFaces(anIdsOfFaces);
+            anElemId = aMeshEditor->AddPolyhedralVolumeByFaces(anIdsOfFaces);
           }catch(SALOME::SALOME_Exception& exc){
             INFOS("Follow exception was cought:\n\t"<<exc.details.text);
           }catch(std::exception& exc){
@@ -483,7 +533,38 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
             INFOS("Unknown exception was cought !!!");
           }
         }
-      
+
+      if ( anElemId != -1 && addToGroup && !aGroupName.isEmpty() ) {
+	SMESH::SMESH_Group_var aGroupUsed;
+	if ( aGroup->_is_nil() ) {
+	  // create new group 
+	  aGroupUsed = SMESH::AddGroup( myMesh, SMESH::VOLUME, aGroupName );
+	  if ( !aGroupUsed->_is_nil() ) {
+	    myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
+	    ComboBox_GroupName->addItem( aGroupName );
+	  }
+	}
+	else {
+	  SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+	  if ( !aGeomGroup->_is_nil() ) {
+	    aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+	    if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+	      myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+	      SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+	    }
+	  }
+	  else
+	    aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
+	}
+	
+        if ( !aGroupUsed->_is_nil() ) {
+          SMESH::long_array_var anIdList = new SMESH::long_array;
+          anIdList->length( 1 );
+          anIdList[0] = anElemId;
+          aGroupUsed->Add( anIdList.inout() );
+        }
+      }
+
       //SALOME_ListIO aList;
       //mySelectionMgr->setSelectedObjects( aList );
       SMESH::UpdateView();
@@ -663,6 +744,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
   
   mySimulation->SetVisibility(false);
   
+  QString aCurrentEntry = myEntry;
+
   // get selected mesh
   
   SALOME_ListIO selected;
@@ -672,10 +755,29 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
     return;
   }
   
+  myEntry = selected.First()->getEntry();
   myMesh = SMESH::GetMeshByIO( selected.First() );
   if ( myMesh->_is_nil() )
     return;
   
+  // process groups
+  if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
+    myGroups.clear();
+    ComboBox_GroupName->clear();
+    ComboBox_GroupName->addItem( QString() );
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+    for ( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+      SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
+      if ( !aGroup->_is_nil() && aGroup->GetType() == SMESH::VOLUME ) {
+	QString aGroupName( aGroup->GetName() );
+	if ( !aGroupName.isEmpty() ) {
+	  myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+	  ComboBox_GroupName->addItem( aGroupName );
+        }
+      }
+    }
+  }
+
   myActor = SMESH::FindActorByObject(myMesh);
   if ( !myActor )
     return;
@@ -1061,4 +1163,17 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_CreatePolyhedralVolumeDlg::isValid()
+{
+  if( GroupGroups->isChecked() && ComboBox_GroupName->currentText().isEmpty() ) {
+    SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ), tr( "GROUP_NAME_IS_EMPTY" ) );
+    return false;
+  }
+  return true;
 }

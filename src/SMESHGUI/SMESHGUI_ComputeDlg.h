@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : SMESHGUI_ComputeDlg.h
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
 //
@@ -36,6 +34,7 @@
 
 // Qt includes
 #include <QMap>
+#include <QList>
 #include <QPointer>
 #include <QGroupBox>
 
@@ -72,6 +71,8 @@ public:
   SMESHGUI_BaseComputeOp();
   virtual ~SMESHGUI_BaseComputeOp();
 
+  SMESH::SMESH_Mesh_ptr          getMesh();
+
 protected:
   virtual void                   startOperation();
   virtual void                   stopOperation();
@@ -91,6 +92,8 @@ protected:
                                                     SMESH::compute_error_array_var&,
                                                     const bool,
                                                     const QString&);
+
+  virtual bool                   isValid( SUIT_Operation* theOp ) const;
     
 protected slots:
   virtual bool                   onApply();
@@ -132,6 +135,8 @@ protected:
 protected slots:
 };
 
+class SMESHGUI_MeshOrderMgr;
+
 /*!
  * \brief Operation to preview and compute a mesh and show computation errors
  */
@@ -166,10 +171,16 @@ private slots:
   void                           onCompute();
 
 private:
+  //! private fields
   QMap< int, int >               myMapShapeId;
   QPointer<LightApp_Dialog>      myActiveDlg;
   QPointer<SMESHGUI_PrecomputeDlg> myDlg;
   SMESHGUI_MeshEditPreview*      myPreviewDisplayer;
+  //! fields for mesh order
+  typedef QList<int>             TListOfInt;
+  typedef QList<TListOfInt>      TListOfListOfInt;
+  TListOfListOfInt               myPrevOrder;
+  SMESHGUI_MeshOrderMgr*         myOrderMgr;
 };
 
 /*!
@@ -223,6 +234,8 @@ protected:
   friend class SMESHGUI_PrecomputeOp;
 };
 
+class SMESHGUI_MeshOrderBox;
+
 /*!
  * \brief Dialog to preview and compute a mesh and show computation errors
  */
@@ -237,11 +250,14 @@ public:
   
   void                         setPreviewModes( const QList<int>& );
   int                          getPreviewMode() const;
+  
+  SMESHGUI_MeshOrderBox*       getMeshOrderBox() const;
 
 signals:
   void                         preview();
 
 private:
+  SMESHGUI_MeshOrderBox*       myOrderBox;
   QPushButton*                 myPreviewBtn;
   QtxComboBox*                 myPreviewMode;
 };

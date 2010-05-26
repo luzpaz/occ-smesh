@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_MEFISTO_2D.cxx
 //           Moved here from SMESH_MEFISTO_2D.cxx
@@ -296,8 +297,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 //=============================================================================
 
 bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
-				     const TopoDS_Shape & aShape,
-				     MapShapeNbElems& aResMap)
+                                     const TopoDS_Shape & aShape,
+                                     MapShapeNbElems& aResMap)
 {
   MESSAGE("StdMeshers_MEFISTO_2D::Evaluate");
 
@@ -604,8 +605,31 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       // set UV
       uvslf[m].x = uvPt->u * scalex;
       uvslf[m].y = uvPt->v * scaley;
-      if ( uvPt->node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+      switch ( uvPt->node->GetPosition()->GetTypeOfPosition())
+      {
+      case SMDS_TOP_VERTEX:
         mOnVertex.push_back( m );
+        break;
+      case SMDS_TOP_EDGE:
+        // In order to detect degenerated faces easily, we replace
+        // nodes on a degenerated edge by node on the vertex of that edge
+        if ( myTool->IsDegenShape( uvPt->node->GetPosition()->GetShapeId() ))
+        {
+          int edgeID = uvPt->node->GetPosition()->GetShapeId();
+          SMESH_subMesh* edgeSM = myTool->GetMesh()->GetSubMeshContaining( edgeID );
+          SMESH_subMeshIteratorPtr smIt = edgeSM->getDependsOnIterator( /*includeSelf=*/0,
+                                                                        /*complexShapeFirst=*/0);
+          if ( smIt->more() )
+          {
+            SMESH_subMesh* vertexSM = smIt->next();
+            SMDS_NodeIteratorPtr nIt = vertexSM->GetSubMeshDS()->GetNodes();
+            if ( nIt->more() )
+              mefistoToDS[m] = nIt->next();
+          }
+        }
+        break;
+      default:;
+      }
       m++;
     }
 
@@ -632,6 +656,9 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       fixOverlappedLinkUV (uvslf[ mB ], uvslf[ m ], uvslf[ mA ]);
     }
   }
+//   cout << "MEFISTO INPUT************" << endl;
+//   for ( int i =0; i < m; ++i )
+//     cout << i << ": \t" << uvslf[i].x << ", " << uvslf[i].y << " Node " << mefistoToDS[i]->GetID()<< endl;
 
   return true;
 }
@@ -778,13 +805,17 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     const SMDS_MeshNode * n2 = mefistoToDS[ nust[m++] - 1 ];
     const SMDS_MeshNode * n3 = mefistoToDS[ nust[m++] - 1 ];
 
-    SMDS_MeshElement * elt;
-    if (triangleIsWellOriented)
-      elt = myTool->AddFace(n1, n2, n3);
-    else
-      elt = myTool->AddFace(n1, n3, n2);
-
-    meshDS->SetMeshElementOnShape(elt, faceID);
+    // avoid creating degenetrated faces
+    bool isDegen = ( myTool->HasDegeneratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
+    if ( !isDegen )
+    {
+      SMDS_MeshElement * elt;
+      if (triangleIsWellOriented)
+        elt = myTool->AddFace(n1, n2, n3);
+      else
+        elt = myTool->AddFace(n1, n3, n2);
+      meshDS->SetMeshElementOnShape(elt, faceID);
+    }
     m++;
   }
 

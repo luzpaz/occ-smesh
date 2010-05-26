@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_MaxElementVolume_i.cxx
 //           Moved here from SMESH_MaxElementVolume_i.cxx
@@ -47,15 +48,15 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_MaxElementVolume_i::StdMeshers_MaxElementVolume_i( PortableServer::POA_ptr thePOA,
-						    int                     theStudyId,
-						    ::SMESH_Gen*            theGenImpl )
+                                                    int                     theStudyId,
+                                                    ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_MaxElementVolume_i::StdMeshers_MaxElementVolume_i" );
   myBaseImpl = new ::StdMeshers_MaxElementVolume( theGenImpl->GetANewId(),
-					     theStudyId,
-					     theGenImpl );
+                                             theStudyId,
+                                             theGenImpl );
 }
 
 //=============================================================================
@@ -89,7 +90,7 @@ void StdMeshers_MaxElementVolume_i::SetMaxElementVolume( CORBA::Double theVolume
   }
   catch (SALOME_Exception& S_ex) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script

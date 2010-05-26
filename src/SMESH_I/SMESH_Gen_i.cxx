@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Gen_i.cxx
 //  Author : Paul RASCLE, EDF
@@ -54,6 +55,7 @@
 
 #ifdef WNT
  #include <windows.h>
+ #include <process.h>
 #else
  #include <dlfcn.h>
 #endif
@@ -107,10 +109,12 @@
 #include "OpUtil.hxx"
 
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
+#include CORBA_CLIENT_HEADER(SALOME_Session)
 
 #include "GEOM_Client.hxx"
 #include "Utils_ExceptHandlers.hxx"
 #include "memoire.h"
+#include "Basics_Utils.hxx"
 
 #include <map>
 
@@ -280,6 +284,28 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 
   // set it in standalone mode only
   //OSD::SetSignal( true );
+
+  // 0020605: EDF 1190 SMESH: Display performance. 80 seconds for 52000 cells.
+  // find out mode (embedded or standalone) here else
+  // meshes created before calling SMESH_Client::GetSMESHGen(), which calls
+  // SMESH_Gen_i::SetEmbeddedMode(), have wrong IsEmbeddedMode flag
+  if ( SALOME_NamingService* ns = GetNS() )
+  {
+    CORBA::Object_var obj = ns->Resolve( "/Kernel/Session" );
+    SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;
+    if ( !session->_is_nil() )
+    {
+      CORBA::String_var s_host = session->getHostname();
+      CORBA::Long        s_pid = session->getPID();
+      string my_host = Kernel_Utils::GetHostname();
+#ifdef WNT
+      long    my_pid = (long)_getpid();
+#else
+      long    my_pid = (long) getpid();
+#endif
+      SetEmbeddedMode( s_pid == my_pid && my_host == s_host.in() );
+    }
+  }
 }
 
 //=============================================================================
@@ -770,7 +796,7 @@ void SMESH_Gen_i::SetBoundaryBoxSegmentation( CORBA::Long theNbSegments )
 void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
   throw ( SALOME::SALOME_Exception )
 {
-  if ( theNbSegments )
+  if ( theNbSegments > 0 )
     myGen.SetDefaultNbSegments( int(theNbSegments) );
   else
     THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
@@ -1666,13 +1692,22 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
       MapShapeNbElemsItr anIt = aResMap.begin();
       for(; anIt!=aResMap.end(); anIt++) {
         const vector<int>& aVec = (*anIt).second;
-        for(i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++) {
-          nbels[i] += aVec[i];
+        for(i = SMESH::Entity_Node; i < aVec.size(); i++) {
+          int nbElem = aVec[i];
+          if ( nbElem < 0 ) // algo failed, check that it has reported a message
+          {
+            SMESH_subMesh* sm = anIt->first;
+            SMESH_ComputeErrorPtr& error = sm->GetComputeError();
+            const SMESH_Algo* algo = myGen.GetAlgo( myLocMesh, sm->GetSubShape());
+            if ( algo && !error.get() || error->IsOK() )
+              error.reset( new SMESH_ComputeError( COMPERR_ALGO_FAILED,"Failed to evaluate",algo));
+          }
+          else
+          {
+            nbels[i] += aVec[i];
+          }
         }
       }
-#ifdef _DEBUG_
-      cout<<endl;
-#endif
       return nbels._retn();
     }
   }
@@ -2171,6 +2206,49 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   }
 
   return aNewMesh._retn();
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::GetMEDVersion
+ *
+ *  Get MED version of the file by its name
+ */
+//================================================================================
+CORBA::Boolean SMESH_Gen_i::GetMEDVersion(const char* theFileName,
+                                          SMESH::MED_VERSION& theVersion)
+{
+  theVersion = SMESH::MED_V2_1;
+  MED::EVersion aVersion = MED::GetVersionId( theFileName );
+  switch( aVersion ) {
+    case MED::eV2_1     : theVersion = SMESH::MED_V2_1; return true;
+    case MED::eV2_2     : theVersion = SMESH::MED_V2_2; return true;
+    case MED::eVUnknown : return false;
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::GetMeshNames
+ *
+ *  Get names of meshes defined in file with the specified name
+ */
+//================================================================================
+SMESH::string_array* SMESH_Gen_i::GetMeshNames(const char* theFileName)
+{
+  SMESH::string_array_var aResult = new SMESH::string_array();
+  MED::PWrapper aMed = MED::CrWrapper( theFileName );
+  MED::TErr anErr;
+  MED::TInt aNbMeshes = aMed->GetNbMeshes( &anErr );
+  if( anErr >= 0 ) {
+    aResult->length( aNbMeshes );
+    for( MED::TInt i = 0; i < aNbMeshes; i++ ) {
+      MED::PMeshInfo aMeshInfo = aMed->GetPMeshInfo( i+1 );
+      aResult[i] = CORBA::string_dup( aMeshInfo->GetName().c_str() );
+    }
+  }
+  return aResult._retn();
 }
 
 //=============================================================================
@@ -2726,6 +2804,40 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             //if ( shapeRefFound )
             //myWriter.AddAllSubMeshes();
 
+            // store submesh order if any
+            const TListOfListOfInt& theOrderIds = myLocMesh.GetMeshOrder();
+            if ( theOrderIds.size() ) {
+              char order_list[ 30 ];
+              strcpy( order_list, "Mesh Order" );
+              // count number of submesh ids
+              int nbIDs = 0;
+              TListOfListOfInt::const_iterator idIt = theOrderIds.begin();
+              for ( ; idIt != theOrderIds.end(); idIt++ )
+                nbIDs += (*idIt).size();
+              // number of values = number of IDs +
+              //                    number of lists (for separators) - 1
+              int* smIDs = new int [ nbIDs + theOrderIds.size() - 1 ];
+              idIt = theOrderIds.begin();
+              for ( int i = 0; idIt != theOrderIds.end(); idIt++ ) {
+                const TListOfInt& idList = *idIt;
+                if (idIt != theOrderIds.begin()) // not first list
+                  smIDs[ i++ ] = -1/* *idList.size()*/; // separator between lists
+                // dump submesh ids from current list
+                TListOfInt::const_iterator id_smId = idList.begin();
+                for( ; id_smId != idList.end(); id_smId++ )
+                  smIDs[ i++ ] = *id_smId;
+              }
+              // write HDF group
+              aSize[ 0 ] = nbIDs + theOrderIds.size() - 1;
+
+              aDataset = new HDFdataset( order_list, aTopGroup, HDF_INT32, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( smIDs );
+              aDataset->CloseOnDisk();
+              //
+              delete[] smIDs;
+            }
+
             // groups root sub-branch
             SALOMEDS::SObject_var myGroupsBranch;
             for ( int i = GetNodeGroupsTag(); i <= GetVolumeGroupsTag(); i++ ) {
@@ -2910,7 +3022,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   aDataset->WriteOnDisk( smIDs );
                   aDataset->CloseOnDisk();
                   //
-                  delete smIDs;
+                  delete[] smIDs;
                 }
                 
                 // Store node positions on sub-shapes (SMDS_Position):
@@ -2940,6 +3052,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   if ( nbNodes == 0 ) continue;
                   
                   int aShapeID = (*itSubM).first;
+                  if ( aShapeID < 1 || aShapeID > mySMESHDSMesh->MaxShapeIndex() )
+                    continue;
                   int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();
                   // write only SMDS_FacePosition and SMDS_EdgePosition
                   switch ( aShapeType ) {
@@ -3498,7 +3612,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               }
             }
           }
-
         }
       }
     }
@@ -4120,6 +4233,24 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           }
           aGroup->CloseOnDisk();
         }
+      }
+      // read submeh order if any
+      if( aTopGroup->ExistInternalObject( "Mesh Order" ) ) {
+        aDataset = new HDFdataset( "Mesh Order", aTopGroup );
+        aDataset->OpenOnDisk();
+        size = aDataset->GetSize();
+        int* smIDs = new int[ size ];
+        aDataset->ReadFromDisk( smIDs );
+        aDataset->CloseOnDisk();
+        TListOfListOfInt anOrderIds;
+        anOrderIds.push_back( TListOfInt() );
+        for ( int i = 0; i < size; i++ )
+          if ( smIDs[ i ] < 0 ) // is separator
+            anOrderIds.push_back( TListOfInt() );
+          else
+            anOrderIds.back().push_back(smIDs[ i ]);
+        
+        myNewMeshImpl->GetImpl().SetMeshOrder( anOrderIds );
       }
     }
     // close mesh group

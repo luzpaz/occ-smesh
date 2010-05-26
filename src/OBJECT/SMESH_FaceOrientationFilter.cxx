@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SMESH_FaceOrientationFilter.h"
 #include "SMESH_ActorUtils.h"
 
@@ -89,6 +87,19 @@ SMESH_FaceOrientationFilter::~SMESH_FaceOrientationFilter()
   myFaceMaskPoints->Delete();
   myGlyphSource->Delete();
   myBaseGlyph->Delete();
+}
+
+void SMESH_FaceOrientationFilter::SetOrientationScale( vtkFloatingPointType theScale )
+{
+  myOrientationScale = theScale;
+  Modified();
+}
+
+void SMESH_FaceOrientationFilter::Set3dVectors( bool theState )
+{
+  my3dVectors = theState;
+  myBaseGlyph->SetSource(my3dVectors ? myArrowPolyData : myGlyphSource->GetOutput());
+  Modified();
 }
 
 vtkPolyData* SMESH_FaceOrientationFilter::CreateArrowPolyData()

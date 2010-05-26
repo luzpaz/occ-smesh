@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_MeshIDFactory.cxx
 //  Author : Jean-Michel BOULCOURT
@@ -41,19 +42,19 @@ SMDS_MeshIDFactory::SMDS_MeshIDFactory():myMaxID(-1), myMesh(0)
 
 int SMDS_MeshIDFactory::GetFreeID()
 {
-    int newid;
-	if (myPoolOfID.empty())
+        int newid;
+        if (myPoolOfID.empty())
         {
             newid = ++myMaxID;
             //MESSAGE("GetFreeID new " << newid);
         }
-	else
-	{
-		set<int>::iterator i = myPoolOfID.begin();
-		newid = *i;//myPoolOfID.top();
-		myPoolOfID.erase( i );//myPoolOfID.pop();
-		//MESSAGE("GetFreeID pool " << newid);
-	}
+        else
+        {
+                set<int>::iterator i = myPoolOfID.begin();
+                newid = *i;//myPoolOfID.top();
+                myPoolOfID.erase( i );//myPoolOfID.pop();
+                //MESSAGE("GetFreeID pool " << newid);
+        }
     return newid;
 }
 

@@ -514,32 +514,69 @@ Mesh_1.Compute()
 \anchor tui_radial_quadrangle
 <h2> Radial Quadrangle 1D2D example </h2>
 \code
-import salome
+from smesh import *
+
+SetCurrentStudy(salome.myStudy)
+
+# Create face from the wire and add to study
+Face = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WF", [0, 0, 0, 1, 0, 0, 0, 0, 1])
+geompy.addToStudy(Face,"Face")
+edges = geompy.SubShapeAllSorted(Face, geompy.ShapeType["EDGE"])
+circle, radius1, radius2 = edges
+geompy.addToStudyInFather(Face, radius1,"radius1")
+geompy.addToStudyInFather(Face, radius2,"radius2")
+geompy.addToStudyInFather(Face, circle,"circle")
+
+
+# Define geometry for mesh, and Radial Quadrange algorithm
+mesh = smesh.Mesh(Face)
+radial_Quad_algo = mesh.Quadrangle(algo=RADIAL_QUAD)
+
+# The Radial Quadrange algorithm can work without any hypothesis
+# In this case it uses "Default Nb of Segments" preferences parameter to discretize edges
+mesh.Compute()
+
+# The Radial Quadrange uses global or local 1d hypotheses if no its own hypotheses assigned.
+# Define global hypotheses to discretize radial edges and a local one for circular edge
+global_Nb_Segments = mesh.Segment().NumberOfSegments(5)
+local_Nb_Segments  = mesh.Segment(circle).NumberOfSegments(10)
+mesh.Compute()
+
+# Define own parameters of Radial Quadrange algorithm
+radial_Quad_algo.NumberOfLayers( 4 )
+mesh.Compute()
+\endcode
+
+\anchor tui_quadrangle_parameters
+<h2>Quadrangle Parameters example </h2>
+\code
 import geompy
 import smesh
 import StdMeshers
 
-# Create face from the wire and add to study
-WirePath = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WW", [0, 0, 0, 1, 0, 0, 0, 0, 1])
-Face = geompy.MakeFace(WirePath,1)
-geompy.addToStudy(Face,"Face")
+# Get 1/4 part from the disk face.
+Box_1 = geompy.MakeBoxDXDYDZ(100, 100, 100)
+Disk_1 = geompy.MakeDiskR(100, 1)
+Common_1 = geompy.MakeCommon(Disk_1, Box_1)
+geompy.addToStudy( Disk_1, "Disk_1" )
+geompy.addToStudy( Box_1, "Box_1" )
+geompy.addToStudy( Common_1, "Common_1" )
 
-# Define geometry for mesh, and 1D parameters
-mesh = smesh.Mesh(Face)
-Wire_discretisation = mesh.Segment()
-Nb_Segments = Wire_discretisation.NumberOfSegments(5)
-Nb_Segments.SetDistrType( 0 )
+# Set the Geometry for meshing
+Mesh_1 = smesh.Mesh(Common_1)
 
-# Define 2D parameters and Radial Quadrange hypothesis
-Number_of_Layers = smesh.CreateHypothesis('NumberOfLayers2D')
-Number_of_Layers.SetNumberOfLayers( 4 )
-mesh.AddHypothesis(Number_of_Layers)
-RadialQuadrangle_1D2D = smesh.CreateHypothesis('RadialQuadrangle_1D2D')
-mesh.AddHypothesis(RadialQuadrangle_1D2D)
+# Create Quadrangle parameters and define the Base Vertex.
+Quadrangle_Parameters_1 = smesh.CreateHypothesis('QuadrangleParams')
+Quadrangle_Parameters_1.SetTriaVertex( 8 )
 
-mesh.Compute()
+# Define 1D hypothesis and cmpute the mesh
+Regular_1D = Mesh_1.Segment()
+Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
+Nb_Segments_1.SetDistrType( 0 )
+status = Mesh_1.AddHypothesis(Quadrangle_Parameters_1)
+Quadrangle_2D = Mesh_1.Quadrangle()
+Mesh_1.Compute()
 \endcode
-
 
 \n Other meshing algorithms:
 

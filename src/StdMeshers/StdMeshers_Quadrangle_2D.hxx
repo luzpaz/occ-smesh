@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Quadrangle_2D.hxx
 //           Moved here from SMESH_Quadrangle_2D.hxx
@@ -63,13 +64,13 @@ public:
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
   virtual bool Compute(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape);
+                       const TopoDS_Shape& aShape);
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
 
   FaceQuadStruct* CheckAnd2Dcompute(SMESH_Mesh& aMesh,
-				    const TopoDS_Shape& aShape,
+                                    const TopoDS_Shape& aShape,
                                     const bool CreateQuadratic);
 
 protected:
@@ -78,14 +79,14 @@ protected:
                                const TopoDS_Shape& aShape);
 
   bool CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
-			       const TopoDS_Shape & aShape,
-			       MapShapeNbElems& aResMap,
-			       std::vector<int>& aNbNodes,
+                               const TopoDS_Shape & aShape,
+                               MapShapeNbElems& aResMap,
+                               std::vector<int>& aNbNodes,
                                bool& IsQuadratic);
 
   bool SetNormalizedGrid(SMESH_Mesh& aMesh,
-			 const TopoDS_Shape& aShape,
-			 FaceQuadStruct*& quad);
+                         const TopoDS_Shape& aShape,
+                         FaceQuadStruct*& quad);
   
   void SplitQuad(SMESHDS_Mesh *theMeshDS,
                  const int theFaceID,
@@ -102,22 +103,22 @@ protected:
                        FaceQuadStruct* quad);
 
   bool EvaluateQuadPref(SMESH_Mesh& aMesh,
-			const TopoDS_Shape& aShape,
-			std::vector<int>& aNbNodes,
-			MapShapeNbElems& aResMap,
+                        const TopoDS_Shape& aShape,
+                        std::vector<int>& aNbNodes,
+                        MapShapeNbElems& aResMap,
                         bool IsQuadratic);
 
   UVPtStruct* LoadEdgePoints2(SMESH_Mesh& aMesh,
-			      const TopoDS_Face& F, const TopoDS_Edge& E,
+                              const TopoDS_Face& F, const TopoDS_Edge& E,
                               bool IsReverse);
 
   UVPtStruct* LoadEdgePoints(SMESH_Mesh& aMesh,
-			     const TopoDS_Face& F, const TopoDS_Edge& E,
-			     double first, double last);
+                             const TopoDS_Face& F, const TopoDS_Edge& E,
+                             double first, double last);
 
   UVPtStruct* MakeEdgePoints(SMESH_Mesh& aMesh,
-			     const TopoDS_Face& F, const TopoDS_Edge& E,
-			     double first, double last, int nb_segm);
+                             const TopoDS_Face& F, const TopoDS_Edge& E,
+                             double first, double last, int nb_segm);
 
   // true if QuadranglePreference hypothesis is assigned that forces
   // construction of quadrangles if the number of nodes on opposite edges

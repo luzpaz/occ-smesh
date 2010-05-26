@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESHClient : tool to update client mesh structure by mesh from server
 //  File   : SMESH_Client.hxx
 //  Author : Pavel TELKOV
@@ -54,10 +55,10 @@ public:
   static 
   SMESH::SMESH_Gen_var
   GetSMESHGen(CORBA::ORB_ptr theORB,
-	      CORBA::Boolean& theIsEmbeddedMode);
+              CORBA::Boolean& theIsEmbeddedMode);
 
   SMESH_Client(CORBA::ORB_ptr theORB,
-	       SMESH::SMESH_Mesh_ptr theMesh);
+               SMESH::SMESH_Mesh_ptr theMesh);
   ~SMESH_Client();
 
   bool 

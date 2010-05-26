@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,8 +19,8 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
 // File      : SMESH_2smeshpy.cxx
 // Created   : Fri Nov 18 13:20:10 2005
 // Author    : Edward AGAPOV (eap)
@@ -261,6 +261,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       Handle(_pySubMesh) subMesh = new _pySubMesh( aCommand );
       myObjects.insert( make_pair( subMeshID, subMesh ));
     }
+    
     id_mesh->second->Process( aCommand );
     return aCommand;
   }
@@ -845,7 +846,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "ExportToMED" ) { // ExportToMED() --> ExportMED()
+  else if ( method == "ExportToMED" ||   // ExportToMED() --> ExportMED()
+            method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
     theCommand->SetMethod( "ExportMED" );
   }
   // ----------------------------------------------------------------------
@@ -885,6 +887,34 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     // remove hyp from myHypos
     myHypos.remove( hyp );
   }
+  // check for SubMesh order commands
+  else if ( theCommand->GetMethod() == "GetMeshOrder" ||
+            theCommand->GetMethod() == "SetMeshOrder" ) {
+    // In fact arguments and result values does not support complex containers
+    // such as list of list
+    // So, here we parse it manually
+    // GetMeshOrder
+    //for(int ind = 0, n = theCommand->GetNbResultValues();ind<n;ind++) {
+    //  Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetResultValue(ind) );
+    // SetMeshOrder
+    //for(int ind = 0, n = theCommand->GetNbArgs();ind<n;ind++) {
+    //  Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetArg(ind) );
+    const bool isArg = theCommand->GetMethod() == "SetMeshOrder";
+    const TCollection_AsciiString& cmdStr = theCommand->GetString();
+    int begPos = (/*isArg ? cmdStr.Search( "(" ) :*/ cmdStr.Search( "[" )) + 1;
+    int endPos = (isArg ? cmdStr.Search( ")" ) : cmdStr.Search( "=" )) - 1;
+    if ( begPos != -1 && begPos < endPos && endPos <= cmdStr.Length() ) {
+      TCollection_AsciiString aSubStr = cmdStr.SubString( begPos, endPos );
+      Standard_Integer index = 1;
+      TCollection_AsciiString anIDStr = aSubStr.Token("\t ,[]", index++);
+      while ( !anIDStr.IsEmpty() ) {
+        Handle(_pySubMesh) subMesh = theGen->FindSubMesh( anIDStr );
+        if ( !subMesh.IsNull() )
+          subMesh->Process( theCommand );
+        anIDStr = aSubStr.Token("\t ,[]", index++);
+      }
+    }
+  }
   // add accessor method if necessary
   else
   {
@@ -919,7 +949,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
-        "Clear", "ConvertToStandalone"
+        "Clear", "ConvertToStandalone", "GetMeshOrder", "SetMeshOrder"
         ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }
@@ -1276,6 +1306,19 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   else if ( hypType == "TrianglePreference" ) {
     hyp->SetConvMethodAndType( "TrianglePreference", "Quadrangle_2D");
   }     
+  // RadialQuadrangle_1D2D ----------
+  else if ( hypType == "RadialQuadrangle_1D2D" ) {
+    algo->SetConvMethodAndType( "Quadrangle" , hypType.ToCString());
+    algo->myArgs.Append( "algo=smesh.RADIAL_QUAD" );
+  }
+  else if ( hypType == "NumberOfLayers2D" ) {
+    hyp->SetConvMethodAndType( "NumberOfLayers", "RadialQuadrangle_1D2D");
+    hyp->AddArgMethod( "SetNumberOfLayers" );
+  }
+  else if ( hypType == "LayerDistribution2D" ) {
+    hyp = new _pyLayerDistributionHypo( theCreationCmd, "Get2DHypothesis" );
+    hyp->SetConvMethodAndType( "LayerDistribution", "RadialQuadrangle_1D2D");
+  }
   // BLSURF ----------
   else if ( hypType == "BLSURF" ) {
     algo->SetConvMethodAndType( "Triangle", hypType.ToCString());
@@ -1375,14 +1418,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetNumberOfLayers" );
   }
   else if ( hypType == "LayerDistribution" ) {
-    hyp = new _pyLayerDistributionHypo( theCreationCmd );
+    hyp = new _pyLayerDistributionHypo( theCreationCmd, "Get3DHypothesis" );
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialPrism_3D");
   }
 
-  if ( algo->IsValid() ) {
-    return algo;
-  }
-  return hyp;
+  return algo->IsValid() ? algo : hyp;
 }
 
 //================================================================================
@@ -1615,46 +1655,10 @@ void _pyLayerDistributionHypo::Process( const Handle(_pyCommand)& theCommand)
     my1dHyp->ClearAllCommands();
   }
   my1dHyp = hyp1d;
-  if ( my1dHyp.IsNull() )
-    return; // something wrong :(
 
-  // make a new name for 1D hyp = "HypType" + "_Distribution"
-  if ( my1dHyp->GetCreationCmd()->GetMethod() == "CreateHypothesis" ) {
-    // not yet converted creation cmd
-    TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
-    TCollection_AsciiString hypType = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
-    newName = hypType + "_Distribution";
-    my1dHyp->GetCreationCmd()->SetResultValue( newName );
-  }
-  else {
-    // already converted creation cmd
-    newName = my1dHyp->GetCreationCmd()->GetResultValue();
-  }
-
-  // as creation of 1D hyp was written later then it's edition,
-  // we need to find all it's edition calls and process them
-  list< Handle(_pyCommand) >& cmds = theGen->GetCommands();
-  list< Handle(_pyCommand) >::iterator cmdIt = cmds.begin();
-  for ( ; cmdIt != cmds.end(); ++cmdIt ) {
-    const _pyID& objID = (*cmdIt)->GetObject();
-    if ( objID == hyp1dID ) {
-      my1dHyp->Process( *cmdIt );
-      my1dHyp->GetCreationCmd()->AddDependantCmd( *cmdIt );
-      ( *cmdIt )->SetObject( newName );
-    }
-  }
   if ( !myArgCommands.empty() )
     myArgCommands.front()->Clear();
-  theCommand->SetArg( 1, newName );
   myArgCommands.push_back( theCommand );
-  // copy hyp1d's creation method and args
-//   myCreationMethod = hyp1d->GetCreationMethod();
-//   myArgs           = hyp1d->GetArgs();
-//   // make them cleared at conversion
-//   myArgCommands = hyp1d->GetArgCommands();
-
-//   // to be cleared at convertion only
-//   myArgCommands.push_back( theCommand );
 }
 
 //================================================================================
@@ -1679,20 +1683,23 @@ bool _pyLayerDistributionHypo::Addition2Creation( const Handle(_pyCommand)& theA
 
   _pyID geom = theAdditionCmd->GetArg( 1 );
 
-  my1dHyp->SetMesh( theMesh );
-  if ( !my1dHyp->Addition2Creation( theAdditionCmd, theMesh ))
-    return false;
-
-  // clear "SetLayerDistribution()" cmd
-  myArgCommands.front()->Clear();
-
-  // Convert my creation => me = RadialPrismAlgo.Get3DHypothesis()
-
-  // find RadialPrism algo created on <geom> for theMesh
   Handle(_pyHypothesis) algo = theGen->FindAlgo( geom, theMesh, this );
-  if ( !algo.IsNull() ) {
+  if ( !algo.IsNull() )
+  {
+    my1dHyp->SetMesh( theMesh );
+    my1dHyp->SetConvMethodAndType(my1dHyp->GetAlgoCreationMethod().ToCString(),
+                                  algo->GetAlgoType().ToCString());
+    if ( !my1dHyp->Addition2Creation( theAdditionCmd, theMesh ))
+      return false;
+
+    // clear "SetLayerDistribution()" cmd
+    myArgCommands.back()->Clear();
+
+    // Convert my creation => me = RadialPrismAlgo.Get3DHypothesis()
+
+    // find RadialPrism algo created on <geom> for theMesh
     GetCreationCmd()->SetObject( algo->GetID() );
-    GetCreationCmd()->SetMethod( "Get3DHypothesis" );
+    GetCreationCmd()->SetMethod( myAlgoMethod );
     GetCreationCmd()->RemoveArgs();
     theAdditionCmd->AddDependantCmd( GetCreationCmd() );
     myIsWrapped = true;
@@ -1708,8 +1715,38 @@ bool _pyLayerDistributionHypo::Addition2Creation( const Handle(_pyCommand)& theA
 
 void _pyLayerDistributionHypo::Flush()
 {
-  //my1dHyp.Nullify();
-  //_pyHypothesis::Flush();
+  // as creation of 1D hyp was written later then it's edition,
+  // we need to find all it's edition calls and process them
+  if ( !my1dHyp.IsNull() )
+  {
+    _pyID hyp1dID = my1dHyp->GetCreationCmd()->GetResultValue();
+
+    // make a new name for 1D hyp = "HypType" + "_Distribution"
+    _pyID newName;
+    if ( my1dHyp->IsWrapped() ) {
+      newName = my1dHyp->GetCreationCmd()->GetMethod();
+    }
+    else {
+      TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
+      newName = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
+    }
+    newName += "_Distribution";
+    my1dHyp->GetCreationCmd()->SetResultValue( newName );
+
+    list< Handle(_pyCommand) >& cmds = theGen->GetCommands();
+    list< Handle(_pyCommand) >::iterator cmdIt = cmds.begin();
+    for ( ; cmdIt != cmds.end(); ++cmdIt ) {
+      const _pyID& objID = (*cmdIt)->GetObject();
+      if ( objID == hyp1dID ) {
+        my1dHyp->Process( *cmdIt );
+        my1dHyp->GetCreationCmd()->AddDependantCmd( *cmdIt );
+        ( *cmdIt )->SetObject( newName );
+      }
+    }
+    // Set new hyp name to SetLayerDistribution() cmd
+    if ( !myArgCommands.empty() && !myArgCommands.back()->IsEmpty() )
+      myArgCommands.back()->SetArg( 1, newName );
+  }
 }
 
 //================================================================================

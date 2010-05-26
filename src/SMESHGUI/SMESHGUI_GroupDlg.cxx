@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESHGUI : GUI for SMESH component
 //  File   : SMESHGUI_GroupDlg.cxx
 //  Author : Natalia KOPNOVA, Open CASCADE S.A.S.
 //  SMESH includes
-
+//
 #include "SMESHGUI_GroupDlg.h"
 
 #include "SMESHGUI.h"
@@ -590,7 +591,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
     if (!aGroupShape->_is_nil())
     {
       _PTR(SObject) aGroupShapeSO = aStudy->FindObjectID(aGroupShape->GetStudyEntry());
-      aShapeName = aGroupShapeSO->GetName().c_str();
+      if ( aGroupShapeSO )
+        aShapeName = aGroupShapeSO->GetName().c_str();
     }
     myGeomGroupLine->setText( aShapeName );
     myNameChanged = true;
@@ -2236,14 +2238,20 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
   } else {
     // try mesh actor
     SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
-    if (anActor && anActor->hasIO())
-      {
-        isActor = true;
-        if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
-          isActor = false;
-        else
-          myActorsList.append(anActor);
-      }
+    if (anActor && anActor->hasIO()) {
+      isActor = true;
+      if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
+        isActor = false;
+      else
+        myActorsList.append(anActor);
+    }
+    
+    // try group actor
+    if (!isActor && !myGroup->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
+      if (anActor && anActor->hasIO())
+        myActorsList.append(anActor);
+    }
     
     // try any visible actor of group or submesh of current mesh
     if (aViewWindow) {
@@ -2264,7 +2272,7 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
             if (anActor && anActor->hasIO()) {
               Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
               if (aViewWindow->isVisible(anIO)) {
-                if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0)
+                if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0 && !myActorsList.contains(anActor) )
                   myActorsList.append(anActor);
               }
             }

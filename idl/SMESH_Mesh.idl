@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,10 +19,10 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  File   : SMESH_Mesh.idl
 //  Author : Paul RASCLE, EDF
 //
-
 #ifndef _SMESH_MESH_IDL_
 #define _SMESH_MESH_IDL_
 
@@ -263,6 +263,10 @@ module SMESH
   interface SMESH_GroupOnGeom;
   interface SMESH_subMesh;
   interface SMESH_MeshEditor;
+
+  typedef sequence<SMESH_subMesh>     submesh_array;
+  typedef sequence<submesh_array>     submesh_array_array;
+
   interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
   {
     /*!
@@ -528,13 +532,23 @@ module SMESH
      *   the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *   the typical use is auto_groups=false.
      * - theVersion : define the version of format of MED file, that will be created
+     * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     */
+    void ExportToMEDX( in string file, in boolean auto_groups, in MED_VERSION theVersion, in boolean overwrite )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Export Mesh to different MED Formats
+     * Works, just the same as ExportToMEDX, with overwrite parameter equal to true.
+     * The method is kept in order to support old functionality
      */
     void ExportToMED( in string file, in boolean auto_groups, in MED_VERSION theVersion )
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to MED_V2_1 MED format
-     * Works, just the same as ExportToMED, with MED_VERSION parameter equal to MED_V2_1.
+     * Works, just the same as ExportToMEDX with MED_VERSION parameter equal to MED_V2_1
+     * and overwrite parameter equal to true
      * The method is kept in order to support old functionality
      */
     void ExportMED( in string file, in boolean auto_groups )
@@ -652,6 +666,9 @@ module SMESH
     ElementType GetElementType( in long id, in boolean iselem )
       raises (SALOME::SALOME_Exception);
 
+    EntityType GetElementGeomType( in long id )
+      raises (SALOME::SALOME_Exception);
+
     long_array GetSubMeshElementsId(in long ShapeID)
       raises (SALOME::SALOME_Exception);
 
@@ -660,6 +677,22 @@ module SMESH
     
     ElementType GetSubMeshElementType(in long ShapeID)
       raises (SALOME::SALOME_Exception);
+
+
+    /*!
+     * Methods to set meshing order of submeshes
+     */
+
+    /*!
+     * \brief Return submesh objects list in meshing order
+     */
+    submesh_array_array GetMeshOrder();
+
+    /*!
+     * \brief Set submesh object order
+     */
+    boolean SetMeshOrder(in submesh_array_array theSubMeshArray);
+
 
     /*!
      * Get mesh description
@@ -740,6 +773,16 @@ module SMESH
      * Returns number of faces for given element
      */
     long ElemNbFaces(in long id);
+
+    /*!
+     * Returns nodes of given face (counted from zero) for given volumic element.
+     */
+    long_array GetElemFaceNodes(in long elemId, in short faceIndex);
+
+    /*!
+     * Returns an element based on all given nodes.
+     */
+    long FindElementByNodes(in long_array nodes);
 
     /*!
      * Returns true if given element is polygon

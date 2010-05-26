@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,13 +19,15 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESHDS : management of mesh data and SMESH document
 //  File   : SMESHDS_Hypothesis.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESHDS_Hypothesis.hxx"
+
+#include <sstream>
 
 using namespace std;
 
@@ -37,11 +39,8 @@ using namespace std;
 
 SMESHDS_Hypothesis::SMESHDS_Hypothesis(int hypId)
 {
-//   MESSAGE("SMESHDS_Hypothesis::SMESHDS_Hypothesis");
   _hypId = hypId;
   _name = "generic";
-//   SCRUTE(_name);
-//   SCRUTE(_hypId);
 }
 
 //=============================================================================
@@ -52,7 +51,6 @@ SMESHDS_Hypothesis::SMESHDS_Hypothesis(int hypId)
 
 SMESHDS_Hypothesis::~SMESHDS_Hypothesis()
 {
-//   MESSAGE("SMESHDS_Hypothesis::~SMESHDS_Hypothesis");
 }
 
 //=============================================================================
@@ -63,9 +61,6 @@ SMESHDS_Hypothesis::~SMESHDS_Hypothesis()
 
 const char* SMESHDS_Hypothesis::GetName() const
 {
-//   MESSAGE("SMESHDS_Hypothesis::GetName");
-//   SCRUTE(_name);
-//   SCRUTE(&_name);
   return _name.c_str();
 }
 
@@ -77,8 +72,6 @@ const char* SMESHDS_Hypothesis::GetName() const
 
 int SMESHDS_Hypothesis::GetID() const
 {
-//   MESSAGE("SMESHDS_Hypothesis::GetId");
-//   SCRUTE(_hypId);
   return _hypId;
 }
 
@@ -90,8 +83,23 @@ int SMESHDS_Hypothesis::GetID() const
 
 int SMESHDS_Hypothesis::GetType() const
 {
-//   MESSAGE("SMESHDS_Hypothesis::GetType");
-//   SCRUTE(_type);
   return _type;
 }
 
+//=============================================================================
+/*!
+ * Equality
+ */
+//=============================================================================
+
+bool SMESHDS_Hypothesis::operator==(const SMESHDS_Hypothesis& other) const
+{
+  if ( this == &other )
+    return true;
+  if ( _name != other._name )
+    return false;
+  ostringstream mySave, otherSave;
+  ((SMESHDS_Hypothesis*)this  )->SaveTo(mySave);
+  ((SMESHDS_Hypothesis*)&other)->SaveTo(otherSave);
+  return mySave.str() == otherSave.str();
+}

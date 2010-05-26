@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //
 #ifndef _SMDS_FaceOfEdges_HeaderFile
@@ -36,21 +37,21 @@
 class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
 {
   public:
-	void Print(std::ostream & OS) const;
-	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
+        void Print(std::ostream & OS) const;
+        SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                          const SMDS_MeshEdge* edge2,
                          const SMDS_MeshEdge* edge3);
-	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
+        SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                          const SMDS_MeshEdge* edge2,
                          const SMDS_MeshEdge* edge3,
                          const SMDS_MeshEdge* edge4);
-		
-	SMDSAbs_ElementType GetType() const;
-  virtual SMDSAbs_EntityType   GetEntityType() const;
-	int NbNodes() const;
-	int NbEdges() const;
-	int NbFaces() const;
-//	friend bool operator<(const SMDS_FaceOfEdges& e1, const SMDS_FaceOfEdges& e2);
+                
+        SMDSAbs_ElementType GetType() const;
+        virtual SMDSAbs_EntityType   GetEntityType() const;
+        int NbNodes() const;
+        int NbEdges() const;
+        int NbFaces() const;
+//      friend bool operator<(const SMDS_FaceOfEdges& e1, const SMDS_FaceOfEdges& e2);
 
 
   /*!
@@ -61,11 +62,11 @@ class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
   protected:
-  	SMDS_ElemIteratorPtr
-		elementsIterator(SMDSAbs_ElementType type) const;
+        SMDS_ElemIteratorPtr
+                elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	const SMDS_MeshEdge* myEdges[4];
+        const SMDS_MeshEdge* myEdges[4];
         int                  myNbEdges;
 
 };

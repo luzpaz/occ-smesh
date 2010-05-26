@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH StdMeshers : implementaion of point distribution algorithm
 //  File   : StdMeshers_Distribution.cxx
 //  Author : Alexandre SOLOVYOV
@@ -303,21 +304,21 @@ double dihotomySolve( Function& f, const double val, const double _start, const 
 }
 
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
-		        const int nbSeg, vector<double>& data, const double eps )
+                        const int nbSeg, vector<double>& data, const double eps )
 {
   FunctionExpr F( f.ToCString(), conv );
   return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
-		        const int nbSeg, vector<double>& data, const double eps )
+                        const int nbSeg, vector<double>& data, const double eps )
 {
   FunctionTable F( f, conv );
   return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const Function& func, const double start, const double end, const int nbSeg,
-		        vector<double>& data, const double eps )
+                        vector<double>& data, const double eps )
 {
   if( nbSeg<=0 )
     return false;

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Hexa_3D.hxx
 //           Moved here from SMESH_Hexa_3D.hxx
@@ -73,9 +74,9 @@ public:
                                const TopoDS_Shape& aShape,
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
-  virtual bool Compute(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape)
-    /*throw (SALOME_Exception)*/;
+  virtual bool Compute(SMESH_Mesh& aMesh,  const TopoDS_Shape& aShape);
+
+  virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
@@ -87,32 +88,32 @@ public:
 protected:
   TopoDS_Edge
   EdgeNotInFace(SMESH_Mesh& aMesh,
-		const TopoDS_Shape& aShape,
-		const TopoDS_Face& aFace,
-		const TopoDS_Vertex& aVertex,
-		const TopTools_IndexedDataMapOfShapeListOfShape& MS);
+                const TopoDS_Shape& aShape,
+                const TopoDS_Face& aFace,
+                const TopoDS_Vertex& aVertex,
+                const TopTools_IndexedDataMapOfShapeListOfShape& MS);
 
   int GetFaceIndex(SMESH_Mesh& aMesh,
-		   const TopoDS_Shape& aShape,
-		   const std::vector<SMESH_subMesh*>& meshFaces,
-		   const TopoDS_Vertex& V0,
-		   const TopoDS_Vertex& V1,
-		   const TopoDS_Vertex& V2,
-		   const TopoDS_Vertex& V3);
+                   const TopoDS_Shape& aShape,
+                   const std::vector<SMESH_subMesh*>& meshFaces,
+                   const TopoDS_Vertex& V0,
+                   const TopoDS_Vertex& V1,
+                   const TopoDS_Vertex& V2,
+                   const TopoDS_Vertex& V3);
 
   void GetConv2DCoefs(const faceQuadStruct& quad,
-		      const TopoDS_Shape& aShape,
-		      const TopoDS_Vertex& V0,
-		      const TopoDS_Vertex& V1,
-		      const TopoDS_Vertex& V2,
-		      const TopoDS_Vertex& V3,
-		      Conv2DStruct& conv);
+                      const TopoDS_Shape& aShape,
+                      const TopoDS_Vertex& V0,
+                      const TopoDS_Vertex& V1,
+                      const TopoDS_Vertex& V2,
+                      const TopoDS_Vertex& V3,
+                      Conv2DStruct& conv);
 
   void GetPoint(Pt3 p,
-		int i, int j, int k,
-		int nbx, int nby, int nbz,
-		Point3DStruct *np,
-		const SMESHDS_Mesh* meshDS);
+                int i, int j, int k,
+                int nbx, int nby, int nbz,
+                Point3DStruct *np,
+                const SMESHDS_Mesh* meshDS);
 
   bool ClearAndReturn(FaceQuadStruct* theQuads[6], const bool res);
 };

@@ -1,5 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -20,6 +20,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 #  File   : SMESH_test.py
 #  Module : SMESH
@@ -56,6 +57,7 @@ ide = geompy.addToStudyInFather(face, edge, name)
 
 # ---- SMESH
 
+smesh.SetCurrentStudy(salome.myStudy)
 box = salome.IDToObject(idb)
 mesh = smesh.Mesh(box, "Meshbox")
 
@@ -124,11 +126,17 @@ for a in log:
     elif comType == 2:
         for i in range(a.number):
             ind = a.indexes[ii]
+	    print ind
             ii = ii+1
+	    print ii
             i1 = a.indexes[ii]
             ii = ii+1
             i2 = a.indexes[ii]
+	    print i2
             ii = ii+1
+	    print "ii", ii
             i3 = a.indexes[ii]
+	    print i3
+            #ii = ii+1
             ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)

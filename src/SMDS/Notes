@@ -15,6 +15,7 @@ Problemes en cours
   mais script OK
   ==> cassé apres mode embedded ou elimination noeuds en trop ?
 - extrusion elements 2D along a path : affichage apres calcul pas toujours OK (filaire)
+- branche git a ouvrir pour merge avec V5_1_4_BR tag V5_1_4rc1
 
 A tester, non pris en compte
 ============================

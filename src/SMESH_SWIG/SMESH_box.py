@@ -1,5 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -20,6 +20,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #==============================================================================
 #  Info.
 #  Bug (from script, bug)   : box.py, PAL5223
@@ -47,6 +48,7 @@ box    = geompy.MakeBox(0.,0.,0.,1.,1.,1.)
 boxId  = geompy.addToStudy(box,"box")
 
 # ---- SMESH
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh
 

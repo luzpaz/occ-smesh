@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <stdio.h>
 
 #include "DriverDAT_R_SMDS_Mesh.h"
@@ -102,58 +103,58 @@ Driver_Mesh::Status DriverDAT_R_SMDS_Mesh::Perform()
       ValDegre = 3;
       nbNoeuds = 2;
       ok = myMesh->AddEdgeWithID(NoeudsMaille[0], NoeudsMaille[1], 
-				 intNumMaille);
+                                 intNumMaille);
       break;
     case 204:
     case 208:
       ValDegre = 9;
       nbNoeuds = 4;
       ok = myMesh->AddFaceWithID(NoeudsMaille[0], NoeudsMaille[1],
-				 NoeudsMaille[2], NoeudsMaille[3], 
-				 intNumMaille);
+                                 NoeudsMaille[2], NoeudsMaille[3], 
+                                 intNumMaille);
       break;
     case 203:
     case 206:
       ValDegre = 5;
       nbNoeuds = 3;
       ok = myMesh->AddFaceWithID(NoeudsMaille[0], NoeudsMaille[1],
-				 NoeudsMaille[2], intNumMaille);
+                                 NoeudsMaille[2], intNumMaille);
       break;
     case 308:
     case 320:
       ValDegre = 12;
       nbNoeuds = 8;
       if (ValElement == 320){
-	//A voir, correspondance VTK
-	NoeudsMaille[4] = NoeudsMaille[8];
-	NoeudsMaille[5] = NoeudsMaille[9];
-	NoeudsMaille[6] = NoeudsMaille[10];
-	NoeudsMaille[7] = NoeudsMaille[11];
+        //A voir, correspondance VTK
+        NoeudsMaille[4] = NoeudsMaille[8];
+        NoeudsMaille[5] = NoeudsMaille[9];
+        NoeudsMaille[6] = NoeudsMaille[10];
+        NoeudsMaille[7] = NoeudsMaille[11];
       }
       ok = myMesh->AddVolumeWithID(NoeudsMaille[0], NoeudsMaille[1],
-				   NoeudsMaille[2], NoeudsMaille[3], 
-				   NoeudsMaille[4], NoeudsMaille[5], 
-				   NoeudsMaille[6], NoeudsMaille[7],
-				   intNumMaille);
+                                   NoeudsMaille[2], NoeudsMaille[3], 
+                                   NoeudsMaille[4], NoeudsMaille[5], 
+                                   NoeudsMaille[6], NoeudsMaille[7],
+                                   intNumMaille);
       break;
     case 304:
     case 310:
       ValDegre = 10;
       nbNoeuds = 4;
       if (ValElement == 310)
-	NoeudsMaille[3] = NoeudsMaille[6];
+        NoeudsMaille[3] = NoeudsMaille[6];
       ok = myMesh->AddVolumeWithID(NoeudsMaille[0], NoeudsMaille[1],
-				   NoeudsMaille[2], NoeudsMaille[3], 
-				   intNumMaille);
+                                   NoeudsMaille[2], NoeudsMaille[3], 
+                                   intNumMaille);
       break;
     case 306:
     case 315:
       ValDegre = 12;
       nbNoeuds = 8;
       if (ValElement == 315) {
-	NoeudsMaille[3] = NoeudsMaille[6];
-	NoeudsMaille[4] = NoeudsMaille[7];
-	NoeudsMaille[5] = NoeudsMaille[8];
+        NoeudsMaille[3] = NoeudsMaille[6];
+        NoeudsMaille[4] = NoeudsMaille[7];
+        NoeudsMaille[5] = NoeudsMaille[8];
       }
       NoeudsMaille[7] = NoeudsMaille[5];
       NoeudsMaille[6] = NoeudsMaille[5];
@@ -161,10 +162,10 @@ Driver_Mesh::Status DriverDAT_R_SMDS_Mesh::Perform()
       NoeudsMaille[4] = NoeudsMaille[3];
       NoeudsMaille[3] = NoeudsMaille[2];
       ok = myMesh->AddVolumeWithID(NoeudsMaille[0], NoeudsMaille[1],
-				   NoeudsMaille[2], NoeudsMaille[3], 
-				   NoeudsMaille[4], NoeudsMaille[5], 
-				   intNumMaille);
-				break;
+                                   NoeudsMaille[2], NoeudsMaille[3], 
+                                   NoeudsMaille[4], NoeudsMaille[5], 
+                                   intNumMaille);
+                                break;
     }
   }
   /****************************************************************************

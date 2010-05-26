@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Gen.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-
+//
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_HypoFilter.hxx"
@@ -47,7 +48,7 @@ using namespace std;
 
 //=============================================================================
 /*!
- *  default constructor:
+ *  Constructor
  */
 //=============================================================================
 
@@ -63,47 +64,19 @@ SMESH_Gen::SMESH_Gen()
 
 //=============================================================================
 /*!
- *
+ * Destructor
  */
 //=============================================================================
 
 SMESH_Gen::~SMESH_Gen()
 {
-        MESSAGE("SMESH_Gen::~SMESH_Gen");
+  MESSAGE("SMESH_Gen::~SMESH_Gen");
 }
 
 //=============================================================================
 /*!
- *
- */
-//=============================================================================
-
-/*SMESH_Hypothesis *SMESH_Gen::CreateHypothesis(const char *anHyp, int studyId)
-        throw(SALOME_Exception)
-{
-
-        MESSAGE("CreateHypothesis("<<anHyp<<","<<studyId<<")");
-        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-
-        StudyContextStruct *myStudyContext = GetStudyContext(studyId);
-
-        // create a new hypothesis object, store its ref. in studyContext
-
-        SMESH_Hypothesis *myHypothesis = _hypothesisFactory.Create(anHyp, studyId);
-        int hypId = myHypothesis->GetID();
-        myStudyContext->mapHypothesis[hypId] = myHypothesis;
-        SCRUTE(studyId);
-        SCRUTE(hypId);
-
-        // store hypothesis in SMESHDS document
-
-        myStudyContext->myDocument->AddHypothesis(myHypothesis);
-        return myHypothesis;
-}*/
-
-//=============================================================================
-/*!
- *
+ * Creates a mesh in a study.
+ * if (theIsEmbeddedMode) { mesh modification commands are not logged }
  */
 //=============================================================================
 
@@ -213,7 +186,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       if ( algo && !algo->NeedDescretBoundary() )
       {
         if ( algo->SupportSubmeshes() )
-          smWithAlgoSupportingSubmeshes.push_back( smToCompute );
+          smWithAlgoSupportingSubmeshes.push_front( smToCompute );
         else
         {
           smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
@@ -222,13 +195,19 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         }
       }
     }
+    
+    // ------------------------------------------------------------
+    // sort list of meshes according to mesh order
+    // ------------------------------------------------------------
+    aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
+
     // ------------------------------------------------------------
     // compute submeshes under shapes with algos that DO NOT require
     // descretized boundaries and DO support submeshes
     // ------------------------------------------------------------
-    list< SMESH_subMesh* >::reverse_iterator subIt, subEnd;
-    subIt  = smWithAlgoSupportingSubmeshes.rbegin();
-    subEnd = smWithAlgoSupportingSubmeshes.rend();
+    list< SMESH_subMesh* >::iterator subIt, subEnd;
+    subIt  = smWithAlgoSupportingSubmeshes.begin();
+    subEnd = smWithAlgoSupportingSubmeshes.end();
     // start from lower shapes
     for ( ; subIt != subEnd; ++subIt )
     {
@@ -270,7 +249,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // ----------------------------------------------------------
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
     {
       sm = *subIt;
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
@@ -377,7 +356,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
       if ( algo && !algo->NeedDescretBoundary() ) {
         if ( algo->SupportSubmeshes() ) {
-          smWithAlgoSupportingSubmeshes.push_back( smToCompute );
+          smWithAlgoSupportingSubmeshes.push_front( smToCompute );
         }
         else {
           smToCompute->Evaluate(aResMap);
@@ -386,13 +365,19 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
         }
       }
     }
+
+    // ------------------------------------------------------------
+    // sort list of meshes according to mesh order
+    // ------------------------------------------------------------
+    aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
+
     // ------------------------------------------------------------
     // compute submeshes under shapes with algos that DO NOT require
     // descretized boundaries and DO support submeshes
     // ------------------------------------------------------------
-    list< SMESH_subMesh* >::reverse_iterator subIt, subEnd;
-    subIt  = smWithAlgoSupportingSubmeshes.rbegin();
-    subEnd = smWithAlgoSupportingSubmeshes.rend();
+    list< SMESH_subMesh* >::iterator subIt, subEnd;
+    subIt  = smWithAlgoSupportingSubmeshes.begin();
+    subEnd = smWithAlgoSupportingSubmeshes.end();
     // start from lower shapes
     for ( ; subIt != subEnd; ++subIt ) {
       sm = *subIt;
@@ -429,7 +414,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     // ----------------------------------------------------------
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
     {
       sm = *subIt;
       sm->Evaluate(aResMap);
@@ -798,7 +783,7 @@ bool SMESH_Gen::IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& a
 
 //=============================================================================
 /*!
- *
+ * Finds algo to mesh a shape. Optionally returns a shape the found algo is bound to
  */
 //=============================================================================
 
@@ -806,7 +791,6 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
                                const TopoDS_Shape & aShape,
                                TopoDS_Shape*        assignedTo)
 {
-
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
 
@@ -815,59 +799,28 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
 
 //=============================================================================
 /*!
- *
+ * Returns StudyContextStruct for a study
  */
 //=============================================================================
 
 StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
 {
-        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-        if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
-        {
-                _mapStudyContext[studyId] = new StudyContextStruct;
-                _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
-        }
-        StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
-//   ASSERT(_mapStudyContext.find(studyId) != _mapStudyContext.end());
-        return myStudyContext;
+  if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
+  {
+    _mapStudyContext[studyId] = new StudyContextStruct;
+    _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
+  }
+  StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
+  return myStudyContext;
 }
 
-// //=============================================================================
-// /*!
-//  *
-//  */
-// //=============================================================================
-
-// void SMESH_Gen::Save(int studyId, const char *aUrlOfFile)
-// {
-// }
-
-// //=============================================================================
-// /*!
-//  *
-//  */
-// //=============================================================================
-
-// void SMESH_Gen::Load(int studyId, const char *aUrlOfFile)
-// {
-// }
-
-// //=============================================================================
-// /*!
-//  *
-//  */
-// //=============================================================================
-
-// void SMESH_Gen::Close(int studyId)
-// {
-// }
-
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Return shape dimension by TopAbs_ShapeEnum
  */
-//=============================================================================
+//================================================================================
 
 int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 {
@@ -889,12 +842,11 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 
 //=============================================================================
 /*!
- *
+ * Genarate a new id unique withing this Gen
  */
 //=============================================================================
 
 int SMESH_Gen::GetANewId()
 {
-        //MESSAGE("SMESH_Gen::GetANewId");
-        return _hypId++;
+  return _hypId++;
 }

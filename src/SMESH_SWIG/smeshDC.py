@@ -1,8 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +17,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  File   : smesh.py
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
@@ -99,6 +97,7 @@ from   SMESH import *
 import StdMeshers
 
 import SALOME
+import SALOMEDS
 
 # import NETGENPlugin module if possible
 noNETGENPlugin = 0
@@ -162,6 +161,8 @@ Hexa    = 8
 Hexotic = 9
 BLSURF  = 10
 GHS3DPRL = 11
+QUADRANGLE = 0
+RADIAL_QUAD = 1
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -193,6 +194,10 @@ FromCAD, PreProcess, PreProcessPlus = 0,1,2
 DefaultSize, DefaultGeom, Custom = 0,0,1
 
 PrecisionConfusion = 1e-07
+
+# TopAbs_State enumeration
+[TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
+
 
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
@@ -391,13 +396,33 @@ NO_NAME = "NoName"
 
 ## Gets object name
 def GetName(obj):
-    ior  = salome.orb.object_to_string(obj)
-    sobj = salome.myStudy.FindObjectIOR(ior)
-    if sobj is None:
-        return NO_NAME
-    else:
-        attr = sobj.FindAttribute("AttributeName")[1]
-        return attr.Value()
+    if obj:
+        # object not null
+        if isinstance(obj, SALOMEDS._objref_SObject):
+            # study object
+            return obj.GetName()
+        ior  = salome.orb.object_to_string(obj)
+        if ior:
+            # CORBA object
+            studies = salome.myStudyManager.GetOpenStudies()
+            for sname in studies:
+                s = salome.myStudyManager.GetStudyByName(sname)
+                if not s: continue
+                sobj = s.FindObjectIOR(ior)
+                if not sobj: continue
+                return sobj.GetName()
+            if hasattr(obj, "GetName"):
+                # unknown CORBA object, having GetName() method
+                return obj.GetName()
+            else:
+                # unknown CORBA object, no GetName() method
+                return NO_NAME
+            pass
+        if hasattr(obj, "GetName"):
+            # unknown non-CORBA object, having GetName() method
+            return obj.GetName()
+        pass
+    raise RuntimeError, "Null or invalid object"
 
 ## Prints error message if a hypothesis was not assigned.
 def TreatHypoStatus(status, hypName, geomName, isAlgo):
@@ -432,10 +457,12 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
         return
     hypName = '"' + hypName + '"'
     geomName= '"' + geomName+ '"'
-    if status < HYP_UNKNOWN_FATAL:
+    if status < HYP_UNKNOWN_FATAL and not geomName =='""':
         print hypName, "was assigned to",    geomName,"but", reason
-    else:
+    elif not geomName == '""':
         print hypName, "was not assigned to",geomName,":", reason
+    else:
+        print hypName, "was not assigned:", reason
         pass
 
 ## Check meshing plugin availability
@@ -1031,17 +1058,20 @@ class Mesh:
         if (isinstance(algo, geompyDC.GEOM._objref_GEOM_Object)):
             geom = algo
             algo = MEFISTO
-
         return Mesh_Triangle(self, algo, geom)
 
     ## Creates a quadrangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
     #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
     #  @param geom If defined, the subshape to be meshed (GEOM_Object)
+    #  @param algo values are: smesh.QUADRANGLE || smesh.RADIAL_QUAD
     #  @return an instance of Mesh_Quadrangle algorithm
     #  @ingroup l3_algos_basic
-    def Quadrangle(self, geom=0):
-        return Mesh_Quadrangle(self,  geom)
+    def Quadrangle(self, geom=0, algo=QUADRANGLE):
+        if algo==RADIAL_QUAD:
+            return Mesh_RadialQuadrangle1D2D(self,geom)
+        else:
+            return Mesh_Quadrangle(self, geom)
 
     ## Creates a tetrahedron 3D algorithm for solids.
     #  The parameter \a algo permits to choose the algorithm: NETGEN or GHS3D
@@ -1153,8 +1183,62 @@ class Mesh:
             print "Mesh computation failed, exception caught:"
             traceback.print_exc()
         if True:#not ok:
-            errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             allReasons = ""
+
+            # Treat compute errors
+            computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, geom )
+            for err in computeErrors:
+                shapeText = ""
+                if self.mesh.HasShapeToMesh():
+                    try:
+                        mainIOR  = salome.orb.object_to_string(geom)
+                        for sname in salome.myStudyManager.GetOpenStudies():
+                            s = salome.myStudyManager.GetStudyByName(sname)
+                            if not s: continue
+                            mainSO = s.FindObjectIOR(mainIOR)
+                            if not mainSO: continue
+                            subIt = s.NewChildIterator(mainSO)
+                            while subIt.More():
+                                subSO = subIt.Value()
+                                subIt.Next()
+                                obj = subSO.GetObject()
+                                if not obj: continue
+                                go = obj._narrow( geompyDC.GEOM._objref_GEOM_Object )
+                                if not go: continue
+                                ids = go.GetSubShapeIndices()
+                                if len(ids) == 1 and ids[0] == err.subShapeID:
+                                    shapeText = ' on "%s"' % subSO.GetName()
+                                    break
+                        if not shapeText:
+                            shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
+                            if shape:
+                                shapeText = " on %s #%s" % (shape.GetShapeType(), err.subShapeID)
+                            else:
+                                shapeText = " on subshape #%s" % (err.subShapeID)
+                    except:
+                        shapeText = " on subshape #%s" % (err.subShapeID)
+                errText = ""
+                stdErrors = ["OK",                 #COMPERR_OK            
+                             "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
+                             "std::exception",     #COMPERR_STD_EXCEPTION 
+                             "OCC exception",      #COMPERR_OCC_EXCEPTION 
+                             "SALOME exception",   #COMPERR_SLM_EXCEPTION 
+                             "Unknown exception",  #COMPERR_EXCEPTION     
+                             "Memory allocation problem", #COMPERR_MEMORY_PB     
+                             "Algorithm failed",   #COMPERR_ALGO_FAILED   
+                             "Unexpected geometry"]#COMPERR_BAD_SHAPE
+                if err.code > 0:
+                    if err.code < len(stdErrors): errText = stdErrors[err.code]
+                else:
+                    errText = "code %s" % -err.code
+                if errText: errText += ". "
+                errText += err.comment
+                if allReasons != "":allReasons += "\n"
+                allReasons += '"%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
+                pass
+
+            # Treat hyp errors
+            errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             for err in errors:
                 if err.isGlobalAlgo:
                     glob = "global"
@@ -1180,9 +1264,7 @@ class Mesh:
                     reason = "For unknown reason."+\
                              " Revise Mesh.Compute() implementation in smeshDC.py!"
                     pass
-                if allReasons != "":
-                    allReasons += "\n"
-                    pass
+                if allReasons != "":allReasons += "\n"
                 allReasons += reason
                 pass
             if allReasons != "":
@@ -1200,6 +1282,18 @@ class Mesh:
             salome.sg.updateObjBrowser(1)
             pass
         return ok
+
+    ## Return submesh objects list in meshing order
+    #  @return list of list of submesh objects
+    #  @ingroup l2_construct
+    def GetMeshOrder(self):
+        return self.mesh.GetMeshOrder()
+
+    ## Return submesh objects list in meshing order
+    #  @return list of list of submesh objects
+    #  @ingroup l2_construct
+    def SetMeshOrder(self, submeshes):
+        return self.mesh.SetMeshOrder(submeshes)
 
     ## Removes all nodes and elements
     #  @ingroup l2_construct
@@ -1271,7 +1365,11 @@ class Mesh:
             pass
         status = self.mesh.AddHypothesis(geom, hyp)
         isAlgo = hyp._narrow( SMESH_Algo )
-        TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
+        hyp_name = GetName( hyp )
+        geom_name = ""
+        if geom:
+            geom_name = GetName( geom )
+        TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
         return status
 
     ## Unassigns a hypothesis
@@ -1876,6 +1974,12 @@ class Mesh:
     def GetElementType(self, id, iselem):
         return self.mesh.GetElementType(id, iselem)
 
+    ## Returns the geometric type of mesh element
+    #  @return the value from SMESH::EntityType enumeration
+    #  @ingroup l1_meshinfo
+    def GetElementGeomType(self, id):
+        return self.mesh.GetElementGeomType(id)
+
     ## Returns the list of submesh elements IDs
     #  @param Shape a geom object(subshape) IOR
     #         Shape must be the subshape of a ShapeToMesh()
@@ -1998,6 +2102,16 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def ElemNbFaces(self, id):
         return self.mesh.ElemNbFaces(id)
+
+    ## Returns nodes of given face (counted from zero) for given volumic element.
+    #  @ingroup l1_meshinfo
+    def GetElemFaceNodes(self,elemId, faceIndex):
+        return self.mesh.GetElemFaceNodes(elemId, faceIndex)
+
+    ## Returns an element based on all given nodes.
+    #  @ingroup l1_meshinfo
+    def FindElementByNodes(self,nodes):
+        return self.mesh.FindElementByNodes(nodes)
 
     ## Returns true if the given element is a polygon
     #  @ingroup l1_meshinfo
@@ -2241,6 +2355,11 @@ class Mesh:
     def FindElementsByPoint(self, x, y, z, elementType = SMESH.ALL):
         return self.editor.FindElementsByPoint(x, y, z, elementType)
         
+    # Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+    # TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+     
+    def GetPointState(self, x, y, z):
+        return self.editor.GetPointState(x, y, z)
 
     ## Finds the node closest to a point and moves it to a point location
     #  @param x  the X coordinate of a point
@@ -2372,6 +2491,17 @@ class Mesh:
     #  @ingroup l2_modif_cutquadr
     def BestSplit (self, IDOfQuad, theCriterion):
         return self.editor.BestSplit(IDOfQuad, self.smeshpyD.GetFunctor(theCriterion))
+
+    ## Splits volumic elements into tetrahedrons
+    #  @param elemIDs either list of elements or mesh or group or submesh
+    #  @param method  flags passing splitting method:
+    #         1 - split the hexahedron into 5 tetrahedrons
+    #         2 - split the hexahedron into 6 tetrahedrons
+    #  @ingroup l2_modif_cutquadr
+    def SplitVolumesIntoTetra(self, elemIDs, method=1 ):
+        if isinstance( elemIDs, Mesh ):
+            elemIDs = elemIDs.GetMesh()
+        self.editor.SplitVolumesIntoTetra(elemIDs, method)
 
     ## Splits quadrangle faces near triangular facets of volumes
     #
@@ -3227,6 +3357,51 @@ class Mesh:
         mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
+
+
+    ## Scales the object
+    #  @param theObject - the object to translate (mesh, submesh, or group)
+    #  @param thePoint - base point for scale
+    #  @param theScaleFact - scale factors for axises
+    #  @param Copy - allows copying the translated elements
+    #  @param MakeGroups - forces the generation of new groups from existing
+    #                      ones (if Copy)
+    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True,
+    #          empty list otherwise
+    def Scale(self, theObject, thePoint, theScaleFact, Copy, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( theObject, list )):
+            theObject = self.editor.MakeIDSource(theObject)
+
+        thePoint, Parameters = ParsePointStruct(thePoint)
+        self.mesh.SetParameters(Parameters)
+
+        if Copy and MakeGroups:
+            return self.editor.ScaleMakeGroups(theObject, thePoint, theScaleFact)
+        self.editor.Scale(theObject, thePoint, theScaleFact, Copy)
+        return []
+
+    ## Creates a new mesh from the translated object
+    #  @param theObject - the object to translate (mesh, submesh, or group)
+    #  @param thePoint - base point for scale
+    #  @param theScaleFact - scale factors for axises
+    #  @param MakeGroups - forces the generation of new groups from existing ones
+    #  @param NewMeshName - the name of the newly created mesh
+    #  @return instance of Mesh class
+    def ScaleMakeMesh(self, theObject, thePoint, theScaleFact, MakeGroups=False, NewMeshName=""):
+        if (isinstance(theObject, Mesh)):
+            theObject = theObject.GetMesh()
+        if ( isinstance( theObject, list )):
+            theObject = self.editor.MakeIDSource(theObject)
+
+        mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
+                                         MakeGroups, NewMeshName)
+        #mesh.SetParameters(Parameters)
+        return Mesh( self.smeshpyD, self.geompyD, mesh )
+
+
+
     ## Rotates the elements
     #  @param IDsOfElements list of elements ids
     #  @param Axis the axis of rotation (AxisStruct or geom line)
@@ -3451,7 +3626,7 @@ class Mesh:
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
-    #  @param theNodes identifiers of node to be doubled
+    #  @param theNodeId identifiers of node to be doubled
     #  @param theModifiedElems identifiers of elements to be updated
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
@@ -3518,7 +3693,7 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @ingroup l2_modif_edit
     def DoubleNodeElemGroupInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theShape)
+        return self.editor.DoubleNodeElemGroupInRegion(theElems, theNodesNot, theShape)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3685,19 +3860,23 @@ class Mesh_Algorithm:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
         piece = mesh.geom
+        name = ""
         if not geom:
             self.geom = piece
         else:
             self.geom = geom
-            name = GetName(geom)
-            if name==NO_NAME:
+            try:
+                name = GetName(geom)
+                pass
+            except:
                 name = mesh.geompyD.SubShapeName(geom, piece)
                 mesh.geompyD.addToStudyInFather(piece, geom, name)
+                pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
 
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
-        TreatHypoStatus( status, algo.GetName(), GetName(self.geom), True )
+        TreatHypoStatus( status, algo.GetName(), name, True )
 
     def CompareHyp (self, hyp, args):
         print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
@@ -3902,10 +4081,13 @@ class Mesh_Segment(Mesh_Algorithm):
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
+        if reversedEdges and isinstance( reversedEdges[0], geompyDC.GEOM._objref_GEOM_Object ):
+            for i in range( len( reversedEdges )):
+                reversedEdges[i] = self.mesh.geompyD.GetSubShapeID(self.mesh.geom, reversedEdges[i] )
         entry = self.MainShapeEntry()
         hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdges, entry],
                               UseExisting=UseExisting,
-                              CompareMethod=self.CompareArithmetic1D)
+                              CompareMethod=self.CompareFixedPoints1D)
         hyp.SetPoints(points)
         hyp.SetNbSegments(nbSegs)
         hyp.SetReversedEdges(reversedEdges)
@@ -4014,11 +4196,14 @@ class Mesh_Segment(Mesh_Algorithm):
         ### 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
-        name = GetName(self.geom)
-        if name == NO_NAME:
+        try:
+            name = GetName(self.geom)
+            pass
+        except:
             piece = self.mesh.geom
             name = self.mesh.geompyD.SubShapeName(self.geom, piece)
             self.mesh.geompyD.addToStudyInFather(piece, self.geom, name)
+            pass
         algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
         if algo is None:
             algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
@@ -4414,6 +4599,25 @@ class Mesh_Quadrangle(Mesh_Algorithm):
         hyp = self.Hypothesis("TrianglePreference", UseExisting=1,
                               CompareMethod=self.CompareEqualHyp)
         return hyp
+
+    ## Defines "QuadrangleParams" hypothesis
+    #  @param vertex: vertex of a trilateral geometrical face, around which triangles
+    #                 will be created while other elements will be quadrangles.
+    #                 Vertex can be either a GEOM_Object or a vertex ID within the
+    #                 shape to mesh
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                   the same parameters, else (default) - creates a new one
+    #
+    #  @ingroup l3_hypos_additi
+    def TriangleVertex(self, vertex, UseExisting=0):
+        vertexID = vertex
+        if isinstance( vertexID, geompyDC.GEOM._objref_GEOM_Object ):
+            vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, vertex )
+        hyp = self.Hypothesis("QuadrangleParams", [vertexID], UseExisting = UseExisting,
+                              CompareMethod=lambda hyp,args: hyp.GetTriaVertex()==args[0])
+        hyp.SetTriaVertex( vertexID )
+        return hyp
+
 
 # Public class: Mesh_Tetrahedron
 # ------------------------------
@@ -4912,6 +5116,7 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
         study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
+        self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
         self.distribHyp.SetLayerDistribution( hyp )
@@ -4998,7 +5203,7 @@ class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "RadialQuadrangle_1D2D")
 
-        self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
         self.nbLayers = None
 
     ## Return 2D hypothesis holding the 1D one
@@ -5009,21 +5214,26 @@ class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
     #  hypothesis. Returns the created hypothesis
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
         #print "OwnHypothesis",hypType
-        if not self.nbLayers is None:
+        if self.nbLayers:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
+        if self.distribHyp is None:
+            self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        else:
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
         study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
+        self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
-    ## Defines "NumberOfLayers2D" hypothesis, specifying the number of layers
+    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers
     #  @param n number of layers
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
-    def NumberOfLayers2D(self, n, UseExisting=0):
-        self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
+    def NumberOfLayers(self, n, UseExisting=0):
+        if self.distribHyp:
+            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
         self.nbLayers = self.Hypothesis("NumberOfLayers2D", [n], UseExisting=UseExisting,
                                         CompareMethod=self.CompareNumberOfLayers)
         self.nbLayers.SetNumberOfLayers( n )

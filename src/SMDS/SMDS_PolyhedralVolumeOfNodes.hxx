@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_PolyhedralVolumeOfNodes.hxx
 //  Module : SMESH
@@ -38,7 +39,7 @@ class SMDS_EXPORT SMDS_PolyhedralVolumeOfNodes:public SMDS_VolumeOfNodes
 
   //virtual ~SMDS_PolyhedralVolumeOfNodes();
 
-  virtual SMDSAbs_ElementType GetType() const;	
+  virtual SMDSAbs_ElementType GetType() const;  
   virtual SMDSAbs_EntityType   GetEntityType() const { return SMDSEntity_Polyhedra; }
   virtual bool IsPoly() const { return true; };
 

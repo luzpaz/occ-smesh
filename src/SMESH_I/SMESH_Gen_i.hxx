@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Gen_i.hxx
 //  Author : Paul RASCLE, EDF
@@ -319,6 +320,13 @@ public:
                                               CORBA::Boolean           theMergeNodesAndElements, 
                                               CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
+
+  // Get MED version of the file by its name
+  CORBA::Boolean GetMEDVersion(const char* theFileName,
+                               SMESH::MED_VERSION& theVersion);
+
+  // Get names of meshes defined in file with the specified name
+  SMESH::string_array* GetMeshNames(const char* theFileName);
 
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)

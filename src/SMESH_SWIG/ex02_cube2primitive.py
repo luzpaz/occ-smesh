@@ -1,5 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -20,6 +20,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # =======================================
 #
 from geompy import *
@@ -97,6 +98,8 @@ piece_id = addToStudy(piece, "ex02_cube2primitive")
 
 # Meshing
 # =======
+
+smesh.SetCurrentStudy(salome.myStudy)
 
 # Create hexahedrical mesh on piece
 # ---------------------------------

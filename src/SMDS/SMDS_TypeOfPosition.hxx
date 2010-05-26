@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_TypeOfPosition.hxx
 //  Module : SMESH
@@ -28,11 +29,11 @@
 
 enum SMDS_TypeOfPosition // Value is equal to shape dimention
 {
-	SMDS_TOP_UNSPEC  = -1,
-	SMDS_TOP_VERTEX  = 0,
-	SMDS_TOP_EDGE    = 1,
-	SMDS_TOP_FACE    = 2,
-	SMDS_TOP_3DSPACE = 3
+        SMDS_TOP_UNSPEC  = -1,
+        SMDS_TOP_VERTEX  = 0,
+        SMDS_TOP_EDGE    = 1,
+        SMDS_TOP_FACE    = 2,
+        SMDS_TOP_3DSPACE = 3
 };
 
 #endif
