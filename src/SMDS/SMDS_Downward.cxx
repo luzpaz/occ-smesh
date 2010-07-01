@@ -322,8 +322,8 @@ int SMDS_Down1D::computeVtkCells(int *pts, std::vector<int>& vtkIds)
 
   // --- find all the cells the points belong to, and how many of the points belong to a given cell
 
-  int cellIds[100];
-  int cellCnt[100];
+  int cellIds[1000];
+  int cellCnt[1000];
   int cnt = 0;
   for (int i = 0; i < _nbDownCells; i++)
     {
@@ -347,7 +347,7 @@ int SMDS_Down1D::computeVtkCells(int *pts, std::vector<int>& vtkIds)
             {
               cellIds[cnt] = vtkCellId;
               cellCnt[cnt] = 1;
-              // TODO ASSERT(cnt<100);
+              // TODO ASSERT(cnt<1000);
               cnt++;
             }
         }
@@ -531,8 +531,8 @@ int SMDS_Down2D::computeVolumeIdsFromNodesFace(int* pts, int npts, int* ids)
 
   // --- find all the cells the points belong to, and how many of the points belong to a given cell
 
-  int cellIds[100];
-  int cellCnt[100];
+  int cellIds[1000];
+  int cellCnt[1000];
   int cnt = 0;
   for (int i = 0; i < npts; i++)
     {
@@ -557,7 +557,7 @@ int SMDS_Down2D::computeVolumeIdsFromNodesFace(int* pts, int npts, int* ids)
             {
               cellIds[cnt] = vtkCellId;
               cellCnt[cnt] = 1;
-              // TODO ASSERT(cnt<100);
+              // TODO ASSERT(cnt<1000);
               cnt++;
             }
         }

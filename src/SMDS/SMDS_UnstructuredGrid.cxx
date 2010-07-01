@@ -538,8 +538,8 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity()
           downEdge->setNodes(connEdgeId, vtkEdgeId);
           vector<int> vtkIds;
           int nbVtkCells = downEdge->computeVtkCells(connEdgeId, vtkIds);
-          int downFaces[100];
-          unsigned char downTypes[100];
+          int downFaces[1000];
+          unsigned char downTypes[1000];
           int nbDownFaces = downEdge->computeFaces(connEdgeId, &vtkIds[0], nbVtkCells, downFaces, downTypes);
           for (int n = 0; n < nbDownFaces; n++)
             {
@@ -591,8 +591,8 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity()
               SMDS_Down1D* downEdge = static_cast<SMDS_Down1D*> (_downArray[vtkEdgeType]);
               int nbVtkCells = downEdge->computeVtkCells(pts, vtkIds);
               //CHRONOSTOP(41);CHRONO(42);
-              int downFaces[100];
-              unsigned char downTypes[100];
+              int downFaces[1000];
+              unsigned char downTypes[1000];
               int nbDownFaces = downEdge->computeFaces(pts, &vtkIds[0], nbVtkCells, downFaces, downTypes);
               //CHRONOSTOP(42);
 
