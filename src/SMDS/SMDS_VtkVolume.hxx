@@ -7,15 +7,14 @@
 #include <vtkUnstructuredGrid.h>
 #include <vector>
 
-class SMDS_EXPORT SMDS_VtkVolume:public SMDS_MeshVolume
+class SMDS_EXPORT SMDS_VtkVolume: public SMDS_MeshVolume
 {
 public:
   SMDS_VtkVolume();
   SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
   ~SMDS_VtkVolume();
   void init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
-  bool ChangeNodes(const SMDS_MeshNode* nodes[],
-                   const int            nbNodes);
+  bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
 
   void Print(std::ostream & OS) const;
   int NbFaces() const;

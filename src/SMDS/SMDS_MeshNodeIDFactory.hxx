@@ -35,7 +35,7 @@
 
 class SMDS_MeshElement;
 
-class SMDS_EXPORT SMDS_MeshNodeIDFactory:public SMDS_MeshIDFactory
+class SMDS_EXPORT SMDS_MeshNodeIDFactory: public SMDS_MeshIDFactory
 {
 public:
   SMDS_MeshNodeIDFactory();
@@ -51,8 +51,10 @@ protected:
   void updateMinMax() const;
   void updateMinMax(int id) const
   {
-    if (id > myMax) myMax = id;
-    if (id < myMin) myMin = id;
+    if (id > myMax)
+      myMax = id;
+    if (id < myMin)
+      myMin = id;
   }
 
   mutable int myMin, myMax;

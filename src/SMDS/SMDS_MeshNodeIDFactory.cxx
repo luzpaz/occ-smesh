@@ -41,9 +41,8 @@ using namespace std;
 //function : SMDS_MeshNodeIDFactory
 //purpose  : 
 //=======================================================================
-SMDS_MeshNodeIDFactory::SMDS_MeshNodeIDFactory():
-  SMDS_MeshIDFactory(),
-  myMin(0), myMax(0)
+SMDS_MeshNodeIDFactory::SMDS_MeshNodeIDFactory() :
+  SMDS_MeshIDFactory(), myMin(0), myMax(0)
 {
 }
 
@@ -53,7 +52,7 @@ SMDS_MeshNodeIDFactory::SMDS_MeshNodeIDFactory():
 //=======================================================================
 bool SMDS_MeshNodeIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 {
-  updateMinMax (ID);
+  updateMinMax(ID);
   return true;
 }
 
@@ -63,10 +62,10 @@ bool SMDS_MeshNodeIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 //=======================================================================
 SMDS_MeshElement* SMDS_MeshNodeIDFactory::MeshElement(int ID)
 {
-  if ((ID<0) || (ID>myMax))
+  if ((ID < 0) || (ID > myMax))
     return NULL;
   const SMDS_MeshElement* elem = GetMesh()->FindNode(ID);
-  return (SMDS_MeshElement*)(elem);
+  return (SMDS_MeshElement*) (elem);
 }
 
 //=======================================================================
@@ -77,9 +76,9 @@ void SMDS_MeshNodeIDFactory::ReleaseID(const int ID)
 {
   SMDS_MeshIDFactory::ReleaseID(ID);
   if (ID == myMax)
-    myMax = 0;     // --- force updateMinMax
+    myMax = 0; // --- force updateMinMax
   if (ID == myMin)
-    myMax = 0;     // --- force updateMinMax
+    myMax = 0; // --- force updateMinMax
 }
 
 //=======================================================================
@@ -120,7 +119,7 @@ void SMDS_MeshNodeIDFactory::updateMinMax() const
 
 SMDS_ElemIteratorPtr SMDS_MeshNodeIDFactory::elementsIterator() const
 {
-    return myMesh->elementsIterator(SMDSAbs_Node);
+  return myMesh->elementsIterator(SMDSAbs_Node);
 }
 
 void SMDS_MeshNodeIDFactory::Clear()

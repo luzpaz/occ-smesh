@@ -16,7 +16,7 @@ SMDS_VtkEdge::SMDS_VtkEdge()
 
 SMDS_VtkEdge::SMDS_VtkEdge(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
-	init(nodeIds, mesh);
+  init(nodeIds, mesh);
 }
 
 SMDS_VtkEdge::~SMDS_VtkEdge()
@@ -25,53 +25,53 @@ SMDS_VtkEdge::~SMDS_VtkEdge()
 
 void SMDS_VtkEdge::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
-	vtkUnstructuredGrid* grid = mesh->getGrid();
-	myIdInShape = -1;
-	myMeshId = mesh->getMeshId();
-	vtkIdType aType = VTK_LINE;
-	if (nodeIds.size() == 3)
-      aType = VTK_QUADRATIC_EDGE;
-	myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
+  vtkUnstructuredGrid* grid = mesh->getGrid();
+  myIdInShape = -1;
+  myMeshId = mesh->getMeshId();
+  vtkIdType aType = VTK_LINE;
+  if (nodeIds.size() == 3)
+    aType = VTK_QUADRATIC_EDGE;
+  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
 }
 
 bool SMDS_VtkEdge::ChangeNodes(const SMDS_MeshNode * node1,
-		const SMDS_MeshNode * node2)
+                               const SMDS_MeshNode * node2)
 {
-	return true;
+  return true;
 }
 
 void SMDS_VtkEdge::Print(std::ostream & OS) const
 {
-	OS << "edge <" << GetID() << "> : ";
+  OS << "edge <" << GetID() << "> : ";
 }
 
 int SMDS_VtkEdge::NbNodes() const
 {
-	vtkUnstructuredGrid* grid =SMDS_Mesh::_meshList[myMeshId]->getGrid();
-	int nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
-	assert(nbPoints >=2);
-	return nbPoints;
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  int nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
+  assert(nbPoints >= 2);
+  return nbPoints;
 }
 
 int SMDS_VtkEdge::NbEdges() const
 {
-	return 1;
+  return 1;
 }
 
 SMDSAbs_EntityType SMDS_VtkEdge::GetEntityType() const
 {
-	if (NbNodes() == 2)
-	  return SMDSEntity_Edge;
-	else
-	  return SMDSEntity_Quad_Edge;
+  if (NbNodes() == 2)
+    return SMDSEntity_Edge;
+  else
+    return SMDSEntity_Quad_Edge;
 }
 
 vtkIdType SMDS_VtkEdge::GetVtkType() const
 {
-	if (NbNodes() == 2)
-		return VTK_LINE;
-	else
-		return VTK_QUADRATIC_EDGE;
+  if (NbNodes() == 2)
+    return VTK_LINE;
+  else
+    return VTK_QUADRATIC_EDGE;
 
 }
 
@@ -89,20 +89,24 @@ SMDS_VtkEdge::GetNode(const int ind) const
 bool SMDS_VtkEdge::IsQuadratic() const
 {
   if (this->NbNodes() > 2)
-	return true;
+    return true;
   else
-	return false;
+    return false;
 }
 
 SMDS_ElemIteratorPtr SMDS_VtkEdge::elementsIterator(SMDSAbs_ElementType type) const
 {
-	switch (type)
-	{
-	case SMDSAbs_Node:
-		return SMDS_ElemIteratorPtr(new SMDS_VtkCellIterator(
-				SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
-	default:
-		MESSAGE("ERROR : Iterator not implemented");
-		return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
-	}
+  switch (type)
+  {
+    case SMDSAbs_Node:
+      return SMDS_ElemIteratorPtr(
+                                  new SMDS_VtkCellIterator(
+                                                           SMDS_Mesh::_meshList[myMeshId],
+                                                           myVtkID,
+                                                           GetEntityType()));
+    default:
+      MESSAGE("ERROR : Iterator not implemented")
+      ;
+      return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
+  }
 }

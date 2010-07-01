@@ -7,13 +7,21 @@
  * \brief Base class for all cells
  */
 
-class SMDS_EXPORT SMDS_MeshCell:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshCell: public SMDS_MeshElement
 {
 public:
   SMDS_MeshCell();
   virtual ~SMDS_MeshCell();
-  inline void setVtkId(int vtkId) { myVtkID = vtkId; };
-  inline int getVtkId() const {return myVtkID; };
+  inline void setVtkId(int vtkId)
+  {
+    myVtkID = vtkId;
+  }
+
+  inline int getVtkId() const
+  {
+    return myVtkID;
+  }
+
   static int nbCells;
 protected:
   int myVtkID;

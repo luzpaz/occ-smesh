@@ -19,10 +19,10 @@ private:
   {
     for (int i = _nextFree; i < _maxAvail; i++)
       if (_freeList[i] == true)
-      {
-        return i;
-        break;
-      }
+        {
+          return i;
+          break;
+        }
     return _maxAvail;
   }
 
@@ -60,21 +60,21 @@ public:
     X *obj = 0;
     _nextFree = getNextFree();
     if (_nextFree == _maxAvail)
-    {
-      X* newChunk = new X[_chunkSize];
-      _chunkList.push_back(newChunk);
-      _freeList.insert(_freeList.end(), _chunkSize, true);
-      _maxAvail += _chunkSize;
-      _freeList[_nextFree] = false;
-      obj = newChunk; // &newChunk[0];
-    }
+      {
+        X* newChunk = new X[_chunkSize];
+        _chunkList.push_back(newChunk);
+        _freeList.insert(_freeList.end(), _chunkSize, true);
+        _maxAvail += _chunkSize;
+        _freeList[_nextFree] = false;
+        obj = newChunk; // &newChunk[0];
+      }
     else
-    {
-      int chunkId = _nextFree / _chunkSize;
-      int rank = _nextFree - chunkId * _chunkSize;
-      _freeList[_nextFree] = false;
-      obj = _chunkList[chunkId] + rank; // &_chunkList[chunkId][rank];
-    }
+      {
+        int chunkId = _nextFree / _chunkSize;
+        int rank = _nextFree - chunkId * _chunkSize;
+        _freeList[_nextFree] = false;
+        obj = _chunkList[chunkId] + rank; // &_chunkList[chunkId][rank];
+      }
     //obj->init();
     return obj;
   }
@@ -83,32 +83,32 @@ public:
   {
     long adrobj = (long) (obj);
     for (int i = 0; i < _chunkList.size(); i++)
-    {
-      X* chunk = _chunkList[i];
-      long adrmin = (long) (chunk);
-      if (adrobj < adrmin)
-        continue;
-      long adrmax = (long) (chunk + _chunkSize);
-      if (adrobj >= adrmax)
-        continue;
-      int rank = (adrobj - adrmin) / sizeof(X);
-      int toFree = i * _chunkSize + rank;
-      _freeList[toFree] = true;
-      if (toFree < _nextFree)
-        _nextFree = toFree;
-      //obj->clean();
-      //checkDelete(i); compactage non fait
-      break;
-    }
+      {
+        X* chunk = _chunkList[i];
+        long adrmin = (long) (chunk);
+        if (adrobj < adrmin)
+          continue;
+        long adrmax = (long) (chunk + _chunkSize);
+        if (adrobj >= adrmax)
+          continue;
+        int rank = (adrobj - adrmin) / sizeof(X);
+        int toFree = i * _chunkSize + rank;
+        _freeList[toFree] = true;
+        if (toFree < _nextFree)
+          _nextFree = toFree;
+        //obj->clean();
+        //checkDelete(i); compactage non fait
+        break;
+      }
   }
 
-//  void destroy(int toFree)
-//  {
-//    // no control 0<= toFree < _freeList.size()
-//    _freeList[toFree] = true;
-//    if (toFree < _nextFree)
-//      _nextFree = toFree;
-//  }
+  //  void destroy(int toFree)
+  //  {
+  //    // no control 0<= toFree < _freeList.size()
+  //    _freeList[toFree] = true;
+  //    if (toFree < _nextFree)
+  //      _nextFree = toFree;
+  //  }
 
 };
 

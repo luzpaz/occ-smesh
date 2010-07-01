@@ -27,6 +27,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
+    chrono.hxx \
 	ObjectPool.hxx \
 	SMDS_TypeOfPosition.hxx \
 	SMDSAbs_ElementType.hxx \
@@ -71,6 +72,7 @@ salomeinclude_HEADERS = \
 	SMESH_SMDS.hxx \
 	SMDS_MeshInfo.hxx \
 	SMDS_UnstructuredGrid.hxx \
+	SMDS_Downward.hxx \
 	SMDS_StdIterator.hxx
 
 
@@ -78,6 +80,7 @@ salomeinclude_HEADERS = \
 
 lib_LTLIBRARIES = libSMDS.la
 dist_libSMDS_la_SOURCES = \
+    chrono.cxx \
 	SMDS_MeshObject.cxx \
 	SMDS_MeshElement.cxx \
 	SMDS_MeshCell.cxx \
@@ -112,7 +115,8 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_QuadraticEdge.cxx \
 	SMDS_QuadraticFaceOfNodes.cxx \
 	SMDS_QuadraticVolumeOfNodes.cxx \
-	SMDS_UnstructuredGrid.cxx
+	SMDS_UnstructuredGrid.cxx \
+	SMDS_Downward.cxx
 
 # additionnal information to compil and link file
 libSMDS_la_CPPFLAGS = \

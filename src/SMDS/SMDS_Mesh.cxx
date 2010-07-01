@@ -148,6 +148,7 @@ SMDS_Mesh::SMDS_Mesh()
   myIDElements.clear();
   myVtkIndex.clear();
   myGrid = SMDS_UnstructuredGrid::New();
+  myGrid->setSMDS_mesh(this);
   myGrid->Initialize();
   myGrid->Allocate();
   vtkPoints* points = vtkPoints::New();

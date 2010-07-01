@@ -1914,7 +1914,7 @@ void SMESHDS_Mesh::compactMesh()
 	myVtkIndex.swap(newVtkToSmds);
 	MESSAGE("myCells.size()=" << myCells.size() << " myIDElements.size()=" << myIDElements.size() << " myVtkIndex.size()=" << myVtkIndex.size() );
 
-
+	myGrid->BuildDownwardConnectivity();
 
 	// ---TODO: myNodes, myElements in submeshes
 

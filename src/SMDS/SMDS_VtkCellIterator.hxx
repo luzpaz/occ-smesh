@@ -8,16 +8,21 @@
 #include <vtkCell.h>
 #include <vtkIdList.h>
 
-class SMDS_VtkCellIterator : public SMDS_ElemIterator
+class SMDS_VtkCellIterator: public SMDS_ElemIterator
 {
 public:
-  SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType);
+      SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId,
+                           SMDSAbs_EntityType aType);
   virtual ~SMDS_VtkCellIterator();
   virtual bool more();
   virtual const SMDS_MeshElement* next();
-  inline void exchange(vtkIdType a, vtkIdType b) { vtkIdType t = _vtkIdList->GetId(a);
-												   _vtkIdList->SetId(a, _vtkIdList->GetId(b));
-                                                   _vtkIdList->SetId(b, t); };
+  inline void exchange(vtkIdType a, vtkIdType b)
+  {
+    vtkIdType t = _vtkIdList->GetId(a);
+    _vtkIdList->SetId(a, _vtkIdList->GetId(b));
+    _vtkIdList->SetId(b, t);
+  }
+
 protected:
   SMDS_Mesh* _mesh;
   int _cellId;

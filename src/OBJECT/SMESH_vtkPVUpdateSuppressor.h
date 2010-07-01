@@ -1,17 +1,17 @@
 /*=========================================================================
 
-  Program:   ParaView
-  Module:    $RCSfile$
+ Program:   ParaView
+ Module:    $RCSfile$
 
-  Copyright (c) Kitware, Inc.
-  All rights reserved.
-  See Copyright.txt or http://www.paraview.org/HTML/Copyright.html for details.
+ Copyright (c) Kitware, Inc.
+ All rights reserved.
+ See Copyright.txt or http://www.paraview.org/HTML/Copyright.html for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
+ This software is distributed WITHOUT ANY WARRANTY; without even
+ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the above copyright notice for more information.
 
-=========================================================================*/
+ =========================================================================*/
 // .NAME vtkPVUpdateSuppressor - prevents propagation of update
 // .SECTION Description 
 // vtkPVUpdateSuppressor now uses the vtkProcessModule singleton to set up the
@@ -25,10 +25,11 @@
 
 #include "vtkDataObjectAlgorithm.h"
 
-class VTK_EXPORT vtkPVUpdateSuppressor : public vtkDataObjectAlgorithm
+class VTK_EXPORT vtkPVUpdateSuppressor: public vtkDataObjectAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkPVUpdateSuppressor,vtkDataObjectAlgorithm);
+vtkTypeRevisionMacro(vtkPVUpdateSuppressor,vtkDataObjectAlgorithm)
+  ;
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -44,30 +45,37 @@ public:
   // This causes the filter to ingore the request from the output.
   // It is here because the user may not have celled update on the output
   // before calling force update (it is an easy fix).
-  vtkSetMacro(UpdatePiece, int);
-  vtkGetMacro(UpdatePiece, int);
-  vtkSetMacro(UpdateNumberOfPieces, int);
-  vtkGetMacro(UpdateNumberOfPieces, int);
+  vtkSetMacro(UpdatePiece, int)
+  ;
+  vtkGetMacro(UpdatePiece, int)
+  ;
+  vtkSetMacro(UpdateNumberOfPieces, int)
+  ;
+  vtkGetMacro(UpdateNumberOfPieces, int)
+  ;
 
   // Description:
   // Get/Set if the update suppressor is enabled. If the update suppressor 
   // is not enabled, it won't supress any updates. Enabled by default.
   void SetEnabled(int);
-  vtkGetMacro(Enabled, int);
+  vtkGetMacro(Enabled, int)
+  ;
 
   // Description:
   // Get/Set the update time that is sent up the pipeline.
   void SetUpdateTime(double utime);
-  vtkGetMacro(UpdateTime, double);
+  vtkGetMacro(UpdateTime, double)
+  ;
 
 protected:
   vtkPVUpdateSuppressor();
   ~vtkPVUpdateSuppressor();
 
-  int RequestDataObject(vtkInformation* request, vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector);
+  int RequestDataObject(vtkInformation* request,
+                        vtkInformationVector **inputVector,
+                        vtkInformationVector *outputVector);
   int RequestData(vtkInformation* request, vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector);
+                  vtkInformationVector *outputVector);
 
   int UpdatePiece;
   int UpdateNumberOfPieces;
@@ -79,13 +87,12 @@ protected:
 
   vtkTimeStamp PipelineUpdateTime;
 
-
   // Create a default executive.
   virtual vtkExecutive* CreateDefaultExecutive();
 
 private:
-  vtkPVUpdateSuppressor(const vtkPVUpdateSuppressor&);  // Not implemented.
-  void operator=(const vtkPVUpdateSuppressor&);  // Not implemented.
+  vtkPVUpdateSuppressor(const vtkPVUpdateSuppressor&); // Not implemented.
+  void operator=(const vtkPVUpdateSuppressor&); // Not implemented.
 };
 
 #endif
