@@ -22,7 +22,7 @@
 
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-pydocdir = $(docdir)/docutils/SMESH
+pydocdir = $(docdir)/tui/SMESH/docutils
 
 .PHONY : latex
 
