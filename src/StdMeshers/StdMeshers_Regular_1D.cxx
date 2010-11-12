@@ -731,6 +731,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     double a1 = _value[ BEG_LENGTH_IND ];
     double an = _value[ END_LENGTH_IND ];
     double q  = ( theLength - a1 ) / ( theLength - an );
+    if ( q < theLength/1e6 || 1.01*theLength < a1 + an)
+      return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
+                     "for an edge of length "<<theLength);
 
     double U1 = theReverse ? l : f;
     double Un = theReverse ? f : l;
@@ -759,6 +762,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
     double a1 = _value[ BEG_LENGTH_IND ];
     double an = _value[ END_LENGTH_IND ];
+    if ( 1.01*theLength < a1 + an)
+      return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
+                     "for an edge of length "<<theLength);
 
     double  q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
     int n = int(fabs(q) > numeric_limits<double>::min() ? ( 1+( an-a1 )/q ) : ( 1+theLength/a1 ));
@@ -941,6 +947,25 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   if (!idFirst || !idLast)
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
+  // remove elements created by e.g. patern mapping (PAL21999)
+  // CLEAN event is incorrectly ptopagated seemingly due to Propagation hyp
+  // so TEMPORARY solution is to clean the submesh manually
+  //theMesh.GetSubMesh(theShape)->ComputeStateEngine( SMESH_subMesh::CLEAN );
+  if (SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(theShape))
+  {
+    SMDS_ElemIteratorPtr ite = subMeshDS->GetElements();
+    while (ite->more())
+      meshDS->RemoveFreeElement(ite->next(), subMeshDS);
+    SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes();
+    while (itn->more()) {
+      const SMDS_MeshNode * node = itn->next();
+      if ( node->NbInverseElements() == 0 )
+        meshDS->RemoveFreeNode(node, subMeshDS);
+      else
+        meshDS->RemoveNode(node);
+    }
+  }
+
   if (!Curve.IsNull())
   {
     list< double > params;
@@ -982,7 +1007,6 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       parLast = f;
     }
     */
-
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
       gp_Pnt P = Curve->Value(param);

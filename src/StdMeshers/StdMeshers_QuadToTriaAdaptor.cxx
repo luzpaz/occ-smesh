@@ -60,7 +60,7 @@ namespace
    */
   //================================================================================
 
-  class SMDS_EXPORT Q2TAdaptor_Triangle : public SMDS_MeshFace
+  class STDMESHERS_EXPORT Q2TAdaptor_Triangle : public SMDS_MeshFace
   {
     const SMDS_MeshNode* _nodes[3];
   public:
@@ -228,7 +228,7 @@ namespace
 
     // Check angle between normals
     double angle = nI.Angle( nJ );
-    bool tooClose = ( angle < 10 * PI180 );
+    bool tooClose = ( angle < 15 * PI180 );
 
     // Check if pyramids collide
     bool isOutI, isOutJ;
@@ -315,8 +315,14 @@ namespace
       }
     }
     if ( !mergedPyrams.empty() )
-      for (TIDSortedElemSet::iterator prm = mergedPyrams.begin(); prm != mergedPyrams.end(); ++prm)
+    {
+      TIDSortedElemSet::iterator prm;
+//       for (prm = mergedPyrams.begin(); prm != mergedPyrams.end(); ++prm)
+//         MergeAdjacent( *prm, mesh, nodesToMove );
+
+      for (prm = adjacentPyrams.begin(); prm != adjacentPyrams.end(); ++prm)
         MergeAdjacent( *prm, mesh, nodesToMove );
+    }
   }
 }
 

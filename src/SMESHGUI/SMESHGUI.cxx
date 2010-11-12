@@ -1164,7 +1164,7 @@
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
     SUIT_ViewManager* vm = anApp->activeViewManager();
-    int nbSf = vm->getViewsCount();
+    int nbSf = vm ? vm->getViewsCount() : 0;
 
     SALOME_ListIteratorOfListIO It(selected);
 
@@ -1206,7 +1206,7 @@
           std::string anEntry = SO->GetID();
 
           /** Erase graphical object **/
-          if(SO->FindAttribute(anAttr, "AttributeIOR")){
+          if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
             QVector<SUIT_ViewWindow*> aViews = vm->getViews();
             for(int i = 0; i < nbSf; i++){
               SUIT_ViewWindow *sf = aViews[i];
@@ -1330,13 +1330,22 @@ LightApp_SelectionMgr* SMESHGUI::selectionMgr()
     return 0;
 }
 
-bool SMESHGUI::automaticUpdate()
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+bool SMESHGUI::automaticUpdate(unsigned int requestedSize, bool* limitExceeded)
 {
   SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
   if ( !resMgr )
     return false;
 
-  return resMgr->booleanValue( "SMESH", "auto_update", false );
+  bool autoUpdate  = resMgr->booleanValue( "SMESH", "auto_update",  false );
+  long updateLimit = resMgr->integerValue( "SMESH", "update_limit", 500000 );
+  bool exceeded = updateLimit > 0 && requestedSize > updateLimit;
+  if ( limitExceeded ) *limitExceeded = autoUpdate && exceeded;
+  return autoUpdate && !exceeded;
 }
 
 //=============================================================================
@@ -3821,8 +3830,12 @@ void SMESHGUI::createPreferences()
   // General tab ------------------------------------------------------------------------
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
-  int updateGroup = addPreference( tr( "PREF_GROUP_UPDATE" ), genTab );
-  addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, LightApp_Preferences::Bool, "SMESH", "auto_update" );
+  int autoUpdate = addPreference( tr( "PREF_AUTO_UPDATE" ), genTab, LightApp_Preferences::Auto, "SMESH", "auto_update" );
+  int lim = addPreference( tr( "PREF_UPDATE_LIMIT" ), autoUpdate, LightApp_Preferences::IntSpin, "SMESH", "update_limit" );
+  setPreferenceProperty( lim, "min",  0 );
+  setPreferenceProperty( lim, "max",  100000000 );
+  setPreferenceProperty( lim, "step", 1000 );
+  setPreferenceProperty( lim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
   setPreferenceProperty( qaGroup, "columns", 2 );

@@ -181,7 +181,7 @@
     </message>
     <message>
         <source>MEN_2D_FROM_3D</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>MEN_MESH_ORDER</source>
@@ -2061,6 +2061,12 @@ Consider saving your work before application crash</translation>
         <translation>Study frame with VTK Viewer must be activated</translation>
     </message>
     <message>
+        <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
+        <translation>No automatic update of the presentation has been done: new mesh size (%1 elements) exceeds current size limit (%2 elements).
+Please check preferences of Mesh module.
+</translation>
+    </message>
+    <message>
         <source>SMESH_WRN_WARNING</source>
         <translation>Warning</translation>
     </message>
@@ -2174,7 +2180,7 @@ Consider saving your work before application crash</translation>
     </message>
     <message>
         <source>STB_2D_FROM_3D</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>STB_MESH_ORDER</source>
@@ -2694,7 +2700,7 @@ Consider saving your work before application crash</translation>
     </message>
     <message>
         <source>TOP_2D_FROM_3D</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
@@ -3247,6 +3253,14 @@ Please, create VTK viewer and try again</translation>
         <translation>Automatic update</translation>
     </message>
     <message>
+        <source>PREF_UPDATE_LIMIT</source>
+        <translation>Size limit (elements)</translation>
+    </message>
+    <message>
+        <source>PREF_UPDATE_LIMIT_NOLIMIT</source>
+        <translation>No limit</translation>
+    </message>
+    <message>
         <source>PREF_BACKFACE</source>
         <translation>Back face</translation>
     </message>
@@ -3345,10 +3359,6 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_GROUP_SELECTION</source>
         <translation>Selection</translation>
-    </message>
-    <message>
-        <source>PREF_GROUP_UPDATE</source>
-        <translation>Update</translation>
     </message>
     <message>
         <source>PREF_HIGHLIGHT_COLOR</source>
@@ -3629,13 +3639,6 @@ Please specify it and try again</translation>
     <message>
         <source>REF_IS_NULL</source>
         <translation>No valid mesh object selected</translation>
-    </message>
-</context>
-<context>
-    <name>SMESHGUI_Make2DFrom3DDlg</name>
-    <message>
-        <source>CAPTION</source>
-        <translation>Create 2D mesh from 3D</translation>
     </message>
 </context>
 <context>
@@ -3925,6 +3928,16 @@ Please select a face and try again</translation>
 Please select a plane and try again</translation>
     </message>
     <message>
+        <source>FACE_ID_NOT_SELECTED</source>
+        <translation>Mesh face is not selected
+Please specify it and try again</translation>
+    </message>
+    <message>
+        <source>NOT_FACE_ID</source>
+        <translation>&quot;%1&quot; is not an ID of a mesh face.
+Please select a face and try again</translation>
+    </message>
+    <message>
         <source>SOURCE</source>
         <translation>Source</translation>
     </message>
@@ -4130,6 +4143,10 @@ Please check input data and try again</translation>
     <message>
         <source>COMPARE</source>
         <translation>Compare</translation>
+    </message>
+    <message>
+        <source>COPLANAR_FACES</source>
+        <translation>Coplanar faces</translation>
     </message>
     <message>
         <source>COPY_FROM</source>
@@ -5246,6 +5263,80 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
         <translation>Construct group with newly created elements</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Make2DFrom3DDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Create boundary elements</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Mesh, submesh or group</translation>
+    </message>
+    <message>
+        <source>MODE</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>2D_FROM_3D</source>
+        <translation>2D from 3D</translation>
+    </message>
+    <message>
+        <source>1D_FROM_3D</source>
+        <translation>1D from 3D</translation>
+    </message>
+    <message>
+        <source>1D_FROM_2D</source>
+        <translation>1D from 2D</translation>
+    </message>
+    <message>
+        <source>TARGET</source>
+        <translation>Target</translation>
+    </message>
+    <message>
+        <source>THIS_MESH</source>
+        <translation>This mesh</translation>
+    </message>
+    <message>
+        <source>NEW_MESH</source>
+        <translation>New mesh</translation>
+    </message>
+    <message>
+        <source>COPY_SRC</source>
+        <translation>Copy source mesh</translation>
+    </message>
+    <message>
+        <source>MISSING_ONLY</source>
+        <translation>Copy missing elements only</translation>
+    </message>
+    <message>
+        <source>CREATE_GROUP</source>
+        <translation>Create group</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Make2DFrom3DOp</name>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_MESH</source>
+        <translation>Source mesh, sub-mesh or group is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_3D_ELEMENTS</source>
+        <translation>The source object does not contain 3D elements</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_2D_ELEMENTS</source>
+        <translation>The source object does not contain 2D elements</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
+        <translation>New mesh name is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
+        <translation>Group name is not specified</translation>
     </message>
 </context>
 </TS>
