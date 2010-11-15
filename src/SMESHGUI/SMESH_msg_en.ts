@@ -4,6 +4,42 @@
 <context>
     <name>@default</name>
     <message>
+        <source>SMESH_EXPORT_MESH</source>
+        <translation>Export mesh</translation>
+    </message>
+    <message>
+        <source>MED_FILES_FILTER</source>
+        <translation>MED files</translation>
+    </message>
+    <message>
+        <source>IDEAS_FILES_FILTER</source>
+        <translation>IDEAS files</translation>
+    </message>
+    <message>
+        <source>DAT_FILES_FILTER</source>
+        <translation>DAT files</translation>
+    </message>
+    <message>
+        <source>TEXT_FILES_FILTER</source>
+        <translation>TXT files</translation>
+    </message>
+    <message>
+        <source>MED_VX_FILES_FILTER</source>
+        <translation>MED %1 files</translation>
+    </message>
+    <message>
+        <source>STL_ASCII_FILES_FILTER</source>
+        <translation>STL ASCII files</translation>
+    </message>
+    <message>
+        <source>STL_BIN_FILES_FILTER</source>
+        <translation>STL binary files</translation>
+    </message>
+    <message>
+        <source>ALL_FILES_FILTER</source>
+        <translation>All files</translation>
+    </message>
+    <message>
         <source>AREA_ELEMENTS</source>
         <translation>Area</translation>
     </message>
@@ -108,12 +144,20 @@
         <translation>Local</translation>
     </message>
     <message>
+        <source>MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Max Element Length 2D</translation>
+    </message>
+    <message>
+        <source>MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Max Element Length 3D</translation>
+    </message>
+    <message>
         <source>MEN_ADD</source>
         <translation>Add</translation>
     </message>
     <message>
         <source>MEN_ADV_INFO</source>
-        <translation>Advanced Mesh Infos</translation>
+        <translation>Mesh Information</translation>
     </message>
     <message>
         <source>MEN_ALL</source>
@@ -206,6 +250,22 @@
     <message>
         <source>MEN_CTRL</source>
         <translation>Controls</translation>
+    </message>
+    <message>
+        <source>MEN_NODE_CTRL</source>
+        <translation>Node Controls</translation>
+    </message>
+    <message>
+        <source>MEN_EDGE_CTRL</source>
+        <translation>Edge Controls</translation>
+    </message>
+    <message>
+        <source>MEN_FACE_CTRL</source>
+        <translation>Face Controls</translation>
+    </message>
+    <message>
+        <source>MEN_VOLUME_CTRL</source>
+        <translation>Volume Controls</translation>
     </message>
     <message>
         <source>MEN_CUT</source>
@@ -388,6 +448,14 @@
         <translation>Pattern Mapping</translation>
     </message>
     <message>
+        <source>MEN_MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Max Element Length 2D</translation>
+    </message>
+    <message>
+        <source>MEN_MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Max Element Length 3D</translation>
+    </message>
+    <message>
         <source>MEN_MED</source>
         <translation>MED file</translation>
     </message>
@@ -418,6 +486,34 @@
     <message>
         <source>MEN_MODIFY</source>
         <translation>Modification</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE</source>
+        <translation>Measurements</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE_MIN_DIST</source>
+        <translation>Minimum Distance</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_MIN_DIST</source>
+        <translation>Calculate minimum distance between two objects</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_MIN_DIST</source>
+        <translation>Minimum distance</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE_BND_BOX</source>
+        <translation>Bounding Box</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_BND_BOX</source>
+        <translation>Calculate bounding box for the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_BND_BOX</source>
+        <translation>Bounding box</translation>
     </message>
     <message>
         <source>MEN_MOVE</source>
@@ -534,6 +630,14 @@
     <message>
         <source>MEN_RESET</source>
         <translation>Reset</translation>
+    </message>
+    <message>
+        <source>MEN_SAVE_DISTRIBUTION</source>
+        <translation>Export Distribution...</translation>
+    </message>
+    <message>
+        <source>MEN_SHOW_DISTRIBUTION</source>
+        <translation>Show Distribution</translation>
     </message>
     <message>
         <source>MEN_REVOLUTION</source>
@@ -689,7 +793,7 @@
     </message>
     <message>
         <source>MEN_WHAT_IS</source>
-        <translation>Mesh Element Info</translation>
+        <translation>Mesh Element Information</translation>
     </message>
     <message>
         <source>MEN_WIRE</source>
@@ -1742,6 +1846,14 @@ add the exported data to its contents?</translation>
         <translation>Origin &amp;&amp; Size</translation>
     </message>
     <message>
+        <source>SMESH_DISTRIBUTION_SCALARBAR</source>
+        <translation>Distribution</translation>
+    </message>
+    <message>
+        <source>SMESH_SHOW_DISTRIBUTION_SCALARBAR</source>
+        <translation>Show Distribution</translation>
+    </message>
+    <message>
         <source>SMESH_PRECISION</source>
         <translation>Precision</translation>
     </message>
@@ -1985,6 +2097,22 @@ add the exported data to its contents?</translation>
     <message>
         <source>SMESH_VERTICAL</source>
         <translation>Vertical</translation>
+    </message>    
+    <message>
+        <source>SMESH_DISTRIBUTION_COLORING_TYPE</source>
+        <translation>Coloring Type</translation>
+    </message>
+    <message>
+        <source>SMESH_MONOCOLOR</source>
+        <translation>Monocolor</translation>
+    </message>
+    <message>
+        <source>SMESH_DISTRIBUTION_COLOR</source>
+        <translation>Distribution color:</translation>
+    </message>
+    <message>
+        <source>SMESH_MULTICOLOR</source>
+        <translation>Multicolor</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
@@ -2112,7 +2240,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_ADV_INFO</source>
-        <translation>Advanced Mesh Infos</translation>
+        <translation>Show base information about the mesh object</translation>
     </message>
     <message>
         <source>STB_ALL</source>
@@ -2351,6 +2479,14 @@ Please check preferences of Mesh module.
         <translation>Pattern mapping</translation>
     </message>
     <message>
+        <source>STB_MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Max Element Length 2D</translation>
+    </message>
+    <message>
+        <source>STB_MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Max Element Length 3D</translation>
+    </message>
+    <message>
         <source>STB_MED</source>
         <translation>Import MED file</translation>
     </message>
@@ -2469,6 +2605,14 @@ Please check preferences of Mesh module.
     <message>
         <source>STB_RESET</source>
         <translation>Reset</translation>
+    </message>
+    <message>
+        <source>STB_SAVE_DISTRIBUTION</source>
+        <translation>Save distribution to the file</translation>
+    </message>
+        <message>
+        <source>STB_SHOW_DISTRIBUTION</source>
+        <translation>Show Distribution</translation>
     </message>
     <message>
         <source>STB_REVOLUTION</source>
@@ -2596,7 +2740,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_WHAT_IS</source>
-        <translation>Mesh Element Info</translation>
+        <translation>Show information about the mesh node or element</translation>
     </message>
     <message>
         <source>STB_WIRE</source>
@@ -2632,7 +2776,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_ADV_INFO</source>
-        <translation>Advanced Mesh Infos</translation>
+        <translation>Mesh Information</translation>
     </message>
     <message>
         <source>TOP_ALL</source>
@@ -2871,6 +3015,14 @@ Please check preferences of Mesh module.
         <translation>Pattern mapping</translation>
     </message>
     <message>
+        <source>TOP_MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Max Element Length 2D</translation>
+    </message>
+    <message>
+        <source>TOP_MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Max Element Length 3D</translation>
+    </message>
+    <message>
         <source>TOP_MED</source>
         <translation>Import MED file</translation>
     </message>
@@ -2989,6 +3141,14 @@ Please check preferences of Mesh module.
     <message>
         <source>TOP_RESET</source>
         <translation>Reset</translation>
+    </message>
+    <message>
+        <source>TOP_SAVE_DISTRIBUTION</source>
+        <translation>Export distribution</translation>
+    </message>
+    <message>
+        <source>TOP_SHOW_DISTRIBUTION</source>
+        <translation>Show Distribution</translation>
     </message>
     <message>
         <source>TOP_REVOLUTION</source>
@@ -3116,15 +3276,19 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_WHAT_IS</source>
-        <translation>Mesh Element Info</translation>
+        <translation>Mesh Element Information</translation>
     </message>
     <message>
         <source>TOP_WIRE</source>
         <translation>Wireframe</translation>
     </message>
     <message>
+        <source>UNKNOWN_CONTROL</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
         <source>VOLUME_3D_ELEMENTS</source>
-        <translation>Area</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>WARP_ELEMENTS</source>
@@ -3224,6 +3388,10 @@ Input value precision can be adjusted using
         <source>NB_NODES_REMOVED</source>
         <translation>Removed %1 node(s).</translation>
     </message>
+    <message>
+        <source>SMESH_SAVE_DISTRIBUTION</source>
+        <translation>Export Distribution</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI</name>
@@ -3313,6 +3481,30 @@ Please, create VTK viewer and try again</translation>
         <translation>Show a computation result notification</translation>
     </message>
     <message>
+        <source>PREF_NOTIFY_NEVER</source>
+        <translation>Never</translation>
+    </message>
+    <message>
+        <source>PREF_NOTIFY_ERROR</source>
+        <translation>Errors only</translation>
+    </message>
+    <message>
+        <source>PREF_NOTIFY_ALWAYS</source>
+        <translation>Always</translation>
+    </message>
+    <message>
+        <source>PREF_ELEM_INFO</source>
+        <translation>Mesh element information</translation>
+    </message>
+    <message>
+        <source>PREF_ELEM_INFO_SIMPLE</source>
+        <translation>Simple</translation>
+    </message>
+    <message>
+        <source>PREF_ELEM_INFO_TREE</source>
+        <translation>Tree</translation>
+    </message>
+    <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
         <translation>Input fields precision</translation>
     </message>
@@ -3361,7 +3553,11 @@ Please, create VTK viewer and try again</translation>
         <translation>Selection</translation>
     </message>
     <message>
-        <source>PREF_HIGHLIGHT_COLOR</source>
+        <source>PREF_GROUP_INFO</source>
+        <translation>Mesh information</translation>
+    </message>
+    <message>
+      <source>PREF_HIGHLIGHT_COLOR</source>
         <translation>Highlight color</translation>
     </message>
     <message>
@@ -4220,6 +4416,14 @@ Please enter correct value and try again</translation>
     <message>
         <source>LYING_ON_GEOM</source>
         <translation>Lying on Geom</translation>
+    </message>
+    <message>
+        <source>MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Max Element Length 2D</translation>
+    </message>
+    <message>
+        <source>MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Max Element Length 3D</translation>
     </message>
     <message>
         <source>MINIMUM_ANGLE</source>
@@ -5170,6 +5374,14 @@ It is impossible to read point coordinates from file</translation>
         <translation>Clipping planes</translation>
     </message>
     <message>
+        <source>MESHES_SUBMESHES_GROUPS</source>
+        <translation>Meshes, sub-meshes and groups</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
         <source>ROTATION_AROUND_X_Y2Z</source>
         <translation>Rotation around X (Y to Z):</translation>
     </message>
@@ -5337,6 +5549,348 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
         <translation>Group name is not specified</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MeshInfo</name>
+    <message>
+        <source>NAME_LAB</source>
+        <translation>Name:</translation>
+    </message>
+    <message>
+        <source>OBJECT_LAB</source>
+        <translation>Object:</translation>
+    </message>
+    <message>
+        <source>NODES_LAB</source>
+        <translation>Nodes:</translation>
+    </message>
+    <message>
+        <source>ELEMENTS_LAB</source>
+        <translation>Elements:</translation>
+    </message>
+    <message>
+        <source>TOTAL_LAB</source>
+        <translation>Total</translation>
+    </message>
+    <message>
+        <source>LINEAR_LAB</source>
+        <translation>Linear</translation>
+    </message>
+    <message>
+        <source>QUADRATIC_LAB</source>
+        <translation>Quadratic</translation>
+    </message>
+    <message>
+        <source>0D_LAB</source>
+        <translation>0D:</translation>
+    </message>
+    <message>
+        <source>1D_LAB</source>
+        <translation>1D (edges):</translation>
+    </message>
+    <message>
+        <source>2D_LAB</source>
+        <translation>2D (faces):</translation>
+    </message>
+    <message>
+        <source>TRIANGLES_LAB</source>
+        <translation>Triangles:</translation>
+    </message>
+    <message>
+        <source>QUADRANGLES_LAB</source>
+        <translation>Quadrandgles:</translation>
+    </message>
+    <message>
+        <source>POLYGONS_LAB</source>
+        <translation>Polygons:</translation>
+    </message>
+    <message>
+        <source>3D_LAB</source>
+        <translation>3D (volumes):</translation>
+    </message>
+    <message>
+        <source>TETRAHEDRONS_LAB</source>
+        <translation>Tetrahedrons:</translation>
+    </message>
+    <message>
+        <source>HEXAHEDONRS_LAB</source>
+        <translation>Hexahedrons:</translation>
+    </message>
+    <message>
+        <source>PYRAMIDS_LAB</source>
+        <translation>Pyramids:</translation>
+    </message>
+    <message>
+        <source>PRISMS_LAB</source>
+        <translation>Prisms:</translation>
+    </message>
+    <message>
+        <source>POLYHEDRONS_LAB</source>
+        <translation>Polyhedrons:</translation>
+    </message>
+    <message>
+        <source>OBJECT_MESH</source>
+        <translation>Mesh</translation>
+    </message>
+    <message>
+        <source>OBJECT_SUBMESH</source>
+        <translation>Sub-mesh</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP</source>
+        <translation>Group</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_NODES</source>
+        <translation>Group of nodes</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_EDGES</source>
+        <translation>Group of edges</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_FACES</source>
+        <translation>Group of faces</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_VOLUMES</source>
+        <translation>Group of volumes</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_0DELEMS</source>
+        <translation>Group of 0D elements</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MeshInfoDlg</name>
+    <message>
+        <source>MESH_INFO</source>
+        <translation>Mesh Information</translation>
+    </message>
+    <message>
+        <source>BASE_INFO</source>
+        <translation>Base Info</translation>
+    </message>
+    <message>
+        <source>ELEM_INFO</source>
+        <translation>Element Info</translation>
+    </message>
+    <message>
+        <source>NODE_MODE</source>
+        <translation>Node</translation>
+    </message>
+    <message>
+        <source>ELEM_MODE</source>
+        <translation>Element</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_ElemInfo</name>
+    <message>
+        <source>COORDINATES</source>
+        <translation>COORDINATES</translation>
+    </message>
+    <message>
+        <source>CONNECTIVITY</source>
+        <translation>CONNECTIVITY</translation>
+    </message>
+    <message>
+        <source>GRAVITY_CENTER</source>
+        <translation>GRAVITY CENTER</translation>
+    </message>
+    <message>
+        <source>NODE</source>
+        <translation>NODE</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENT</source>
+        <translation>0D ELEMENT</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS</source>
+        <translation>0D ELEMENTS</translation>
+    </message>
+    <message>
+        <source>EDGE</source>
+        <translation>EDGE</translation>
+    </message>
+    <message>
+        <source>EDGES</source>
+        <translation>EDGES</translation>
+    </message>
+    <message>
+        <source>FACE</source>
+        <translation>FACE</translation>
+    </message>
+    <message>
+        <source>FACES</source>
+        <translation>FACES</translation>
+    </message>
+    <message>
+        <source>VOLUME</source>
+        <translation>VOLUME</translation>
+    </message>
+    <message>
+        <source>VOLUMES</source>
+        <translation>VOLUMES</translation>
+    </message>
+    <message>
+        <source>FREE_NODE</source>
+        <translation>Free node (no connectivity)</translation>
+    </message>
+    <message>
+        <source>TYPE</source>
+        <translation>TYPE</translation>
+    </message>
+    <message>
+        <source>TRIANGLE</source>
+        <translation>Triangle</translation>
+    </message>
+    <message>
+        <source>QUADRANGLE</source>
+        <translation>Quadrangle</translation>
+    </message>
+    <message>
+        <source>POLYGON</source>
+        <translation>Polygon</translation>
+    </message>
+    <message>
+        <source>TETRAHEDRON</source>
+        <translation>Tetrahedron</translation>
+    </message>
+    <message>
+        <source>HEXAHEDRON</source>
+        <translation>Hexahedron</translation>
+    </message>
+    <message>
+        <source>PYRAMID</source>
+        <translation>Pyramid</translation>
+    </message>
+    <message>
+        <source>PRISM</source>
+        <translation>Prism</translation>
+    </message>
+    <message>
+        <source>POLYHEDRON</source>
+        <translation>Polyhedron</translation>
+    </message>
+    <message>
+        <source>QUADRATIC</source>
+        <translation>QUADRATIC</translation>
+    </message>
+    <message>
+        <source>YES</source>
+        <translation>Yes</translation>
+    </message>
+    <message>
+        <source>NO</source>
+        <translation>No</translation>
+    </message>
+    <message>
+        <source>GRAVITY_CENTER</source>
+        <translation>GRAVITY CENTER</translation>
+    </message>
+    <message>
+        <source>PROPERTY</source>
+        <translation>Property</translation>
+    </message>
+    <message>
+        <source>VALUE</source>
+        <translation>Value</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MinDistance</name>
+    <message>
+        <source>FIRST_TARGET</source>
+        <translation>First target</translation>
+    </message>
+    <message>
+        <source>SECOND_TARGET</source>
+        <translation>Second target</translation>
+    </message>
+    <message>
+        <source>NODE</source>
+        <translation>Node</translation>
+    </message>
+    <message>
+        <source>ELEMENT</source>
+        <translation>Element</translation>
+    </message>
+    <message>
+        <source>OBJECT</source>
+        <translation>Object</translation>
+    </message>
+    <message>
+        <source>ORIGIN</source>
+        <translation>Origin</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>RESULT</source>
+        <translation>Distance between targets</translation>
+    </message>
+    <message>
+        <source>DISTANCE</source>
+        <translation>Distance</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MeasureDlg</name>
+    <message>
+        <source>MEASUREMENTS</source>
+        <translation>Measurements</translation>
+    </message>
+    <message>
+        <source>MIN_DIST</source>
+        <translation>Minimum Distance</translation>
+    </message>
+    <message>
+        <source>BND_BOX</source>
+        <translation>Bounding Box</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_BoundingBox</name>
+    <message>
+        <source>SOURCE</source>
+        <translation>Source</translation>
+    </message>
+    <message>
+        <source>OBJECTS</source>
+        <translation>Objects</translation>
+    </message>
+    <message>
+        <source>NODES</source>
+        <translation>Nodes</translation>
+    </message>
+    <message>
+        <source>ELEMENTS</source>
+        <translation>Elements</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>RESULT</source>
+        <translation>Bounding Box</translation>
+    </message>
+    <message>
+        <source>SELECTED_NB_OBJ</source>
+        <translation>%1 %2 selected</translation>
+    </message>
+    <message>
+        <source>NB_NODES</source>
+        <translation>nodes</translation>
+    </message>
+    <message>
+        <source>NB_ELEMENTS</source>
+        <translation>elements</translation>
     </message>
 </context>
 </TS>

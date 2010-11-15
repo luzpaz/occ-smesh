@@ -50,7 +50,7 @@
 #include <NCollection_DataMap.hxx>
 #include <map>
 /*
- * Using of native haah_map isn't portable and don't work on WIN32 platform.
+ * Using of native hash_map isn't portable and don't work on WIN32 platform.
  * So this functionality implement on new NCollection_DataMap technology
  */
 #include "SMESHDS_DataMapOfShape.hxx"
@@ -61,6 +61,8 @@ class SMESHDS_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
 public:
   SMESHDS_Mesh(int theMeshID, bool theIsEmbeddedMode);
   bool IsEmbeddedMode();
+  void SetPersistentId(int id);
+  int GetPersistentId() const;
 
   void ShapeToMesh(const TopoDS_Shape & S);
   TopoDS_Shape ShapeToMesh() const;
@@ -423,6 +425,7 @@ public:
   int ShapeToIndex(const TopoDS_Shape & aShape) const;
   const TopoDS_Shape& IndexToShape(int ShapeIndex) const;
   int MaxShapeIndex() const { return myIndexToShape.Extent(); }
+  int MaxSubMeshIndex() const;
 
   SMESHDS_SubMesh * NewSubMesh(int Index);
   int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
@@ -449,7 +452,7 @@ private:
     if ( it == myShapeIndexToSubMesh.end() )
       it = myShapeIndexToSubMesh.insert( std::make_pair(Index, new SMESHDS_SubMesh() )).first;
     it->second->AddNode( aNode ); // add aNode to submesh
-    }
+  }
   
   /*int HashCode( const TopoDS_Shape& S, const Standard_Integer theUpper ) const
   {
@@ -462,7 +465,7 @@ private:
 
   ShapeToHypothesis          myShapeToHypothesis;
 
-  int                        myMeshID;
+  int                        myMeshID, myPersistentID;
   TopoDS_Shape               myShape;
 
   typedef std::map<int,SMESHDS_SubMesh*> TShapeIndexToSubMesh;

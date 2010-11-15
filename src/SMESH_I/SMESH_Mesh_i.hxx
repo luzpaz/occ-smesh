@@ -521,18 +521,20 @@ public:
   // =========================
 
   virtual SMESH::long_array* GetIDs();
-
   /*!
    * Returns statistic of mesh elements
    * Result array of number enityties
    * Inherited from SMESH_IDSource
    */
   virtual SMESH::long_array* GetMeshInfo();
-
   /*!
    * Returns types of elements it contains
    */
   virtual SMESH::array_of_ElementType* GetTypes();
+  /*!
+   * Returns self
+   */
+  virtual SMESH::SMESH_Mesh_ptr GetMesh();
 
 
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI

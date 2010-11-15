@@ -61,12 +61,35 @@ SMESHDS_Mesh::SMESHDS_Mesh(int theMeshID, bool theIsEmbeddedMode):
 {
   myScript = new SMESHDS_Script(theIsEmbeddedMode);
   myCurSubMesh = 0;
+  SetPersistentId(theMeshID);
 }
 
 //=======================================================================
 bool SMESHDS_Mesh::IsEmbeddedMode()
 {
   return myIsEmbeddedMode;
+}
+
+//================================================================================
+/*!
+ * \brief Store ID persistent during lifecycle
+ */
+//================================================================================
+
+void SMESHDS_Mesh::SetPersistentId(int id)
+{
+  if (NbNodes() == 0)
+    myPersistentID = id;
+}
+//================================================================================
+/*!
+ * \brief Return ID persistent during lifecycle
+ */
+//================================================================================
+
+int SMESHDS_Mesh::GetPersistentId() const
+{
+  return myPersistentID;
 }
 
 //=======================================================================
@@ -1245,6 +1268,17 @@ const TopoDS_Shape& SMESHDS_Mesh::IndexToShape(int ShapeIndex) const
   }
   static TopoDS_Shape nullShape;
   return nullShape;
+}
+
+//================================================================================
+/*!
+ * \brief Return max index of sub-mesh
+ */
+//================================================================================
+
+int SMESHDS_Mesh::MaxSubMeshIndex() const
+{
+  return myShapeIndexToSubMesh.empty() ? 0 : myShapeIndexToSubMesh.rbegin()->first;
 }
 
 //=======================================================================

@@ -578,3 +578,13 @@ SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
   }
   return types._retn();
 }
+
+//=======================================================================
+//function : GetMesh
+//purpose  : interface SMESH_IDSource
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetMesh()
+{
+  return GetFather();
+}

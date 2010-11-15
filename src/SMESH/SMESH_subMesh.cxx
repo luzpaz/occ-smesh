@@ -1000,9 +1000,12 @@ SMESH_Hypothesis::Hypothesis_Status
     if ( ret == SMESH_Hypothesis::HYP_OK &&
          !algo->NeedDescretBoundary()    &&
          !algo->SupportSubmeshes()) {
+      TopoDS_Shape algoAssignedTo, otherAssignedTo;
+      gen->GetAlgo( *_father, _subShape, &algoAssignedTo );
       map<int, SMESH_subMesh*>::reverse_iterator i_sm = _mapDepend.rbegin();
       for ( ; ( ret == SMESH_Hypothesis::HYP_OK && i_sm != _mapDepend.rend()) ; ++i_sm )
-        if ( gen->GetAlgo( *_father, i_sm->second->_subShape ))
+        if ( gen->GetAlgo( *_father, i_sm->second->_subShape, &otherAssignedTo ) &&
+             SMESH_MesherHelper::IsSubShape( /*sub=*/otherAssignedTo, /*main=*/algoAssignedTo ))
           ret = SMESH_Hypothesis::HYP_HIDING_ALGO;
     }
   }
@@ -1544,6 +1547,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     switch (event)
     {
     case MODIF_ALGO_STATE:
+      if ( !IsEmpty() )
+        ComputeStateEngine( CLEAN );
       algo = gen->GetAlgo((*_father), _subShape);
       if (algo && !algo->NeedDescretBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN

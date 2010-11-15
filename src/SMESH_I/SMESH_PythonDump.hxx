@@ -73,6 +73,7 @@ namespace SMESH
   class FilterManager_i;
   class Filter_i;
   class Functor_i;
+  class Measurements_i;
 
 // ===========================================================================================
 /*!
@@ -141,6 +142,9 @@ namespace SMESH
 
     TPythonDump& 
     operator<<(SMESH::Functor_i* theArg);
+
+    TPythonDump& 
+    operator<<(SMESH::Measurements_i* theArg);
 
     TPythonDump& 
     operator<<(SMESH_Gen_i* theArg);

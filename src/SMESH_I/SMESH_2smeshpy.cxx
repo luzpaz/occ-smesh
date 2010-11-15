@@ -342,6 +342,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
+  // Evaluate( mesh, geom )
   // mesh creation
   TCollection_AsciiString method = theCommand->GetMethod();
 
@@ -391,6 +392,20 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       theCommand->SetObject( meshID );
       theCommand->RemoveArgs();
       id_mesh->second->Flush();
+      return;
+    }
+  }
+
+  // smeshgen.Evaluate( mesh, geom ) --> mesh.Evaluate(geom)
+  if ( method == "Evaluate" )
+  {
+    const _pyID& meshID = theCommand->GetArg( 1 );
+    map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( meshID );
+    if ( id_mesh != myMeshes.end() ) {
+      theCommand->SetObject( meshID );
+      _pyID geom = theCommand->GetArg( 2 );
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, geom );
       return;
     }
   }

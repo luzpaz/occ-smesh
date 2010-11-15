@@ -860,6 +860,7 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
           if ( !aHypVar->_is_nil() )
           {
             HypothesisData* aData = SMESH::GetHypothesisData( aHypVar->GetName() );
+            if ( !aData) continue;
             if ( ( theDim == -1 || aData->Dim.contains( theDim ) ) &&
                  ( isCompatible ( theAlgoData, aData, theHypType )) &&
                  ( isAux == aData->IsAux ))
@@ -1858,7 +1859,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
       {
         // Call hypothesis creation server method (without GUI)
         SMESH::SMESH_Hypothesis_var aHyp =
-          SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
+          SMESH::CreateHypothesis(aHypName, aHypName, true);
 #ifdef WITHGENERICOBJ
         if (!CORBA::is_nil(aHyp))
           aHyp->Destroy();
@@ -1876,7 +1877,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
           aCreator->create(true, aHypName, myDlg, 0, QString::null );
         else {
           SMESH::SMESH_Hypothesis_var aHyp =
-            SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
+            SMESH::CreateHypothesis(aHypName, aHypName, true);
 #ifdef WITHGENERICOBJ
           if (!CORBA::is_nil(aHyp))
             aHyp->Destroy();

@@ -46,7 +46,7 @@ using namespace std;
 
 enum EQuadNature { NOT_QUAD, QUAD, DEGEN_QUAD };
 
-  // std-like iterator used to get coordinates of nodes of mesh element
+// std-like iterator used to get coordinates of nodes of mesh element
 typedef SMDS_StdIterator< SMESH_MeshEditor::TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
 
 namespace
@@ -183,7 +183,7 @@ namespace
   //================================================================================
   /*!
    * \brief Return true if two adjacent pyramids are too close one to another
-   * so that a tetrahedron to built between them whoul have too poor quality
+   * so that a tetrahedron to built between them would have too poor quality
    */
   //================================================================================
 
@@ -333,7 +333,7 @@ namespace
 //================================================================================
 
 StdMeshers_QuadToTriaAdaptor::StdMeshers_QuadToTriaAdaptor():
-  myElemSearcher(0)
+  myElemSearcher(0), myNbTriangles(0)
 {
 }
 
@@ -580,9 +580,11 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
                                               gp_Vec&                       VNorm,
                                               const SMDS_MeshElement**      volumes)
 {
-  if( face->NbNodes() != ( face->IsQuadratic() ? 8 : 4 ))
-    if( face->NbNodes() != 4 )
-      return NOT_QUAD;
+  if( face->NbCornerNodes() != 4 )
+  {
+    myNbTriangles += int( face->NbCornerNodes() == 3 );
+    return NOT_QUAD;
+  }
 
   int i = 0;
   gp_XYZ xyzC(0., 0., 0.);
@@ -696,6 +698,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
 {
   myResMap.clear();
   myPyramids.clear();
+  myNbTriangles = 0;
+  myShape = aShape;
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   SMESH_MesherHelper helper(aMesh);
@@ -1144,6 +1148,10 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
             nodesToMove.insert( aNode1 );
             nodesToMove.insert( aNode2 );
           }
+          // fix intersections that could appear after apex movement
+          MergeAdjacent( PrmI, aMesh, nodesToMove );
+          MergeAdjacent( PrmJ, aMesh, nodesToMove );
+
         } // end if(hasInt)
       } // loop on suspectPyrams
     }  // loop on 4 base nodes of PrmI
@@ -1165,7 +1173,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
     if ( q2t->first == q2tPrev->first )
       q2tPrev->second.splice( q2tPrev->second.end(), q2t->second );
   }
-  // delete removed triangles
+  // delete removed triangles and count resulting nb of triangles
   for ( q2t = myResMap.begin(); q2t != myResMap.end(); ++q2t )
   {
     TTriaList & trias = q2t->second;
@@ -1173,7 +1181,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
       if ( ((const Q2TAdaptor_Triangle*) *tri)->IsRemoved() )
         delete *tri, trias.erase( tri++ );
       else
-        tri++;
+        tri++, myNbTriangles++;
   }
 
   myPyramids.clear(); // no more needed

@@ -88,6 +88,7 @@
 ##   @defgroup l2_modif_tofromqu Convert to/from Quadratic Mesh
 
 ## @}
+## @defgroup l1_measurements Measurements
 
 import salome
 import geompyDC
@@ -857,6 +858,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriteria = []
         aCriteria.append(aCriterion)
         aFilter.SetCriteria(aCriteria)
+        aFilterMgr.Destroy()
         return aFilter
 
     ## Creates a numerical functor by its type
@@ -881,6 +883,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             return aFilterMgr.CreateArea()
         elif theCriterion == FT_Volume3D:
             return aFilterMgr.CreateVolume3D()
+        elif theCriterion == FT_MaxElementLength2D:
+            return aFilterMgr.CreateMaxElementLength2D()
+        elif theCriterion == FT_MaxElementLength3D:
+            return aFilterMgr.CreateMaxElementLength3D()
         elif theCriterion == FT_MultiConnection:
             return aFilterMgr.CreateMultiConnection()
         elif theCriterion == FT_MultiConnection2D:
@@ -912,6 +918,110 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                 if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
             pass
         return d
+
+    ## Get minimum distance between two objects
+    #
+    #  If @a src2 is None, and @a id2 = 0, distance from @a src1 / @a id1 to the origin is computed.
+    #  If @a src2 is None, and @a id2 != 0, it is assumed that both @a id1 and @a id2 belong to @a src1.
+    #
+    #  @param src1 first source object 
+    #  @param src2 second source object
+    #  @param id1 node/element id from the first source
+    #  @param id2 node/element id from the second (or first) source
+    #  @param isElem1 @c True if @a id1 is element id, @c False if it is node id
+    #  @param isElem2 @c True if @a id2 is element id, @c False if it is node id
+    #  @return minimum distance value
+    #  @sa GetMinDistance()
+    #  @ingroup l1_measurements
+    def MinDistance(self, src1, src2=None, id1=0, id2=0, isElem1=False, isElem2=False):
+        result = self.GetMinDistance(src1, src2, id1, id2, isElem1, isElem2)
+        if result is None:
+            result = 0.0
+        else:
+            result = result.value
+        return result
+    
+    ## Get measure structure specifying minimum distance data between two objects
+    #
+    #  If @a src2 is None, and @a id2 = 0, distance from @a src1 / @a id1 to the origin is computed.
+    #  If @a src2 is None, and @a id2 != 0, it is assumed that both @a id1 and @a id2 belong to @a src1.
+    #
+    #  @param src1 first source object 
+    #  @param src2 second source object
+    #  @param id1 node/element id from the first source
+    #  @param id2 node/element id from the second (or first) source
+    #  @param isElem1 @c True if @a id1 is element id, @c False if it is node id
+    #  @param isElem2 @c True if @a id2 is element id, @c False if it is node id
+    #  @return Measure structure or None if input data is invalid
+    #  @sa MinDistance()
+    #  @ingroup l1_measurements
+    def GetMinDistance(self, src1, src2=None, id1=0, id2=0, isElem1=False, isElem2=False):
+        if isinstance(src1, Mesh): src1 = src1.mesh
+        if isinstance(src2, Mesh): src2 = src2.mesh
+        if src2 is None and id2 != 0: src2 = src1
+        if not hasattr(src1, "_narrow"): return None
+        src1 = src1._narrow(SMESH.SMESH_IDSource)
+        if not src1: return None
+        if id1 != 0:
+            m = src1.GetMesh()
+            e = m.GetMeshEditor()
+            if isElem1:
+                src1 = e.MakeIDSource([id1], SMESH.FACE)
+            else:
+                src1 = e.MakeIDSource([id1], SMESH.NODE)
+            pass
+        if hasattr(src2, "_narrow"):
+            src2 = src2._narrow(SMESH.SMESH_IDSource)
+            if src2 and id2 != 0:
+                m = src2.GetMesh()
+                e = m.GetMeshEditor()
+                if isElem2:
+                    src2 = e.MakeIDSource([id2], SMESH.FACE)
+                else:
+                    src2 = e.MakeIDSource([id2], SMESH.NODE)
+                pass
+            pass
+        aMeasurements = self.CreateMeasurements()
+        result = aMeasurements.MinDistance(src1, src2)
+        aMeasurements.Destroy()
+        return result
+    
+    ## Get bounding box of the specified object(s)
+    #  @param objects single source object or list of source objects
+    #  @return tuple of six values (minX, minY, minZ, maxX, maxY, maxZ)
+    #  @sa GetBoundingBox()
+    #  @ingroup l1_measurements
+    def BoundingBox(self, objects):
+        result = self.GetBoundingBox(objects)
+        if result is None:
+            result = (0.0,)*6
+        else:
+            result = (result.minX, result.minY, result.minZ, result.maxX, result.maxY, result.maxZ)
+        return result
+
+    ## Get measure structure specifying bounding box data of the specified object(s)
+    #  @param objects single source object or list of source objects
+    #  @return Measure structure
+    #  @sa BoundingBox()
+    #  @ingroup l1_measurements
+    def GetBoundingBox(self, objects):
+        if isinstance(objects, tuple):
+            objects = list(objects)
+        if not isinstance(objects, list):
+            objects = [objects]
+        srclist = []
+        for o in objects:
+            if isinstance(o, Mesh):
+                srclist.append(o.mesh)
+            elif hasattr(o, "_narrow"):
+                src = o._narrow(SMESH.SMESH_IDSource)
+                if src: srclist.append(src)
+                pass
+            pass
+        aMeasurements = self.CreateMeasurements()
+        result = aMeasurements.BoundingBox(srclist)
+        aMeasurements.Destroy()
+        return result
 
 import omniORB
 #Registering the new proxy for SMESH_Gen
@@ -1078,6 +1188,24 @@ class Mesh:
         else:
             return Mesh_Segment(self, geom)
 
+    ## Creates 1D algorithm importing segments conatined in groups of other mesh.
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined the subshape is to be meshed
+    #  @return an instance of Mesh_UseExistingElements class
+    #  @ingroup l3_algos_basic
+    def UseExisting1DElements(self, geom=0):
+        return Mesh_UseExistingElements(1,self, geom)
+
+    ## Creates 2D algorithm importing faces conatined in groups of other mesh.
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined the subshape is to be meshed
+    #  @return an instance of Mesh_UseExistingElements class
+    #  @ingroup l3_algos_basic
+    def UseExisting2DElements(self, geom=0):
+        return Mesh_UseExistingElements(2,self, geom)
+
     ## Enables creation of nodes and segments usable by 2D algoritms.
     #  The added nodes and segments must be bound to edges and vertices by
     #  SetNodeOnVertex(), SetNodeOnEdge() and SetMeshElementOnShape()
@@ -1209,7 +1337,9 @@ class Mesh:
         return Mesh_RadialPrism3D(self,  geom)
 
     ## Evaluates size of prospective mesh on a shape
-    #  @return True or False
+    #  @return a list where i-th element is a number of elements of i-th SMESH.EntityType
+    #  To know predicted number of e.g. edges, inquire it this way
+    #  Evaluate()[ EnumToLong( Entity_Edge )]
     def Evaluate(self, geom=0):
         if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
             if self.geom == 0:
@@ -1639,6 +1769,7 @@ class Mesh:
         aCriteria.append(Criterion)
         aFilter.SetCriteria(aCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
+        aFilterMgr.Destroy()
         return group
 
     ## Creates a mesh group by the given criteria (list of criteria)
@@ -1651,6 +1782,7 @@ class Mesh:
         aFilter = aFilterMgr.CreateFilter()
         aFilter.SetCriteria(theCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
+        aFilterMgr.Destroy()
         return group
 
     ## Creates a mesh group by the given filter
@@ -1681,6 +1813,7 @@ class Mesh:
         aPredicate = aFilterMgr.CreateFreeEdges()
         aPredicate.SetMesh(self.mesh)
         aBorders = aPredicate.GetBorders()
+        aFilterMgr.Destroy()
         return aBorders
 
     ## Removes a group
@@ -2200,6 +2333,95 @@ class Mesh:
         return self.mesh.BaryCenter(id)
 
 
+    # Get mesh measurements information:
+    # ------------------------------------
+
+    ## Get minimum distance between two nodes, elements or distance to the origin
+    #  @param id1 first node/element id
+    #  @param id2 second node/element id (if 0, distance from @a id1 to the origin is computed)
+    #  @param isElem1 @c True if @a id1 is element id, @c False if it is node id
+    #  @param isElem2 @c True if @a id2 is element id, @c False if it is node id
+    #  @return minimum distance value
+    #  @sa GetMinDistance()
+    def MinDistance(self, id1, id2=0, isElem1=False, isElem2=False):
+        aMeasure = self.GetMinDistance(id1, id2, isElem1, isElem2)
+        return aMeasure.value
+    
+    ## Get measure structure specifying minimum distance data between two objects
+    #  @param id1 first node/element id
+    #  @param id2 second node/element id (if 0, distance from @a id1 to the origin is computed)
+    #  @param isElem1 @c True if @a id1 is element id, @c False if it is node id
+    #  @param isElem2 @c True if @a id2 is element id, @c False if it is node id
+    #  @return Measure structure
+    #  @sa MinDistance()
+    def GetMinDistance(self, id1, id2=0, isElem1=False, isElem2=False):
+        if isElem1:
+            id1 = self.editor.MakeIDSource([id1], SMESH.FACE)
+        else:
+            id1 = self.editor.MakeIDSource([id1], SMESH.NODE)
+        if id2 != 0:
+            if isElem2:
+                id2 = self.editor.MakeIDSource([id2], SMESH.FACE)
+            else:
+                id2 = self.editor.MakeIDSource([id2], SMESH.NODE)
+            pass
+        else:
+            id2 = None
+        
+        aMeasurements = self.smeshpyD.CreateMeasurements()
+        aMeasure = aMeasurements.MinDistance(id1, id2)
+        aMeasurements.Destroy()
+        return aMeasure
+    
+    ## Get bounding box of the specified object(s)
+    #  @param objects single source object or list of source objects or list of nodes/elements IDs
+    #  @param isElem if @a objects is a list of IDs, @c True value in this parameters specifies that @a objects are elements,
+    #  @c False specifies that @a objects are nodes
+    #  @return tuple of six values (minX, minY, minZ, maxX, maxY, maxZ)
+    #  @sa GetBoundingBox()
+    def BoundingBox(self, objects=None, isElem=False):
+        result = self.GetBoundingBox(objects, isElem)
+        if result is None:
+            result = (0.0,)*6
+        else:
+            result = (result.minX, result.minY, result.minZ, result.maxX, result.maxY, result.maxZ)
+        return result
+
+    ## Get measure structure specifying bounding box data of the specified object(s)
+    #  @param objects single source object or list of source objects or list of nodes/elements IDs
+    #  @param isElem if @a objects is a list of IDs, @c True value in this parameters specifies that @a objects are elements,
+    #  @c False specifies that @a objects are nodes
+    #  @return Measure structure
+    #  @sa BoundingBox()
+    def GetBoundingBox(self, IDs=None, isElem=False):
+        if IDs is None:
+            IDs = [self.mesh]
+        elif isinstance(IDs, tuple):
+            IDs = list(IDs)
+        if not isinstance(IDs, list):
+            IDs = [IDs]
+        if len(IDs) > 0 and isinstance(IDs[0], int):
+            IDs = [IDs]
+        srclist = []
+        for o in IDs:
+            if isinstance(o, Mesh):
+                srclist.append(o.mesh)
+            elif hasattr(o, "_narrow"):
+                src = o._narrow(SMESH.SMESH_IDSource)
+                if src: srclist.append(src)
+                pass
+            elif isinstance(o, list):
+                if isElem:
+                    srclist.append(self.editor.MakeIDSource(o, SMESH.FACE))
+                else:
+                    srclist.append(self.editor.MakeIDSource(o, SMESH.NODE))
+                pass
+            pass
+        aMeasurements = self.smeshpyD.CreateMeasurements()
+        aMeasure = aMeasurements.BoundingBox(srclist)
+        aMeasurements.Destroy()
+        return aMeasure
+    
     # Mesh edition (SMESH_MeshEditor functionality):
     # ---------------------------------------------
 
@@ -3838,6 +4060,86 @@ class Mesh:
     def DoubleNodeElemGroupsInRegion(self, theElems, theNodesNot, theShape):
         return self.editor.DoubleNodeElemGroupsInRegion(theElems, theNodesNot, theShape)
 
+    def _valueFromFunctor(self, funcType, elemId):
+        fn = self.smeshpyD.GetFunctor(funcType)
+        fn.SetMesh(self.mesh)
+        if fn.GetElementType() == self.GetElementType(elemId, True):
+            val = fn.GetValue(elemId)
+        else:
+            val = 0
+        return val
+        
+    ## Get length of 1D element.
+    #  @param elemId mesh element ID
+    #  @return element's length value
+    #  @ingroup l1_measurements
+    def GetLength(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_Length, elemId)    
+
+    ## Get area of 2D element.
+    #  @param elemId mesh element ID
+    #  @return element's area value
+    #  @ingroup l1_measurements
+    def GetArea(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_Area, elemId)    
+
+    ## Get volume of 3D element.
+    #  @param elemId mesh element ID
+    #  @return element's volume value
+    #  @ingroup l1_measurements
+    def GetVolume(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_Volume3D, elemId)    
+
+    ## Get maximum element length.
+    #  @param elemId mesh element ID
+    #  @return element's maximum length value
+    #  @ingroup l1_measurements
+    def GetMaxElementLength(self, elemId):
+        if self.GetElementType(elemId, True) == SMESH.VOLUME:
+            ftype = SMESH.FT_MaxElementLength3D
+        else:
+            ftype = SMESH.FT_MaxElementLength2D
+        return self._valueFromFunctor(ftype, elemId)    
+
+    ## Get aspect ratio of 2D or 3D element.
+    #  @param elemId mesh element ID
+    #  @return element's aspect ratio value
+    #  @ingroup l1_measurements
+    def GetAspectRatio(self, elemId):
+        if self.GetElementType(elemId, True) == SMESH.VOLUME:
+            ftype = SMESH.FT_AspectRatio3D
+        else:
+            ftype = SMESH.FT_AspectRatio
+        return self._valueFromFunctor(ftype, elemId)    
+
+    ## Get warping angle of 2D element.
+    #  @param elemId mesh element ID
+    #  @return element's warping angle value
+    #  @ingroup l1_measurements
+    def GetWarping(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_Warping, elemId)
+
+    ## Get minimum angle of 2D element.
+    #  @param elemId mesh element ID
+    #  @return element's minimum angle value
+    #  @ingroup l1_measurements
+    def GetMinimumAngle(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_MinimumAngle, elemId)
+
+    ## Get taper of 2D element.
+    #  @param elemId mesh element ID
+    #  @return element's taper value
+    #  @ingroup l1_measurements
+    def GetTaper(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_Taper, elemId)
+
+    ## Get skew of 2D element.
+    #  @param elemId mesh element ID
+    #  @return element's skew value
+    #  @ingroup l1_measurements
+    def GetSkew(self, elemId):
+        return self._valueFromFunctor(SMESH.FT_Skew, elemId)
+
 ## The mother class to define algorithm, it is not recommended to use it directly.
 #
 #  More details.
@@ -5460,6 +5762,73 @@ class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
         hyp = self.OwnHypothesis("AutomaticLength")
         hyp.SetFineness( fineness )
         return hyp
+
+
+# Public class: Mesh_UseExistingElements
+# --------------------------------------
+## Defines a Radial Quadrangle 1D2D algorithm
+#  @ingroup l3_algos_basic
+#
+class Mesh_UseExistingElements(Mesh_Algorithm):
+
+    def __init__(self, dim, mesh, geom=0):
+        if dim == 1:
+            self.Create(mesh, geom, "Import_1D")
+        else:
+            self.Create(mesh, geom, "Import_1D2D")
+        return
+
+    ## Defines "Source edges" hypothesis, specifying groups of edges to import
+    #  @param groups list of groups of edges
+    #  @param toCopyMesh if True, the whole mesh \a groups belong to is imported
+    #  @param toCopyGroups if True, all groups of the mesh \a groups belong to are imported
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
+        if self.algo.GetName() == "Import_2D":
+            raise ValueError, "algoritm dimension mismatch"
+        hyp = self.Hypothesis("ImportSource1D", [groups, toCopyMesh, toCopyGroups],
+                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
+        hyp.SetSourceEdges(groups)
+        hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
+        return hyp
+
+    ## Defines "Source faces" hypothesis, specifying groups of faces to import
+    #  @param groups list of groups of faces
+    #  @param toCopyMesh if True, the whole mesh \a groups belong to is imported
+    #  @param toCopyGroups if True, all groups of the mesh \a groups belong to are imported
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
+        if self.algo.GetName() == "Import_1D":
+            raise ValueError, "algoritm dimension mismatch"
+        hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
+                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
+        hyp.SetSourceFaces(groups)
+        hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
+        return hyp
+
+    def _compareHyp(self,hyp,args):
+        if hasattr( hyp, "GetSourceEdges"):
+            entries = hyp.GetSourceEdges()
+        else:
+            entries = hyp.GetSourceFaces()
+        groups = args[0]
+        toCopyMesh,toCopyGroups = hyp.GetCopySourceMesh()
+        if len(entries)==len(groups) and toCopyMesh==args[1] and toCopyGroups==args[2]:
+            entries2 = []
+            study = self.mesh.smeshpyD.GetCurrentStudy()
+            if study:
+                for g in groups:
+                    ior  = salome.orb.object_to_string(g)
+                    sobj = study.FindObjectIOR(ior)
+                    if sobj: entries2.append( sobj.GetID() )
+                    pass
+                pass
+            entries.sort()
+            entries2.sort()
+            return entries == entries2
+        return False
 
 
 # Private class: Mesh_UseExisting

@@ -83,11 +83,6 @@ module SMESH
     long_array GetListOfID();
 
     /*!
-     * Returns the mesh object this group belongs to
-     */
-    SMESH_Mesh GetMesh();
-
-    /*!
      * Sets group color
      */
     void SetColor(in SALOMEDS::Color theColor);

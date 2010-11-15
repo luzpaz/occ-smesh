@@ -858,8 +858,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   SMESH::long_array_var anIds = aGroup->GetListOfID();
   SMESH::SMESH_MeshEditor_var aMeshEditor = SMESH_Mesh_i::GetMeshEditor();
 
-  // Update Python script
-  TPythonDump() << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
+  TPythonDump pyDump; // Supress dump from RemoveNodes/Elements() and RemoveGroup()
 
   // Remove contents
   if ( aGroup->GetType() == SMESH::NODE )
@@ -870,11 +869,9 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   // Remove group
   RemoveGroup( theGroup );
 
-  // Clear python lines, created by RemoveNodes/Elements() and RemoveGroup()
-  _gen_i->RemoveLastFromPythonScript(_gen_i->GetCurrentStudy()->StudyId());
-  _gen_i->RemoveLastFromPythonScript(_gen_i->GetCurrentStudy()->StudyId());
+  // Update Python script
+  pyDump << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
 }
-
 
 //================================================================================
 /*!
@@ -918,6 +915,7 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
 
   return aList._retn();
 }
+
 //=============================================================================
 /*!
  *  Get number of groups existing in the mesh
@@ -2110,12 +2108,16 @@ void SMESH_Mesh_i::removeGroup( const int theId )
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh_i::removeGroup()" );
   if ( _mapGroups.find( theId ) != _mapGroups.end() ) {
-    removeGeomGroupData( _mapGroups[theId] );
+    SMESH::SMESH_GroupBase_ptr group = _mapGroups[theId];
     _mapGroups.erase( theId );
-    _impl->RemoveGroup( theId );
+    removeGeomGroupData( group );
+    if (! _impl->RemoveGroup( theId ))
+    {
+      // it seems to be a call up from _impl caused by hyp modification (issue 0020918)
+      RemoveGroup( group );
+    }
   }
 }
-
 
 //=============================================================================
 /*!
@@ -2214,6 +2216,19 @@ CORBA::Long SMESH_Mesh_i::GetStudyId()throw(SALOME::SALOME_Exception)
 }
 
 //=============================================================================
+namespace
+{
+  //!< implementation of struct used to call SMESH_Mesh_i::removeGroup() from
+  // SMESH_Mesh::RemoveGroup() (issue 0020918)
+  struct TRmGroupCallUp_i : public SMESH_Mesh::TRmGroupCallUp
+  {
+    SMESH_Mesh_i* _mesh;
+    TRmGroupCallUp_i(SMESH_Mesh_i* mesh):_mesh(mesh) {}
+    virtual void RemoveGroup (const int theGroupID) { _mesh->removeGroup( theGroupID ); }
+  };
+}
+
+//=============================================================================
 /*!
  *
  */
@@ -2223,6 +2238,8 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh_i::SetImpl");
   _impl = impl;
+  if ( _impl )
+    _impl->SetRemoveGroupCallUp( new TRmGroupCallUp_i(this));
 }
 
 //=============================================================================
@@ -3390,6 +3407,7 @@ void SMESH_Mesh_i::CreateGroupServants()
 {
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
 
+  set<int> addedIDs;
   ::SMESH_Mesh::GroupIteratorPtr groupIt = _impl->GetGroups();
   while ( groupIt->more() )
   {
@@ -3399,6 +3417,7 @@ void SMESH_Mesh_i::CreateGroupServants()
     map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(anId);
     if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))
       continue;
+    addedIDs.insert( anId );
 
     SMESH_GroupBase_i* aGroupImpl;
     TopoDS_Shape       shape;
@@ -3424,10 +3443,21 @@ void SMESH_Mesh_i::CreateGroupServants()
     int nextId = _gen_i->RegisterObject( groupVar );
     if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
 
-    // publishing of the groups in the study
+    // publishing the groups in the study
     if ( !aStudy->_is_nil() ) {
       GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );
       _gen_i->PublishGroup( aStudy, _this(), groupVar, shapeVar, groupVar->GetName());
+    }
+  }
+  if ( !addedIDs.empty() )
+  {
+    // python dump
+    set<int>::iterator id = addedIDs.begin();
+    for ( ; id != addedIDs.end(); ++id )
+    {
+      map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(*id);
+      int i = std::distance( _mapGroups.begin(), it );
+      TPythonDump() << it->second << " = " << _this() << ".GetGroups()[ "<< i << " ]";
     }
   }
 }
@@ -3579,6 +3609,16 @@ SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
   types->length( nbTypes );
 
   return types._retn();
+}
+
+//=======================================================================
+//function : GetMesh
+//purpose  : Returns self
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Mesh_i::GetMesh()
+{
+  return SMESH::SMESH_Mesh::_duplicate( _this() );
 }
 
 //=============================================================================
@@ -3925,10 +3965,9 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
  */
 //=============================================================================
 
-static void findCommonSubMesh
- (list<const SMESH_subMesh*>& theSubMeshList,
-  const SMESH_subMesh*             theSubMesh,
-  set<const SMESH_subMesh*>&  theCommon )
+static void findCommonSubMesh (list<const SMESH_subMesh*>& theSubMeshList,
+                               const SMESH_subMesh*        theSubMesh,
+                               set<const SMESH_subMesh*>&  theCommon )
 {
   if ( !theSubMesh )
     return;

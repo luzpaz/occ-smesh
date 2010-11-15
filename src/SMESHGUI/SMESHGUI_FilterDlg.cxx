@@ -1379,6 +1379,8 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
     retval = "len_tol_precision"; break;
   case SMESH::FT_Length:
   case SMESH::FT_Length2D:
+  case SMESH::FT_MaxElementLength2D:
+  case SMESH::FT_MaxElementLength3D:
     retval = "length_precision"; break;
   case SMESH::FT_Volume3D:
     retval = "vol_precision"; break;
@@ -1795,6 +1797,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_Taper              ] = tr("TAPER");
       aCriteria[ SMESH::FT_Skew               ] = tr("SKEW");
       aCriteria[ SMESH::FT_Area               ] = tr("AREA");
+      aCriteria[ SMESH::FT_MaxElementLength2D ] = tr("MAX_ELEMENT_LENGTH_2D");
       aCriteria[ SMESH::FT_FreeEdges          ] = tr("FREE_EDGES");
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
@@ -1817,14 +1820,15 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     static QMap<int, QString> aCriteria;
     if (aCriteria.isEmpty())
     {
-      aCriteria[ SMESH::FT_AspectRatio3D     ] = tr("ASPECT_RATIO_3D");
-      aCriteria[ SMESH::FT_RangeOfIds        ] = tr("RANGE_OF_IDS");
-      aCriteria[ SMESH::FT_BelongToGeom      ] = tr("BELONG_TO_GEOM");
-      aCriteria[ SMESH::FT_LyingOnGeom       ] = tr("LYING_ON_GEOM");
-      aCriteria[ SMESH::FT_BadOrientedVolume ] = tr("BAD_ORIENTED_VOLUME");
-      aCriteria[ SMESH::FT_Volume3D          ] = tr("VOLUME_3D");
-      aCriteria[ SMESH::FT_LinearOrQuadratic ] = tr("LINEAR");
-      aCriteria[ SMESH::FT_GroupColor        ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_AspectRatio3D      ] = tr("ASPECT_RATIO_3D");
+      aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_LyingOnGeom        ] = tr("LYING_ON_GEOM");
+      aCriteria[ SMESH::FT_BadOrientedVolume  ] = tr("BAD_ORIENTED_VOLUME");
+      aCriteria[ SMESH::FT_Volume3D           ] = tr("VOLUME_3D");
+      aCriteria[ SMESH::FT_MaxElementLength3D ] = tr("MAX_ELEMENT_LENGTH_3D");
+      aCriteria[ SMESH::FT_LinearOrQuadratic  ] = tr("LINEAR");
+      aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
     }
     return aCriteria;

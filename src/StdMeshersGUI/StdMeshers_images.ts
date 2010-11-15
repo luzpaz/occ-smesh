@@ -94,6 +94,14 @@
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_IMPORT_SOURCE_1D</source>
+            <translation>mesh_hypo_source_edge.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_IMPORT_SOURCE_2D</source>
+            <translation>mesh_hypo_source_face.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_SEGMENT_LENGTH_AROUND_VERTEX</source>
             <translation>mesh_hypo_length.png</translation>
         </message>

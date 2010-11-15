@@ -33,7 +33,6 @@ class SMDS_MeshNode;
 class SMDS_MeshFace;
 class Handle_TColgp_HArray1OfPnt;
 class Handle_TColgp_HArray1OfVec;
-class TopoDS_Shape;
 class gp_Pnt;
 class gp_Vec;
 
@@ -41,6 +40,8 @@ class gp_Vec;
 #include <map>
 #include <list>
 #include <vector>
+
+#include <TopoDS_Shape.hxx>
 
 /*!
  * \brief "Transforms" quadrilateral faces into triangular ones by creation of pyramids
@@ -57,6 +58,13 @@ public:
   bool Compute(SMESH_Mesh& aMesh);
 
   const std::list<const SMDS_MeshFace*>* GetTriangles(const SMDS_MeshElement* aFace);
+
+  /*!
+   * \brief Return sum of generated and already present triangles
+   */
+  int TotalNbOfTriangles() const { return myNbTriangles; }
+
+  TopoDS_Shape GetShape() const { return myShape; }
 
 protected:
 
@@ -77,17 +85,19 @@ protected:
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 
 
-  typedef std::list<const SMDS_MeshFace* >                           TTriaList;
-  typedef std::multimap<const SMDS_MeshElement*, TTriaList >         TQuad2Trias;
-  //typedef std::map<const SMDS_MeshElement*, TTriaList *, TIDCompare> TPyram2Trias;
+  typedef std::list<const SMDS_MeshFace* >                   TTriaList;
+  typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
 
   TQuad2Trias  myResMap;
-  //TPyram2Trias myPyram2Trias;
   std::vector<const SMDS_MeshElement*> myPyramids;
 
   std::list< const SMDS_MeshNode* > myDegNodes;
 
   const SMESH_ElementSearcher* myElemSearcher;
+
+  int myNbTriangles;
+
+  TopoDS_Shape myShape;
 };
 
 #endif

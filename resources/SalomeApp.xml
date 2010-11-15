@@ -65,12 +65,16 @@
     <parameter name="scalar_bar_vertical_width"    value="0.08" />
     <parameter name="scalar_bar_vertical_x"        value="0.01" />
     <parameter name="scalar_bar_vertical_y"        value="0.1" />
+    <parameter name="distribution_visibility"      value="false" />
+    <parameter name="distribution_coloring_type"   value="0" />
+    <parameter name="distribution_color"           value="255, 255, 255" />
     <parameter name="DisplayMode"                  value="true" />
     <parameter name="auto_update"                  value="true" />
     <parameter name="update_limit"                 value="500000" />
     <parameter name="display_mode"                 value="1"    />
     <parameter name="auto_groups"                  value="false"/>
     <parameter name="show_result_notification"     value="2"/>
+    <parameter name="mesh_elem_info"               value="1"/>
     <parameter name="segmentation"                 value="10"/>
     <parameter name="nb_segments_per_edge"         value="15"/>
     <parameter name="quadratic_mode"               value="0"/>

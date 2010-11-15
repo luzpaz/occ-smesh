@@ -157,6 +157,7 @@ namespace SMESH
   {
   public:
     CORBA::Double                   GetValue( CORBA::Long theElementId );
+    SMESH::Histogram*               GetHistogram(CORBA::Short nbIntervals);
     void                            SetPrecision( CORBA::Long thePrecision );
     CORBA::Long                     GetPrecision();
     Controls::NumericalFunctorPtr   GetNumericalFunctor();
@@ -266,6 +267,32 @@ namespace SMESH
   {
   public:
     Volume3D_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  
+  /*
+    Class       : MaxElementLength2D_i
+    Description : Functor for calculating maximum length of 2D element
+  */
+  class SMESH_I_EXPORT MaxElementLength2D_i: public virtual POA_SMESH::MaxElementLength2D,
+                                             public virtual NumericalFunctor_i
+  {
+  public:
+    MaxElementLength2D_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  
+  /*
+    Class       : MaxElementLength3D_i
+    Description : Functor for calculating maximum length of 3D element
+  */
+  class SMESH_I_EXPORT MaxElementLength3D_i: public virtual POA_SMESH::MaxElementLength3D,
+                                             public virtual NumericalFunctor_i
+  {
+  public:
+    MaxElementLength3D_i();
     FunctorType                     GetFunctorType();
   };
   
@@ -802,18 +829,6 @@ namespace SMESH
     void
     SetMesh( SMESH_Mesh_ptr );
 
-    virtual
-    SMESH::long_array* 
-    GetIDs();
-    
-    virtual
-    SMESH::long_array*
-    GetMeshInfo();
-
-    virtual
-    SMESH::array_of_ElementType*
-    GetTypes();
-
     static
     void
     GetElementsId( Predicate_i*,
@@ -846,6 +861,14 @@ namespace SMESH
     GetPredicate();
 
     Predicate_i*     GetPredicate_i();
+
+    // =========================
+    // SMESH_IDSource interface
+    // =========================
+    virtual SMESH::long_array*           GetIDs();
+    virtual SMESH::long_array*           GetMeshInfo();
+    virtual SMESH::array_of_ElementType* GetTypes();
+    virtual SMESH::SMESH_Mesh_ptr        GetMesh();
 
   private:
     Controls::Filter myFilter;
@@ -910,6 +933,8 @@ namespace SMESH
     Skew_ptr                  CreateSkew();
     Area_ptr                  CreateArea();
     Volume3D_ptr              CreateVolume3D();
+    MaxElementLength2D_ptr    CreateMaxElementLength2D();
+    MaxElementLength3D_ptr    CreateMaxElementLength3D();
     Length_ptr                CreateLength();
     Length2D_ptr              CreateLength2D();
     MultiConnection_ptr       CreateMultiConnection();

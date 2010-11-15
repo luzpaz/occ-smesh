@@ -42,6 +42,7 @@
 #include <vector>
 
 class GeomAPI_ProjectPointOnSurf;
+class GeomAPI_ProjectPointOnCurve;
 
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
@@ -232,7 +233,7 @@ public:
                                    const int id = 0,
                                    const bool force3d = false);
   /*!
-   * Creates quadratic or linear tetraahedron
+   * Creates quadratic or linear tetrahedron
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -488,8 +489,10 @@ protected:
   double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
 
-  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2Projector;
-  TID2Projector   myFace2Projector;
+  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2ProjectorOnSurf;
+  TID2ProjectorOnSurf myFace2Projector;
+  typedef std::map< int, GeomAPI_ProjectPointOnCurve* > TID2ProjectorOnCurve;
+  TID2ProjectorOnCurve myEdge2Projector;
 
   TopoDS_Shape    myShape;
   SMESH_Mesh*     myMesh;

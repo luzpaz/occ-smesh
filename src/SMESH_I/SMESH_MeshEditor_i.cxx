@@ -369,10 +369,12 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 
 struct _IDSource : public POA_SMESH::SMESH_IDSource
 {
-  SMESH::long_array _ids;
-  SMESH::ElementType _type;
+  SMESH::long_array     _ids;
+  SMESH::ElementType    _type;
+  SMESH::SMESH_Mesh_ptr _mesh;
   SMESH::long_array* GetIDs()      { return new SMESH::long_array( _ids ); }
   SMESH::long_array* GetMeshInfo() { return 0; }
+  SMESH::SMESH_Mesh_ptr GetMesh()  { return SMESH::SMESH_Mesh::_duplicate( _mesh ); }
   SMESH::array_of_ElementType* GetTypes()
   {
     SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
@@ -388,6 +390,7 @@ SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_arr
   _IDSource* anIDSource = new _IDSource;
   anIDSource->_ids = ids;
   anIDSource->_type = type;
+  anIDSource->_mesh = myMesh_i->_this();
   SMESH::SMESH_IDSource_var anIDSourceVar = anIDSource->_this();
 
   return anIDSourceVar._retn();

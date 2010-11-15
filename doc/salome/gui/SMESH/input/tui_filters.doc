@@ -337,6 +337,46 @@ print "Number of faces with maximum edge length > 14:", len(ids)
 
 \sa \ref tui_length_2d
 
+\section filter_max_element_length_2d Max Element Length 2D
+
+Filter 2D mesh elements (faces) corresponding to the maximum length
+value of its edges and diagonals:
+- element type should be \a smesh.FACE
+- functor type should be \a smesh.FT_MaxElementLength2D
+- threshold is floating point value (edge/diagonal length)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all faces that have elements with length > 10
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength2D, smesh.FT_MoreThan, 10)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with maximum element length > 10:", len(ids)
+\endcode
+
+\sa \ref tui_max_element_length_2d
+
+\section filter_max_element_length_3d Max Element Length 3D
+
+Filter 3D mesh elements (volumes) corresponding to the maximum length
+value of its edges and diagonals:
+- element type should be \a smesh.VOLUME
+- functor type should be \a smesh.FT_MaxElementLength3D
+- threshold is floating point value (edge/diagonal length)
+
+\code
+# create mesh with volumes
+from SMESH_mechanic import *
+mesh.Tetrahedron( algo=smesh.NETGEN )
+mesh.Compute()
+# get all volumes that have elements with length > 10
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, 10)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of volumes with maximum element length > 10:", len(ids)
+\endcode
+
+\sa \ref tui_max_element_length_3d
+
 \section filter_belong_to_geom Belong to Geom
 
 Filter mesh entities (nodes or elements) which all nodes lie on the

@@ -290,6 +290,14 @@
             <translation>mesh_pattern.png</translation>
         </message>
         <message>
+            <source>ICON_MAX_ELEMENT_LENGTH_2D</source>
+            <translation>mesh_max_element_length_2d.png</translation>
+        </message>
+        <message>
+            <source>ICON_MAX_ELEMENT_LENGTH_3D</source>
+            <translation>mesh_max_element_length_3d.png</translation>
+        </message>
+        <message>
             <source>ICON_OBJBROWSER_SMESH</source>
             <translation>mesh.png</translation>
         </message>
@@ -455,7 +463,7 @@
         </message>
         <message>
             <source>ICON_WHAT_IS</source>
-            <translation>mesh_whatis.png</translation>
+            <translation>mesh_elem_info.png</translation>
         </message>
         <message>
             <source>ICON_WIRE</source>
@@ -476,6 +484,14 @@
         <message>
             <source>ICON_SPLIT_TO_TETRA</source>
             <translation>split_into_tetra.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_MIN_DIST</source>
+            <translation>mesh_min_dist.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_BND_BOX</source>
+            <translation>mesh_bounding_box.png</translation>
         </message>
     </context>
 </TS>

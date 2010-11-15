@@ -42,6 +42,7 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Measurements)
 
 class SALOMEDSClient_SObject;
 
@@ -54,6 +55,8 @@ namespace SMESH
     QString        UniqueMeshName( const QString&, const QString& = QString() );
   SMESHGUI_EXPORT
     QString        UniqueName( const QString&, _PTR(SObject) = _PTR(SObject)(), const QString& = QString() );
+
+  SMESHGUI_EXPORT  SMESH::Measurements_var& GetMeasurements();
 }
 
 #endif // SMESHGUI_MESHUTILS_H

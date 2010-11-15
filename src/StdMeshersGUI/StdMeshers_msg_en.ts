@@ -236,6 +236,22 @@
         <translation>Hypothesis Construction</translation>
     </message>
     <message>
+        <source>SMESH_IMPORT_SOURCE_1D_HYPOTHESIS</source>
+        <translation>Source edges</translation>
+    </message>
+    <message>
+        <source>SMESH_IMPORT_SOURCE_1D_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
+        <source>SMESH_IMPORT_SOURCE_2D_HYPOTHESIS</source>
+        <translation>Source faces</translation>
+    </message>
+    <message>
+        <source>SMESH_IMPORT_SOURCE_2D_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
         <source>SMESH_REMOVE_ROW</source>
         <translation>Remove row</translation>
     </message>
@@ -284,12 +300,28 @@
         <translation>Edge</translation>
     </message>
     <message>
+        <source>SMESH_SOURCE_EDGES</source>
+        <translation>Groups of Edges</translation>
+    </message>
+    <message>
         <source>SMESH_SOURCE_FACE</source>
         <translation>Face</translation>
     </message>
     <message>
+        <source>SMESH_SOURCE_FACES</source>
+        <translation>Groups of Faces</translation>
+    </message>
+    <message>
         <source>SMESH_SOURCE_MESH</source>
         <translation>Mesh</translation>
+    </message>
+    <message>
+        <source>SMESH_COPY_MESH</source>
+        <translation>To copy mesh</translation>
+    </message>
+    <message>
+        <source>SMESH_TO_COPY_GROUPS</source>
+        <translation>To copy groups</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_VERTEX</source>

@@ -127,6 +127,9 @@ namespace SMESH{
       virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual double GetValue( long theElementId );
       virtual double GetValue(const TSequenceOfXYZ& thePoints) { return -1.0;};
+      void GetHistogram(int                  nbIntervals,
+                        std::vector<int>&    nbEvents,
+                        std::vector<double>& funValues);
       virtual SMDSAbs_ElementType GetType() const = 0;
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;
@@ -151,6 +154,30 @@ namespace SMESH{
     public:
       virtual double GetValue( long theElementId );
       //virtual double GetValue( const TSequenceOfXYZ& thePoints );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+  
+  
+    /*
+      Class       : MaxElementLength2D
+      Description : Functor calculating maximum length of 2D element
+    */
+    class SMESHCONTROLS_EXPORT MaxElementLength2D: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+  
+  
+    /*
+      Class       : MaxElementLength3D
+      Description : Functor calculating maximum length of 3D element
+    */
+    class SMESHCONTROLS_EXPORT MaxElementLength3D: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };

@@ -603,6 +603,39 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
+\section tui_max_element_length_2d Max Element Length 2D
+
+\code
+import SMESH_mechanic
+
+smesh  = SMESH_mechanic.smesh
+mesh   = SMESH_mechanic.mesh
+salome = SMESH_mechanic.salome
+
+# Criterion : MAX ELEMENT LENGTH 2D > 10
+mel_2d_margin = 10
+
+aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength2D, smesh.FT_MoreThan, mel_2d_margin)
+
+anIds = mesh.GetIdsFromFilter(aFilter) 
+
+# print the result
+print "Criterion: Max Element Length 2D Ratio > ", mel_2d_margin, " Nb = ", len(anIds)
+j = 1
+for i in range(len(anIds)):
+  if j > 20: j = 1; print ""
+  print anIds[i],
+  j = j + 1
+  pass
+print ""
+
+# create a group
+aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Max Element Length 2D > " + `mel_2d_margin`)
+aGroup.Add(anIds)
+
+salome.sg.updateObjBrowser(1)
+\endcode
+
 \section tui_aspect_ratio_3d Aspect Ratio 3D
 
 \code
@@ -670,6 +703,39 @@ aGroup = mesh.CreateEmptyGroup(smesh.VOLUME, "Volume < " + `volume_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1) 
+\endcode
+
+\section tui_max_element_length_3d Max Element Length 3D
+
+\code
+import SMESH_mechanic_tetra
+
+smesh  = SMESH_mechanic_tetra.smesh
+mesh   = SMESH_mechanic_tetra.mesh
+salome = SMESH_mechanic_tetra.salome
+
+# Criterion : MAX ELEMENT LENGTH 3D > 10
+mel_3d_margin = 10
+
+aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, mel_3d_margin)
+
+anIds = mesh.GetIdsFromFilter(aFilter) 
+
+# print the result
+print "Criterion: Max Element Length 3D Ratio > ", mel_3d_margin, " Nb = ", len(anIds)
+j = 1
+for i in range(len(anIds)):
+  if j > 20: j = 1; print ""
+  print anIds[i],
+  j = j + 1
+  pass
+print ""
+
+# create a group
+aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Max Element Length 3D > " + `mel_3d_margin`)
+aGroup.Add(anIds)
+
+salome.sg.updateObjBrowser(1)
 \endcode
 
 */

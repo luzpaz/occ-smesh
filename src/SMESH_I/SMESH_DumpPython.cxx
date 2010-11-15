@@ -274,6 +274,8 @@ namespace SMESH
       case FT_Skew:             myStream<< "aSkew";             break;
       case FT_Area:             myStream<< "aArea";             break;
       case FT_Volume3D:         myStream<< "aVolume3D";         break;
+      case FT_MaxElementLength2D:myStream<< "aMaxElementLength2D";break;
+      case FT_MaxElementLength3D:myStream<< "aMaxElementLength3D";break;
       case FT_FreeBorders:      myStream<< "aFreeBorders";      break;
       case FT_FreeEdges:        myStream<< "aFreeEdges";        break;
       case FT_FreeNodes:        myStream<< "aFreeNodes";        break;
@@ -306,6 +308,15 @@ namespace SMESH
     }
     return *this;
   }
+
+  TPythonDump& 
+  TPythonDump::
+  operator<<(SMESH::Measurements_i* theArg)
+  {
+    myStream<<"aMeasurements";
+    return *this;
+  }
+
 
   TPythonDump& TPythonDump:: operator<<(SMESH_Gen_i* theArg)
   {
@@ -684,6 +695,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString aScript;
   aScript = "def RebuildData(theStudy):\n\t";
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
+  aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
   if ( isPublished )
     aScript += aSMESHGen + ".SetCurrentStudy(theStudy)";
   else
