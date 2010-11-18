@@ -119,9 +119,8 @@ bool StdMeshers_Regular_1D::CheckHypothesis
   _hypType = NONE;
   _quadraticMesh = false;
 
-  const bool ignoreAuxiliaryHyps = false;
   const list <const SMESHDS_Hypothesis * > & hyps =
-    GetUsedHypothesis(aMesh, aShape, ignoreAuxiliaryHyps);
+    GetUsedHypothesis(aMesh, aShape, /*ignoreAuxiliaryHyps=*/false);
 
   // find non-auxiliary hypothesis
   const SMESHDS_Hypothesis *theHyp = 0;
@@ -1186,10 +1185,9 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
 
   SMESH_HypoFilter auxiliaryFilter, compatibleFilter;
   auxiliaryFilter.Init( SMESH_HypoFilter::IsAuxiliary() );
-  const bool ignoreAux = true;
-  InitCompatibleHypoFilter( compatibleFilter, ignoreAux );
+  InitCompatibleHypoFilter( compatibleFilter, /*ignoreAux=*/true );
 
-  // get non-auxiliary assigned to aShape
+  // get non-auxiliary assigned directly to aShape
   int nbHyp = aMesh.GetHypotheses( aShape, compatibleFilter, _usedHypList, false );
 
   if (nbHyp == 0 && aShape.ShapeType() == TopAbs_EDGE)
