@@ -23,7 +23,6 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_HypoFilter.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_HypoFilter.hxx"
 
@@ -362,4 +361,6 @@ SMESH_HypoFilter::~SMESH_HypoFilter()
 {
   Init(0);
 }
+
+
 
