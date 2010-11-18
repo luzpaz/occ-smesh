@@ -269,9 +269,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         int iNext = helper.WrapIndex( iNode+1, face->NbCornerNodes() );
         int iPrev = helper.WrapIndex( iNode-1, face->NbCornerNodes() );
 
-	SMESH_MeshEditor::TNodeXYZ prevNode( newNodes[iPrev] );
-	SMESH_MeshEditor::TNodeXYZ curNode ( newNodes[iNode] );
-	SMESH_MeshEditor::TNodeXYZ nextNode( newNodes[iNext] );
+        SMESH_MeshEditor::TNodeXYZ prevNode( newNodes[iPrev] );
+        SMESH_MeshEditor::TNodeXYZ curNode ( newNodes[iNode] );
+        SMESH_MeshEditor::TNodeXYZ nextNode( newNodes[iNext] );
         gp_Vec n1n0( prevNode - curNode);
         gp_Vec n1n2( nextNode - curNode );
         gp_Vec meshNorm = n1n2 ^ n1n0;
