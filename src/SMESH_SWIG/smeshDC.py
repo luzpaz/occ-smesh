@@ -4426,6 +4426,8 @@ class Mesh_Segment(Mesh_Algorithm):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
+        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
+            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
         if s == []:
             hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdges, entry],
                                   UseExisting=UseExisting,
@@ -4468,6 +4470,8 @@ class Mesh_Segment(Mesh_Algorithm):
     def Arithmetic1D(self, start, end, reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
+        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
+            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
         entry = self.MainShapeEntry()
         hyp = self.Hypothesis("Arithmetic1D", [start, end, reversedEdges, entry],
                               UseExisting=UseExisting,
@@ -4504,9 +4508,8 @@ class Mesh_Segment(Mesh_Algorithm):
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
-        if reversedEdges and isinstance( reversedEdges[0], geompyDC.GEOM._objref_GEOM_Object ):
-            for i in range( len( reversedEdges )):
-                reversedEdges[i] = self.mesh.geompyD.GetSubShapeID(self.mesh.geom, reversedEdges[i] )
+        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
+            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
         entry = self.MainShapeEntry()
         hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdges, entry],
                               UseExisting=UseExisting,
@@ -4541,6 +4544,8 @@ class Mesh_Segment(Mesh_Algorithm):
     def StartEndLength(self, start, end, reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
+        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
+            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
         entry = self.MainShapeEntry()
         hyp = self.Hypothesis("StartEndLength", [start, end, reversedEdges, entry],
                               UseExisting=UseExisting,
