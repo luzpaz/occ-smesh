@@ -145,11 +145,11 @@
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Max Element Length 2D</translation>
+        <translation>Element Diameter 2D</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Max Element Length 3D</translation>
+        <translation>Element Diameter 3D</translation>
     </message>
     <message>
         <source>MEN_ADD</source>
@@ -449,11 +449,11 @@
     </message>
     <message>
         <source>MEN_MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Max Element Length 2D</translation>
+        <translation>Element Diameter 2D</translation>
     </message>
     <message>
         <source>MEN_MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Max Element Length 3D</translation>
+        <translation>Element Diameter 3D</translation>
     </message>
     <message>
         <source>MEN_MED</source>
@@ -2480,11 +2480,11 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Max Element Length 2D</translation>
+        <translation>Element Diameter 2D</translation>
     </message>
     <message>
         <source>STB_MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Max Element Length 3D</translation>
+        <translation>Element Diameter 3D</translation>
     </message>
     <message>
         <source>STB_MED</source>
@@ -3016,11 +3016,11 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Max Element Length 2D</translation>
+        <translation>Element Diameter 2D</translation>
     </message>
     <message>
         <source>TOP_MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Max Element Length 3D</translation>
+        <translation>Element Diameter 3D</translation>
     </message>
     <message>
         <source>TOP_MED</source>
@@ -4419,11 +4419,11 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Max Element Length 2D</translation>
+        <translation>Element Diameter 2D</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Max Element Length 3D</translation>
+        <translation>Element Diameter 3D</translation>
     </message>
     <message>
         <source>MINIMUM_ANGLE</source>

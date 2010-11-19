@@ -337,7 +337,7 @@ print "Number of faces with maximum edge length > 14:", len(ids)
 
 \sa \ref tui_length_2d
 
-\section filter_max_element_length_2d Max Element Length 2D
+\section filter_max_element_length_2d Element Diameter 2D
 
 Filter 2D mesh elements (faces) corresponding to the maximum length
 value of its edges and diagonals:
@@ -356,7 +356,7 @@ print "Number of faces with maximum element length > 10:", len(ids)
 
 \sa \ref tui_max_element_length_2d
 
-\section filter_max_element_length_3d Max Element Length 3D
+\section filter_max_element_length_3d Element Diameter 3D
 
 Filter 3D mesh elements (volumes) corresponding to the maximum length
 value of its edges and diagonals:
