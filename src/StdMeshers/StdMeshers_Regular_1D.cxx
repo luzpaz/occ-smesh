@@ -974,18 +974,19 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     list< double > params;
     bool reversed = false;
     if ( theMesh.GetShapeToMesh().ShapeType() >= TopAbs_WIRE ) {
+      // if the shape to mesh is WIRE or EDGE
       reversed = ( EE.Orientation() == TopAbs_REVERSED );
     }
     if ( !_mainEdge.IsNull() ) {
+      // take into account reversing the edge the hypothesis is propagated from
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
+      int mainID = meshDS->ShapeToIndex(_mainEdge);
+      if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
+        reversed = !reversed;
     }
-    else if ( _revEdgesIDs.size() > 0 ) {
-      for ( int i = 0; i < _revEdgesIDs.size(); i++) {
-        if ( _revEdgesIDs[i] == shapeID ) {
-          reversed = !reversed;
-        }
-      }
-    }
+    // take into account this edge reversing
+    if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), shapeID) != _revEdgesIDs.end())
+      reversed = !reversed;
 
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
