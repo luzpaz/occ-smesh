@@ -1665,9 +1665,9 @@ namespace { // Structures used by FixQuadraticElements()
               node2()->GetID() < other.node2()->GetID() :
               node1()->GetID() < other.node1()->GetID());
     }
-    struct PtrComparator {
-      bool operator() (const QLink* l1, const QLink* l2 ) const { return *l1 < *l2; }
-    };
+//     struct PtrComparator {
+//       bool operator() (const QLink* l1, const QLink* l2 ) const { return *l1 < *l2; }
+//     };
   };
   // ---------------------------------------------------------
   /*!
@@ -1714,7 +1714,7 @@ namespace { // Structures used by FixQuadraticElements()
   /*!
    * \brief Face shared by two volumes and bound by QLinks
    */
-  struct QFace: public TIDSortedElemSet
+  struct QFace: public TIDSortedNodeSet
   {
     mutable const SMDS_MeshElement* _volumes[2];
     mutable vector< const QLink* >  _sides;
@@ -1752,6 +1752,8 @@ namespace { // Structures used by FixQuadraticElements()
     bool IsBoundary() const { return !_volumes[1]; }
 
     bool Contains( const SMDS_MeshNode* node ) const { return count(node); }
+
+    bool IsSpoiled(const QLink* bentLink ) const;
 
     TLinkInSet GetBoundaryLink( const TLinkSet&      links,
                                 const TChainLink&    avoidLink,
@@ -1797,7 +1799,7 @@ namespace { // Structures used by FixQuadraticElements()
   ostream& operator << (ostream& out, const QFace& f)
   {
     out <<"QFace nodes: "/*<< &f << "  "*/;
-    for ( TIDSortedElemSet::const_iterator n = f.begin(); n != f.end(); ++n )
+    for ( TIDSortedNodeSet::const_iterator n = f.begin(); n != f.end(); ++n )
       out << (*n)->GetID() << " ";
     out << " \tvolumes: "
         << (f._volumes[0] ? f._volumes[0]->GetID() : 0) << " "
@@ -2141,6 +2143,37 @@ namespace { // Structures used by FixQuadraticElements()
 
   //================================================================================
   /*!
+   * \brief Checks if the face is distorted due to bentLink
+   */
+  //================================================================================
+
+  bool QFace::IsSpoiled(const QLink* bentLink ) const
+  {
+    // code is valid for convex faces only
+    gp_XYZ gc(0,0,0);
+    for ( TIDSortedNodeSet::const_iterator n = begin(); n!=end(); ++n)
+      gc += XYZ( *n ) / size();
+    for (unsigned i = 0; i < _sides.size(); ++i )
+    {
+      if ( _sides[i] == bentLink ) continue;
+      gp_Vec linkNorm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
+      gp_Vec vecOut( gc, _sides[i]->MiddlePnt() );
+      if ( linkNorm * vecOut < 0 )
+        linkNorm.Reverse();
+      double mag2 = linkNorm.SquareMagnitude();
+      if ( mag2 > numeric_limits<double>::min() )
+        linkNorm /= sqrt( mag2 );
+      gp_Vec vecBent    ( _sides[i]->MiddlePnt(), bentLink->MediumPnt());
+      gp_Vec vecStraight( _sides[i]->MiddlePnt(), bentLink->MiddlePnt());
+      if ( vecBent * linkNorm > -0.1*vecStraight.Magnitude() )
+        return true;
+    }
+    return false;
+    
+  }
+
+  //================================================================================
+  /*!
    * \brief Find pairs of continues faces 
    */
   //================================================================================
@@ -2284,41 +2317,20 @@ namespace { // Structures used by FixQuadraticElements()
     TLinkSet linkSet( allLinks.begin(), allLinks.end());
     TLinkInSet linkIt = linkSet.begin(), linksEnd = linkSet.end();
 
-    // move in 2d if we are on geom face
-//     TopoDS_Face face;
-//     TopLoc_Location loc;
-//     SMESH_MesherHelper faceHelper( *helper.GetMesh());
-//     while ( linkIt->IsBoundary()) ++linkIt;
-//     if ( linkIt == linksEnd ) return;
-//     if ( (*linkIt)->MediumPos() == SMDS_TOP_FACE ) {
-//       bool checkPos = true;
-//       TopoDS_Shape f = helper.GetSubShapeByNode( (*linkIt)->_mediumNode, helper.GetMeshDS() );
-//       if ( !f.IsNull() && f.ShapeType() == TopAbs_FACE ) {
-//         face = TopoDS::Face( f );
-//         helper.GetNodeUV( face, (*linkIt)->_mediumNode, 0, &checkPos);
-//         if (checkPos)
-//           face.Nullify();
-//         else
-//           faceHelper.SetSubShape( face );
-//       }
-//     }
     for ( linkIt = linkSet.begin(); linkIt != linksEnd; ++linkIt)
     {
       if ( linkIt->IsBoundary() && !(*linkIt)->IsStraight() && linkIt->_qfaces[0])
       {
-//         if ( !face.IsNull() ) {
-//           const SMDS_MeshNode* inFaceNode =
-//             faceHelper.GetNodeUVneedInFaceNode() ? linkIt->_qfaces[0]->GetNodeInFace() : 0;
-//           gp_XY uvm = helper.GetNodeUV( face, (*linkIt)->_mediumNode, inFaceNode );
-//           gp_XY uv1 = helper.GetNodeUV( face, (*linkIt)->node1(), inFaceNode);
-//           gp_XY uv2 = helper.GetNodeUV( face, (*linkIt)->node2(), inFaceNode);
-//           gp_XY uvMove = uvm - helper.GetMiddleUV( BRep_Tool::Surface(face,loc), uv1, uv2);
-//           gp_Vec move( uvMove.X(), uvMove.Y(), 0 );
-//           linkIt->_qfaces[0]->MoveByBoundary( *linkIt, move, linkSet, &faceHelper );
-//         }
-//         else {
-          linkIt->_qfaces[0]->MoveByBoundary( *linkIt, (*linkIt)->_nodeMove, linkSet );
-          //}
+        // move iff a boundary link is bent towards inside of a face (issue 0021084)
+        const QFace* face = linkIt->_qfaces[0];
+        gp_XYZ pIn = ( face->_sides[0]->MiddlePnt() +
+                       face->_sides[1]->MiddlePnt() +
+                       face->_sides[2]->MiddlePnt() ) / 3.;
+        gp_XYZ insideDir( pIn - (*linkIt)->MiddlePnt());
+        bool linkBentInside = ((*linkIt)->_nodeMove.Dot( insideDir ) > 0 );
+        //if ( face->IsSpoiled( linkIt->_qlink ))
+        if ( linkBentInside )
+          face->MoveByBoundary( *linkIt, (*linkIt)->_nodeMove, linkSet );
       }
     }
   }
@@ -2589,7 +2601,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
 
   bool isCurved = false;
   //bool hasRectFaces = false;
-  set<int> nbElemNodeSet;
+  //set<int> nbElemNodeSet;
 
   if ( elemType == SMDSAbs_Volume )
   {
@@ -2602,7 +2614,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       for ( int iF = 0; iF < volTool.NbFaces(); ++iF ) // loop on faces of volume
       {
         int nbN = volTool.NbFaceNodes( iF );
-        nbElemNodeSet.insert( nbN );
+        //nbElemNodeSet.insert( nbN );
         const SMDS_MeshNode** faceNodes = volTool.GetFaceNodes( iF );
         vector< const QLink* > faceLinks( nbN/2 );
         for ( int iN = 0; iN < nbN; iN += 2 ) // loop on links of a face
@@ -2644,7 +2656,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       const SMDS_MeshElement* face = elemIt->next();
       if ( !face->IsQuadratic() )
         continue;
-      nbElemNodeSet.insert( face->NbNodes() );
+      //nbElemNodeSet.insert( face->NbNodes() );
       int nbN = face->NbNodes()/2;
       vector< const QLink* > faceLinks( nbN );
       for ( int iN = 0; iN < nbN; ++iN ) // loop on links of a face
