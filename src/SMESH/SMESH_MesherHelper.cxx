@@ -315,6 +315,31 @@ void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
   myTLinkNodeMap.insert( make_pair(link,n12));
 }
 
+//================================================================================
+/*!
+ * \brief Return true if position of nodes on the shape hasn't yet been checked or
+ * the positions proved to be invalid
+ */
+//================================================================================
+
+bool SMESH_MesherHelper::toCheckPosOnShape(int shapeID ) const
+{
+  map< int,bool >::const_iterator id_ok = myNodePosShapesValidity.find( shapeID );
+  return ( id_ok == myNodePosShapesValidity.end() || !id_ok->second );
+}
+
+//================================================================================
+/*!
+ * \brief Set validity of positions of nodes on the shape.
+ * Once set, validity is not changed
+ */
+//================================================================================
+
+void SMESH_MesherHelper::setPosOnShapeValidity(int shapeID, bool ok ) const
+{
+  ((SMESH_MesherHelper*)this)->myNodePosShapesValidity.insert( make_pair( shapeID, ok));
+}
+
 //=======================================================================
 //function : GetUVOnSeam
 //purpose  : Select UV on either of 2 pcurves of a seam edge, closest to the given UV
@@ -477,7 +502,8 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      const double         tol,
                                      const bool           force) const
 {
-  if ( force || !myOkNodePosShapes.count( n->GetPosition()->GetShapeId() ))
+  int shapeID = n->GetPosition()->GetShapeId();
+  if ( force || toCheckPosOnShape( shapeID ))
   {
     // check that uv is correct
     TopLoc_Location loc;
@@ -488,6 +514,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
          Precision::IsInfinite( uv.Y() ) ||
          nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
     {
+      setPosOnShapeValidity( shapeID, false );
       // uv incorrect, project the node to surface
       GeomAPI_ProjectPointOnSurf& projector = GetProjector( F, loc, tol );
       projector.Perform( nodePnt );
@@ -504,10 +531,14 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
         MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
         return false;
       }
+      // store the fixed UV on the face
+      if ( myShape.IsSame(F) && shapeID == myShapeID )
+        const_cast<SMDS_MeshNode*>(n)->SetPosition
+          ( SMDS_PositionPtr( new SMDS_FacePosition( shapeID, U, V )));
     }
     else if ( uv.Modulus() > numeric_limits<double>::min() )
     {
-      ((SMESH_MesherHelper*) this)->myOkNodePosShapes.insert( n->GetPosition()->GetShapeId() );
+      setPosOnShapeValidity( shapeID, true );
     }
   }
   return true;
@@ -657,7 +688,8 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
                                     const bool           force,
                                     double*              distance) const
 {
-  if ( force || !myOkNodePosShapes.count( n->GetPosition()->GetShapeId() ))
+  int shapeID = n->GetPosition()->GetShapeId();
+  if ( force || toCheckPosOnShape( shapeID ))
   {
     // check that u is correct
     TopLoc_Location loc; double f,l;
@@ -678,6 +710,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       if ( distance ) *distance = dist;
       if ( dist > tol )
       {
+        setPosOnShapeValidity( shapeID, false );
         // u incorrect, project the node to the curve
         int edgeID = GetMeshDS()->ShapeToIndex( E );
         TID2ProjectorOnCurve& i2proj = const_cast< TID2ProjectorOnCurve&>( myEdge2Projector );
@@ -704,11 +737,14 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
           MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
           return false;
         }
-        //u = double( U );
+        // store the fixed U on the edge
+        if ( myShape.IsSame(E) && shapeID == myShapeID )
+          const_cast<SMDS_MeshNode*>(n)->SetPosition
+            ( SMDS_PositionPtr( new SMDS_EdgePosition( shapeID, U )));
       }
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {
-        ((SMESH_MesherHelper*) this)->myOkNodePosShapes.insert( n->GetPosition()->GetShapeId() );
+        setPosOnShapeValidity( shapeID, true );
       }
       if (( u < f-tol || u > l+tol ) && force )
       {
@@ -750,6 +786,10 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
   SMDS_MeshNode* n12;
   SMESHDS_Mesh* meshDS = GetMeshDS();
+
+  if ( IsSeamShape( n1->GetPosition()->GetShapeId() ))
+    // to get a correct UV of a node on seam, the second node must have checked UV
+    std::swap( n1, n2 );
 
   // get type of shape for the new medium node
   int faceID = -1, edgeID = -1;
