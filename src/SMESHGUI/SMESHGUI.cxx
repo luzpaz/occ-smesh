@@ -826,11 +826,11 @@
     if ( selected.Extent() == 1 ) {
       Handle(SALOME_InteractiveObject) anIO = selected.First();
       if ( anIO->hasEntry() ) {
-	SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
-	if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
-	  SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
-	  aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
-	}
+        SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
+        if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+          SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
+          aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+        }
       }
     }
   }
