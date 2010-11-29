@@ -3360,8 +3360,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 814, meshId, -1 );
   createMenu( separator(), meshId, -1 );
-  createMenu( 813, meshId, -1 );
-  createMenu( separator(), meshId, -1 );
   createMenu( 900, meshId, -1 );
   //createMenu( 902, meshId, -1 );
   createMenu( 903, meshId, -1 );
@@ -3408,6 +3406,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
   createMenu( 4044, removeId, -1 );
+  createMenu( separator(), removeId, -1 );
+  createMenu( 813, removeId, -1 );
   createMenu( separator(), removeId, -1 );
   createMenu( 4043, removeId, -1 );
 
