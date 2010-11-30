@@ -5248,7 +5248,7 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
     SMESH_Group* smesh_group = 0;
     if ( strlen(groupName) )
     {
-      group_var = mesh_i->CreateGroup( SMESH::ElementType(elemType),groupName);
+      group_var = mesh_i->CreateGroup( SMESH::ElementType(int(elemType)-1),groupName);
       if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>( group_var ))
         smesh_group = group_i->GetSmeshGroup();
     }
@@ -5264,6 +5264,8 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
     storeResult( aMeshEditor );
   }
 
+  const char* dimName[] = { "BND_2DFROM3D", "BND_1DFROM3D", "BND_1DFROM2D" };
+
   // result of MakeBoundaryMesh() is a tuple (mesh, group)
   if ( mesh_var->_is_nil() )
     pyDump << myMesh_i->_this() << ", ";
@@ -5275,9 +5277,9 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
     pyDump << group_var << " = ";
   pyDump << this << ".MakeBoundaryMesh( "
          << idSource << ", "
-         << dim << ", "
-         << groupName << ", "
-         << meshName<< ", "
+         << "SMESH." << dimName[int(dim)] << ", "
+         << "'" << groupName << "', "
+         << "'" << meshName<< "', "
          << toCopyElements << ", "
          << toCopyExistingBondary << ")";
 
