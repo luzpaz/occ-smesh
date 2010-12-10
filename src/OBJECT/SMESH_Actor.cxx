@@ -199,6 +199,25 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 
+  my3DExtActor = SMESH_DeviceActor::New();
+  my3DExtActor->SetUserMatrix(aMatrix);
+  my3DExtActor->PickableOff();
+  my3DExtActor->SetProperty(my2DExtProp);
+  my3DExtActor->SetBackfaceProperty(my2DExtProp);
+  my3DExtActor->SetRepresentation(SMESH_DeviceActor::eSurface);
+  aFilter = my3DExtActor->GetExtractUnstructuredGrid();
+  aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+  aFilter->RegisterCellsWithType(VTK_TETRA);
+  aFilter->RegisterCellsWithType(VTK_VOXEL);
+  aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+  aFilter->RegisterCellsWithType(VTK_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_PYRAMID);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+  aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+
   //Definition 1D device of the actor
   //---------------------------------
   myEdgeProp = vtkProperty::New();
@@ -532,6 +551,7 @@ SMESH_ActorDef::~SMESH_ActorDef()
   my2DExtProp->Delete();
   my2DExtActor->Delete();
   my3DActor->Delete();
+  my3DExtActor->Delete();
 
   myNodeActor->Delete();
   myBaseActor->Delete();
@@ -723,8 +743,8 @@ SetControlMode(eControl theMode,
 
   bool anIsScalarVisible = theMode > eNone;
 
-  if(anIsScalarVisible){
-    switch(theMode){
+  if(anIsScalarVisible) {
+    switch(theMode) {
     case eLength:
     {
       SMESH::Controls::Length* aControl = new SMESH::Controls::Length();
@@ -753,6 +773,14 @@ SetControlMode(eControl theMode,
       break;
     case eFreeFaces:
       myFunctor.reset(new SMESH::Controls::FreeFaces());
+      myControlActor = my2DActor;
+      break;
+    case eBareBorderFace:
+      myFunctor.reset(new SMESH::Controls::BareBorderFace());
+      myControlActor = my2DActor;
+      break;
+    case eOverConstrainedFace:
+      myFunctor.reset(new SMESH::Controls::OverConstrainedFace());
       myControlActor = my2DActor;
       break;
     case eMultiConnection:
@@ -819,6 +847,18 @@ SetControlMode(eControl theMode,
       myControlActor = my3DActor;
       break;
     }
+    case eBareBorderVolume:
+    {
+      myFunctor.reset(new SMESH::Controls::BareBorderVolume());
+      myControlActor = my3DActor;
+      break;
+    }
+    case eOverConstrainedVolume:
+    {
+      myFunctor.reset(new SMESH::Controls::OverConstrainedVolume());
+      myControlActor = my3DActor;
+      break;
+    }
     case eMinimumAngle:
     {
       SMESH::Controls::MinimumAngle* aControl = new SMESH::Controls::MinimumAngle();
@@ -860,14 +900,22 @@ SetControlMode(eControl theMode,
         my1DExtActor->SetExtControlMode(myFunctor);
         break;
       case eFreeFaces:
+      case eBareBorderFace:
+      case eOverConstrainedFace:
         my2DExtActor->SetExtControlMode(myFunctor);
+        break;
+      case eBareBorderVolume:
+      case eOverConstrainedVolume:
+        my3DExtActor->SetExtControlMode(myFunctor);
         break;
       case eLength2D:
       case eMultiConnection2D:
         my1DExtActor->SetExtControlMode(myFunctor,myScalarBarActor,myLookupTable);
+        UpdateDistribution();
         break;
       default:
         myControlActor->SetControlMode(myFunctor,myScalarBarActor,myLookupTable);
+        UpdateDistribution();
       }
     }
 
@@ -911,6 +959,7 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
   theRenderer->AddActor(myNodeExtActor);
 
   my3DActor->AddToRender(theRenderer);
+  my3DExtActor->AddToRender(theRenderer);
   my2DActor->AddToRender(theRenderer);
   my2DExtActor->AddToRender(theRenderer);
 
@@ -954,6 +1003,7 @@ void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
   my2DActor->RemoveFromRender(theRenderer);
   my2DExtActor->RemoveFromRender(theRenderer);
   my3DActor->RemoveFromRender(theRenderer);
+  my3DExtActor->RemoveFromRender(theRenderer);
 
   theRenderer->RemoveActor(myScalarBarActor);
   theRenderer->RemoveActor(myPointLabels);
@@ -989,6 +1039,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   my2DActor->Init(myVisualObj,myImplicitBoolean);
   my2DExtActor->Init(myVisualObj,myImplicitBoolean);
   my3DActor->Init(myVisualObj,myImplicitBoolean);
+  my3DExtActor->Init(myVisualObj,myImplicitBoolean);
   
   my0DActor->GetMapper()->SetLookupTable(myLookupTable);
   //my0DExtActor->GetMapper()->SetLookupTable(myLookupTable);
@@ -999,6 +1050,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   my2DActor->GetMapper()->SetLookupTable(myLookupTable);
   my2DExtActor->GetMapper()->SetLookupTable(myLookupTable);
   my3DActor->GetMapper()->SetLookupTable(myLookupTable);
+  my3DExtActor->GetMapper()->SetLookupTable(myLookupTable);
     
   vtkFloatingPointType aFactor, aUnits;
   my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
@@ -1071,6 +1123,7 @@ void SMESH_ActorDef::SetTransform(VTKViewer_Transform* theTransform){
   my2DActor->SetTransform(theTransform);
   my2DExtActor->SetTransform(theTransform);
   my3DActor->SetTransform(theTransform);
+  my3DExtActor->SetTransform(theTransform);
 
   Modified();
 }
@@ -1126,6 +1179,7 @@ void SMESH_ActorDef::SetShrinkFactor(vtkFloatingPointType theValue){
   my2DActor->SetShrinkFactor(theValue);
   my2DExtActor->SetShrinkFactor(theValue);
   my3DActor->SetShrinkFactor(theValue);
+  my3DExtActor->SetShrinkFactor(theValue);
 
   Modified();
 }
@@ -1141,6 +1195,7 @@ void SMESH_ActorDef::SetShrink(){
   my2DActor->SetShrink();
   my2DExtActor->SetShrink();
   my3DActor->SetShrink();
+  my3DExtActor->SetShrink();
 
   myIsShrunk = true;
   Modified();
@@ -1157,6 +1212,7 @@ void SMESH_ActorDef::UnShrink(){
   my2DActor->UnShrink();
   my2DExtActor->UnShrink();
   my3DActor->UnShrink();
+  my3DExtActor->UnShrink();
 
   myIsShrunk = false;
   Modified();
@@ -1203,6 +1259,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
   my2DActor->VisibilityOff();
   my2DExtActor->VisibilityOff();
   my3DActor->VisibilityOff();
+  my3DExtActor->VisibilityOff();
   
   myScalarBarActor->VisibilityOff();
   myPointLabels->VisibilityOff();
@@ -1222,7 +1279,13 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
         my1DExtActor->VisibilityOn();
         break;
       case eFreeFaces:
+      case eBareBorderFace:
+      case eOverConstrainedFace:
         my2DExtActor->VisibilityOn();
+        break;
+      case eBareBorderVolume:
+      case eOverConstrainedVolume:
+        my3DExtActor->VisibilityOn();
         break;
       case eLength2D:
       case eMultiConnection2D:
@@ -1456,6 +1519,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   //my0DExtActor->SetVisibility(false);
   my1DExtActor->SetVisibility(false);
   my2DExtActor->SetVisibility(false);
+  my3DExtActor->SetVisibility(false);
 
   // ???
   //my0DActor->SetProperty(aProp);
@@ -1786,6 +1850,7 @@ SMESH_ActorDef::SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
   my2DActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
   my2DExtActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
   my3DActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  my3DExtActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
 }
 
 vtkIdType 
@@ -1947,7 +2012,7 @@ void SMESH_ActorDef::UpdateScalarBar()
   myScalarBarActor->SetDistributionColoringType(coloringType);
   
   QColor distributionColor = mgr->colorValue("SMESH", "distribution_color",
-					     QColor(255, 255, 255));
+                                             QColor(255, 255, 255));
   double rgb[3];
   rgb[0]= distributionColor.red()/255.;
   rgb[1]= distributionColor.green()/255.;
@@ -1955,6 +2020,27 @@ void SMESH_ActorDef::UpdateScalarBar()
   myScalarBarActor->SetDistributionColor(rgb);
 
   
+}
+
+void SMESH_ActorDef::UpdateDistribution()
+{
+  if(SMESH::Controls::NumericalFunctor* fun =
+     dynamic_cast<SMESH::Controls::NumericalFunctor*>(myFunctor.get()))
+  {
+    int nbIntervals = myScalarBarActor->GetMaximumNumberOfColors();
+    std::vector<int> nbEvents;
+    std::vector<double> funValues;
+    SMESH_VisualObjDef::TEntityList elems;
+    if ( ! dynamic_cast<SMESH_MeshObj*>(myVisualObj.get()))
+      dynamic_cast<SMESH_VisualObjDef*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
+    std::vector<int> elemIds;
+    for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)
+      elemIds.push_back( (*e)->GetID());
+    vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+    double * range = lookupTable->GetRange();
+    fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range);
+    myScalarBarActor->SetDistribution(nbEvents);
+  }
 }
 
 void SMESH_ActorDef::SetQuadratic2DRepresentation(EQuadratic2DRepresentation theMode)

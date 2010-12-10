@@ -363,7 +363,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     return;
   }
-  if ( method == "CreateMeshesFromUNV" || method == "CreateMeshesFromSTL")
+  if ( method == "CreateMeshesFromUNV" || method == "CreateMeshesFromSTL" || method == "CopyMesh" )
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));

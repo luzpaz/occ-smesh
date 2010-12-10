@@ -1699,7 +1699,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
     // Check my state
     if ( !_computeError || _computeError->IsOK() )
     {
-      _computeState = COMPUTE_OK;
+      _computeState = IsMeshComputed() ? COMPUTE_OK : FAILED_TO_COMPUTE;
     }
     else
     {
