@@ -49,10 +49,11 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 SWIG_FLAGS    = @SWIG_FLAGS@ -I$(srcdir) -I$(srcdir)/../SMESHGUI
 SWIG_SOURCES  = libSMESH_Swig.i
 
+salomepython_PYTHON = libSMESH_Swig.py
+salomepyexec_LTLIBRARIES = _libSMESH_Swig.la
+
 salomeinclude_HEADERS = $(SWIG_SOURCES) libSMESH_Swig.h
 
-# Libraries targets
-lib_LTLIBRARIES                  = _libSMESH_Swig.la
 _libSMESH_Swig_la_SOURCES        = $(SWIG_SOURCES) libSMESH_Swig.h libSMESH_Swig.cxx
 nodist__libSMESH_Swig_la_SOURCES = swig_wrap.cpp
 
@@ -86,14 +87,3 @@ libSMESH_Swig.py: swig_wrap.cpp
 
 CLEANFILES = swig_wrap.cpp libSMESH_Swig.py
 
-#
-# ===============================================================
-# Files to be installed
-# ===============================================================
-#
-
-# Scripts to be installed (distributed)
-dist_salomescript_DATA =
-
-# Scripts to be installed (non-distributed)
-nodist_salomescript_DATA = libSMESH_Swig.py
