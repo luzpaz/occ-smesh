@@ -50,24 +50,24 @@ usr_docs: doxyfile_py doxyfile
 docs: usr_docs
 
 clean-local:
-	@for filen in `find . -maxdepth 1` ; do			\
-	  case $${filen} in					\
-	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;	\
-	    . | .. | ./static ) ;;				\
-	    *) echo "Removing $${filen}" ; rm -rf $${filen} ;;	\
-	  esac ;						\
+	@for filen in `find . -maxdepth 1` ; do						\
+	  case $${filen} in								\
+	    ./Makefile* | ./doxyfile* | ./images | ./input | ./static | ./CVS ) ;;	\
+	    *) echo "Removing $${filen}" ; rm -rf $${filen} ;;				\
+	  esac ;									\
 	done ;
 
-install-data-local: usr_docs
-	$(INSTALL) -d $(DESTDIR)$(docdir)/gui/SMESH
-	@for filen in `find . -maxdepth 1` ; do							\
+install-data-local:
+	@if [ -e main.html ]; then 								\
+	$(INSTALL) -d $(DESTDIR)$(docdir)/gui/SMESH; 						\
+	for filen in `find . -maxdepth 1` ; do							\
 	  case $${filen} in									\
-	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;					\
-	    ./doxyfile.bak | ./doxyfile_py.bak ) ;;						\
+	    ./Makefile* | ./doxyfile* ) ;;							\
 	    . | .. | ./static ) ;;								\
 	    *) echo "Installing $${filen}" ; cp -rp $${filen} $(DESTDIR)$(docdir)/gui/SMESH ;;	\
 	  esac ;										\
-	done ;
+	done ; 											\
+	fi
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)/gui/SMESH
