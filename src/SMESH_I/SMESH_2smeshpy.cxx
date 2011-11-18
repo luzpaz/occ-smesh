@@ -423,7 +423,9 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
 
   // objects erasing creation command if no more it's commands invoked:
   // SMESH_Pattern, FilterManager
-  if ( method == "GetPattern" || method == "CreateFilterManager" ) {
+  if ( method == "GetPattern" ||
+       method == "CreateFilterManager" ||
+       method == "CreateMeasurements" ) {
     Handle(_pyObject) obj = new _pySelfEraser( theCommand );
     if ( !myObjects.insert( make_pair( obj->GetID(), obj )).second )
       theCommand->Clear(); // already created
