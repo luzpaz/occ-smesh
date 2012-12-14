@@ -33,6 +33,7 @@
 
 #include <GeometryGUI.h>
 #include <GEOM_SelectionFilter.h>
+#include <GEOM_GenericObjPtr.h>
 
 #include <SUIT_Session.h>
 #include <SUIT_OverrideCursor.h>
@@ -204,7 +205,7 @@ LightApp_Dialog* SMESHGUI_GroupOnShapeOp::dlg() const
  */
 //================================================================================
 
-static SMESH::ElementType elementType(GEOM::GEOM_Object_var& geom)
+static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
 {
   if ( !geom->_is_nil() ) {
     switch ( geom->GetShapeType() ) {
@@ -219,17 +220,17 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var& geom)
     default:             return SMESH::ALL;
     }
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    GEOM::GEOM_IShapesOperations_var aShapeOp =
+    GEOM::GEOM_IShapesOperations_wrap aShapeOp =
       SMESH::GetGEOMGen()->GetIShapesOperations(aStudy->StudyId());
 
     if ( geom->GetType() == 37 ) { // geom group
-      GEOM::GEOM_IGroupOperations_var  aGroupOp =
+      GEOM::GEOM_IGroupOperations_wrap aGroupOp =
         SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
       if ( !aGroupOp->_is_nil() ) {
-        GEOM::GEOM_Object_var mainShape = aGroupOp->GetMainShape( geom );
-        GEOM::ListOfLong_var        ids = aGroupOp->GetObjects( geom );
+        GEOM::GEOM_Object_wrap mainShape = aGroupOp->GetMainShape( geom );
+        GEOM::ListOfLong_var         ids = aGroupOp->GetObjects( geom );
         if ( ids->length() && !mainShape->_is_nil() && !aShapeOp->_is_nil() ) {
-          GEOM::GEOM_Object_var member = aShapeOp->GetSubShape( mainShape, ids[0] );
+          GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( mainShape, ids[0] );
           return elementType( member );
         }
       }
@@ -237,7 +238,7 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var& geom)
     else if ( !aShapeOp->_is_nil() ) { // just a compoud shape
       GEOM::ListOfLong_var ids = aShapeOp->SubShapeAllIDs( geom, GEOM::SHAPE, false );
       if ( ids->length() ) {
-        GEOM::GEOM_Object_var member = aShapeOp->GetSubShape( geom, ids[0] );
+        GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( geom, ids[0] );
         return elementType( member );
       }
     }

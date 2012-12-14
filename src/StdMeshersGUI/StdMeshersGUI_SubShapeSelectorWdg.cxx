@@ -68,9 +68,6 @@
 #include <TopExp_Explorer.hxx>
 #include <StdSelect_TypeOfEdge.hxx>
 
-// SALOME KERNEL includes
-#include <SALOMEDS_SObject.hxx>
-
 
 #define SPACING 6
 #define MARGIN 0
@@ -470,18 +467,17 @@ GEOM::GEOM_Object_var StdMeshersGUI_SubShapeSelectorWdg::GetGeomObjectByEntry( c
 {
   GEOM::GEOM_Object_var aGeomObj;
   SALOMEDS::Study_var aStudy = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
-  if (aStudy != 0) {
+  if ( !aStudy->_is_nil() )
+  {
     SALOMEDS::SObject_var aSObj = aStudy->FindObjectID( theEntry.toLatin1().data() );
-    SALOMEDS::GenericAttribute_var anAttr;
-
-    if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
-      SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-      CORBA::String_var aVal = anIOR->Value();
-      CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+    if (!aSObj->_is_nil() )
+    {
+      CORBA::Object_var obj = aSObj->GetObject();
       aGeomObj = GEOM::GEOM_Object::_narrow(obj);
+      aSObj->UnRegister();
     }
   }
-  return aGeomObj;
+  return aGeomObj._retn();
 }
 
 //=================================================================================
