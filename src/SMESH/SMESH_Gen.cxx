@@ -53,6 +53,9 @@
 
 using namespace std;
 
+//#include <vtkDebugLeaks.h>
+
+
 //=============================================================================
 /*!
  *  Constructor
@@ -67,11 +70,12 @@ SMESH_Gen::SMESH_Gen()
         _segmentation = _nbSegments = 10;
         SMDS_Mesh::_meshList.clear();
         MESSAGE(SMDS_Mesh::_meshList.size());
-        _counters = new counters(100);
+        //_counters = new counters(100);
 #ifdef WITH_SMESH_CANCEL_COMPUTE
         _compute_canceled = false;
         _sm_current = NULL;
 #endif
+        //vtkDebugLeaks::SetExitError(0);
 }
 
 //=============================================================================
@@ -83,6 +87,12 @@ SMESH_Gen::SMESH_Gen()
 SMESH_Gen::~SMESH_Gen()
 {
   MESSAGE("SMESH_Gen::~SMESH_Gen");
+  std::map < int, StudyContextStruct * >::iterator i_sc = _mapStudyContext.begin();
+  for ( ; i_sc != _mapStudyContext.end(); ++i_sc )
+  {
+    delete i_sc->second->myDocument;
+    delete i_sc->second;
+  }  
 }
 
 //=============================================================================
