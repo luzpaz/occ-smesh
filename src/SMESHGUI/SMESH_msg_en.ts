@@ -2591,6 +2591,10 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
+        <translation>Mesh visualization failed</translation>
+    </message>
+    <message>
+        <source>SMESH_VISU_PROBLEM_MEMORY</source>
         <translation>Mesh visualization failed, probably due to lack of memory</translation>
     </message>
     <message>
