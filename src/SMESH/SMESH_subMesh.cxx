@@ -2192,20 +2192,19 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
 {
   map< EventListener*, EventListenerData* >::iterator l_d =
     _eventListeners.find( listener );
-  if ( l_d != _eventListeners.end() ) {
-    if ( l_d->first && l_d->first->IsDeletable() )
-    {
-      l_d->first->BeforeDelete( this, l_d->second );
-      delete l_d->first;
-    }
+  if ( l_d != _eventListeners.end() && l_d->first )
+  {
     if ( l_d->second && l_d->second->IsDeletable() )
     {
       delete l_d->second;
     }
+    l_d->first->myBusySM.erase( this );
+    if ( l_d->first->IsDeletable() )
+    {
+      l_d->first->BeforeDelete( this, l_d->second );
+      delete l_d->first;
+    }
     _eventListeners.erase( l_d );
-
-    if ( l_d->first && !l_d->first->IsDeletable() )
-      l_d->first->myBusySM.erase( this );
   }
 }
 
