@@ -85,7 +85,7 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
   callBackCommand->SetCallback(SMESH_NodeLabelActor::ProcessEvents);
 
   myTransformFilter->AddObserver("VTKViewer_TransformFilter::TransformationFinished",
-				 callBackCommand);
+                                 callBackCommand);
   callBackCommand->Delete();
 }
 
@@ -178,9 +178,9 @@ void SMESH_NodeLabelActor::UpdateLabels() {
 
 
 void SMESH_NodeLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
-					 unsigned long theEvent,
-					 void* theClientData,
-					 void* vtkNotUsed(theCallData)) {
+                                         unsigned long theEvent,
+                                         void* theClientData,
+                                         void* vtkNotUsed(theCallData)) {
   SMESH_NodeLabelActor* self = reinterpret_cast<SMESH_NodeLabelActor*>(theClientData);    
   if(self)
     self->UpdateLabels();
