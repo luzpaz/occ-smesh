@@ -41,6 +41,7 @@
 // SALOME GEOM includes
 #include <GEOMBase.h>
 #include <GEOM_Actor.h>
+#include <GEOM_GenericObjPtr.h>
 
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
@@ -58,6 +59,7 @@
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
 #include <SALOMEDSClient_SObject.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 // OCCT includes
 #include <BRep_Tool.hxx>
@@ -386,17 +388,23 @@ namespace SMESH
   }
   // -----------------------------------------------------------------------
   /*!
-   * \brief Return sub-shape by ID
+   * \brief Return sub-shape by ID. WARNING: UnRegister() must be called on a result
    */
   GEOM::GEOM_Object_ptr getSubShape( int subShapeID, GEOM::GEOM_Object_var aMainShape)
   {
     GEOM::GEOM_Object_var aSubShape;
-    if ( subShapeID == 1 )
+    if ( subShapeID == 1 ) {
       aSubShape = aMainShape;
-    else if ( _PTR(SObject) so = getSubShapeSO( subShapeID, aMainShape ))
+      aSubShape->Register();
+    }
+    else if ( _PTR(SObject) so = getSubShapeSO( subShapeID, aMainShape )) {
       aSubShape = SMESH::SObjectToInterface<GEOM::GEOM_Object>( so );
-    else
+      aSubShape->Register();
+    }
+    else {
       aSubShape = SMESH::GetSubShape( aMainShape, subShapeID );
+      // future call of UnRegister() will delete a servant of this new object
+    }
     return aSubShape._retn();
   }
   // -----------------------------------------------------------------------
@@ -433,7 +441,8 @@ namespace SMESH
       text = aSO->GetName().c_str();
     else {
       text = QString("#%1").arg( subShapeID );
-      QString typeName = shapeTypeName( getSubShape( subShapeID, aMainShape ));
+      GEOM::GEOM_Object_wrap shape = getSubShape( subShapeID, aMainShape );
+      QString typeName = shapeTypeName( shape );
       if ( typeName.length() )
         text += QString(" (%1)").arg(typeName);
     }
@@ -1094,20 +1103,22 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
   foreach ( row, rows )
   {
     int curSub = table()->item(row, COL_SHAPEID)->text().toInt();
-    GEOM::GEOM_Object_var shape = SMESH::getSubShape( curSub, myMainShape );
+    GEOM::GEOM_Object_wrap shape = SMESH::getSubShape( curSub, myMainShape );
     if ( !shape->_is_nil() && ! SMESH::getSubShapeSO( curSub, myMainShape ))
     {
       if ( !SMESH::getSubShapeSO( 1, myMainShape )) // the main shape not published
       {
         QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
-        SALOMEDS::SObject_var so =
+        SALOMEDS::SObject_wrap so =
           geomGen->AddInStudy( study, myMainShape, name.toLatin1().data(), GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
         for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
           if ( table()->item( r, COL_SHAPEID )->text() == "1" ) {
             if ( so->_is_nil() ) {
-              table()->item( r, COL_SHAPE )->setText( so->GetName() );
-              table()->item( r, COL_PUBLISHED )->setText( so->GetID() );
+              CORBA::String_var name  = so->GetName();
+              CORBA::String_var entry = so->GetID();
+              table()->item( r, COL_SHAPE     )->setText( name.in() );
+              table()->item( r, COL_PUBLISHED )->setText( entry.in() );
             }
             break;
           }
@@ -1115,10 +1126,12 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         if ( curSub == 1 ) continue;
       }
       QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
-      SALOMEDS::SObject_var so = geomGen->AddInStudy( study, shape, name.toLatin1().data(), myMainShape);
+      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, shape, name.toLatin1().data(), myMainShape);
       if ( !so->_is_nil() ) {
-        table()->item( row, COL_SHAPE )->setText( so->GetName() );
-        table()->item( row, COL_PUBLISHED )->setText( so->GetID() );
+        CORBA::String_var name  = so->GetName();
+        CORBA::String_var entry = so->GetID();
+        table()->item( row, COL_SHAPE     )->setText( name.in() );
+        table()->item( row, COL_PUBLISHED )->setText( entry.in() );
       }
     }
   }
