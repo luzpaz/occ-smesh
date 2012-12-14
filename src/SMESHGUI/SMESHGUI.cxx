@@ -357,12 +357,10 @@
 
             anEntryList.append( aMeshSO->GetID().c_str() );
 
-#ifdef WITHGENERICOBJ
             // obj has been published in study. Its refcount has been incremented.
             // It is safe to decrement its refcount
             // so that it will be destroyed when the entry in study will be removed
             aMeshes[i]->UnRegister();
-#endif
           }
           else {
             isEmpty = true;
@@ -1812,22 +1810,23 @@
       std::string anEntry = SO->GetID();
 
       /** Erase graphical object **/
-      if(SO->FindAttribute(anAttr, "AttributeIOR")){
-        ViewManagerList aViewMenegers = anApp->viewManagers();
-        ViewManagerList::const_iterator it = aViewMenegers.begin();
-        for( ; it != aViewMenegers.end(); it++) {         
-          SUIT_ViewManager* vm = *it;
-          int nbSf = vm ? vm->getViewsCount() : 0;
-          if(vm) {
-            QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-            for(int i = 0; i < nbSf; i++){
-              SUIT_ViewWindow *sf = aViews[i];
-              if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-                SMESH::RemoveActor(sf,anActor);
-              }
-            }
-          }
-        }
+      if(SO->FindAttribute(anAttr, "AttributeIOR")) {
+        SMESH::RemoveVisualObjectWithActors( anEntry.c_str(), true);
+        // ViewManagerList aViewMenegers = anApp->viewManagers();
+        // ViewManagerList::const_iterator it = aViewMenegers.begin();
+        // for( ; it != aViewMenegers.end(); it++) {         
+        //   SUIT_ViewManager* vm = *it;
+        //   int nbSf = vm ? vm->getViewsCount() : 0;
+        //   if(vm) {
+        //     QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+        //     for(int i = 0; i < nbSf; i++){
+        //       SUIT_ViewWindow *sf = aViews[i];
+        //       if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+        //         SMESH::RemoveActor(sf,anActor);
+        //       }
+        //     }
+        //   }
+        // }
       }
       /** Remove an object from data structures **/
       SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
@@ -1926,10 +1925,6 @@ SalomeApp_Module( "SMESH" )
   myEventCallbackCommand->SetCallback( SMESHGUI::ProcessEvents );
   myPriority = 0.0;
 
-  SMESH::GetFilterManager();
-  SMESH::GetPattern();
-  SMESH::GetMeasurements();
-
   /* load resources for all available meshers */
   SMESH::InitAvailableHypotheses();
 }
@@ -1941,12 +1936,6 @@ SalomeApp_Module( "SMESH" )
 //=============================================================================
 SMESHGUI::~SMESHGUI()
 {
-#ifdef WITHGENERICOBJ
-  SMESH::GetFilterManager()->UnRegister();
-  SMESH::GetMeasurements()->UnRegister();
-#endif
-  SMESH::GetFilterManager() = SMESH::FilterManager::_nil();
-  SMESH::GetMeasurements() = SMESH::Measurements::_nil();
 }
 
 //=============================================================================
