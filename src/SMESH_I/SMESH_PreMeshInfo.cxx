@@ -38,12 +38,14 @@
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 
+#include <MED_Factory.hxx>
+
 #include <HDFarray.hxx>
 #include <HDFdataset.hxx>
 #include <HDFfile.hxx>
 #include <HDFgroup.hxx>
-#include <MED_Factory.hxx>
 #include <SALOMEDS_Tool.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
@@ -143,8 +145,8 @@ namespace
       SALOMEDS::Study_var study = gen->GetCurrentStudy();
       if ( !study->_is_nil() && study->StudyId() == mesh->GetStudyId() )
       {
-        SALOMEDS::SObject_var meshSO = gen->ObjectToSObject(study, mesh->_this() );
-        CORBA::Object_var obj = gen->GetNS()->Resolve( "/Kernel/Session" );
+        SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject(study, mesh->_this() );
+        CORBA::Object_var        obj = gen->GetNS()->Resolve( "/Kernel/Session" );
         _session = SALOME::Session::_narrow( obj );
         if ( !meshSO->_is_nil() && !_session->_is_nil() )
         {
@@ -929,6 +931,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
       aDataset->ReadFromDisk( isModified );
       aDataset->CloseOnDisk();
       _mesh->GetImpl().SetIsModified( bool(*isModified));
+      delete [] isModified;
     }
 
     bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
@@ -1165,9 +1168,9 @@ void SMESH_PreMeshInfo::ForgetAllData() const
   map<int, SMESH::SMESH_subMesh_ptr>::iterator id2sm = _mesh->_mapSubMeshIor.begin();
   for ( ; id2sm != _mesh->_mapSubMeshIor.end(); ++id2sm )
   {
-    if ( SMESH_subMesh_i* sm = SMESH::DownCast<SMESH_subMesh_i*>( id2sm->second ))
+    if ( SMESH_subMesh_i* sm_i = SMESH::DownCast<SMESH_subMesh_i*>( id2sm->second ))
     {
-      SMESH_PreMeshInfo* & info = sm->changePreMeshInfo();
+      SMESH_PreMeshInfo* & info = sm_i->changePreMeshInfo();
       delete info;
       info = NULL;
     }
@@ -1193,6 +1196,18 @@ void SMESH_PreMeshInfo::ForgetAllData() const
 
 
   // PreMeshInfo_CATCH;
+}
+
+//================================================================================
+/*!
+ * \brief remove all SMESH_PreMeshInfo fields from mesh and its child objects w/o data loading
+ */
+//================================================================================
+
+void SMESH_PreMeshInfo::ForgetAllData( SMESH_Mesh_i* mesh )
+{
+  if ( mesh && mesh->changePreMeshInfo() )
+    mesh->changePreMeshInfo()->ForgetAllData();
 }
 
 //================================================================================
@@ -1274,10 +1289,10 @@ void SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD(SALOMEDS::SComponent_ptr sme
   SALOMEDS::Study_var study = smeshComp->GetStudy();
   if ( theStudyIDToMeshCounter[ (int) study->StudyId() ] > 0 )
   {
-    SALOMEDS::ChildIterator_var itBig = study->NewChildIterator( smeshComp );
+    SALOMEDS::ChildIterator_wrap itBig = study->NewChildIterator( smeshComp );
     for ( ; itBig->More(); itBig->Next() ) {
-      SALOMEDS::SObject_var gotBranch = itBig->Value();
-      CORBA::Object_var anObject = SMESH_Gen_i::SObjectToObject( gotBranch );
+      SALOMEDS::SObject_wrap gotBranch = itBig->Value();
+      CORBA::Object_var       anObject = SMESH_Gen_i::SObjectToObject( gotBranch );
       if ( SMESH_Mesh_i* mesh = SMESH::DownCast<SMESH_Mesh_i*>( anObject ))
       {
         if ( mesh->changePreMeshInfo() )

@@ -29,8 +29,6 @@
 
 #include "SMESH_MeshEditor_i.hxx"
 
-#include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_FacePosition.hxx"
@@ -41,34 +39,24 @@
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
-#include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
-#include "SMESHDS_Command.hxx"
-#include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_Filter_i.hxx"
-#include "SMESH_Filter_i.hxx"
-#include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
-#include "SMESH_Group_i.hxx"
-#include "SMESH_MEDMesh_i.hxx"
-#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MeshPartDS.hxx"
 #include "SMESH_MesherHelper.hxx"
-#include "SMESH_PreMeshInfo.hxx"
-#include "SMESH_PythonDump.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_subMesh_i.hxx"
-#include "SMESH_subMesh_i.hxx"
 
-#include "utilities.h"
-#include "Utils_ExceptHandlers.hxx"
-#include "Utils_CorbaException.hxx"
+#include <utilities.h>
+#include <Utils_ExceptHandlers.hxx>
+#include <Utils_CorbaException.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -112,7 +100,7 @@ namespace MeshEditor_I {
     SMDSAbs_ElementType myPreviewType; // type to show
     //!< Constructor
     TPreviewMesh(SMDSAbs_ElementType previewElements = SMDSAbs_All) {
-      _isShapeToMesh = (_id =_studyId =_idDoc = 0);
+      _isShapeToMesh = (_id =_studyId = 0);
       _myMeshDS  = new SMESHDS_Mesh( _id, true );
       myPreviewType = previewElements;
     }
@@ -707,6 +695,11 @@ SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_arr
   SMESH::SMESH_IDSource_var anIDSourceVar = idSrc->_this();
 
   return anIDSourceVar._retn();
+}
+
+bool SMESH_MeshEditor_i::IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource )
+{
+  return SMESH::DownCast<SMESH_MeshEditor_i::_IDSource*>( idSource );
 }
 
 void SMESH_MeshEditor_i::deleteAuxIDSources()
@@ -5281,10 +5274,10 @@ void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr th
 
 SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::makeMesh(const char* theMeshName)
 {
-  SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen();
-  SMESH::SMESH_Mesh_var mesh = gen->CreateEmptyMesh();
-  SALOMEDS::Study_var study = gen->GetCurrentStudy();
-  SALOMEDS::SObject_var meshSO = gen->ObjectToSObject( study, mesh );
+  SMESH_Gen_i*              gen = SMESH_Gen_i::GetSMESHGen();
+  SMESH::SMESH_Mesh_var    mesh = gen->CreateEmptyMesh();
+  SALOMEDS::Study_var     study = gen->GetCurrentStudy();
+  SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( study, mesh );
   gen->SetName( meshSO, theMeshName, "Mesh" );
   gen->SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
 
