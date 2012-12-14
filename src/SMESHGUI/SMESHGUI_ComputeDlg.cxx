@@ -721,24 +721,43 @@ void SMESHGUI_ComputeDlg_QThread::cancel()
 //================================================================================
 //================================================================================
 
-SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *parent,
-                                                                       SMESH::SMESH_Gen_var gen,
+SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget             * parent,
+                                                                       SMESH::SMESH_Gen_var  gen,
                                                                        SMESH::SMESH_Mesh_var mesh,
                                                                        GEOM::GEOM_Object_var mainShape)
-  : QDialog(parent),
+  : QDialog(parent,
+            Qt::WindowSystemMenuHint |
+            Qt::WindowCloseButtonHint |
+            Qt::Dialog |
+            Qt::WindowMaximizeButtonHint),
     qthread(gen, mesh, mainShape)
 {
   // --
   setWindowTitle(tr("Compute"));
+  setMinimumWidth( 200 );
+
   cancelButton = new QPushButton(tr("Cancel"));
   cancelButton->setDefault(true);
+
+  QLabel * nbNodesName = new QLabel(tr("SMESH_MESHINFO_NODES"), this );
+  QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
+  nbNodesLabel = new QLabel("              0", this );
+  nbElemsLabel = new QLabel("              0", this );
+
+  QGridLayout* layout = new QGridLayout(this);
+  layout->setMargin( MARGIN );
+  layout->setSpacing( SPACING );
+  layout->addWidget(nbNodesName,  0, 0);
+  layout->addWidget(nbNodesLabel, 0, 1);
+  layout->addWidget(nbElemsName,  1, 0);
+  layout->addWidget(nbElemsLabel, 1, 1);
+  layout->addWidget(cancelButton, 2, 0, 1, 2);
+  adjustSize();
+  update();
+
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(onCancel()));
-  QHBoxLayout *layout = new QHBoxLayout;
-  layout->addWidget(cancelButton);
-  setLayout(layout);
-  resize(200, 50);
   // --
-  startTimer(30); // 30 millisecs
+  startTimer(300); // millisecs
   qthread.start();
 }
 
@@ -758,6 +777,8 @@ void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
     {
       close();
     }
+  nbNodesLabel->setText( QString("%1").arg( qthread.getMesh()->NbNodes() ));
+  nbElemsLabel->setText( QString("%1").arg( qthread.getMesh()->NbElements() ));
   event->accept();
 }
 
