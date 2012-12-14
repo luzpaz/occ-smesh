@@ -91,7 +91,7 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
   callBackCommand->SetCallback(SMESH_CellLabelActor::ProcessEvents);
 
   myTransformFilter->AddObserver("VTKViewer_TransformFilter::TransformationFinished",
-				 callBackCommand);
+                                 callBackCommand);
   callBackCommand->Delete();
 }
 
@@ -103,23 +103,22 @@ SMESH_CellLabelActor::~SMESH_CellLabelActor() {
   //Deleting of cells numbering pipeline
   //---------------------------------------
   myCellsNumDataSet->Delete();
+  myCellsLabels->Delete();
+  // commented: porting to vtk 5.0
+  //  myClsMaskPoints->UnRegisterAllOutputs();
+  myClsMaskPoints->Delete();
+  // commented: porting to vtk 5.0
+  //  myCellCenters->UnRegisterAllOutputs();
+  myCellCenters->Delete();
 
   myClsLabeledDataMapper->RemoveAllInputs();
   myClsLabeledDataMapper->Delete();
-  
   // commented: porting to vtk 5.0
   //  myClsSelectVisiblePoints->UnRegisterAllOutputs();
   myClsSelectVisiblePoints->Delete();
   
-  // commented: porting to vtk 5.0
-  //  myClsMaskPoints->UnRegisterAllOutputs();
-  myClsMaskPoints->Delete();
   
-  // commented: porting to vtk 5.0
-  //  myCellCenters->UnRegisterAllOutputs();
-  myCellCenters->Delete();
   
-  myCellsLabels->Delete();
 }
 
 
@@ -176,9 +175,9 @@ void SMESH_CellLabelActor::UpdateLabels() {
 
 
 void SMESH_CellLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
-					 unsigned long theEvent,
-					 void* theClientData,
-					 void* vtkNotUsed(theCallData)) {
+                                         unsigned long theEvent,
+                                         void* theClientData,
+                                         void* vtkNotUsed(theCallData)) {
   SMESH_CellLabelActor* self = reinterpret_cast<SMESH_CellLabelActor*>(theClientData);
   if(self)
     self->UpdateLabels();
