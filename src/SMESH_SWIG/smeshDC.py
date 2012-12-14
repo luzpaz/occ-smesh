@@ -775,36 +775,39 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         if isinstance( theCriterion, SMESH._objref_NumericalFunctor ):
             return theCriterion
         aFilterMgr = self.CreateFilterManager()
+        functor = None
         if theCriterion == FT_AspectRatio:
-            return aFilterMgr.CreateAspectRatio()
+            functor = aFilterMgr.CreateAspectRatio()
         elif theCriterion == FT_AspectRatio3D:
-            return aFilterMgr.CreateAspectRatio3D()
+            functor = aFilterMgr.CreateAspectRatio3D()
         elif theCriterion == FT_Warping:
-            return aFilterMgr.CreateWarping()
+            functor = aFilterMgr.CreateWarping()
         elif theCriterion == FT_MinimumAngle:
-            return aFilterMgr.CreateMinimumAngle()
+            functor = aFilterMgr.CreateMinimumAngle()
         elif theCriterion == FT_Taper:
-            return aFilterMgr.CreateTaper()
+            functor = aFilterMgr.CreateTaper()
         elif theCriterion == FT_Skew:
-            return aFilterMgr.CreateSkew()
+            functor = aFilterMgr.CreateSkew()
         elif theCriterion == FT_Area:
-            return aFilterMgr.CreateArea()
+            functor = aFilterMgr.CreateArea()
         elif theCriterion == FT_Volume3D:
-            return aFilterMgr.CreateVolume3D()
+            functor = aFilterMgr.CreateVolume3D()
         elif theCriterion == FT_MaxElementLength2D:
-            return aFilterMgr.CreateMaxElementLength2D()
+            functor = aFilterMgr.CreateMaxElementLength2D()
         elif theCriterion == FT_MaxElementLength3D:
-            return aFilterMgr.CreateMaxElementLength3D()
+            functor = aFilterMgr.CreateMaxElementLength3D()
         elif theCriterion == FT_MultiConnection:
-            return aFilterMgr.CreateMultiConnection()
+            functor = aFilterMgr.CreateMultiConnection()
         elif theCriterion == FT_MultiConnection2D:
-            return aFilterMgr.CreateMultiConnection2D()
+            functor = aFilterMgr.CreateMultiConnection2D()
         elif theCriterion == FT_Length:
-            return aFilterMgr.CreateLength()
+            functor = aFilterMgr.CreateLength()
         elif theCriterion == FT_Length2D:
-            return aFilterMgr.CreateLength2D()
+            functor = aFilterMgr.CreateLength2D()
         else:
             print "Error: given parameter is not numerical functor type."
+        aFilterMgr.UnRegister()
+        return functor
 
     ## Creates hypothesis
     #  @param theHType mesh hypothesis type (string)
@@ -1021,8 +1024,11 @@ class Mesh:
     #  @param theMesh a SMESH_Mesh object
     #  @ingroup l2_construct
     def SetMesh(self, theMesh):
+        if self.mesh: self.mesh.UnRegister()
         self.mesh = theMesh
-        self.geom = self.mesh.GetShapeToMesh()
+        if self.mesh:
+            self.mesh.Register()
+            self.geom = self.mesh.GetShapeToMesh()
 
     ## Returns the mesh, that is an instance of SMESH_Mesh interface
     #  @return a SMESH_Mesh object
@@ -1275,7 +1281,8 @@ class Mesh:
     #  @ingroup l2_construct
     def Clear(self):
         self.mesh.Clear()
-        if salome.sg.hasDesktop():
+        if ( salome.sg.hasDesktop() and 
+             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() )):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
