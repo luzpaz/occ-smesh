@@ -129,9 +129,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsEntityModeCache = false;
 
   myHighlightActor = SMESH_SVTKActor::New();
+  myHighlightActor->Delete(); // vtkSmartPointer!
   myHighlightActor->Initialize();
 
   myPreHighlightActor = SMESH_SVTKActor::New();
+  myPreHighlightActor->Delete();
   myPreHighlightActor->Initialize();
 
   myIsShrinkable = false;
@@ -539,12 +541,9 @@ SMESH_ActorDef::~SMESH_ActorDef()
 {
   if(MYDEBUG) MESSAGE("~SMESH_ActorDef - "<<this);
 
-#ifndef DISABLE_PLOT2DVIEWER
-  if(my2dHistogram) {
-    SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
-    delete my2dHistogram;
-  }
-#endif
+  // Please keep the order same as one in the header file
+
+  myTimeStamp->Delete();
 
   myScalarBarActor->Delete();
   myLookupTable->Delete();
@@ -553,47 +552,53 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myBackSurfaceProp->Delete();
   myNormalVProp->Delete();
   myReversedVProp->Delete();
-  myOutLineProp->Delete();
-
   myEdgeProp->Delete();
-  myHighlightProp->Delete();
-  myPreselectProp->Delete();
-
   myNodeProp->Delete();
-  myNodeExtProp->Delete();
- 
-  my0DProp->Delete();
-  my0DActor->Delete();
-  myBallActor->Delete();
-
-  //my0DExtProp->Delete();
-  //my0DExtActor->Delete();
- 
-  my1DProp->Delete();
-  my1DActor->Delete();
-
-  my1DExtProp->Delete();
-  my1DExtActor->Delete();
-
-  my2DActor->Delete();
-  my2DExtProp->Delete();
-  my2DExtActor->Delete();
-  my3DActor->Delete();
-  my3DExtProp->Delete();
-  my3DExtActor->Delete();
 
   myNodeActor->Delete();
   myBaseActor->Delete();
+  //myPickableActor->Delete(); myPickableActor == myBaseActor
 
-  myNodeExtActor->Delete();  
-  myHighlitableActor->Delete();
+  myHighlightProp->Delete();
+  myOutLineProp->Delete();
+  myPreselectProp->Delete();
 
-  myImplicitBoolean->Delete();
-
-  myTimeStamp->Delete();
   myBallHighlightProp->Delete();
   myBallPreselectProp->Delete();
-          
+
+  myHighlitableActor->Delete();
+
+  my2DExtProp->Delete();
+  my3DExtProp->Delete();
+  my2DActor->Delete();
+  my2DExtActor->Delete();
+  my3DActor->Delete();
+  my3DExtActor->Delete();
+  // myControlActor->Delete(); myControlActor == my2DActor
+
+  myNodeExtProp->Delete();
+  myNodeExtActor->Delete();  
+ 
+  my1DProp->Delete();
+  my1DActor->Delete();
+  my1DExtProp->Delete();
+  my1DExtActor->Delete();
+
+  my0DProp->Delete();
+  my0DActor->Delete();
+  myBallProp->Delete();
+  myBallActor->Delete();
+  //my0DExtProp->Delete();
+  //my0DExtActor->Delete();
+ 
+  myImplicitBoolean->Delete();         
+
+#ifndef DISABLE_PLOT2DVIEWER
+  if(my2dHistogram) {
+    SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
+    delete my2dHistogram;
+  }
+#endif
 }
 
 void SMESH_ActorDef::Delete()
@@ -1681,12 +1686,12 @@ void SMESH_ActorDef::UpdateHighlight(){
     {
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
-	myBallActor->SetProperty(myBallHighlightProp);
+        myBallActor->SetProperty(myBallHighlightProp);
       }else if(myIsPreselected){
         myHighlitableActor->SetProperty(myPreselectProp);
-	myBallActor->SetProperty(myBallPreselectProp);
+        myBallActor->SetProperty(myBallPreselectProp);
       } else if(anIsVisible){
-	myBallActor->SetProperty(myBallProp);
+        myBallActor->SetProperty(myBallProp);
         (myRepresentation == eSurface) ? 
           myHighlitableActor->SetProperty(myOutLineProp) : myHighlitableActor->SetProperty(myEdgeProp);
       }
