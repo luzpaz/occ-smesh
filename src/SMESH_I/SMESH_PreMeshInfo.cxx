@@ -47,30 +47,15 @@
 #include <SALOMEDS_Tool.hxx>
 #include <SALOMEDS_wrap.hxx>
 
-#include <Standard_ErrorHandler.hxx>
-#include <Standard_Failure.hxx>
 #include <TopoDS_Iterator.hxx>
 #include <TopoDS_Shape.hxx>
 
+#include "SMESH_TryCatch.hxx"
+
 #include CORBA_SERVER_HEADER(SALOME_Session)
 
-#define MYDEBUGOUT(msg) //std::cout << msg << std::endl;
 
-//================================================================================
-#define PreMeshInfo_TRY \
-  try { OCC_CATCH_SIGNALS
-//================================================================================
-#define PreMeshInfo_CATCH }                                             \
-  catch (Standard_Failure& ex) {                                        \
-    onExceptionCaught(SMESH_Comment("OCC Exception caught: \t")<<ex.GetMessageString()); \
-  }                                                                     \
-  catch ( const std::exception& ex) {                                   \
-    onExceptionCaught(SMESH_Comment("Exception caught: \t")<<ex.what()); \
-  }                                                                     \
-  catch (...) {                                                         \
-    onExceptionCaught("Unknown Exception caught");                      \
-  }
-//================================================================================
+#define MYDEBUGOUT(msg) //std::cout << msg << std::endl;
 
 namespace
 {
@@ -114,18 +99,6 @@ namespace
 
       SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.c_str(), aFiles.in(), true );
     }
-  }
-
-  //================================================================================
-  /*!
-   * \brief Method useful only to set a breakpoint to debug in case of exception
-   */
-  //================================================================================
-
-  void onExceptionCaught(const string& msg)
-  {
-    INFOS( msg );
-    MYDEBUGOUT( msg );
   }
 
   //=============================================================================
@@ -432,7 +405,7 @@ void SMESH_PreMeshInfo::LoadFromFile( SMESH_Mesh_i*      mesh,
                                       const std::string& hdfFile,
                                       const bool         toRemoveFiles)
 {
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   SMESH_PreMeshInfo* meshPreInfo = new SMESH_PreMeshInfo( mesh,meshID,medFile,hdfFile );
   mesh->changePreMeshInfo() = meshPreInfo;
@@ -456,7 +429,7 @@ void SMESH_PreMeshInfo::LoadFromFile( SMESH_Mesh_i*      mesh,
   {
     meshPreInfo->FullLoadFromFile();
   }
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 }
 
 //================================================================================
@@ -799,7 +772,7 @@ void SMESH_PreMeshInfo::SaveToFile( SMESH_Mesh_i* mesh,
   HDFgroup* infoHdfGroup = new HDFgroup( hdfGroupName, hdfFile );
   infoHdfGroup->CreateOnDisk();
 
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   // info of mesh
   meshInfo2hdf( mesh->GetMeshInfo(), "Mesh", infoHdfGroup );
@@ -842,7 +815,7 @@ void SMESH_PreMeshInfo::SaveToFile( SMESH_Mesh_i* mesh,
     }
   }
 
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 
   infoHdfGroup->CloseOnDisk();
 }
@@ -863,7 +836,7 @@ void SMESH_PreMeshInfo::FullLoadFromFile() const
   ::SMESH_Mesh&   mesh = _mesh->GetImpl();
   SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
 
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   MYDEBUGOUT( "BEG FullLoadFromFile() " << _meshID );
 
@@ -884,7 +857,7 @@ void SMESH_PreMeshInfo::FullLoadFromFile() const
   // load sub-meshes
   readSubMeshes( &myReader );
 
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 
   _mesh->changePreMeshInfo() = meshInfo;
 
@@ -1147,7 +1120,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
 
 void SMESH_PreMeshInfo::ForgetAllData() const
 {
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   if ( _mesh->changePreMeshInfo() != this )
     return _mesh->changePreMeshInfo()->ForgetAllData();
@@ -1179,12 +1152,12 @@ void SMESH_PreMeshInfo::ForgetAllData() const
   _mesh->changePreMeshInfo() = NULL;
   delete this;
 
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 
 
   // Finalize loading
 
-  // PreMeshInfo_TRY;
+  // SMESH_TRY;
 
   // ::SMESH_Mesh& mesh = _mesh->GetImpl();
 
@@ -1195,7 +1168,7 @@ void SMESH_PreMeshInfo::ForgetAllData() const
   // //     hyp->UpdateAsMeshesRestored();
 
 
-  // PreMeshInfo_CATCH;
+  // SMESH_CATCH( SMESH::doNothing );
 }
 
 //================================================================================
