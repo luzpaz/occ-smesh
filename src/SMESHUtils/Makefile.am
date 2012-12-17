@@ -33,7 +33,8 @@ salomeinclude_HEADERS = \
 	SMESH_Comment.hxx \
 	SMESH_ComputeError.hxx \
 	SMESH_File.hxx \
-	SMESH_Utils.hxx
+	SMESH_Utils.hxx \
+	SMESH_TryCatch.hxx
 
 # Libraries targets
 
