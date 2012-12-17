@@ -33,6 +33,13 @@ class SMESH_Actor;
 
 namespace SMESH
 {
+  //! Label font family
+  enum LabelFont { 
+    FntArial,    //!< arial font family
+    FntCourier,  //!< courier font family
+    FntTimes,    //!< times font family
+  };
+
 SMESHOBJECT_EXPORT  
   vtkFloatingPointType 
   GetFloat( const QString& theValue, 

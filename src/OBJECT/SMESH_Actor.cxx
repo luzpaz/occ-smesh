@@ -152,6 +152,22 @@ SMESH_ActorDef::SMESH_ActorDef()
   vtkFloatingPointType aLineWidth    = SMESH::GetFloat("SMESH:element_width",1);
   vtkFloatingPointType aOutlineWidth = SMESH::GetFloat("SMESH:outline_width",1);
 
+  int aSizeNd = mgr->integerValue( "SMESH", "numbering_node_size", 10 );
+  SMESH::LabelFont aFamilyNd = (SMESH::LabelFont)( mgr->integerValue( "SMESH", "numbering_node_font", 2 ) );
+  bool aBoldNd    = mgr->booleanValue( "SMESH", "numbering_node_bold",  true );
+  bool anItalicNd = mgr->booleanValue( "SMESH", "numbering_node_italic", false );
+  bool aShadowNd  = mgr->booleanValue( "SMESH", "numbering_node_shadow", false );
+  vtkFloatingPointType anRGBNd[3] = {1,1,1};
+  SMESH::GetColor( "SMESH", "numbering_node_color", anRGBNd[0], anRGBNd[1], anRGBNd[2], QColor( 255, 255, 255 ) );
+
+  int aSizeEl = mgr->integerValue( "SMESH", "numbering_elem_size", 12 );
+  SMESH::LabelFont aFamilyEl = (SMESH::LabelFont)( mgr->integerValue( "SMESH", "numbering_elem_font", 2 ) );
+  bool aBoldEl    = mgr->booleanValue( "SMESH", "numbering_elem_bold", true );
+  bool anItalicEl = mgr->booleanValue( "SMESH", "numbering_elem_italic", false );
+  bool aShadowEl  = mgr->booleanValue( "SMESH", "numbering_elem_shadow", false );
+  vtkFloatingPointType anRGBEl[3] = {0,1,0};
+  SMESH::GetColor( "SMESH", "numbering_elem_color", anRGBEl[0], anRGBEl[1], anRGBEl[2], QColor( 0, 255, 0 ) );
+
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
 
@@ -182,6 +198,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my2DActor->SetStoreGemetryMapping(true);
   my2DActor->SetUserMatrix(aMatrix);
   my2DActor->PickableOff();
+  my2DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] ); 
   my2DActor->SetProperty(mySurfaceProp);
   my2DActor->SetBackfaceProperty(myBackSurfaceProp);
   my2DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -220,6 +237,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my3DActor->SetStoreGemetryMapping(true);
   my3DActor->SetUserMatrix(aMatrix);
   my3DActor->PickableOff();
+  my3DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] ); 
   my3DActor->SetProperty(myNormalVProp);
   my3DActor->SetBackfaceProperty(myReversedVProp);
   my3DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -289,6 +307,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my1DActor->SetUserMatrix(aMatrix);
   my1DActor->PickableOff();
   my1DActor->SetHighlited(true);
+  my1DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my1DActor->SetProperty(myEdgeProp);
   my1DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   aFilter = my1DActor->GetExtractUnstructuredGrid();
@@ -334,6 +353,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my0DActor->SetUserMatrix(aMatrix);
   my0DActor->SetStoreGemetryMapping(true);
   my0DActor->PickableOff();
+  my0DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my0DActor->SetVisibility(false);
   my0DActor->SetProperty(my0DProp);
   my0DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -353,6 +373,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBallActor->SetUserMatrix(aMatrix);
   myBallActor->SetStoreGemetryMapping(true);
   myBallActor->PickableOff();
+  myBallActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );  
   myBallActor->SetVisibility(false);
   myBallActor->SetProperty(myBallProp);
   myBallActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -393,6 +414,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myNodeActor->SetStoreClippingMapping(true);
   myNodeActor->PickableOff();
   myNodeActor->SetVisibility(false);
+  myNodeActor->SetFontProperties( aFamilyNd, aSizeNd, aBoldNd, anItalicNd, aShadowNd, anRGBNd[0], anRGBNd[1], anRGBNd[2] );  
   myNodeActor->SetProperty(myNodeProp);
   myNodeActor->SetRepresentation(SMESH_DeviceActor::ePoint);
   aFilter = myNodeActor->GetExtractUnstructuredGrid();
@@ -618,6 +640,48 @@ void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
   if(myNodeActor) {
     myNodeActor->SetPointsLabeled(theIsPointsLabeled);
     SetRepresentation(GetRepresentation());
+    myTimeStamp->Modified();
+  }
+}
+
+void SMESH_ActorDef::SetPointsFontProperties( SMESH::LabelFont theFamily, int theSize,
+					      bool theBold, bool theItalic, bool theShadow,
+					      vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+{    
+  if(myNodeActor) {
+    myNodeActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+}
+
+void SMESH_ActorDef::SetCellsFontProperties( SMESH::LabelFont theFamily, int theSize,
+					     bool theBold, bool theItalic, bool theShadow,
+					     vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+{    
+  if(my3DActor) {
+    my3DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(my2DActor) {
+    my2DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(my1DActor) {
+    my1DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(my0DActor) {
+    my0DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(myBallActor) {
+    myBallActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
     myTimeStamp->Modified();
   }
 }

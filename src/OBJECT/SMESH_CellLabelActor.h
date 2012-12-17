@@ -27,12 +27,14 @@
 #define SMESH_CELL_LABEL_ACTOR_H
 
 #include "SMESH_DeviceActor.h"
+#include "SMESH_ActorUtils.h"
 
 class vtkSelectVisiblePoints;
 class vtkLabeledDataMapper;
 class vtkActor2D;
 class vtkMaskPoints;
 class vtkUnstructuredGrid;
+class vtkTextProperty;
 
 class VTKViewer_CellCenters;
 
@@ -57,6 +59,10 @@ public:
 
   virtual void AddToRender(vtkRenderer* theRenderer);
   virtual void RemoveFromRender(vtkRenderer* theRenderer);
+  
+  virtual void SetFontProperties( SMESH::LabelFont family, int size,
+				  bool bold, bool italic, bool shadow,
+				  vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
 
   void UpdateLabels();
   
@@ -72,6 +78,7 @@ protected:
   vtkLabeledDataMapper* myClsLabeledDataMapper;
   vtkSelectVisiblePoints* myClsSelectVisiblePoints;  
   SMESH_DeviceActor* myBaseActor; //Pointer to the base actor
+  vtkTextProperty* myClsTextProp;
 
 protected:
   // Not implemented.

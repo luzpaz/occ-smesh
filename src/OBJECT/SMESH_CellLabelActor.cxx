@@ -69,21 +69,19 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
   myClsLabeledDataMapper->SetLabelFormat("%d");
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
     
-  vtkTextProperty* aClsTextProp = vtkTextProperty::New();
-  aClsTextProp->SetFontFamilyToTimes();
-  static int aCellsFontSize = 12;
-  aClsTextProp->SetFontSize(aCellsFontSize);
-  aClsTextProp->SetBold(1);
-  aClsTextProp->SetItalic(0);
-  aClsTextProp->SetShadow(0);
-  myClsLabeledDataMapper->SetLabelTextProperty(aClsTextProp);
-  aClsTextProp->Delete();
+  myClsTextProp = vtkTextProperty::New();
+  myClsTextProp->SetFontFamilyToTimes();
+  myClsTextProp->SetFontSize(12);
+  myClsTextProp->SetBold(1);
+  myClsTextProp->SetItalic(0);
+  myClsTextProp->SetShadow(0);
+  myClsTextProp->SetColor( 0, 1, 0 );
+  myClsLabeledDataMapper->SetLabelTextProperty(myClsTextProp);
     
   myIsCellsLabeled = false;
 
   myCellsLabels = vtkActor2D::New();
   myCellsLabels->SetMapper(myClsLabeledDataMapper);
-  myCellsLabels->GetProperty()->SetColor(0,1,0);
   myCellsLabels->SetVisibility(myIsCellsLabeled);
 
   vtkCallbackCommand* callBackCommand = vtkCallbackCommand::New();
@@ -116,11 +114,29 @@ SMESH_CellLabelActor::~SMESH_CellLabelActor() {
   // commented: porting to vtk 5.0
   //  myClsSelectVisiblePoints->UnRegisterAllOutputs();
   myClsSelectVisiblePoints->Delete();
-  
-  
-  
+  myClsTextProp->Delete();
 }
 
+
+void SMESH_CellLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
+					      bool bold, bool italic, bool shadow,
+					      vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b  )
+{
+  switch ( family ) {
+  case SMESH::FntArial:
+    myClsTextProp->SetFontFamilyToArial(); break;
+  case SMESH::FntCourier:
+    myClsTextProp->SetFontFamilyToCourier(); break;
+  case SMESH::FntTimes:
+  default:
+    myClsTextProp->SetFontFamilyToTimes(); break;
+  }    
+  myClsTextProp->SetFontSize( size );
+  myClsTextProp->SetBold( bold );
+  myClsTextProp->SetItalic( italic );
+  myClsTextProp->SetShadow( shadow );
+  myClsTextProp->SetColor( r, g, b ); 
+}
 
 void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled) {
   myTransformFilter->Update();

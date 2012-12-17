@@ -2233,6 +2233,50 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Precision</translation>
     </message>
     <message>
+        <source>PREF_GROUP_NUMBERING</source>
+        <translation>Numbering</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_NODE</source>
+        <translation>Nodes: Color</translation>
+    </message>
+     <message>
+        <source>PREF_NUMBERING_ELEM</source>
+        <translation>Edges: Color</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_SIZE</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_FONT</source>
+        <translation>Font</translation>
+    </message>
+    <message>
+        <source>SMESH_ARIAL</source>
+        <translation>Arial</translation>
+    </message>
+    <message>
+        <source>SMESH_COURIER</source>
+        <translation>Courier</translation>
+    </message>
+    <message>
+        <source>SMESH_TIMES</source>
+        <translation>Times</translation>
+    </message>
+    <message>
+	<source>PREF_NUMBERING_BOLD</source>
+        <translation>Bold</translation>
+    </message> 
+    <message>
+        <source>PREF_NUMBERING_ITALIC</source>
+        <translation>Italic</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_SHADOW</source>
+        <translation>Shadow</translation>
+    </message>
+    <message>
         <source>SMESH_PREFERENCES_SCALARBAR</source>
         <translation>Scalar Bar Preferences</translation>
     </message>

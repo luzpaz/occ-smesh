@@ -4880,6 +4880,34 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( shrink, "min", 0 );
   setPreferenceProperty( shrink, "max", 100 );
 
+  int numGroup = addPreference( tr( "PREF_GROUP_NUMBERING" ), meshTab );
+  setPreferenceProperty( numGroup, "columns", 6 );
+  QStringList fonts;
+  fonts << tr( "SMESH_ARIAL" ) << tr( "SMESH_COURIER" ) << tr( "SMESH_TIMES" );
+  indices.clear(); indices << 0 << 1 << 2;
+  // ...
+  addPreference( tr( "PREF_NUMBERING_NODE" ), numGroup, LightApp_Preferences::Color, "SMESH", "numbering_node_color" );
+  int NumNodeSize = addPreference( tr( "PREF_NUMBERING_SIZE" ), numGroup, LightApp_Preferences::IntSpin, "SMESH", "numbering_node_size" );
+  setPreferenceProperty( NumNodeSize, "min", 1 );
+  setPreferenceProperty( NumNodeSize, "max", 100 );
+  int NumFontNode = addPreference( tr( "PREF_NUMBERING_FONT" ), numGroup, LightApp_Preferences::Selector, "SMESH", "numbering_node_font" );
+  setPreferenceProperty( NumFontNode, "strings", fonts );
+  setPreferenceProperty( NumFontNode, "indexes", indices );
+  addPreference( tr( "PREF_NUMBERING_BOLD" ), numGroup, LightApp_Preferences::Bool, "SMESH", "numbering_node_bold" );
+  addPreference( tr( "PREF_NUMBERING_ITALIC" ), numGroup, LightApp_Preferences::Bool, "SMESH", "numbering_node_italic" );
+  addPreference( tr( "PREF_NUMBERING_SHADOW" ), numGroup, LightApp_Preferences::Bool, "SMESH", "numbering_node_shadow" );
+  // ...
+  addPreference( tr( "PREF_NUMBERING_ELEM" ), numGroup, LightApp_Preferences::Color, "SMESH", "numbering_elem_color" );
+  int NumElemSize = addPreference( tr( "PREF_NUMBERING_SIZE" ), numGroup, LightApp_Preferences::IntSpin, "SMESH", "numbering_elem_size" );
+  setPreferenceProperty( NumElemSize, "min", 1 );
+  setPreferenceProperty( NumElemSize, "max", 100 );
+  int NumFontElem = addPreference( tr( "PREF_NUMBERING_FONT" ), numGroup, LightApp_Preferences::Selector, "SMESH", "numbering_elem_font" );
+  setPreferenceProperty( NumFontElem, "strings", fonts );
+  setPreferenceProperty( NumFontElem, "indexes", indices ); 
+  addPreference( tr( "PREF_NUMBERING_BOLD" ), numGroup, LightApp_Preferences::Bool, "SMESH", "numbering_elem_bold" );
+  addPreference( tr( "PREF_NUMBERING_ITALIC" ), numGroup, LightApp_Preferences::Bool, "SMESH", "numbering_elem_italic" );
+  addPreference( tr( "PREF_NUMBERING_SHADOW" ), numGroup, LightApp_Preferences::Bool, "SMESH", "numbering_elem_shadow" );
+
   int orientGroup = addPreference( tr( "PREF_GROUP_FACES_ORIENTATION" ), meshTab );
   setPreferenceProperty( orientGroup, "columns", 1 );
 
@@ -5065,6 +5093,16 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
               name == "forget_mesh_on_hyp_modif") {
       QString val = aResourceMgr->stringValue( "SMESH", name );
       myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );
+    }
+    else if(name ==  QString("numbering_node_color")  || name ==  QString("numbering_node_size") ||
+	    name ==  QString("numbering_node_font")   || name ==  QString("numbering_node_bold") ||
+	    name ==  QString("numbering_node_italic") || name ==  QString("numbering_node_shadow") ) {
+      SMESH::UpdateFontProp( this );
+    }
+    else if(name ==  QString("numbering_elem_color")  || name ==  QString("numbering_elem_size") ||
+	    name ==  QString("numbering_elem_font")   || name ==  QString("numbering_elem_bold") ||
+	    name ==  QString("numbering_elem_italic") || name ==  QString("numbering_elem_shadow") ) {
+      SMESH::UpdateFontProp( this );
     }
 
     if(aWarning.size() != 0){
