@@ -652,8 +652,15 @@ static bool checkMissing(SMESH_Gen*                aGen,
                          set<SMESH_subMesh*>&      aCheckedMap,
                          list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
-  if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX ||
-       aCheckedMap.count( aSubMesh ))
+  switch ( aSubMesh->GetSubShape().ShapeType() )
+  {
+  case TopAbs_EDGE:
+  case TopAbs_FACE:
+  case TopAbs_SOLID: break; // check this submesh, it can be meshed
+  default:
+    return true; // not meshable submesh
+  }
+  if ( aCheckedMap.count( aSubMesh ))
     return true;
 
   //MESSAGE("=====checkMissing");
