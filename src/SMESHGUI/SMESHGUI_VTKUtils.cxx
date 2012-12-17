@@ -614,7 +614,7 @@ namespace SMESH
           int deltaF, deltaV;
           SMESH::GetColor( "SMESH", "fill_color", c, deltaF, "0,170,255|-100"  );
           SMESH::GetColor( "SMESH", "volume_color", c, deltaV, "255,0,170|-100"  );
-          SMESH::GetColor( "SMESH", "default_grp_color", c );
+          c = SMESH::GetColor( "SMESH", "default_grp_color", c );
           SALOMEDS::Color aColor = aGroup->GetColor();
           if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ))
           {
