@@ -741,8 +741,8 @@ SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget  
 
   QLabel * nbNodesName = new QLabel(tr("SMESH_MESHINFO_NODES"), this );
   QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
-  nbNodesLabel = new QLabel("              0", this );
-  nbElemsLabel = new QLabel("              0", this );
+  nbNodesLabel = new QLabel("0", this );
+  nbElemsLabel = new QLabel("0", this );
 
   QGridLayout* layout = new QGridLayout(this);
   layout->setMargin( MARGIN );
