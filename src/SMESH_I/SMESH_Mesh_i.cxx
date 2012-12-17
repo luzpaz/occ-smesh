@@ -55,7 +55,6 @@
 #include <SALOMEDS_Attributes_wrap.hxx>
 #include <SALOMEDS_wrap.hxx>
 #include <SALOME_NamingService.hxx>
-#include <Utils_CorbaException.hxx>
 #include <Utils_ExceptHandlers.hxx>
 #include <Utils_SINGLETON.hxx>
 #include <utilities.h>
@@ -80,11 +79,14 @@
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS_Compound.hxx>
 
+#include "SMESH_TryCatch.hxx" // include after OCCT headers!
+
 // STL Includes
 #include <algorithm>
 #include <string>
 #include <iostream>
 #include <sstream>
+
 #include <sys/stat.h>
 
 #ifdef _DEBUG_
@@ -97,7 +99,6 @@ using namespace std;
 using SMESH::TPythonDump;
 
 int SMESH_Mesh_i::_idGenerator = 0;
-
 
 //=============================================================================
 /*!
@@ -449,10 +450,14 @@ char* SMESH_Mesh_i::GetVersionString(SMESH::MED_VERSION version, CORBA::Short nb
 int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
   throw ( SALOME::SALOME_Exception )
 {
+  SMESH_TRY;
+
   // Read mesh with name = <theMeshName> into SMESH_Mesh
   _impl->UNVToMesh( theFileName );
 
   CreateGroupServants();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   return 1;
 }
@@ -467,10 +472,28 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
 int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
   throw ( SALOME::SALOME_Exception )
 {
+  SMESH_TRY;
+
   // Read mesh with name = <theMeshName> into SMESH_Mesh
   _impl->STLToMesh( theFileName );
 
+  SMESH_CATCH( SMESH::throwCorbaException );
+
   return 1;
+}
+
+//================================================================================
+/*!
+ * \brief Function used in SMESH_CATCH by ImportGMFFile()
+ */
+//================================================================================
+
+namespace
+{
+  SMESH_ComputeErrorPtr exceptionToComputeError(const char* excText)
+  {
+    return SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, excText );
+  }
 }
 
 //================================================================================
@@ -484,29 +507,16 @@ SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName,
   throw (SALOME::SALOME_Exception)
 {
   SMESH_ComputeErrorPtr error;
-  try {
-    error = _impl->GMFToMesh( theFileName, theMakeRequiredGroups );
-  }
-  catch ( std::bad_alloc& exc ) {
-    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "std::bad_alloc raised" );
-  }
-  catch ( Standard_OutOfMemory& exc ) {
-    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "Standard_OutOfMemory raised" );
-  }
-  catch (Standard_Failure& ex) {
-    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, ex.DynamicType()->Name() );
-    if ( ex.GetMessageString() && strlen( ex.GetMessageString() ))
-      error->myComment += string(": ") + ex.GetMessageString();
-  }
-  catch ( SALOME_Exception& S_ex ) {
-    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, S_ex.what() );
-  }
-  catch ( std::exception& exc ) {
-    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, exc.what() );
-  }
-  catch (...) {
-    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "Unknown exception" );
-  }
+
+#undef SMESH_CAUGHT
+#define SMESH_CAUGHT error =
+  SMESH_TRY;
+
+  error = _impl->GMFToMesh( theFileName, theMakeRequiredGroups );
+
+  SMESH_CATCH( exceptionToComputeError );
+#undef SMESH_CAUGHT
+#define SMESH_CAUGHT
 
   CreateGroupServants();
 
@@ -846,7 +856,8 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
 void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
   throw (SALOME::SALOME_Exception)
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh_i::RemoveSubMesh");
+  SMESH_TRY;
+  
   if ( theSubMesh->_is_nil() )
     return;
 
@@ -878,6 +889,8 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
   if ( removeSubMesh( theSubMesh, aSubShapeObject.in() ))
     if ( _preMeshInfo )
       _preMeshInfo->ForgetOrLoad();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //=============================================================================
@@ -1010,6 +1023,8 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
   if ( theGroup->_is_nil() )
     return;
 
+  SMESH_TRY;
+
   SMESH_GroupBase_i* aGroup =
     dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
   if ( !aGroup )
@@ -1031,6 +1046,8 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
 
   // Remove the group from SMESH data structures
   removeGroup( aGroup->GetLocalID() );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //=============================================================================
@@ -1042,6 +1059,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
 void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
@@ -1069,6 +1087,8 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
 
   // Remove group
   RemoveGroup( theGroup );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //================================================================================
@@ -1137,60 +1157,58 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_GroupBase_ptr the
                                                   const char* theName )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  try
-  {
-    if ( theGroup1->_is_nil() || theGroup2->_is_nil() ||
-         theGroup1->GetType() != theGroup2->GetType() )
-      return SMESH::SMESH_Group::_nil();
-
-    TPythonDump pyDump;
-
-    // Create Union
-    SMESH::SMESH_Group_var aResGrp = CreateGroup( theGroup1->GetType(), theName );
-    if ( aResGrp->_is_nil() )
-      return SMESH::SMESH_Group::_nil();
-
-    SMESH::long_array_var anIds1 = theGroup1->GetListOfID();
-    SMESH::long_array_var anIds2 = theGroup2->GetListOfID();
-
-    TColStd_MapOfInteger aResMap;
-
-    for ( int i1 = 0, n1 = anIds1->length(); i1 < n1; i1++ )
-      aResMap.Add( anIds1[ i1 ] );
-
-    for ( int i2 = 0, n2 = anIds2->length(); i2 < n2; i2++ )
-      aResMap.Add( anIds2[ i2 ] );
-
-    SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( aResMap.Extent() );
-
-    int resI = 0;
-    TColStd_MapIteratorOfMapOfInteger anIter( aResMap );
-    for( ; anIter.More(); anIter.Next() )
-      aResIds[ resI++ ] = anIter.Key();
-
-    aResGrp->Add( aResIds );
-
-    // Update Python script
-    pyDump << aResGrp << " = " << _this() << ".UnionGroups( "
-           << theGroup1 << ", " << theGroup2 << ", '"
-           << theName << "' )";
-
-    return aResGrp._retn();
-  }
-  catch( ... )
-  {
+  if ( theGroup1->_is_nil() || theGroup2->_is_nil() ||
+       theGroup1->GetType() != theGroup2->GetType() )
     return SMESH::SMESH_Group::_nil();
-  }
+
+  TPythonDump pyDump;
+
+  // Create Union
+  aResGrp = CreateGroup( theGroup1->GetType(), theName );
+  if ( aResGrp->_is_nil() )
+    return SMESH::SMESH_Group::_nil();
+
+  SMESH::long_array_var anIds1 = theGroup1->GetListOfID();
+  SMESH::long_array_var anIds2 = theGroup2->GetListOfID();
+
+  TColStd_MapOfInteger aResMap;
+
+  for ( int i1 = 0, n1 = anIds1->length(); i1 < n1; i1++ )
+    aResMap.Add( anIds1[ i1 ] );
+
+  for ( int i2 = 0, n2 = anIds2->length(); i2 < n2; i2++ )
+    aResMap.Add( anIds2[ i2 ] );
+
+  SMESH::long_array_var aResIds = new SMESH::long_array;
+  aResIds->length( aResMap.Extent() );
+
+  int resI = 0;
+  TColStd_MapIteratorOfMapOfInteger anIter( aResMap );
+  for( ; anIter.More(); anIter.Next() )
+    aResIds[ resI++ ] = anIter.Key();
+
+  aResGrp->Add( aResIds );
+
+  // Update Python script
+  pyDump << aResGrp << " = " << _this() << ".UnionGroups( "
+         << theGroup1 << ", " << theGroup2 << ", '"
+         << theName << "' )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aResGrp._retn();
 }
 
 //=============================================================================
 /*!
   \brief Union list of groups. New group is created. All mesh elements that are
-   present in initial groups are added to the new one.
+  present in initial groups are added to the new one.
   \param theGroups list of groups
   \param theName name of group to be created
   \return pointer on the group
@@ -1198,7 +1216,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_GroupBase_ptr the
 //=============================================================================
 SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionListOfGroups(const SMESH::ListOfGroups& theGroups,
                                                        const char*                theName )
-throw (SALOME::SALOME_Exception)
+  throw (SALOME::SALOME_Exception)
 {
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -1206,60 +1224,59 @@ throw (SALOME::SALOME_Exception)
   if ( !theName )
     return SMESH::SMESH_Group::_nil();
 
-  try
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
+
+  vector< int > anIds;
+  SMESH::ElementType aType = SMESH::ALL;
+  for ( int g = 0, n = theGroups.length(); g < n; g++ )
   {
-    vector< int > anIds;
-    SMESH::ElementType aType = SMESH::ALL;
-    for ( int g = 0, n = theGroups.length(); g < n; g++ )
+    SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+    if ( CORBA::is_nil( aGrp ) )
+      continue;
+
+    // check type
+    SMESH::ElementType aCurrType = aGrp->GetType();
+    if ( aType == SMESH::ALL )
+      aType = aCurrType;
+    else
     {
-      SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
-      if ( CORBA::is_nil( aGrp ) )
-        continue;
-
-      // check type
-      SMESH::ElementType aCurrType = aGrp->GetType();
-      if ( aType == SMESH::ALL )
-        aType = aCurrType;
-      else 
-      {
-        if ( aType != aCurrType )
-          return SMESH::SMESH_Group::_nil();
-      }
-
-      // unite ids
-      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
-      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
-      {
-        int aCurrId = aCurrIds[ i ];
-        anIds.push_back( aCurrId );
-      }
+      if ( aType != aCurrType )
+        return SMESH::SMESH_Group::_nil();
     }
 
-    TPythonDump pyDump;
-
-    // Create group
-    SMESH::SMESH_Group_var aResGrp = CreateGroup( aType, theName );
-    if ( aResGrp->_is_nil() )
-      return SMESH::SMESH_Group::_nil();
-    
-    // Create array of identifiers
-    SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( anIds.size() );
-    
-    for ( size_t i = 0; i<anIds.size(); i++ )
-      aResIds[ i ] = anIds[i];
-    aResGrp->Add( aResIds );
-
-    // Update Python script
-    pyDump << aResGrp << " = " << _this() << ".UnionListOfGroups( "
-           << &theGroups << ", '" << theName << "' )";
-
-    return aResGrp._retn();
+    // unite ids
+    SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+    for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+    {
+      int aCurrId = aCurrIds[ i ];
+      anIds.push_back( aCurrId );
+    }
   }
-  catch( ... )
-  {
+
+  TPythonDump pyDump;
+
+  // Create group
+  aResGrp = CreateGroup( aType, theName );
+  if ( aResGrp->_is_nil() )
     return SMESH::SMESH_Group::_nil();
-  }
+
+  // Create array of identifiers
+  SMESH::long_array_var aResIds = new SMESH::long_array;
+  aResIds->length( anIds.size() );
+
+  for ( size_t i = 0; i<anIds.size(); i++ )
+    aResIds[ i ] = anIds[i];
+  aResGrp->Add( aResIds );
+
+  // Update Python script
+  pyDump << aResGrp << " = " << _this() << ".UnionListOfGroups( "
+         << &theGroups << ", '" << theName << "' )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aResGrp._retn();
 }
 
 //=============================================================================
@@ -1273,6 +1290,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
                                                       const char*                theName )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
@@ -1283,7 +1303,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
   TPythonDump pyDump;
 
   // Create Intersection
-  SMESH::SMESH_Group_var aResGrp = CreateGroup( theGroup1->GetType(), theName );
+  aResGrp = CreateGroup( theGroup1->GetType(), theName );
   if ( aResGrp->_is_nil() )
     return aResGrp;
 
@@ -1310,6 +1330,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
   pyDump << aResGrp << " = " << _this() << ".IntersectGroups( "
          << theGroup1 << ", " << theGroup2 << ", '" << theName << "')";
 
+  SMESH_CATCH( SMESH::throwCorbaException );
+
   return aResGrp._retn();
 }
 
@@ -1327,81 +1349,79 @@ SMESH_Mesh_i::IntersectListOfGroups(const SMESH::ListOfGroups& theGroups,
                                     const char*                theName )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
   if ( !theName )
     return SMESH::SMESH_Group::_nil();
 
-  try
+  NCollection_DataMap< int, int > anIdToCount;
+  SMESH::ElementType aType = SMESH::ALL;
+  for ( int g = 0, n = theGroups.length(); g < n; g++ )
   {
-    NCollection_DataMap< int, int > anIdToCount;
-    SMESH::ElementType aType = SMESH::ALL;
-    for ( int g = 0, n = theGroups.length(); g < n; g++ )
-    {
-      SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
-      if ( CORBA::is_nil( aGrp ) )
-        continue;
+    SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+    if ( CORBA::is_nil( aGrp ) )
+      continue;
 
-      // check type
-      SMESH::ElementType aCurrType = aGrp->GetType();
-      if ( aType == SMESH::ALL )
-        aType = aCurrType;
-      else 
-      {
-        if ( aType != aCurrType )
-          return SMESH::SMESH_Group::_nil();
-      }
-
-      // calculates number of occurance ids in groups
-      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
-      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
-      {
-        int aCurrId = aCurrIds[ i ];
-        if ( !anIdToCount.IsBound( aCurrId ) )
-          anIdToCount.Bind( aCurrId, 1 );
-        else 
-          anIdToCount( aCurrId ) = anIdToCount( aCurrId ) + 1;
-      }
-    }
-    
-    // create map of ids
-    int nbGrp = theGroups.length();
-    vector< int > anIds;
-    NCollection_DataMap< int, int >::Iterator anIter( anIdToCount );
-    for ( ; anIter.More(); anIter.Next() )
+    // check type
+    SMESH::ElementType aCurrType = aGrp->GetType();
+    if ( aType == SMESH::ALL )
+      aType = aCurrType;
+    else
     {
-      int aCurrId = anIter.Key();
-      int aCurrNb = anIter.Value();
-      if ( aCurrNb == nbGrp )
-        anIds.push_back( aCurrId );
+      if ( aType != aCurrType )
+        return SMESH::SMESH_Group::_nil();
     }
 
-    TPythonDump pyDump;
-
-    // Create group
-    SMESH::SMESH_Group_var aResGrp = CreateGroup( aType, theName );
-    if ( aResGrp->_is_nil() )
-      return SMESH::SMESH_Group::_nil();
-    
-    // Create array of identifiers
-    SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( anIds.size() );
-    
-    for ( size_t i = 0; i<anIds.size(); i++ )
-      aResIds[ i ] = anIds[i];
-    aResGrp->Add( aResIds );
-
-    // Update Python script
-    pyDump << aResGrp << " = " << _this() << ".IntersectListOfGroups( "
-           << &theGroups << ", '" << theName << "' )";
-
-    return aResGrp._retn();
+    // calculates number of occurance ids in groups
+    SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+    for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+    {
+      int aCurrId = aCurrIds[ i ];
+      if ( !anIdToCount.IsBound( aCurrId ) )
+        anIdToCount.Bind( aCurrId, 1 );
+      else
+        anIdToCount( aCurrId ) = anIdToCount( aCurrId ) + 1;
+    }
   }
-  catch( ... )
+
+  // create map of ids
+  int nbGrp = theGroups.length();
+  vector< int > anIds;
+  NCollection_DataMap< int, int >::Iterator anIter( anIdToCount );
+  for ( ; anIter.More(); anIter.Next() )
   {
+    int aCurrId = anIter.Key();
+    int aCurrNb = anIter.Value();
+    if ( aCurrNb == nbGrp )
+      anIds.push_back( aCurrId );
+  }
+
+  TPythonDump pyDump;
+
+  // Create group
+  aResGrp = CreateGroup( aType, theName );
+  if ( aResGrp->_is_nil() )
     return SMESH::SMESH_Group::_nil();
-  }
+
+  // Create array of identifiers
+  SMESH::long_array_var aResIds = new SMESH::long_array;
+  aResIds->length( anIds.size() );
+
+  for ( size_t i = 0; i<anIds.size(); i++ )
+    aResIds[ i ] = anIds[i];
+  aResGrp->Add( aResIds );
+
+  // Update Python script
+  pyDump << aResGrp << " = " << _this() << ".IntersectListOfGroups( "
+         << &theGroups << ", '" << theName << "' )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aResGrp._retn();
 }
 
 //=============================================================================
@@ -1415,6 +1435,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
                                                 const char*                theName )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
@@ -1425,7 +1448,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
   TPythonDump pyDump;
 
   // Perform Cutting
-  SMESH::SMESH_Group_var aResGrp = CreateGroup( theGroup1->GetType(), theName );
+  aResGrp = CreateGroup( theGroup1->GetType(), theName );
   if ( aResGrp->_is_nil() )
     return aResGrp;
 
@@ -1454,6 +1477,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
          << theGroup1 << ", " << theGroup2 << ", '"
          << theName << "' )";
 
+  SMESH_CATCH( SMESH::throwCorbaException );
+
   return aResGrp._retn();
 }
 
@@ -1473,104 +1498,102 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
                               const char*                theName )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
   if ( !theName )
     return SMESH::SMESH_Group::_nil();
 
-  try
+  set< int > aToolIds;
+  SMESH::ElementType aType = SMESH::ALL;
+  int g, n;
+  // iterate through tool groups
+  for ( g = 0, n = theToolGroups.length(); g < n; g++ )
   {
-    set< int > aToolIds;
-    SMESH::ElementType aType = SMESH::ALL;
-    int g, n;
-    // iterate through tool groups
-    for ( g = 0, n = theToolGroups.length(); g < n; g++ )
+    SMESH::SMESH_GroupBase_var aGrp = theToolGroups[ g ];
+    if ( CORBA::is_nil( aGrp ) )
+      continue;
+
+    // check type
+    SMESH::ElementType aCurrType = aGrp->GetType();
+    if ( aType == SMESH::ALL )
+      aType = aCurrType;
+    else
     {
-      SMESH::SMESH_GroupBase_var aGrp = theToolGroups[ g ];
-      if ( CORBA::is_nil( aGrp ) )
-        continue;
-
-      // check type
-      SMESH::ElementType aCurrType = aGrp->GetType();
-      if ( aType == SMESH::ALL )
-        aType = aCurrType;
-      else 
-      {
-        if ( aType != aCurrType )
-          return SMESH::SMESH_Group::_nil();
-      }
-
-      // unite tool ids
-      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
-      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
-      {
-        int aCurrId = aCurrIds[ i ];
-        aToolIds.insert( aCurrId );
-      }
+      if ( aType != aCurrType )
+        return SMESH::SMESH_Group::_nil();
     }
 
-    vector< int > anIds; // result
-
-    // Iterate through main group 
-    for ( g = 0, n = theMainGroups.length(); g < n; g++ )
+    // unite tool ids
+    SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+    for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
     {
-      SMESH::SMESH_GroupBase_var aGrp = theMainGroups[ g ];
-      if ( CORBA::is_nil( aGrp ) )
-        continue;
-
-      // check type
-      SMESH::ElementType aCurrType = aGrp->GetType();
-      if ( aType == SMESH::ALL )
-        aType = aCurrType;
-      else 
-      {
-        if ( aType != aCurrType )
-          return SMESH::SMESH_Group::_nil();
-      }
-
-      // unite tool ids
-      SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
-      for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
-      {
-        int aCurrId = aCurrIds[ i ];
-        if ( !aToolIds.count( aCurrId ) )
-          anIds.push_back( aCurrId );
-      }
+      int aCurrId = aCurrIds[ i ];
+      aToolIds.insert( aCurrId );
     }
-
-    TPythonDump pyDump;
-
-    // Create group
-    SMESH::SMESH_Group_var aResGrp = CreateGroup( aType, theName );
-    if ( aResGrp->_is_nil() )
-      return SMESH::SMESH_Group::_nil();
-    
-    // Create array of identifiers
-    SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( anIds.size() );
-    
-    for (int i=0; i<anIds.size(); i++ )
-      aResIds[ i ] = anIds[i];
-    aResGrp->Add( aResIds );
-
-    // Update Python script
-    pyDump << aResGrp << " = " << _this() << ".CutListOfGroups( "
-           << &theMainGroups << ", " << &theToolGroups << ", '"
-           << theName << "' )";
-    
-    return aResGrp._retn();
   }
-  catch( ... )
+
+  vector< int > anIds; // result
+
+  // Iterate through main group 
+  for ( g = 0, n = theMainGroups.length(); g < n; g++ )
   {
+    SMESH::SMESH_GroupBase_var aGrp = theMainGroups[ g ];
+    if ( CORBA::is_nil( aGrp ) )
+      continue;
+
+    // check type
+    SMESH::ElementType aCurrType = aGrp->GetType();
+    if ( aType == SMESH::ALL )
+      aType = aCurrType;
+    else
+    {
+      if ( aType != aCurrType )
+        return SMESH::SMESH_Group::_nil();
+    }
+
+    // unite tool ids
+    SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
+    for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+    {
+      int aCurrId = aCurrIds[ i ];
+      if ( !aToolIds.count( aCurrId ) )
+        anIds.push_back( aCurrId );
+    }
+  }
+
+  TPythonDump pyDump;
+
+  // Create group
+  aResGrp = CreateGroup( aType, theName );
+  if ( aResGrp->_is_nil() )
     return SMESH::SMESH_Group::_nil();
-  }
+
+  // Create array of identifiers
+  SMESH::long_array_var aResIds = new SMESH::long_array;
+  aResIds->length( anIds.size() );
+
+  for (int i=0; i<anIds.size(); i++ )
+    aResIds[ i ] = anIds[i];
+  aResGrp->Add( aResIds );
+
+  // Update Python script
+  pyDump << aResGrp << " = " << _this() << ".CutListOfGroups( "
+         << &theMainGroups << ", " << &theToolGroups << ", '"
+         << theName << "' )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aResGrp._retn();
 }
 
 //=============================================================================
 /*!
   \brief Create groups of entities from existing groups of superior dimensions 
-  System 
+  System
   1) extract all nodes from each group,
   2) combine all elements of specified dimension laying on these nodes.
   \param theGroups list of source groups 
@@ -1588,6 +1611,9 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
                              const char*                theName )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aResGrp;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
@@ -1602,7 +1628,7 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
 
   TPythonDump pyDump;
 
-  SMESH::SMESH_Group_var aResGrp = CreateGroup( theElemType, theName );
+  aResGrp = CreateGroup( theElemType, theName );
   if ( aResGrp->_is_nil() )
     return SMESH::SMESH_Group::_nil();
 
@@ -1610,66 +1636,61 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
     SMESH::DownCast<SMESH_GroupBase_i*>( aResGrp )->GetGroupDS();
   SMDS_MeshGroup& resGroupCore = static_cast< SMESHDS_Group* >( groupBaseDS )->SMDSGroup();
 
-  try
+  for ( int g = 0, n = theGroups.length(); g < n; g++ ) // loop on theGroups
   {
-    for ( int g = 0, n = theGroups.length(); g < n; g++ ) // loop on theGroups
+    SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+    if ( CORBA::is_nil( aGrp ) )
+      continue;
+
+    groupBaseDS = SMESH::DownCast<SMESH_GroupBase_i*>( aGrp )->GetGroupDS();
+    SMDS_ElemIteratorPtr elIt = groupBaseDS->GetElements();
+
+    if ( theElemType == SMESH::NODE ) // get all nodes of elements
     {
-      SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
-      if ( CORBA::is_nil( aGrp ) )
-        continue;
-
-      groupBaseDS = SMESH::DownCast<SMESH_GroupBase_i*>( aGrp )->GetGroupDS();
-      SMDS_ElemIteratorPtr elIt = groupBaseDS->GetElements();
-
-      if ( theElemType == SMESH::NODE ) // get all nodes of elements
-      {
-        while ( elIt->more() ) {
-          const SMDS_MeshElement* el = elIt->next();
-          SMDS_ElemIteratorPtr nIt = el->nodesIterator();
-          while ( nIt->more() )
-            resGroupCore.Add( nIt->next() );
-        }
+      while ( elIt->more() ) {
+        const SMDS_MeshElement* el = elIt->next();
+        SMDS_ElemIteratorPtr nIt = el->nodesIterator();
+        while ( nIt->more() )
+          resGroupCore.Add( nIt->next() );
       }
-      else // get elements of theElemType based on nodes of every element of group
+    }
+    else // get elements of theElemType based on nodes of every element of group
+    {
+      while ( elIt->more() )
       {
-        while ( elIt->more() )
+        const SMDS_MeshElement* el = elIt->next(); // an element of group
+        TIDSortedElemSet elNodes( el->begin_nodes(), el->end_nodes() );
+        TIDSortedElemSet checkedElems;
+        SMDS_ElemIteratorPtr nIt = el->nodesIterator();
+        while ( nIt->more() )
         {
-          const SMDS_MeshElement* el = elIt->next(); // an element of group
-          TIDSortedElemSet elNodes( el->begin_nodes(), el->end_nodes() );
-          TIDSortedElemSet checkedElems;
-          SMDS_ElemIteratorPtr nIt = el->nodesIterator();
-          while ( nIt->more() )
+          const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
+          SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
+          // check nodes of elements of theElemType around el
+          while ( elOfTypeIt->more() )
           {
-            const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
-            SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
-            // check nodes of elements of theElemType around el
-            while ( elOfTypeIt->more() )
-            {
-              const SMDS_MeshElement* elOfType = elOfTypeIt->next();
-              if ( !checkedElems.insert( elOfType ).second ) continue;
+            const SMDS_MeshElement* elOfType = elOfTypeIt->next();
+            if ( !checkedElems.insert( elOfType ).second ) continue;
 
-              SMDS_ElemIteratorPtr nIt2 = elOfType->nodesIterator();
-              bool allNodesOK = true;
-              while ( nIt2->more() && allNodesOK )
-                allNodesOK = elNodes.count( nIt2->next() );
-              if ( allNodesOK )
-                resGroupCore.Add( elOfType );
-            }
+            SMDS_ElemIteratorPtr nIt2 = elOfType->nodesIterator();
+            bool allNodesOK = true;
+            while ( nIt2->more() && allNodesOK )
+              allNodesOK = elNodes.count( nIt2->next() );
+            if ( allNodesOK )
+              resGroupCore.Add( elOfType );
           }
         }
       }
     }
-
-    // Update Python script
-    pyDump << aResGrp << " = " << _this() << ".CreateDimGroup( "
-           << &theGroups << ", " << theElemType << ", '" << theName << "' )";
-
-    return aResGrp._retn();
   }
-  catch( ... )
-  {
-    return SMESH::SMESH_Group::_nil();
-  }
+
+  // Update Python script
+  pyDump << aResGrp << " = " << _this() << ".CreateDimGroup( "
+         << &theGroups << ", " << theElemType << ", '" << theName << "' )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aResGrp._retn();
 }
 
 //================================================================================
@@ -2034,15 +2055,17 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
 //=============================================================================
 
 SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroup )
+  throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_Group_var aGroup;
+
+  SMESH_TRY;
+
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESH::SMESH_Group_var aGroup;
   if ( theGroup->_is_nil() )
     return aGroup._retn();
-
-  Unexpect aCatch(SALOME_SalomeException);
 
   SMESH_GroupBase_i* aGroupToRem =
     dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( theGroup ).in() );
@@ -2104,6 +2127,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
 
   CORBA::String_var ior = _gen_i->GetORB()->object_to_string( aGroup );
   builder->SetIOR( aGroupSO, ior.in() );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   return aGroup._retn();
 }
@@ -2287,57 +2312,57 @@ void SMESH_Mesh_i::removeGroup( const int theId )
 //=============================================================================
 
 SMESH::log_array * SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
-throw(SALOME::SALOME_Exception)
+  throw(SALOME::SALOME_Exception)
 {
+  SMESH::log_array_var aLog;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESH::log_array_var aLog;
-  try{
-    list < SMESHDS_Command * >logDS = _impl->GetLog();
-    aLog = new SMESH::log_array;
-    int indexLog = 0;
-    int lg = logDS.size();
-    SCRUTE(lg);
-    aLog->length(lg);
-    list < SMESHDS_Command * >::iterator its = logDS.begin();
-    while(its != logDS.end()){
-      SMESHDS_Command *com = *its;
-      int comType = com->GetType();
-      //SCRUTE(comType);
-      int lgcom = com->GetNumber();
-      //SCRUTE(lgcom);
-      const list < int >&intList = com->GetIndexes();
-      int inum = intList.size();
-      //SCRUTE(inum);
-      list < int >::const_iterator ii = intList.begin();
-      const list < double >&coordList = com->GetCoords();
-      int rnum = coordList.size();
-      //SCRUTE(rnum);
-      list < double >::const_iterator ir = coordList.begin();
-      aLog[indexLog].commandType = comType;
-      aLog[indexLog].number = lgcom;
-      aLog[indexLog].coords.length(rnum);
-      aLog[indexLog].indexes.length(inum);
-      for(int i = 0; i < rnum; i++){
-        aLog[indexLog].coords[i] = *ir;
-        //MESSAGE(" "<<i<<" "<<ir.Value());
-        ir++;
-      }
-      for(int i = 0; i < inum; i++){
-        aLog[indexLog].indexes[i] = *ii;
-        //MESSAGE(" "<<i<<" "<<ii.Value());
-        ii++;
-      }
-      indexLog++;
-      its++;
+  list < SMESHDS_Command * >logDS = _impl->GetLog();
+  aLog = new SMESH::log_array;
+  int indexLog = 0;
+  int lg = logDS.size();
+  SCRUTE(lg);
+  aLog->length(lg);
+  list < SMESHDS_Command * >::iterator its = logDS.begin();
+  while(its != logDS.end()){
+    SMESHDS_Command *com = *its;
+    int comType = com->GetType();
+    //SCRUTE(comType);
+    int lgcom = com->GetNumber();
+    //SCRUTE(lgcom);
+    const list < int >&intList = com->GetIndexes();
+    int inum = intList.size();
+    //SCRUTE(inum);
+    list < int >::const_iterator ii = intList.begin();
+    const list < double >&coordList = com->GetCoords();
+    int rnum = coordList.size();
+    //SCRUTE(rnum);
+    list < double >::const_iterator ir = coordList.begin();
+    aLog[indexLog].commandType = comType;
+    aLog[indexLog].number = lgcom;
+    aLog[indexLog].coords.length(rnum);
+    aLog[indexLog].indexes.length(inum);
+    for(int i = 0; i < rnum; i++){
+      aLog[indexLog].coords[i] = *ir;
+      //MESSAGE(" "<<i<<" "<<ir.Value());
+      ir++;
     }
-    if(clearAfterGet)
-      _impl->ClearLog();
+    for(int i = 0; i < inum; i++){
+      aLog[indexLog].indexes[i] = *ii;
+      //MESSAGE(" "<<i<<" "<<ii.Value());
+      ii++;
+    }
+    indexLog++;
+    its++;
   }
-  catch(SALOME_Exception & S_ex){
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
-  }
+  if(clearAfterGet)
+    _impl->ClearLog();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
   return aLog._retn();
 }
 
@@ -2350,8 +2375,9 @@ throw(SALOME::SALOME_Exception)
 
 void SMESH_Mesh_i::ClearLog() throw(SALOME::SALOME_Exception)
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh_i::ClearLog");
+  SMESH_TRY;
   _impl->ClearLog();
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //=============================================================================
@@ -2362,7 +2388,6 @@ void SMESH_Mesh_i::ClearLog() throw(SALOME::SALOME_Exception)
 
 CORBA::Long SMESH_Mesh_i::GetId()throw(SALOME::SALOME_Exception)
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh_i::GetId");
   return _id;
 }
 
@@ -2438,18 +2463,24 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 //=============================================================================
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
+  throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_MeshEditor_var aMeshEdVar;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
   // Create MeshEditor
   SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, false );
-  SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
+  aMeshEdVar = aMeshEditor->_this();
 
   // Update Python script
   TPythonDump() << aMeshEditor << " = " << _this() << ".GetMeshEditor()";
 
-  return aMesh._retn();
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aMeshEdVar._retn();
 }
 
 //=============================================================================
@@ -2459,13 +2490,20 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 //=============================================================================
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
+  throw (SALOME::SALOME_Exception)
 {
+  SMESH::SMESH_MeshEditor_var aMeshEdVar;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
   SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, true );
-  SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
-  return aMesh._retn();
+  aMeshEdVar = aMeshEditor->_this();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return aMeshEdVar._retn();
 }
 
 //================================================================================
@@ -3374,10 +3412,17 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
 SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const bool iselem )
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::ElementType type;
+  SMESH_TRY;
+
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  return ( SMESH::ElementType )_impl->GetElementType( id, iselem );
+  type = ( SMESH::ElementType ) _impl->GetElementType( id, iselem );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return type;
 }
 
 //=============================================================================
@@ -3407,10 +3452,11 @@ SMESH::EntityType SMESH_Mesh_i::GetElementGeomType( const CORBA::Long id )
 SMESH::long_array* SMESH_Mesh_i::GetSubMeshElementsId(const CORBA::Long ShapeID)
      throw (SALOME::SALOME_Exception)
 {
+  SMESH::long_array_var aResult = new SMESH::long_array();
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
-
-  SMESH::long_array_var aResult = new SMESH::long_array();
 
   SMESH_subMesh* SM = _impl->GetSubMeshContaining(ShapeID);
   if(!SM) return aResult._retn();
@@ -3425,6 +3471,8 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshElementsId(const CORBA::Long ShapeID)
   while ( eIt->more() ) {
     aResult[i++] = eIt->next()->GetID();
   }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   return aResult._retn();
 }
@@ -3441,10 +3489,11 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID,
                                                    CORBA::Boolean    all)
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::long_array_var aResult = new SMESH::long_array();
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
-
-  SMESH::long_array_var aResult = new SMESH::long_array();
 
   SMESH_subMesh* SM = _impl->GetSubMeshContaining(ShapeID);
   if(!SM) return aResult._retn();
@@ -3478,6 +3527,8 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID,
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
     aResult[i++] = *itElem;
 
+  SMESH_CATCH( SMESH::throwCorbaException );
+
   return aResult._retn();
 }
   
@@ -3490,6 +3541,9 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID,
 SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID)
   throw (SALOME::SALOME_Exception)
 {
+  SMESH::ElementType type;
+
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
@@ -3504,7 +3558,12 @@ SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID
 
   SMDS_ElemIteratorPtr eIt = SDSM->GetElements();
   const SMDS_MeshElement* anElem = eIt->next();
-  return ( SMESH::ElementType ) anElem->GetType();
+
+  type = ( SMESH::ElementType ) anElem->GetType();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return type; 
 }
   
 
