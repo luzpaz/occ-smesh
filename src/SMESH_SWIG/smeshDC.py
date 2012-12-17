@@ -3193,7 +3193,9 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements the list of elements ids for extrusion
-    #  @param StepVector vector or DirStruct, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param IsNodes is True if elements with given ids are nodes
@@ -3202,8 +3204,10 @@ class Mesh:
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
+        if isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3220,7 +3224,9 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements is ids of elements
-    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param ExtrFlags sets flags for extrusion
     #  @param SewTolerance uses for comparing locations of nodes if flag
@@ -3232,6 +3238,8 @@ class Mesh:
                           ExtrFlags, SewTolerance, MakeGroups=False):
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         if MakeGroups:
             return self.editor.AdvancedExtrusionMakeGroups(IDsOfElements, StepVector, NbOfSteps,
                                                            ExtrFlags, SewTolerance)
@@ -3242,8 +3250,9 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject the object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
-    #  @param NbOfSteps the number of steps
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param  IsNodes is True if elements which belong to the object are nodes
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3253,6 +3262,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3270,7 +3281,9 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3280,6 +3293,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3291,7 +3306,9 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3301,6 +3318,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
