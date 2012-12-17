@@ -31,10 +31,12 @@
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
+#include "SMDS_MeshGroup.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
+#include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -1575,8 +1577,11 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
   \param theElemType dimension of elements 
   \param theName name of new group
   \return pointer on new group
+  *
+  IMP 19939
 */
 //=============================================================================
+
 SMESH::SMESH_Group_ptr
 SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups, 
                              SMESH::ElementType         theElemType, 
@@ -1593,126 +1598,67 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
 
   SMDSAbs_ElementType anElemType = (SMDSAbs_ElementType)theElemType;
 
+  // Create a group
+
+  TPythonDump pyDump;
+
+  SMESH::SMESH_Group_var aResGrp = CreateGroup( theElemType, theName );
+  if ( aResGrp->_is_nil() )
+    return SMESH::SMESH_Group::_nil();
+
+  SMESHDS_GroupBase* groupBaseDS =
+    SMESH::DownCast<SMESH_GroupBase_i*>( aResGrp )->GetGroupDS();
+  SMDS_MeshGroup& resGroupCore = static_cast< SMESHDS_Group* >( groupBaseDS )->SMDSGroup();
+
   try
   {
-    // Create map of nodes from all groups 
-
-    set< int > aNodeMap;
-    
-    for ( int g = 0, n = theGroups.length(); g < n; g++ )
+    for ( int g = 0, n = theGroups.length(); g < n; g++ ) // loop on theGroups
     {
       SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
       if ( CORBA::is_nil( aGrp ) )
         continue;
 
-      SMESH::ElementType aType = aGrp->GetType();
-      if ( aType == SMESH::ALL )
-        continue;
-      else if ( aType == SMESH::NODE )
+      groupBaseDS = SMESH::DownCast<SMESH_GroupBase_i*>( aGrp )->GetGroupDS();
+      SMDS_ElemIteratorPtr elIt = groupBaseDS->GetElements();
+
+      if ( theElemType == SMESH::NODE ) // get all nodes of elements
       {
-        SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
-        for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
-        {
-          int aCurrId = aCurrIds[ i ];
-          const SMDS_MeshNode* aNode = aMeshDS->FindNode( aCurrId );
-          if ( aNode )
-            aNodeMap.insert( aNode->GetID() );
+        while ( elIt->more() ) {
+          const SMDS_MeshElement* el = elIt->next();
+          SMDS_ElemIteratorPtr nIt = el->nodesIterator();
+          while ( nIt->more() )
+            resGroupCore.Add( nIt->next() );
         }
       }
-      else 
+      else // get elements of theElemType based on nodes of every element of group
       {
-        SMESH::long_array_var aCurrIds = aGrp->GetListOfID();
-        for ( int i = 0, n = aCurrIds->length(); i < n; i++ )
+        while ( elIt->more() )
         {
-          int aCurrId = aCurrIds[ i ];
-          const SMDS_MeshElement* anElem = aMeshDS->FindElement( aCurrId );
-          if ( !anElem )
-            continue;
-          SMDS_ElemIteratorPtr aNodeIter = anElem->nodesIterator();
-          while( aNodeIter->more() )
+          const SMDS_MeshElement* el = elIt->next(); // an element of group
+          TIDSortedElemSet elNodes( el->begin_nodes(), el->end_nodes() );
+          TIDSortedElemSet checkedElems;
+          SMDS_ElemIteratorPtr nIt = el->nodesIterator();
+          while ( nIt->more() )
           {
-            const SMDS_MeshNode* aNode = 
-              dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() );
-            if ( aNode )
-              aNodeMap.insert( aNode->GetID() );
+            const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
+            SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
+            // check nodes of elements of theElemType around el
+            while ( elOfTypeIt->more() )
+            {
+              const SMDS_MeshElement* elOfType = elOfTypeIt->next();
+              if ( !checkedElems.insert( elOfType ).second ) continue;
+
+              SMDS_ElemIteratorPtr nIt2 = elOfType->nodesIterator();
+              bool allNodesOK = true;
+              while ( nIt2->more() && allNodesOK )
+                allNodesOK = elNodes.count( nIt2->next() );
+              if ( allNodesOK )
+                resGroupCore.Add( elOfType );
+            }
           }
         }
       }
     }
-
-    // Get result identifiers 
-
-    vector< int > aResultIds;
-    if ( theElemType == SMESH::NODE )
-    {
-      //NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
-      set<int>::iterator iter = aNodeMap.begin();
-      for ( ; iter != aNodeMap.end(); iter++ )
-        aResultIds.push_back( *iter);
-    }
-    else
-    {
-      // Create list of elements of given dimension constructed on the nodes
-      vector< int > anElemList;
-      //NCollection_Map< int >::Iterator aNodeIter( aNodeMap );
-      //for ( ; aNodeIter.More(); aNodeIter.Next() )
-      set<int>::iterator iter = aNodeMap.begin();
-      for ( ; iter != aNodeMap.end(); iter++ )
-      {
-        const SMDS_MeshElement* aNode = 
-          dynamic_cast<const SMDS_MeshElement*>( aMeshDS->FindNode( *iter ) );
-        if ( !aNode )
-          continue;
-
-         SMDS_ElemIteratorPtr anElemIter = aNode->elementsIterator( anElemType );
-        while( anElemIter->more() )
-        {
-          const SMDS_MeshElement* anElem = 
-            dynamic_cast<const SMDS_MeshElement*>( anElemIter->next() );
-          if ( anElem && anElem->GetType() == anElemType )
-            anElemList.push_back( anElem->GetID() );
-        }
-      }
-
-      // check whether all nodes of elements are present in nodes map
-      for (int i=0; i< anElemList.size(); i++)
-      {
-        const SMDS_MeshElement* anElem = aMeshDS->FindElement( anElemList[i] );
-        if ( !anElem )
-          continue;
-
-        bool isOk = true;
-        SMDS_ElemIteratorPtr aNodeIter = anElem->nodesIterator();
-        while( aNodeIter->more() )
-        {
-          const SMDS_MeshNode* aNode = 
-            dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() );
-          if ( !aNode || !aNodeMap.count( aNode->GetID() ) )
-          {
-            isOk = false;
-            break;
-          }
-        } 
-        if ( isOk )
-          aResultIds.push_back( anElem->GetID() );
-      }
-    }
-
-    // Create group
-
-    TPythonDump pyDump;
-
-    SMESH::SMESH_Group_var aResGrp = CreateGroup( theElemType, theName );
-    if ( aResGrp->_is_nil() )
-      return SMESH::SMESH_Group::_nil();
-    
-    // Create array of identifiers
-    SMESH::long_array_var aResIds = new SMESH::long_array;
-    aResIds->length( aResultIds.size() );
-    
-    for (int i=0; i< aResultIds.size(); i++)
-      aResIds[ i ] = aResultIds[i];
-    aResGrp->Add( aResIds );
 
     // Update Python script
     pyDump << aResGrp << " = " << _this() << ".CreateDimGroup( "
