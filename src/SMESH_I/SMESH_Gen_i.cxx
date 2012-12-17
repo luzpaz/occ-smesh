@@ -995,6 +995,13 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
                                                            const char* theCommandNameForPython,
                                                            const char* theFileNameForPython)
 {
+#ifdef WIN32
+  char bname[ _MAX_FNAME ];
+  _splitpath( theFileNameForPython, NULL, NULL, bname, NULL );
+  string aFileName = bname;
+#else
+  string aFileName = basename( theFileNameForPython );
+#endif
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( theFileName );
@@ -1027,7 +1034,10 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
       // publish mesh in the study
       SALOMEDS::SObject_wrap aSO;
       if ( CanPublishInStudy( mesh ) )
-        aSO = PublishMesh( myCurrentStudy, mesh.in(), (*it).c_str() );
+	// little trick: for MED file theFileName and theFileNameForPython are the same, but they are different for SAUV
+	// - as names of meshes are stored in MED file, we use them for data publishing
+	// - as mesh name is not stored in UNV file, we use file name as name of mesh when publishing data
+        aSO = PublishMesh( myCurrentStudy, mesh.in(), ( theFileName == theFileNameForPython ) ? (*it).c_str() : aFileName.c_str() );
       if ( !aSO->_is_nil() ) {
         // Python Dump
         aPythonDump << aSO;
@@ -1125,7 +1135,14 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  string aFileName;
+  //string aFileName;
+#ifdef WIN32
+  char bname[ _MAX_FNAME ];
+  _splitpath( theFileName, NULL, NULL, bname, NULL );
+  string aFileName = bname;
+#else
+  string aFileName = basename( theFileName );
+#endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
