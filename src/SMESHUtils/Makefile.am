@@ -45,6 +45,7 @@ dist_libSMESHUtils_la_SOURCES = \
 	SMESH_Quadtree.cxx \
 	SMESH_Octree.cxx \
 	SMESH_OctreeNode.cxx \
+	SMESH_TryCatch.cxx \
 	SMESH_File.cxx
 
 # additionnal information to compile and link file

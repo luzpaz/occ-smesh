@@ -99,17 +99,11 @@
 
 //-------------------------------------------------------------------------------------
 // Functions that can be used as an argument of SMESH_CATCH
+
 namespace SMESH
 {
-  void throwSalomeEx(const char* txt)
-  {
-    throw SALOME_Exception( txt );
-  }
-
-  inline void doNothing(const char* txt)
-  {
-    MESSAGE( txt << " " << __FILE__ << ": " << __LINE__ );
-  }
+  void throwSalomeEx(const char* txt);
+  inline void doNothing(const char* txt);
 }
 
 #endif
