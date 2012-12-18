@@ -41,6 +41,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
 class QButtonGroup;
+class QContextMenuEvent;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -161,6 +162,10 @@ protected:
   QString      formatConnectivity( Connectivity, int );
   XYZ          gravityCenter( const SMDS_MeshElement* );
 
+signals:
+  void         itemInfo( int );
+  void         itemInfo( const QString& );
+
 private slots:
   void         showPrevious();
   void         showNext();
@@ -177,6 +182,8 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
 {
+  Q_OBJECT
+
 public:
   SMESHGUI_SimpleElemInfo( QWidget* = 0 );
 
@@ -190,6 +197,8 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
 {
+  Q_OBJECT;
+
   class ItemDelegate;
 
   enum { Bold = 0x01, All = 0x80 };
@@ -198,9 +207,13 @@ public:
   SMESHGUI_TreeElemInfo( QWidget* = 0 );
 
 protected:
+  void             contextMenuEvent( QContextMenuEvent* e );
   void             information( const QList<long>& );
   void             clearInternal();
 
+private slots:
+  void             itemDoubleClicked( QTreeWidgetItem*, int );
+  
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
   
@@ -291,6 +304,8 @@ private slots:
   void deactivate();
   void modeChanged();
   void idChanged();
+  void showItemInfo( int );
+  void showItemInfo( const QString& );
 
 private:
   QTabWidget*        myTabWidget;

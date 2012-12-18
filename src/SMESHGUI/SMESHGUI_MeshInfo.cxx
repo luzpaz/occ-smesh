@@ -45,6 +45,7 @@
 
 #include <QApplication>
 #include <QButtonGroup>
+#include <QContextMenuEvent>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -52,6 +53,7 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QTabWidget>
@@ -68,6 +70,16 @@ const int MARGIN       = 9;
 const int MAXITEMS     = 10;
 const int GROUPS_ID    = 100;
 const int SUBMESHES_ID = 200;
+
+enum InfoRole {
+  TypeRole = Qt::UserRole + 10,
+  IdRole,
+};
+
+enum InfoType {
+  NodeConnectivity = 100,
+  ElemConnectivity,
+};
 
 /*!
   \class ExtraWidget
@@ -1194,6 +1206,7 @@ SMESHGUI_TreeElemInfo::SMESHGUI_TreeElemInfo( QWidget* parent )
   QVBoxLayout* l = new QVBoxLayout( frame() );
   l->setMargin( 0 );
   l->addWidget( myInfo );
+  connect( myInfo, SIGNAL( itemDoubleClicked( QTreeWidgetItem*, int ) ), this, SLOT( itemDoubleClicked( QTreeWidgetItem*, int ) ) );
 }
 
 /*!
@@ -1250,24 +1263,28 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, tr( "BALL_ELEMENTS" ) );
             i->setText( 1, con );
+	    i->setData( 1, TypeRole, NodeConnectivity );
           }
           con = formatConnectivity( connectivity, SMDSAbs_Edge );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, tr( "EDGES" ) );
             i->setText( 1, con );
+	    i->setData( 1, TypeRole, NodeConnectivity );
           }
           con = formatConnectivity( connectivity, SMDSAbs_Face );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, tr( "FACES" ) );
             i->setText( 1, con );
+	    i->setData( 1, TypeRole, NodeConnectivity );
           }
           con = formatConnectivity( connectivity, SMDSAbs_Volume );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, tr( "VOLUMES" ) );
             i->setText( 1, con );
+	    i->setData( 1, TypeRole, NodeConnectivity );
           }
         }
         else {
@@ -1410,6 +1427,8 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           QTreeWidgetItem* nodeItem = createItem( conItem, Bold );
           nodeItem->setText( 0, QString( "%1 %2 / %3" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
           nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
+	  nodeItem->setData( 1, TypeRole, ElemConnectivity );
+	  nodeItem->setData( 1, IdRole, node->GetID() );
           nodeItem->setExpanded( false );
           // node coordinates
           QTreeWidgetItem* coordItem = createItem( nodeItem );
@@ -1439,24 +1458,28 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, tr( "EDGES" ) );
               i->setText( 1, con );
+	      i->setData( 1, TypeRole, NodeConnectivity );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Ball );
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, tr( "BALL_ELEMENTS" ) );
               i->setText( 1, con );
+	      i->setData( 1, TypeRole, NodeConnectivity );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Face );
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, tr( "FACES" ) );
               i->setText( 1, con );
+	      i->setData( 1, TypeRole, NodeConnectivity );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Volume );
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, tr( "VOLUMES" ) );
               i->setText( 1, con );
+	      i->setData( 1, TypeRole, NodeConnectivity );
             }
           }
         }
@@ -1598,6 +1621,33 @@ QTreeWidgetItem* SMESHGUI_TreeElemInfo::createItem( QTreeWidgetItem* parent, int
 
   item->setExpanded( true );
   return item;
+}
+
+void SMESHGUI_TreeElemInfo::contextMenuEvent( QContextMenuEvent* e )
+{
+  QList< QTreeWidgetItem* > widgets = myInfo->selectedItems();
+  if ( widgets.isEmpty() ) return;
+  QTreeWidgetItem* aTreeItem = widgets.first();
+  int type = aTreeItem->data( 1, TypeRole ).toInt();
+  int id   = aTreeItem->data( 1, IdRole ).toInt();
+  QMenu menu;
+  QAction* a = menu.addAction( tr( "SHOW_ITEM_INFO" ) );
+  if ( type == ElemConnectivity && id > 0 && menu.exec( e->globalPos() ) == a )
+    emit( itemInfo( id ) );
+  else if ( type == NodeConnectivity && menu.exec( e->globalPos() ) == a )
+    emit( itemInfo( aTreeItem->text( 1 ) ) );
+}
+
+void  SMESHGUI_TreeElemInfo::itemDoubleClicked( QTreeWidgetItem* theItem, int theColumn )
+{
+  if ( theItem ) {
+    int type = theItem->data( 1, TypeRole ).toInt();
+    int id   = theItem->data( 1, IdRole ).toInt();
+    if ( type == ElemConnectivity && id > 0 )
+      emit( itemInfo( id ) );
+    else if ( type == NodeConnectivity )
+      emit( itemInfo( theItem->text( 1 ) ) );
+  }
 }
 
 /*!
@@ -2147,9 +2197,11 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   connect( helpBtn,     SIGNAL( clicked() ),              this, SLOT( help() ) );
   connect( myTabWidget, SIGNAL( currentChanged( int  ) ), this, SLOT( updateSelection() ) );
   connect( myMode,      SIGNAL( buttonClicked( int  ) ),  this, SLOT( modeChanged() ) );
-  connect( myID,        SIGNAL( textEdited( QString  ) ), this, SLOT( idChanged() ) );
+  connect( myID,        SIGNAL( textChanged( QString ) ), this, SLOT( idChanged() ) );
   connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalDeactivateActiveDialog() ), this, SLOT( deactivate() ) );
   connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalCloseAllDialogs() ),        this, SLOT( reject() ) );
+  connect( myElemInfo,  SIGNAL( itemInfo( int ) ),     this, SLOT( showItemInfo( int ) ) );
+  connect( myElemInfo,  SIGNAL( itemInfo( QString ) ), this, SLOT( showItemInfo( QString ) ) );
 
   updateSelection();
 }
@@ -2354,8 +2406,26 @@ void SMESHGUI_MeshInfoDlg::idChanged()
       }
     }
     selector->AddOrRemoveIndex( IO, ID, false );
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() ) {
       aViewWindow->highlight( IO, true, true );
+      aViewWindow->Repaint();
+    }
     myElemInfo->showInfo( ids, myMode->checkedId() == ElemMode );
+  }
+}
+
+void SMESHGUI_MeshInfoDlg::showItemInfo( int id )
+{
+  if ( id > 0 &&  myActor->GetObject()->GetMesh()->FindNode( id ) ) {
+    myMode->button( NodeMode )->click();
+    myID->setText( QString::number( id ) );
+  }
+}
+
+void SMESHGUI_MeshInfoDlg::showItemInfo( const QString& theStr )
+{
+  if ( !theStr.isEmpty() ) {
+    myMode->button( ElemMode )->click();
+    myID->setText( theStr );
   }
 }
