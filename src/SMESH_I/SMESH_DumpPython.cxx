@@ -696,7 +696,7 @@ void SMESH_Gen_i::SavePython (SALOMEDS::Study_ptr theStudy)
   SALOMEDS::AttributePythonObject_var pyAttr =
     SALOMEDS::AttributePythonObject::_narrow(anAttr);
   CORBA::String_var oldValue = pyAttr->GetObject();
-  TCollection_AsciiString oldScript (oldValue.out());
+  TCollection_AsciiString oldScript (oldValue.in());
 
   if (oldScript.Length() > 0) {
     oldScript += "\n";
