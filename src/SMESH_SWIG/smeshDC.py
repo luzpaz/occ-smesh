@@ -520,8 +520,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param mergeNodesAndElements if true, equal nodes and elements aremerged
     #  @param mergeTolerance tolerance for merging nodes
     #  @param allGroups forces creation of groups of all elements
+    #  @param name name of a new mesh
     def Concatenate( self, meshes, uniteIdenticalGroups,
-                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
+                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False,
+                     name = ""):
         if not meshes: return None
         for i,m in enumerate(meshes):
             if isinstance(m, Mesh):
@@ -534,7 +536,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         else:
             aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
-        aMesh = Mesh(self, self.geompyD, aSmeshMesh)
+        aMesh = Mesh(self, self.geompyD, aSmeshMesh, name=name)
         return aMesh
 
     ## Create a mesh by copying a part of another mesh.
@@ -1003,7 +1005,7 @@ class Mesh:
                 self.SetMesh(obj)
         else:
             self.mesh = self.smeshpyD.CreateEmptyMesh()
-        if name != 0:
+        if name:
             self.smeshpyD.SetName(self.mesh, name)
         elif obj != 0 and objHasName:
             self.smeshpyD.SetName(self.mesh, GetName(obj))
