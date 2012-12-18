@@ -3761,7 +3761,9 @@ bool ElementsOnShape::IsSatisfy (long elemId)
     }
 
     // Check the center point for volumes MantisBug 0020168
-    if (isSatisfy && myClassifiers[i]->ShapeType() == TopAbs_SOLID)
+    if (isSatisfy &&
+        myAllNodesFlag &&
+        myClassifiers[i]->ShapeType() == TopAbs_SOLID)
     {
       centerXYZ /= elem->NbNodes();
       isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
