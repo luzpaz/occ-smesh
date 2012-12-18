@@ -1474,9 +1474,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
         }
         catch ( SALOME_Exception& S_ex ) {
+          const int skipSalomeShift = 7; /* to skip "Salome " of
+                                            "Salome Exception" prefix returned
+                                            by SALOME_Exception::what() */
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_SLM_EXCEPTION;
-          _computeError->myComment = S_ex.what();
+          _computeError->myComment = S_ex.what() + skipSalomeShift;
         }
         catch ( std::exception& exc ) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();

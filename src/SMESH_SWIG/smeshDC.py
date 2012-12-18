@@ -1196,7 +1196,7 @@ class Mesh:
                              "Invalid input mesh",   #COMPERR_BAD_INPUT_MESH
                              "std::exception",       #COMPERR_STD_EXCEPTION
                              "OCC exception",        #COMPERR_OCC_EXCEPTION
-                             "SALOME exception",     #COMPERR_SLM_EXCEPTION
+                             "..",                   #COMPERR_SLM_EXCEPTION
                              "Unknown exception",    #COMPERR_EXCEPTION
                              "Memory allocation problem", #COMPERR_MEMORY_PB
                              "Algorithm failed",     #COMPERR_ALGO_FAILED
