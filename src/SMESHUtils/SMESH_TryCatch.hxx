@@ -103,7 +103,7 @@
 namespace SMESH
 {
   void throwSalomeEx(const char* txt);
-  inline void doNothing(const char* txt);
+  void doNothing(const char* txt);
 }
 
 #endif

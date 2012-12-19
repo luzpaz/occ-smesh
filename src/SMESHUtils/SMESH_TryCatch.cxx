@@ -21,14 +21,12 @@
 
 #include "SMESH_TryCatch.hxx"
 
-using namespace SMESH;
-
-void throwSalomeEx(const char* txt)
+void SMESH::throwSalomeEx(const char* txt)
 {
   throw SALOME_Exception( txt );
 }
 
-inline void doNothing(const char* txt)
+void SMESH::doNothing(const char* txt)
 {
   MESSAGE( txt << " " << __FILE__ << ": " << __LINE__ );
 }
