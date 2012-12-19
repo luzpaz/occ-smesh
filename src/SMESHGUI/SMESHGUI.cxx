@@ -4735,7 +4735,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( notifyMode, "indexes", indices );
 
   int infoGroup = addPreference( tr( "PREF_GROUP_INFO" ), genTab );
-  setPreferenceProperty( infoGroup, "columns", 4 );
+  setPreferenceProperty( infoGroup, "columns", 2 );
   int elemInfo = addPreference( tr( "PREF_ELEM_INFO" ), infoGroup, LightApp_Preferences::Selector, "SMESH", "mesh_elem_info" );
   modes.clear();
   modes.append( tr( "PREF_ELEM_INFO_SIMPLE" ) );
@@ -4750,6 +4750,9 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nodesLim, "max", 10000000 );
   setPreferenceProperty( nodesLim, "step", 10000 );
   setPreferenceProperty( nodesLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
+  addPreference( tr( "PREF_DUMP_BASE_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_base" );
+  addPreference( tr( "PREF_DUMP_ELEM_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_elem" );
+  addPreference( tr( "PREF_DUMP_ADD_INFO"  ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_add" );
 
   int segGroup = addPreference( tr( "PREF_GROUP_SEGMENT_LENGTH" ), genTab );
   setPreferenceProperty( segGroup, "columns", 2 );

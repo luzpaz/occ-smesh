@@ -65,7 +65,10 @@ class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
     iNodesEnd,
     iElementsStart = iNodesEnd, 
     iElements,
-    i0DStart,
+    iNbStart,
+    iNb,
+    iNbEnd,
+    i0DStart = iNbEnd,
     i0D,
     i0DEnd,
     iBallsStart = i0DEnd,
@@ -108,6 +111,7 @@ public:
 
   void     showInfo( SMESH::SMESH_IDSource_ptr );
   void     clear();
+  void     saveInfo( QTextStream &out );
 
 private:
   enum { Bold = 0x01, Italic = 0x02 };
@@ -137,6 +141,7 @@ public:
   void         showInfo( long, bool );
   void         showInfo( QSet<long>, bool );
   void         clear();
+  virtual void saveInfo( QTextStream &out ) = 0;
 
 protected:
   struct XYZ
@@ -186,6 +191,7 @@ class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
 
 public:
   SMESHGUI_SimpleElemInfo( QWidget* = 0 );
+  void          saveInfo( QTextStream &out );
 
 protected:
   void          information( const QList<long>& );
@@ -205,6 +211,7 @@ class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
 
 public:
   SMESHGUI_TreeElemInfo( QWidget* = 0 );
+  void             saveInfo( QTextStream &out );
 
 protected:
   void             contextMenuEvent( QContextMenuEvent* e );
@@ -249,6 +256,7 @@ public:
 
   void             showInfo( SMESH::SMESH_IDSource_ptr );
   //  void             clear();
+  void             saveInfo( QTextStream &out );
 
 private slots:
   void             changeLoadToCompute();
@@ -306,6 +314,7 @@ private slots:
   void idChanged();
   void showItemInfo( int );
   void showItemInfo( const QString& );
+  void dump();
 
 private:
   QTabWidget*        myTabWidget;
