@@ -631,7 +631,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   SALOMEDS::AttributePythonObject_var pyAttr =
     SALOMEDS::AttributePythonObject::_narrow(anAttr);
   CORBA::String_var oldValue = pyAttr->GetObject();
-  TCollection_AsciiString aSavedTrace (oldValue.out());
+  TCollection_AsciiString aSavedTrace (oldValue.in());
 
   // Add trace of API methods calls and replace study entries by names
   TCollection_AsciiString aScript;
