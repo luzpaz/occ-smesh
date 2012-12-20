@@ -48,7 +48,12 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
 
   std::vector< int > GetMeshInfo() const;
 
-  int          GetElementIds( int* ids ) const;
+  template< typename IDTYPE >
+    int        GetElementIds( IDTYPE* ids ) const
+  {
+    return getElementIds( (void*)ids, sizeof(IDTYPE));
+  }
+
 
   virtual int  Extent() const;
 
@@ -69,6 +74,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
   void update() const;
   void setChanged(bool changed=true);
   const SMDS_MeshElement* setNbElemToSkip( SMDS_ElemIteratorPtr& elIt );
+  int getElementIds( void* ids, size_t idSize ) const;
 
   SMESH_PredicatePtr                    myPredicate;
   std::vector< int >                    myMeshInfo;

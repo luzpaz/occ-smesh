@@ -228,18 +228,18 @@ std::vector< int > SMESHDS_GroupOnFilter::GetMeshInfo() const
  */
 //================================================================================
 
-int SMESHDS_GroupOnFilter::GetElementIds( int* ids ) const
+int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
 {
   SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
 
-  int* curID = ids;
+  char* curID = (char*) ids;
   SMDS_ElemIteratorPtr elIt = GetElements();
   if ( elIt->more() )
   {
     if ( IsUpToDate() )
     {
-      while ( elIt->more() )
-        *curID++ = elIt->next()->GetID();
+      for ( ; elIt->more(); curID += idSize )
+        (*(int*) curID) = elIt->next()->GetID();
     }
     else
     {
@@ -250,18 +250,19 @@ int SMESHDS_GroupOnFilter::GetElementIds( int* ids ) const
 
       me->myMeshInfo.assign( SMDSEntity_Last, 0 );
       me->myMeshInfo[ firstOkElem->GetEntityType() ]++;
-      *curID++ = firstOkElem->GetID();
-      while ( elIt->more() )
+
+      (*(int*) curID) = firstOkElem->GetID();
+      for ( curID += idSize; elIt->more(); curID += idSize )
       {
         const SMDS_MeshElement* e = elIt->next();
+        (*(int*) curID) = e->GetID();
         me->myMeshInfo[ e->GetEntityType() ]++;
-        *curID++ = e->GetID();
       }
     }
   }
   me->setChanged( false );
 
-  return curID - ids;
+  return ( curID - (char*)ids ) / idSize;
 }
 
 //================================================================================
