@@ -3830,7 +3830,7 @@ bool ElementsOnShape::TClassifier::isOutOfSolid (const gp_Pnt& p)
 bool ElementsOnShape::TClassifier::isOutOfFace  (const gp_Pnt& p)
 {
   myProjFace.Perform( p );
-  if ( myProjFace.IsDone() && myProjFace.LowerDistance() <= myTol );
+  if ( myProjFace.IsDone() && myProjFace.LowerDistance() <= myTol )
   {
     // check relatively to the face
     Quantity_Parameter u, v;
