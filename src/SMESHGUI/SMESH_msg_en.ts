@@ -4236,6 +4236,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Tree</translation>
     </message>
     <message>
+        <source>PREF_ELEM_INFO_GRP_DETAILS</source>
+        <translation>Show details on groups in element information tab</translation>
+    </message>
+    <message>
         <source>PREF_DUMP_BASE_INFO</source>
         <translation>Dump base information</translation>
     </message>

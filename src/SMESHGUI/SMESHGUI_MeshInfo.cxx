@@ -1057,7 +1057,8 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
   clearInternal();
   
   if ( actor() ) {
-    int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+    int grp_details = SMESHGUI::resourceMgr()->booleanValue( "SMESH", "elem_info_grp_details", false );
+    int precision   = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     int cprecision = -1;
     if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ) ) 
       cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
@@ -1136,6 +1137,59 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
             }
           }
         }
+	// groups node belongs to
+	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+	if ( !CORBA::is_nil( aMesh ) ) {
+	  SMESH::ListOfGroups_var groups = aMesh->GetGroups();
+	  myInfo->append( "" ); // separator
+	  bool top_created = false;
+	  for ( int i = 0; i < groups->length(); i++ ) {
+	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
+	    if ( CORBA::is_nil( aGrp ) ) continue;
+	    QString aName = aGrp->GetName();
+	    if ( aGrp->GetType() == SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+	      if ( !top_created ) {
+		myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
+		top_created = true;
+	      }
+	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName ) );
+	      if ( grp_details ) {
+		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+		
+		// type : group on geometry, standalone group, group on filter
+		if ( !CORBA::is_nil( aStdGroup ) ) {
+		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				  arg( SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) ) );
+		}
+		else if ( !CORBA::is_nil( aGeomGroup ) ) {
+		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) ) );
+		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+		  if ( sobj ) {
+		    myInfo->append( QString( "  - <b>%1:</b> %2: %3" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				    arg( SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) ).arg( sobj->GetName().c_str() ) );
+		  }
+		}
+		else if ( !CORBA::is_nil( aFltGroup ) ) {
+		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) ) );
+		}
+		
+		// size
+		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" ) ).
+				arg( QString::number( aGrp->Size() ) ) );
+		
+		// color
+		SALOMEDS::Color color = aGrp->GetColor();
+		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" ) ).
+				arg( QColor( color.R*255., color.G*255., color.B*255. ).name() ) );
+	      }
+	    }
+	  }
+	}
       }
       else {
         //
@@ -1252,7 +1306,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         // separator
         myInfo->append( "" );
         //controls
-        myInfo->append( QString( "<b>%1:</b>" ).arg( tr( "CONTROLS" ) ) );
+        myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_ElemInfo::tr( "CONTROLS" ) ) );
         //Length
         if ( e->GetType() == SMDSAbs_Edge ) {    
           afunctor.reset( new SMESH::Controls::Length() );
@@ -1327,6 +1381,58 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
 	      default:            shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
 	      }
 	      myInfo->append( QString( "<b>%1:</b> %2 #%3" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ).arg( shapeType ).arg( shapeID ) );
+	    }
+	  }
+	}
+	// groups element belongs to
+	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+	if ( !CORBA::is_nil( aMesh ) ) {
+	  SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
+	  myInfo->append( "" ); // separator
+	  bool top_created = false;
+	  for ( int i = 0; i < groups->length(); i++ ) {
+	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
+	    if ( CORBA::is_nil( aGrp ) ) continue;
+	    QString aName = aGrp->GetName();
+	    if ( aGrp->GetType() != SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+	      if ( !top_created ) {
+		myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
+		top_created = true;
+	      }
+	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName ) );
+	      if ( grp_details ) {
+		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+		
+		// type : group on geometry, standalone group, group on filter
+		if ( !CORBA::is_nil( aStdGroup ) ) {
+		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				  arg( SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) ) );
+		}
+		else if ( !CORBA::is_nil( aGeomGroup ) ) {
+		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) ) );
+		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+		  if ( sobj ) {
+		    myInfo->append( QString( "  - <b>%1:</b> %2: %3" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				    arg( SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) ).arg( sobj->GetName().c_str() ) );
+		  }
+		}
+		else if ( !CORBA::is_nil( aFltGroup ) ) {
+		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) ) );
+		}
+		
+		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" ) ).
+				arg( QString::number( aGrp->Size() ) ) );
+		
+		// color
+		SALOMEDS::Color color = aGrp->GetColor();
+		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" ) ).
+				arg( QColor( color.R*255., color.G*255., color.B*255. ).name() ) );
+	      }
 	    }
 	  }
 	}
@@ -1423,7 +1529,8 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
   clearInternal();
 
   if ( actor() ) {
-    int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+    int grp_details = SMESHGUI::resourceMgr()->booleanValue( "SMESH", "elem_info_grp_details", false );
+    int precision   = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     int cprecision = -1;
     if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ) ) 
       cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
@@ -1530,6 +1637,61 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             }
           }
         }
+	// groups node belongs to
+	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+	if ( !CORBA::is_nil( aMesh ) ) {
+	  SMESH::ListOfGroups_var groups = aMesh->GetGroups();
+	  QTreeWidgetItem* groupsItem = 0;
+	  for ( int i = 0; i < groups->length(); i++ ) {
+	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
+	    if ( CORBA::is_nil( aGrp ) ) continue;
+	    QString aName = aGrp->GetName();
+	    if ( aGrp->GetType() == SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+	      if ( !groupsItem ) {
+		groupsItem = createItem( nodeItem, Bold );
+		groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
+	      }
+	      QTreeWidgetItem* it = createItem( groupsItem, Bold );
+	      it->setText( 0, aName );
+	      if ( grp_details ) {
+		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+		
+		// type : group on geometry, standalone group, group on filter
+		QTreeWidgetItem* typeItem = createItem( it );
+		typeItem->setText( 0, SMESHGUI_AddInfo::tr( "TYPE" ) );
+		if ( !CORBA::is_nil( aStdGroup ) ) {
+		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) );
+		}
+		else if ( !CORBA::is_nil( aGeomGroup ) ) {
+		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) );
+		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+		  if ( sobj ) {
+		    QTreeWidgetItem* gobjItem = createItem( typeItem );
+		    gobjItem->setText( 0, SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) );
+		    gobjItem->setText( 1, sobj->GetName().c_str() );
+		  }
+		}
+		else if ( !CORBA::is_nil( aFltGroup ) ) {
+		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
+		}
+		
+		// size
+		QTreeWidgetItem* sizeItem = createItem( it );
+		sizeItem->setText( 0, SMESHGUI_AddInfo::tr( "SIZE" ) );
+		sizeItem->setText( 1, QString::number( aGrp->Size() ) );
+		
+		// color
+		SALOMEDS::Color color = aGrp->GetColor();
+		QTreeWidgetItem* colorItem = createItem( it );
+		colorItem->setText( 0, SMESHGUI_AddInfo::tr( "COLOR" ) );
+		colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
+	      }
+	    }
+	  }
+	}
       }
       else {
         //
@@ -1793,6 +1955,61 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
 	    }
 	  }
 	}
+	// groups element belongs to
+	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+	if ( !CORBA::is_nil( aMesh ) ) {
+	  SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
+	  QTreeWidgetItem* groupsItem = 0;
+	  for ( int i = 0; i < groups->length(); i++ ) {
+	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
+	    if ( CORBA::is_nil( aGrp ) ) continue;
+	    QString aName = aGrp->GetName();
+	    if ( aGrp->GetType() != SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+	      if ( !groupsItem ) {
+		groupsItem = createItem( elemItem, Bold );
+		groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
+	      }
+	      QTreeWidgetItem* it = createItem( groupsItem, Bold );
+	      it->setText( 0, aName );
+	      if ( grp_details ) {
+		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+		
+		// type : group on geometry, standalone group, group on filter
+		QTreeWidgetItem* typeItem = createItem( it );
+		typeItem->setText( 0, SMESHGUI_AddInfo::tr( "TYPE" ) );
+		if ( !CORBA::is_nil( aStdGroup ) ) {
+		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) );
+		}
+		else if ( !CORBA::is_nil( aGeomGroup ) ) {
+		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) );
+		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+		  if ( sobj ) {
+		    QTreeWidgetItem* gobjItem = createItem( typeItem );
+		    gobjItem->setText( 0, SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) );
+		    gobjItem->setText( 1, sobj->GetName().c_str() );
+		  }
+		}
+		else if ( !CORBA::is_nil( aFltGroup ) ) {
+		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
+		}
+		
+		// size
+		QTreeWidgetItem* sizeItem = createItem( it );
+		sizeItem->setText( 0, SMESHGUI_AddInfo::tr( "SIZE" ) );
+		sizeItem->setText( 1, QString::number( aGrp->Size() ) );
+		
+		// color
+		SALOMEDS::Color color = aGrp->GetColor();
+		QTreeWidgetItem* colorItem = createItem( it );
+		colorItem->setText( 0, SMESHGUI_AddInfo::tr( "COLOR" ) );
+		colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
+	      }
+	    }
+	  }
+	}
       }
     }
   }
@@ -1867,18 +2084,14 @@ void SMESHGUI_TreeElemInfo::saveInfo( QTextStream &out )
   out << SMESHGUI_ElemInfo::tr( "ELEM_INFO" ) << "\n";
   out << QString( 12, '-' ) << "\n";
 
-  int mode = SMESHGUI::resourceMgr()->integerValue( "SMESH", "mesh_elem_info", 1 );
-  mode = qMin( 1, qMax( 0, mode ) );
-  if ( mode == 1 ) {
-    QTreeWidgetItemIterator it( myInfo );
-    while ( *it ) {
-      if ( !( *it )->text(0).isEmpty() ) {
-	out << QString( SPACING_INFO * itemDepth( *it ), ' ' ) << ( *it )->text(0);
-	if ( !( *it )->text(1).isEmpty() ) out << ": " << ( *it )->text(1);
-	out << "\n";
-      }
-      ++it;
+  QTreeWidgetItemIterator it( myInfo );
+  while ( *it ) {
+    if ( !( *it )->text(0).isEmpty() ) {
+      out << QString( SPACING_INFO * itemDepth( *it ), ' ' ) << ( *it )->text(0);
+      if ( !( *it )->text(1).isEmpty() ) out << ": " << ( *it )->text(1);
+      out << "\n";
     }
+    ++it;
   }
   out << "\n";
 }

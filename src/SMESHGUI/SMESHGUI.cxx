@@ -4750,6 +4750,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nodesLim, "max", 10000000 );
   setPreferenceProperty( nodesLim, "step", 10000 );
   setPreferenceProperty( nodesLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
+  addPreference( tr( "PREF_ELEM_INFO_GRP_DETAILS" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "elem_info_grp_details" );
   addPreference( tr( "PREF_DUMP_BASE_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_base" );
   addPreference( tr( "PREF_DUMP_ELEM_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_elem" );
   addPreference( tr( "PREF_DUMP_ADD_INFO"  ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_add" );

@@ -4143,6 +4143,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Arbre</translation>
     </message>
     <message>
+        <source>PREF_ELEM_INFO_GRP_DETAILS</source>
+        <translation type="unfinished">Show details on groups in element information tab</translation>
+    </message>
+    <message>
         <source>PREF_DUMP_BASE_INFO</source>
         <translation type="unfinished">Dump base information</translation>
     </message>

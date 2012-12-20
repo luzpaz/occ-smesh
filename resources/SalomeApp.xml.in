@@ -81,6 +81,7 @@
     <parameter name="auto_groups"                  value="false"/>
     <parameter name="show_result_notification"     value="2"/>
     <parameter name="mesh_elem_info"               value="1"/>
+    <parameter name="elem_info_grp_details"        value="false"/>
     <parameter name="info_groups_nodes_limit"      value="100000"/>
     <parameter name="info_dump_base"               value="true" />
     <parameter name="info_dump_elem"               value="true" />
