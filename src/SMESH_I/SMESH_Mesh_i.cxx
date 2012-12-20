@@ -3709,6 +3709,12 @@ SMESH::NodePosition* SMESH_Mesh_i::GetNodePosition(CORBA::Long NodeID)
   return aNodePosition;
 }
 
+//=============================================================================
+/*!
+ * \brief Return position of an element on shape
+ */
+//=============================================================================
+
 SMESH::ElementPosition SMESH_Mesh_i::GetElementPosition(CORBA::Long ElemID)
 {
   if ( _preMeshInfo )
@@ -3728,20 +3734,20 @@ SMESH::ElementPosition SMESH_Mesh_i::GetElementPosition(CORBA::Long ElemID)
     if ( !aSp.IsNull() ) {
       switch ( aSp.ShapeType() ) {
       case TopAbs_EDGE:
-	anElementPosition.shapeType = GEOM::EDGE;
-	break;
+        anElementPosition.shapeType = GEOM::EDGE;
+        break;
       case TopAbs_FACE:
-	anElementPosition.shapeType = GEOM::FACE;
-	break;
+        anElementPosition.shapeType = GEOM::FACE;
+        break;
       case TopAbs_VERTEX:
-	anElementPosition.shapeType = GEOM::VERTEX;
-	break;
+        anElementPosition.shapeType = GEOM::VERTEX;
+        break;
       case TopAbs_SOLID:
-	anElementPosition.shapeType = GEOM::SOLID;
-	break;
+        anElementPosition.shapeType = GEOM::SOLID;
+        break;
       case TopAbs_SHELL:
-	anElementPosition.shapeType = GEOM::SHELL;
-	break;
+        anElementPosition.shapeType = GEOM::SHELL;
+        break;
       default:;
       }
     }
