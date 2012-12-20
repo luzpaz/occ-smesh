@@ -3709,6 +3709,46 @@ SMESH::NodePosition* SMESH_Mesh_i::GetNodePosition(CORBA::Long NodeID)
   return aNodePosition;
 }
 
+SMESH::ElementPosition SMESH_Mesh_i::GetElementPosition(CORBA::Long ElemID)
+{
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  SMESH::ElementPosition anElementPosition;
+  anElementPosition.shapeID = 0;
+  anElementPosition.shapeType = GEOM::SHAPE;
+
+  SMESHDS_Mesh* mesh = _impl->GetMeshDS();
+  if ( !mesh ) return anElementPosition;
+
+  if ( const SMDS_MeshElement* anElem = mesh->FindElement( ElemID ) )
+  {
+    anElementPosition.shapeID = anElem->getshapeId();
+    const TopoDS_Shape& aSp = mesh->IndexToShape( anElem->getshapeId() );
+    if ( !aSp.IsNull() ) {
+      switch ( aSp.ShapeType() ) {
+      case TopAbs_EDGE:
+	anElementPosition.shapeType = GEOM::EDGE;
+	break;
+      case TopAbs_FACE:
+	anElementPosition.shapeType = GEOM::FACE;
+	break;
+      case TopAbs_VERTEX:
+	anElementPosition.shapeType = GEOM::VERTEX;
+	break;
+      case TopAbs_SOLID:
+	anElementPosition.shapeType = GEOM::SOLID;
+	break;
+      case TopAbs_SHELL:
+	anElementPosition.shapeType = GEOM::SHELL;
+	break;
+      default:;
+      }
+    }
+  }
+  return anElementPosition;
+}
+
 //=============================================================================
 /*!
  * If given element is node returns IDs of shape from position

@@ -6626,7 +6626,15 @@ en raison de leurs types incompatibles:
         <translation>Solide</translation>
     </message>
     <message>
-        <source>NODE_POSITION</source>
+        <source>GEOM_SHELL</source>
+        <translation>Coque</translation>
+    </message>
+    <message>
+        <source>GEOM_SHAPE</source>
+        <translation>Forme</translation>
+    </message>
+    <message>
+        <source>POSITION</source>
         <translation>Position</translation>
     </message>
     <message>

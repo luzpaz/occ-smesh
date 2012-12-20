@@ -111,6 +111,14 @@ module SMESH
   };
 
   /*!
+   * Element location on a shape
+   */
+  struct ElementPosition {
+    long             shapeID;
+    GEOM::shape_type shapeType;
+  };
+
+  /*!
    * Enumeration for element type, like in SMDS
    */
   enum ElementType
@@ -835,6 +843,11 @@ module SMESH
      * \brief Return position of a node on shape
      */
     NodePosition GetNodePosition(in long NodeID);
+
+    /*!
+     * \brief Return position of an element on shape
+     */
+    ElementPosition GetElementPosition(in long ElemID);
 
     /*!
      * If given element is node returns IDs of shape from position

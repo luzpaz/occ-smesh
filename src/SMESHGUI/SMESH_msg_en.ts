@@ -6755,7 +6755,15 @@ as they are of improper type:
         <translation>Solid</translation>
     </message>
     <message>
-        <source>NODE_POSITION</source>
+        <source>GEOM_SHELL</source>
+        <translation>Shell</translation>
+    </message>
+    <message>
+        <source>GEOM_SHAPE</source>
+        <translation>Shape</translation>
+    </message>
+    <message>
+        <source>POSITION</source>
         <translation>Position</translation>
     </message>
     <message>

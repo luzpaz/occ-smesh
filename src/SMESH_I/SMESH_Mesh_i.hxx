@@ -460,6 +460,11 @@ public:
   SMESH::NodePosition* GetNodePosition(CORBA::Long NodeID);
 
   /*!
+   * \brief Return position of an element on shape
+   */
+  SMESH::ElementPosition GetElementPosition(CORBA::Long ElemID);
+
+  /*!
    * If given element is node returns IDs of shape from position
    * If there is not node for given ID - returns -1
    */

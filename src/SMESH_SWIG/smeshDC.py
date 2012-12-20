@@ -2118,6 +2118,12 @@ class Mesh:
     def GetNodePosition(self,NodeID):
         return self.mesh.GetNodePosition(NodeID)
 
+    ## @brief Returns the position of an element on the shape
+    #  @return SMESH::ElementPosition
+    #  @ingroup l1_meshinfo
+    def GetElementPosition(self,ElemID):
+        return self.mesh.GetElementPosition(ElemID)
+
     ## If the given element is a node, returns the ID of shape
     #  \n If there is no node for the given ID - returns -1
     #  @return an integer value
