@@ -1034,9 +1034,9 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
       // publish mesh in the study
       SALOMEDS::SObject_wrap aSO;
       if ( CanPublishInStudy( mesh ) )
-	// little trick: for MED file theFileName and theFileNameForPython are the same, but they are different for SAUV
-	// - as names of meshes are stored in MED file, we use them for data publishing
-	// - as mesh name is not stored in UNV file, we use file name as name of mesh when publishing data
+        // little trick: for MED file theFileName and theFileNameForPython are the same, but they are different for SAUV
+        // - as names of meshes are stored in MED file, we use them for data publishing
+        // - as mesh name is not stored in UNV file, we use file name as name of mesh when publishing data
         aSO = PublishMesh( myCurrentStudy, mesh.in(), ( theFileName == theFileNameForPython ) ? (*it).c_str() : aFileName.c_str() );
       if ( !aSO->_is_nil() ) {
         // Python Dump
