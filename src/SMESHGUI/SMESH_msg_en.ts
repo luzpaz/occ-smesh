@@ -6672,7 +6672,7 @@ as they are of improper type:
     </message>
     <message>
         <source>VOLUME</source>
-        <translation>Volumt</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>VOLUMES</source>
