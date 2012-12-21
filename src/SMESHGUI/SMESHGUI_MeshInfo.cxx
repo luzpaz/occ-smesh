@@ -1152,7 +1152,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
 		myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
 		top_created = true;
 	      }
-	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName ) );
+	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName.trimmed() ) );
 	      if ( grp_details ) {
 		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
 		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
@@ -1399,7 +1399,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
 		myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
 		top_created = true;
 	      }
-	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName ) );
+	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName.trimmed() ) );
 	      if ( grp_details ) {
 		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
 		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
@@ -1652,7 +1652,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
 		groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
 	      }
 	      QTreeWidgetItem* it = createItem( groupsItem, Bold );
-	      it->setText( 0, aName );
+	      it->setText( 0, aName.trimmed() );
 	      if ( grp_details ) {
 		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
 		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
@@ -1970,7 +1970,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
 		groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
 	      }
 	      QTreeWidgetItem* it = createItem( groupsItem, Bold );
-	      it->setText( 0, aName );
+	      it->setText( 0, aName.trimmed() );
 	      if ( grp_details ) {
 		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
 		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
