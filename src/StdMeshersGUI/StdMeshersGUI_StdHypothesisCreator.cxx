@@ -42,7 +42,7 @@
 
 #include <SALOMEDSClient_Study.hxx>
 
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <SUIT_ResourceMgr.h>

@@ -33,7 +33,7 @@
 #include <SMESHGUI_Utils.h>
 #include <boost/shared_ptr.hpp>
 #include <GEOMImpl_Types.hxx>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 #include <TopoDS.hxx>
 #include <BRep_Tool.hxx>

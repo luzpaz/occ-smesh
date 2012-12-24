@@ -30,7 +30,7 @@
 
 // SALOME GEOM includes
 #include <GeometryGUI.h>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>

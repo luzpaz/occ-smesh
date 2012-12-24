@@ -33,7 +33,7 @@
 
 #include <GeometryGUI.h>
 #include <GEOM_SelectionFilter.h>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 #include <SUIT_Session.h>
 #include <SUIT_OverrideCursor.h>

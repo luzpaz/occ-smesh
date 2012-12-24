@@ -44,7 +44,7 @@
 // SALOME GEOM includes
 #include <GEOMBase.h>
 #include <GEOM_SelectionFilter.h>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <QtxColorButton.h>

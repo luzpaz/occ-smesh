@@ -40,7 +40,7 @@
 // SALOME GEOM includes
 #include <GEOMBase.h>
 #include <GeometryGUI.h>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <LightApp_DataOwner.h>

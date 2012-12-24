@@ -119,7 +119,7 @@
 // helpers about SALOME::GenericObj
 #include <SALOMEDS_wrap.hxx>
 #include <SALOMEDS_Attributes_wrap.hxx>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 #include <map>
 #include <fstream>
@@ -2150,7 +2150,8 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
         }
         if ( geom->_is_nil() ) {
           // explode
-          GEOM::ShapesOpPtr op = geomGen->GetIShapesOperations( GetCurrentStudyID() );
+          GEOM::GEOM_IShapesOperations_wrap op =
+            geomGen->GetIShapesOperations( GetCurrentStudyID() );
           if ( !op->_is_nil() )
             geom = op->GetSubShape( mainShape, shapeID );
         }

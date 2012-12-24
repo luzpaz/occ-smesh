@@ -60,7 +60,7 @@
 #include <utilities.h>
 
 #include <GEOMImpl_Types.hxx>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 // OCCT Includes
 #include <BRep_Builder.hxx>

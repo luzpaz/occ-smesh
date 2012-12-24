@@ -40,7 +40,7 @@
 #include <GEOM_SelectionFilter.h>
 #include <GEOMBase.h>
 #include <GeometryGUI.h>
-#include <GEOM_GenericObjPtr.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
