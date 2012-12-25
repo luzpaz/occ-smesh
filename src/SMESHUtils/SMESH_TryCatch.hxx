@@ -102,8 +102,8 @@
 
 namespace SMESH
 {
-  void throwSalomeEx(const char* txt);
-  void doNothing(const char* txt);
+  SMESHUtils_EXPORT void throwSalomeEx(const char* txt);
+  SMESHUtils_EXPORT void doNothing(const char* txt);
 }
 
 #endif
