@@ -3264,6 +3264,7 @@ class Mesh:
     #  @param StepVector vector or DirStruct or 3 vector components, defining
     #         the direction and value of extrusion for one step (the total extrusion
     #         length will be NbOfSteps * ||StepVector||)
+    #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param  IsNodes is True if elements which belong to the object are nodes
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
