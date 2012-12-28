@@ -83,8 +83,9 @@ enum { EDGE = 0, FACE, VOLUME };
  * \brief Dialog to publish a sub-shape of the mesh main shape
  *        by selecting mesh elements
  */
-SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg()
-  : SMESHGUI_Dialog( 0, false, true, OK | Close )
+SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg(bool isMultipleAllowed)
+  : SMESHGUI_Dialog( 0, false, true, OK | Close ),
+    myIsMultipleAllowed( isMultipleAllowed )
 {
   setWindowTitle(tr("CAPTION"));
 
@@ -172,8 +173,7 @@ SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed):
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
 
-  myDlg = new SMESHGUI_ShapeByMeshDlg;
-  myDlg->setMultipleAllowed(myIsMultipleAllowed);
+  myDlg = new SMESHGUI_ShapeByMeshDlg(myIsMultipleAllowed);
 
   connect(myDlg->myElemTypeGroup, SIGNAL(buttonClicked(int)), SLOT(onTypeChanged(int)));
   connect(myDlg->myElementId, SIGNAL(textChanged(const QString&)), SLOT(onElemIdChanged(const QString&)));
