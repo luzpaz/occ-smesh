@@ -1118,7 +1118,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   TopoDS_Vertex VV1[2], VV2[2];
 
   if ( vMap1.Extent() != vMap2.Extent() )
-    RETURN_BAD_RESULT("Different nb of vertices");
+  {
+    if ( HERE::Count( theShape1, TopAbs_EDGE, /*ignoreSame=*/false ) !=
+         HERE::Count( theShape2, TopAbs_EDGE, /*ignoreSame=*/false ))
+      RETURN_BAD_RESULT("Different nb of vertices");
+  }
 
   if ( vMap1.Extent() == 1 ) {
     InsertAssociation( vMap1(1), vMap2(1), theMap );
@@ -1158,10 +1162,10 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   // Find transformation to make the shapes be of similar size at same location
 
   Bnd_Box box[2];
-  for ( int i = 1; i <= vMap1.Extent(); ++i ) {
+  for ( int i = 1; i <= vMap1.Extent(); ++i )
     box[ 0 ].Add( BRep_Tool::Pnt ( TopoDS::Vertex( vMap1( i ))));
+  for ( int i = 1; i <= vMap2.Extent(); ++i )
     box[ 1 ].Add( BRep_Tool::Pnt ( TopoDS::Vertex( vMap2( i ))));
-  }
 
   gp_Pnt gc[2]; // box center
   double x0,y0,z0, x1,y1,z1;
@@ -2223,7 +2227,7 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
                                                   TopoDS_Shape   srcShape,
                                                   SMESH_Mesh*    srcMesh)
 {
-  // Set listener that resets an event listener on source submesh when
+  // Set the listener that resets an event listener on source submesh when
   // "ProjectionSource*D" hypothesis is modified since source shape can be changed
   subMesh->SetEventListener( GetHypModifWaiter(),0,subMesh);
 
