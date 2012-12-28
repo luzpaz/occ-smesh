@@ -1105,38 +1105,47 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           myInfo->append( QString( "<b>%1</b>" ).arg( SMESHGUI_ElemInfo::tr( "FREE_NODE" ) ).arg( id ) );
         }
         // node position
-        int shapeID = node->getshapeId();
-        if ( shapeID > 0 )
-        {
-          SMDS_PositionPtr        pos = node->GetPosition();
-          SMDS_TypeOfPosition posType = pos->GetTypeOfPosition();
-          QString shapeType;
-          double u,v;
-          switch ( posType ) {
-          case SMDS_TOP_EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
-            u = static_cast<SMDS_EdgePosition*>( pos )->GetUParameter();
-            break;
-          case SMDS_TOP_FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
-            u = static_cast<SMDS_FacePosition*>( pos )->GetUParameter();
-            v = static_cast<SMDS_FacePosition*>( pos )->GetVParameter();
-            break;
-          case SMDS_TOP_VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
-	    break;
-          default:              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
-	    break;
-          }
-	  // separator
-	  myInfo->append( "" );
-          myInfo->append( QString( "<b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ).arg( shapeID ) );
-          if ( posType == SMDS_TOP_EDGE || posType == SMDS_TOP_FACE ) {
-	    myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "U_POSITION" ) ).
-			    arg( QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
-            if ( posType == SMDS_TOP_FACE ) {
-	      myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "V_POSITION" ) ).
-			      arg( QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
-            }
-          }
-        }
+	SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();	  
+	if ( !CORBA::is_nil( aMeshPtr ) ) {
+	  SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
+	  int shapeID = pos->shapeID;
+	  if ( shapeID > 0 ) {
+	    QString shapeType;
+	    double u, v;
+	    switch ( pos->shapeType ) {
+	    case GEOM::EDGE:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
+	      if ( pos->params.length() == 1 )
+		u = pos->params[0];
+	      break;
+	    case GEOM::FACE:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
+	      if ( pos->params.length() == 2 ) {
+	       u = pos->params[0];
+	       v = pos->params[1];
+	      }
+	      break;
+	    case GEOM::VERTEX:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
+	      break;
+	    default:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
+	      break;
+	    }
+	    // separator
+	    myInfo->append( "" );
+	    myInfo->append( QString( "<b>%1:" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ) );
+	    myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( shapeType ).arg( shapeID ) );
+	    if ( pos->shapeType == GEOM::EDGE || pos->shapeType == GEOM::FACE ) {
+	      myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "U_POSITION" ) ).
+			      arg( QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
+	      if ( pos->shapeType == GEOM::FACE ) {
+		myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "V_POSITION" ) ).
+				arg( QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
+	      }
+	    }
+	  }
+	}
 	// groups node belongs to
 	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
 	if ( !CORBA::is_nil( aMesh ) ) {
@@ -1363,22 +1372,22 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_3D" ) ).arg( afunctor->GetValue( id ) ) );
         }
-	// position (only in collocate mode)
+	// element position
 	if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
-	  SMESHDS_Mesh* aMesh = dynamic_cast<SMESHDS_Mesh*>( actor()->GetObject()->GetMesh() );
-	  int shapeID = e->getshapeId();
-	  if ( aMesh && shapeID > 0 ) {
-	    const TopoDS_Shape& aShape = aMesh->IndexToShape( shapeID );
-	    if ( !aShape.IsNull() ) {
+	  SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();	  
+	  if ( !CORBA::is_nil( aMesh ) ) {
+	    SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
+	    int shapeID = pos.shapeID;
+	    if ( shapeID > 0 ) {
 	      myInfo->append( "" ); // separator
 	      QString shapeType;
-	      switch ( aShape.ShapeType() ) {
-	      case TopAbs_EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
-	      case TopAbs_FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
-	      case TopAbs_VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
-	      case TopAbs_SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
-	      case TopAbs_SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
-	      default:            shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
+	      switch ( pos.shapeType ) {
+	      case GEOM::EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
+	      case GEOM::FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
+	      case GEOM::VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
+	      case GEOM::SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
+	      case GEOM::SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
+	      default:           shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
 	      }
 	      myInfo->append( QString( "<b>%1:</b> %2 #%3" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ).arg( shapeType ).arg( shapeID ) );
 	    }
@@ -1603,40 +1612,48 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           conItem->setText( 1, SMESHGUI_ElemInfo::tr( "FREE_NODE" ) );
         }
         // node position
-        int shapeID = node->getshapeId();
-        if ( shapeID > 0 )
-        {
-          SMDS_PositionPtr        pos = node->GetPosition();
-          SMDS_TypeOfPosition posType = pos->GetTypeOfPosition();
-          QString shapeType;
-          double u,v;
-          switch ( posType ) {
-          case SMDS_TOP_EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
-            u = static_cast<SMDS_EdgePosition*>( pos )->GetUParameter();
-            break;
-          case SMDS_TOP_FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
-            u = static_cast<SMDS_FacePosition*>( pos )->GetUParameter();
-            v = static_cast<SMDS_FacePosition*>( pos )->GetVParameter();
-            break;
-          case SMDS_TOP_VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
-	    break;
-          default:              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
-	    break;
-          }
-          QTreeWidgetItem* posItem = createItem( nodeItem, Bold );
-          posItem->setText( 0, SMESHGUI_ElemInfo::tr("POSITION") );
-          posItem->setText( 1, (shapeType + " #%1").arg( shapeID ));
-          if ( posType == SMDS_TOP_EDGE || posType == SMDS_TOP_FACE ) {
-            QTreeWidgetItem* uItem = createItem( posItem );
-            uItem->setText( 0, SMESHGUI_ElemInfo::tr("U_POSITION") );
-            uItem->setText( 1, QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )));
-            if ( posType == SMDS_TOP_FACE ) {
-              QTreeWidgetItem* vItem = createItem( posItem );
-              vItem->setText( 0, SMESHGUI_ElemInfo::tr("V_POSITION") );
-              vItem->setText( 1, QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )));
-            }
-          }
-        }
+	SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();	  
+	if ( !CORBA::is_nil( aMeshPtr ) ) {
+	  SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
+	  int shapeID = pos->shapeID;
+	  if ( shapeID > 0 ) {
+	    QString shapeType;
+	    double u, v;
+	    switch ( pos->shapeType ) {
+	    case GEOM::EDGE:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
+	      if ( pos->params.length() == 1 )
+		u = pos->params[0];
+	      break;
+	    case GEOM::FACE:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
+	      if ( pos->params.length() == 2 ) {
+		u = pos->params[0];
+		v = pos->params[1];
+	      }
+	      break;
+	    case GEOM::VERTEX:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
+	      break;
+	    default:
+	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
+	      break;
+	    }
+	    QTreeWidgetItem* posItem = createItem( nodeItem, Bold );
+	    posItem->setText( 0, SMESHGUI_ElemInfo::tr("POSITION") );
+	    posItem->setText( 1, (shapeType + " #%1").arg( shapeID ));
+	    if ( pos->shapeType == GEOM::EDGE || pos->shapeType == GEOM::FACE ) {
+	      QTreeWidgetItem* uItem = createItem( posItem );
+	      uItem->setText( 0, SMESHGUI_ElemInfo::tr("U_POSITION") );
+	      uItem->setText( 1, QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )));
+	      if ( pos->shapeType == GEOM::FACE ) {
+		QTreeWidgetItem* vItem = createItem( posItem );
+		vItem->setText( 0, SMESHGUI_ElemInfo::tr("V_POSITION") );
+		vItem->setText( 1, QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )));
+	      }
+	    }
+	  }
+	}
 	// groups node belongs to
 	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
 	if ( !CORBA::is_nil( aMesh ) ) {
@@ -1933,22 +1950,22 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ) );
           diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );     
         }
-	// position (only in collocate mode)
+	// element position
 	if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
-	  SMESHDS_Mesh* aMesh = dynamic_cast<SMESHDS_Mesh*>( actor()->GetObject()->GetMesh() );
-	  int shapeID = e->getshapeId();
-	  if ( aMesh && shapeID > 0 ) {
-	    const TopoDS_Shape& aShape = aMesh->IndexToShape( shapeID );
-	    if ( !aShape.IsNull() ) {
+	  SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();	  
+	  if ( !CORBA::is_nil( aMesh ) ) {
+	    SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
+	    int shapeID = pos.shapeID;
+	    if ( shapeID > 0 ) {
 	      QTreeWidgetItem* shItem = createItem( elemItem, Bold );
 	      QString shapeType;
-	      switch ( aShape.ShapeType() ) {
-	      case TopAbs_EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
-	      case TopAbs_FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
-	      case TopAbs_VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
-	      case TopAbs_SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
-	      case TopAbs_SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
-	      default:            shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
+	      switch ( pos.shapeType ) {
+	      case GEOM::EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
+	      case GEOM::FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
+	      case GEOM::VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
+	      case GEOM::SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
+	      case GEOM::SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
+	      default:           shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
 	      }
 	      shItem->setText( 0, SMESHGUI_ElemInfo::tr( "POSITION" ) );
 	      shItem->setText( 1, QString( "%1 #%2" ).arg( shapeType ).arg( shapeID ) );
