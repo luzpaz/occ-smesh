@@ -227,8 +227,9 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
       GEOM::GEOM_IGroupOperations_wrap aGroupOp =
         SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
       if ( !aGroupOp->_is_nil() ) {
-        GEOM::GEOM_Object_wrap mainShape = aGroupOp->GetMainShape( geom );
-        GEOM::ListOfLong_var         ids = aGroupOp->GetObjects( geom );
+        // mainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
+        GEOM::GEOM_Object_var mainShape = aGroupOp->GetMainShape( geom );
+        GEOM::ListOfLong_var        ids = aGroupOp->GetObjects( geom );
         if ( ids->length() && !mainShape->_is_nil() && !aShapeOp->_is_nil() ) {
           GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( mainShape, ids[0] );
           return elementType( member );

@@ -354,7 +354,8 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
       if (aSubGeomVar->_is_nil()) return false;
 
       // skl for NPAL14695 - implementation of searching of mainObj
-      GEOM::GEOM_Object_wrap mainObj = op->GetMainShape(aSubGeomVar);
+      GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar); /* _var not _wrap as
+                                                                        mainObj already exists! */
       while(1) {
         if (mainObj->_is_nil())
           return false;

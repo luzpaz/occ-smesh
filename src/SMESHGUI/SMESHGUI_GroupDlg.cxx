@@ -1373,12 +1373,12 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
         _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
         // The main shape of the group
-        GEOM::GEOM_Object_wrap aGroupMainShape;
+        GEOM::GEOM_Object_var aGroupMainShape;
         if (aGeomGroup->GetType() == 37) {
           GEOM::GEOM_IGroupOperations_wrap anOp =
             SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
           aGroupMainShape = anOp->GetMainShape(aGeomGroup);
-          // aGroupMainShape is a new geom servant to be deleted by GEOM_Object_wrap
+          // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         }
         else {
           aGroupMainShape = aGeomGroup;
