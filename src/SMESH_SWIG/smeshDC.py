@@ -186,7 +186,10 @@ def GetName(obj):
         if isinstance(obj, SALOMEDS._objref_SObject):
             # study object
             return obj.GetName()
-        ior  = salome.orb.object_to_string(obj)
+        try:
+            ior  = salome.orb.object_to_string(obj)
+        except:
+            ior = None
         if ior:
             # CORBA object
             studies = salome.myStudyManager.GetOpenStudies()
