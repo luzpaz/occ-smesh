@@ -51,6 +51,7 @@
 #include <Bnd_B2d.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
 #include <gp_Ax2.hxx>
@@ -248,7 +249,7 @@ namespace {
   /*!
    * \brief find new nodes belonging to one free border of mesh on face
     * \param sm - submesh on edge or vertex containg nodes to choose from
-    * \param face - the face bound the submesh
+    * \param face - the face bound by the submesh
     * \param u2nodes - map to fill with nodes
     * \param seamNodes - set of found nodes
     * \retval bool - is a success
@@ -290,43 +291,45 @@ namespace {
       if ( !smV1->IsMeshComputed() || !smV2->IsMeshComputed() )
         RETURN_BAD_RESULT("Empty vertex submeshes");
 
-      // Look for a new node on V1
-      nIt = smV1->GetSubMeshDS()->GetNodes();
       const SMDS_MeshNode* nV1 = 0;
-      while ( nIt->more() && !nV1 ) {
+      const SMDS_MeshNode* nE = 0;
+
+      // Look for nV1 - a new node on V1
+      nIt = smV1->GetSubMeshDS()->GetNodes();
+      while ( nIt->more() && !nE ) {
         const SMDS_MeshNode* node = nIt->next();
-        if ( !isOldNode( node ) ) nV1 = node;
+        if ( isOldNode( node ) ) continue;
+        nV1 = node;
+
+        // Find nE - a new node connected to nV1 and belonging to edge submesh;
+        SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
+        SMDS_ElemIteratorPtr vElems = nV1->GetInverseElementIterator(SMDSAbs_Face);
+        while ( vElems->more() && !nE ) {
+          const SMDS_MeshElement* elem = vElems->next();
+          int nbNodes = elem->NbNodes();
+          if ( elem->IsQuadratic() )
+            nbNodes /= 2;
+          int iV1 = elem->GetNodeIndex( nV1 );
+          // try next after nV1
+          int iE = SMESH_MesherHelper::WrapIndex( iV1 + 1, nbNodes );
+          if ( smDS->Contains( elem->GetNode( iE ) ))
+            nE = elem->GetNode( iE );
+          if ( !nE ) {
+            // try node before nV1
+            iE = SMESH_MesherHelper::WrapIndex( iV1 - 1, nbNodes );
+            if ( smDS->Contains( elem->GetNode( iE )))
+              nE = elem->GetNode( iE );
+          }
+          if ( nE && elem->IsQuadratic() ) { // find medium node between nV1 and nE
+            if ( Abs( iV1 - iE ) == 1 )
+              nE = elem->GetNode( Min ( iV1, iE ) + nbNodes );
+            else
+              nE = elem->GetNode( elem->NbNodes() - 1 );
+          }
+        }
       }
       if ( !nV1 )
         RETURN_BAD_RESULT("No new node found on V1");
-
-      // Find a new node connected to nV1 and belonging to edge submesh;
-      const SMDS_MeshNode* nE = 0;
-      SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-      SMDS_ElemIteratorPtr vElems = nV1->GetInverseElementIterator(SMDSAbs_Face);
-      while ( vElems->more() && !nE ) {
-        const SMDS_MeshElement* elem = vElems->next();
-        int nbNodes = elem->NbNodes();
-        if ( elem->IsQuadratic() )
-          nbNodes /= 2;
-        int iV1 = elem->GetNodeIndex( nV1 );
-        // try next after nV1
-        int iE = SMESH_MesherHelper::WrapIndex( iV1 + 1, nbNodes );
-        if ( smDS->Contains( elem->GetNode( iE ) ))
-          nE = elem->GetNode( iE );
-        if ( !nE ) {
-          // try node before nV1
-          iE = SMESH_MesherHelper::WrapIndex( iV1 - 1, nbNodes );
-          if ( smDS->Contains( elem->GetNode( iE )))
-            nE = elem->GetNode( iE );
-        }
-        if ( nE && elem->IsQuadratic() ) { // find medium node between nV1 and nE
-          if ( Abs( iV1 - iE ) == 1 )
-            nE = elem->GetNode( Min ( iV1, iE ) + nbNodes );
-          else
-            nE = elem->GetNode( elem->NbNodes() - 1 );
-        }
-      }
       if ( !nE )
         RETURN_BAD_RESULT("new node on edge not found");
 
@@ -393,7 +396,9 @@ namespace {
 
       // make any local coord systems of src and tgt faces
       vector<gp_Pnt> srcPP, tgtPP; // 3 points on face boundaries to make axes of CS
-      SMESH_subMesh * srcSM = srcMesh->GetSubMesh( srcFace );
+      bool sameNbVert = ( TAssocTool::Count( tgtFace, TopAbs_VERTEX, /*ignoreSame=*/true ) ==
+                          TAssocTool::Count( srcFace, TopAbs_VERTEX, /*ignoreSame=*/true ));
+      SMESH_subMesh *         srcSM = srcMesh->GetSubMesh( srcFace );
       SMESH_subMeshIteratorPtr smIt = srcSM->getDependsOnIterator(/*includeSelf=*/false,false);
       srcSM = smIt->next(); // sm of a vertex
       while ( smIt->more() && srcPP.size() < 3 )
@@ -430,7 +435,11 @@ namespace {
           if ( tgtShape.ShapeType() == TopAbs_VERTEX )
           {
             tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtShape ));
-            pOK = true;
+            if ( sameNbVert || tgtPP.empty() )
+              pOK = true;
+            else
+              pOK = (( tgtP.Distance( tgtPP[0] ) > tol*tol ) &&
+                     ( tgtPP.size() == 1 || tgtP.Distance( tgtPP[1] ) > tol*tol ));
             //cout << "V - nS " << p._node->GetID() << " - nT " << SMESH_Algo::VertexNode(TopoDS::Vertex( tgtShape),tgtMesh->GetMeshDS())->GetID() << endl;
           }
           else if ( tgtPP.size() > 0 )
@@ -963,6 +972,24 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
       //break;
 
+      if ( helper.IsDegenShape( sm->GetId() ) ) // to merge all nodes on degenerated
+      {
+        if ( sm->GetSubShape().ShapeType() == TopAbs_EDGE )
+        {
+          groupsOfNodes.push_back( list< const SMDS_MeshNode* >() );
+          SMESH_subMeshIteratorPtr smDegenIt
+            = sm->getDependsOnIterator(/*includeSelf=*/true,/*complexShapeFirst=*/false);
+          while ( smDegenIt->more() )
+            if (( smDS = smDegenIt->next()->GetSubMeshDS() ))
+            {
+              SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
+              while ( nIt->more() )
+                groupsOfNodes.back().push_back( nIt->next() );
+            }
+        }
+        continue; // do not treate sm of degen VERTEX
+      }
+
       // Sort new and old nodes of a submesh separately
 
       bool isSeam = helper.IsRealSeam( sm->GetId() );
@@ -1021,18 +1048,43 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
           newEnd    = u2nodesMaps[ OLD_NODES ].end();
           for ( ; u_oldNode != newEnd; ++u_oldNode )
-            _badInputElements.push_back( u_oldNode->second );
+            SMESH_Algo::addBadInputElement( u_oldNode->second );
           return error( COMPERR_BAD_INPUT_MESH,
                         SMESH_Comment( "Existing mesh mismatches the projected 2D mesh on " )
                         << ( sm->GetSubShape().ShapeType() == TopAbs_EDGE ? "edge" : "vertex" )
                         << " #" << sm->GetId() );
         }
       if ( isSeam && !mergeSeamToNew ) {
-        //RETURN_BAD_RESULT
-        MESSAGE("Different nb of old and seam nodes " <<
-                u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
+        const TopoDS_Shape& seam = sm->GetSubShape();
+        if ( u2nodesMaps[ NEW_NODES ].size() > 0 &&
+             u2nodesOnSeam.size()            > 0 &&
+             seam.ShapeType() == TopAbs_EDGE )
+        {
+          int nbE1 = TAssocTool::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+          int nbE2 = TAssocTool::Count( srcFace, TopAbs_EDGE, /*ignoreSame=*/true );
+          if ( nbE1 != nbE2 ) // 2 EDGEs are mapped to a seam EDGE
+          {
+            // find the 2 EDGEs of srcFace
+            TopTools_DataMapIteratorOfDataMapOfShapeShape src2tgtIt( shape2ShapeMap._map2to1 );
+            for ( ; src2tgtIt.More(); src2tgtIt.Next() )
+              if ( seam.IsSame( src2tgtIt.Value() ))
+              {
+                const TopoDS_Shape& tgtEdge = src2tgtIt.Key();
+                if ( SMESHDS_SubMesh* tgtSM = srcMesh->GetMeshDS()->MeshElements( tgtEdge ))
+                {
+                  SMDS_NodeIteratorPtr nIt = tgtSM->GetNodes();
+                  while ( nIt->more() )
+                    SMESH_Algo::addBadInputElement( nIt->next() );
+                }
+              }
+            return error( COMPERR_BAD_INPUT_MESH,
+                          "Different number of nodes on two edges projected to a seam edge" );
+          }
+        }
       }
+
       // Make groups of nodes to merge
+
       u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
       u_newNode = u2nodesMaps[ NEW_NODES ].begin();
       newEnd    = u2nodesMaps[ NEW_NODES ].end();
@@ -1061,7 +1113,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     int nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
     editor.MergeNodes( groupsOfNodes );
     int nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
-    if ( nbFaceBeforeMerge != nbFaceAtferMerge )
+    if ( nbFaceBeforeMerge != nbFaceAtferMerge && !helper.HasDegeneratedEdges() )
       return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
 
     // ----------------------------------------------------------------
