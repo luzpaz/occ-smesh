@@ -61,8 +61,8 @@ public:
   virtual void RemoveFromRender(vtkRenderer* theRenderer);
   
   virtual void SetFontProperties( SMESH::LabelFont family, int size,
-				  bool bold, bool italic, bool shadow,
-				  vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
+                                  bool bold, bool italic, bool shadow,
+                                  vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
 
   void UpdateLabels();
   

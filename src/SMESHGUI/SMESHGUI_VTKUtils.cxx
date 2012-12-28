@@ -982,23 +982,23 @@ namespace SMESH
     foreach ( SUIT_ViewManager* vm, vmList ) {
       QVector<SUIT_ViewWindow*> views = vm->getViews();
       foreach ( SUIT_ViewWindow* vw, views ) {
-	// update VTK viewer properties
-	if ( SVTK_ViewWindow* aVtkView = GetVtkViewWindow( vw ) ) {
-	  // update actors
-	  vtkRenderer* aRenderer = aVtkView->getRenderer();
-	  VTK::ActorCollectionCopy aCopy( aRenderer->GetActors() );
-	  vtkActorCollection* aCollection = aCopy.GetActors();
-	  aCollection->InitTraversal();
-	  while ( vtkActor* anAct = aCollection->GetNextActor() ) {
-	    if ( SMESH_NodeLabelActor* anActor = dynamic_cast< SMESH_NodeLabelActor* >( anAct ) ) {
-	      anActor->SetFontProperties( aFamilyNd, aSizeNd, aBoldNd, anItalicNd, aShadowNd, anRGBNd[0], anRGBNd[1], anRGBNd[2] );
-	    }
-	    else if ( SMESH_CellLabelActor* anActor = dynamic_cast< SMESH_CellLabelActor* >( anAct ) ) {
-	      anActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
-	    }
-	  }
-	  aVtkView->Repaint( false );	  
-	}
+        // update VTK viewer properties
+        if ( SVTK_ViewWindow* aVtkView = GetVtkViewWindow( vw ) ) {
+          // update actors
+          vtkRenderer* aRenderer = aVtkView->getRenderer();
+          VTK::ActorCollectionCopy aCopy( aRenderer->GetActors() );
+          vtkActorCollection* aCollection = aCopy.GetActors();
+          aCollection->InitTraversal();
+          while ( vtkActor* anAct = aCollection->GetNextActor() ) {
+            if ( SMESH_NodeLabelActor* anActor = dynamic_cast< SMESH_NodeLabelActor* >( anAct ) ) {
+              anActor->SetFontProperties( aFamilyNd, aSizeNd, aBoldNd, anItalicNd, aShadowNd, anRGBNd[0], anRGBNd[1], anRGBNd[2] );
+            }
+            else if ( SMESH_CellLabelActor* anActor = dynamic_cast< SMESH_CellLabelActor* >( anAct ) ) {
+              anActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
+            }
+          }
+          aVtkView->Repaint( false );     
+        }
       }
     }
   }

@@ -78,10 +78,10 @@ SMESHOBJECT_EXPORT
  SMESHOBJECT_EXPORT
    void
    GetColor(  const QString& theSect, 
-	      const QString& theName, 
-	      QColor& color,
-	      int& delta,
-	      QString def);
+              const QString& theName, 
+              QColor& color,
+              int& delta,
+              QString def);
    
  SMESHOBJECT_EXPORT
    std::map<SMDSAbs_ElementType,int>

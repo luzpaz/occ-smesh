@@ -559,9 +559,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
           myWidgets[i2DQuadrangles][iLinear]   ->setProperty( "text", "?" );
           myWidgets[i2DQuadrangles][iQuadratic]->setProperty( "text", "?" );
           myWidgets[i2DPolygons][iTotal]       ->setProperty( "text", "?" );
-	  myWidgets[iNb][iTotal]               ->setProperty( "text", "?" );
-	  myWidgets[iNb][iLinear]              ->setProperty( "text", "?" );
-	  myWidgets[iNb][iQuadratic]           ->setProperty( "text", "?" );
+          myWidgets[iNb][iTotal]               ->setProperty( "text", "?" );
+          myWidgets[iNb][iLinear]              ->setProperty( "text", "?" );
+          myWidgets[iNb][iQuadratic]           ->setProperty( "text", "?" );
         }
         else if ( nb3DLinear + nb3DQuadratic > 0 )
         {
@@ -581,9 +581,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
           myWidgets[i3DPrisms][iQuadratic]      ->setProperty( "text", "?" );
           myWidgets[i3DHexaPrisms][iTotal]      ->setProperty( "text", "?" );
           myWidgets[i3DPolyhedrons][iTotal]     ->setProperty( "text", "?" );
-	  myWidgets[iNb][iTotal]                ->setProperty( "text", "?" );
-	  myWidgets[iNb][iLinear]               ->setProperty( "text", "?" );
-	  myWidgets[iNb][iQuadratic]            ->setProperty( "text", "?" );
+          myWidgets[iNb][iTotal]                ->setProperty( "text", "?" );
+          myWidgets[iNb][iLinear]               ->setProperty( "text", "?" );
+          myWidgets[iNb][iQuadratic]            ->setProperty( "text", "?" );
         }
       }
       else
@@ -621,9 +621,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
         myWidgets[i3DPrisms][iQuadratic]      ->setProperty( "text", "?" );
         myWidgets[i3DHexaPrisms][iTotal]      ->setProperty( "text", "?" );
         myWidgets[i3DPolyhedrons][iTotal]     ->setProperty( "text", "?" );
-	myWidgets[iNb][iTotal]                ->setProperty( "text", "?" );
-	myWidgets[iNb][iLinear]               ->setProperty( "text", "?" );
-	myWidgets[iNb][iQuadratic]            ->setProperty( "text", "?" );
+        myWidgets[iNb][iTotal]                ->setProperty( "text", "?" );
+        myWidgets[iNb][iLinear]               ->setProperty( "text", "?" );
+        myWidgets[iNb][iQuadratic]            ->setProperty( "text", "?" );
       }
     }
   }
@@ -1105,100 +1105,100 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           myInfo->append( QString( "<b>%1</b>" ).arg( SMESHGUI_ElemInfo::tr( "FREE_NODE" ) ).arg( id ) );
         }
         // node position
-	SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();	  
-	if ( !CORBA::is_nil( aMeshPtr ) ) {
-	  SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
-	  int shapeID = pos->shapeID;
-	  if ( shapeID > 0 ) {
-	    QString shapeType;
-	    double u, v;
-	    switch ( pos->shapeType ) {
-	    case GEOM::EDGE:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
-	      if ( pos->params.length() == 1 )
-		u = pos->params[0];
-	      break;
-	    case GEOM::FACE:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
-	      if ( pos->params.length() == 2 ) {
-	       u = pos->params[0];
-	       v = pos->params[1];
-	      }
-	      break;
-	    case GEOM::VERTEX:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
-	      break;
-	    default:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
-	      break;
-	    }
-	    // separator
-	    myInfo->append( "" );
-	    myInfo->append( QString( "<b>%1:" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ) );
-	    myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( shapeType ).arg( shapeID ) );
-	    if ( pos->shapeType == GEOM::EDGE || pos->shapeType == GEOM::FACE ) {
-	      myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "U_POSITION" ) ).
-			      arg( QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
-	      if ( pos->shapeType == GEOM::FACE ) {
-		myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "V_POSITION" ) ).
-				arg( QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
-	      }
-	    }
-	  }
-	}
-	// groups node belongs to
-	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
-	if ( !CORBA::is_nil( aMesh ) ) {
-	  SMESH::ListOfGroups_var groups = aMesh->GetGroups();
-	  myInfo->append( "" ); // separator
-	  bool top_created = false;
-	  for ( int i = 0; i < groups->length(); i++ ) {
-	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
-	    if ( CORBA::is_nil( aGrp ) ) continue;
-	    QString aName = aGrp->GetName();
-	    if ( aGrp->GetType() == SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
-	      if ( !top_created ) {
-		myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
-		top_created = true;
-	      }
-	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName.trimmed() ) );
-	      if ( grp_details ) {
-		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
-		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
-		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-		
-		// type : group on geometry, standalone group, group on filter
-		if ( !CORBA::is_nil( aStdGroup ) ) {
-		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				  arg( SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) ) );
-		}
-		else if ( !CORBA::is_nil( aGeomGroup ) ) {
-		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) ) );
-		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
-		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
-		  if ( sobj ) {
-		    myInfo->append( QString( "  - <b>%1:</b> %2: %3" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				    arg( SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) ).arg( sobj->GetName().c_str() ) );
-		  }
-		}
-		else if ( !CORBA::is_nil( aFltGroup ) ) {
-		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) ) );
-		}
-		
-		// size
-		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" ) ).
-				arg( QString::number( aGrp->Size() ) ) );
-		
-		// color
-		SALOMEDS::Color color = aGrp->GetColor();
-		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" ) ).
-				arg( QColor( color.R*255., color.G*255., color.B*255. ).name() ) );
-	      }
-	    }
-	  }
-	}
+        SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();   
+        if ( !CORBA::is_nil( aMeshPtr ) ) {
+          SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
+          int shapeID = pos->shapeID;
+          if ( shapeID > 0 ) {
+            QString shapeType;
+            double u, v;
+            switch ( pos->shapeType ) {
+            case GEOM::EDGE:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
+              if ( pos->params.length() == 1 )
+                u = pos->params[0];
+              break;
+            case GEOM::FACE:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
+              if ( pos->params.length() == 2 ) {
+               u = pos->params[0];
+               v = pos->params[1];
+              }
+              break;
+            case GEOM::VERTEX:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
+              break;
+            default:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
+              break;
+            }
+            // separator
+            myInfo->append( "" );
+            myInfo->append( QString( "<b>%1:" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ) );
+            myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( shapeType ).arg( shapeID ) );
+            if ( pos->shapeType == GEOM::EDGE || pos->shapeType == GEOM::FACE ) {
+              myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "U_POSITION" ) ).
+                              arg( QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
+              if ( pos->shapeType == GEOM::FACE ) {
+                myInfo->append( QString( "- <b>%1: #%2</b>" ).arg( SMESHGUI_ElemInfo::tr( "V_POSITION" ) ).
+                                arg( QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )) ) );
+              }
+            }
+          }
+        }
+        // groups node belongs to
+        SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+        if ( !CORBA::is_nil( aMesh ) ) {
+          SMESH::ListOfGroups_var groups = aMesh->GetGroups();
+          myInfo->append( "" ); // separator
+          bool top_created = false;
+          for ( int i = 0; i < groups->length(); i++ ) {
+            SMESH::SMESH_GroupBase_var aGrp = groups[i];
+            if ( CORBA::is_nil( aGrp ) ) continue;
+            QString aName = aGrp->GetName();
+            if ( aGrp->GetType() == SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+              if ( !top_created ) {
+                myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
+                top_created = true;
+              }
+              myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName.trimmed() ) );
+              if ( grp_details ) {
+                SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+                SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+                SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+                
+                // type : group on geometry, standalone group, group on filter
+                if ( !CORBA::is_nil( aStdGroup ) ) {
+                  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                  arg( SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) ) );
+                }
+                else if ( !CORBA::is_nil( aGeomGroup ) ) {
+                  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) ) );
+                  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+                  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+                  if ( sobj ) {
+                    myInfo->append( QString( "  - <b>%1:</b> %2: %3" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                    arg( SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) ).arg( sobj->GetName().c_str() ) );
+                  }
+                }
+                else if ( !CORBA::is_nil( aFltGroup ) ) {
+                  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) ) );
+                }
+                
+                // size
+                myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" ) ).
+                                arg( QString::number( aGrp->Size() ) ) );
+                
+                // color
+                SALOMEDS::Color color = aGrp->GetColor();
+                myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" ) ).
+                                arg( QColor( color.R*255., color.G*255., color.B*255. ).name() ) );
+              }
+            }
+          }
+        }
       }
       else {
         //
@@ -1372,79 +1372,79 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_3D" ) ).arg( afunctor->GetValue( id ) ) );
         }
-	// element position
-	if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
-	  SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();	  
-	  if ( !CORBA::is_nil( aMesh ) ) {
-	    SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
-	    int shapeID = pos.shapeID;
-	    if ( shapeID > 0 ) {
-	      myInfo->append( "" ); // separator
-	      QString shapeType;
-	      switch ( pos.shapeType ) {
-	      case GEOM::EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
-	      case GEOM::FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
-	      case GEOM::VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
-	      case GEOM::SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
-	      case GEOM::SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
-	      default:           shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
-	      }
-	      myInfo->append( QString( "<b>%1:</b> %2 #%3" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ).arg( shapeType ).arg( shapeID ) );
-	    }
-	  }
-	}
-	// groups element belongs to
-	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
-	if ( !CORBA::is_nil( aMesh ) ) {
-	  SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
-	  myInfo->append( "" ); // separator
-	  bool top_created = false;
-	  for ( int i = 0; i < groups->length(); i++ ) {
-	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
-	    if ( CORBA::is_nil( aGrp ) ) continue;
-	    QString aName = aGrp->GetName();
-	    if ( aGrp->GetType() != SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
-	      if ( !top_created ) {
-		myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
-		top_created = true;
-	      }
-	      myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName.trimmed() ) );
-	      if ( grp_details ) {
-		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
-		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
-		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-		
-		// type : group on geometry, standalone group, group on filter
-		if ( !CORBA::is_nil( aStdGroup ) ) {
-		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				  arg( SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) ) );
-		}
-		else if ( !CORBA::is_nil( aGeomGroup ) ) {
-		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) ) );
-		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
-		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
-		  if ( sobj ) {
-		    myInfo->append( QString( "  - <b>%1:</b> %2: %3" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				    arg( SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) ).arg( sobj->GetName().c_str() ) );
-		  }
-		}
-		else if ( !CORBA::is_nil( aFltGroup ) ) {
-		  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
-				  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) ) );
-		}
-		
-		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" ) ).
-				arg( QString::number( aGrp->Size() ) ) );
-		
-		// color
-		SALOMEDS::Color color = aGrp->GetColor();
-		myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" ) ).
-				arg( QColor( color.R*255., color.G*255., color.B*255. ).name() ) );
-	      }
-	    }
-	  }
-	}
+        // element position
+        if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
+          SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();    
+          if ( !CORBA::is_nil( aMesh ) ) {
+            SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
+            int shapeID = pos.shapeID;
+            if ( shapeID > 0 ) {
+              myInfo->append( "" ); // separator
+              QString shapeType;
+              switch ( pos.shapeType ) {
+              case GEOM::EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
+              case GEOM::FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
+              case GEOM::VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
+              case GEOM::SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
+              case GEOM::SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
+              default:           shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
+              }
+              myInfo->append( QString( "<b>%1:</b> %2 #%3" ).arg( SMESHGUI_ElemInfo::tr( "POSITION" ) ).arg( shapeType ).arg( shapeID ) );
+            }
+          }
+        }
+        // groups element belongs to
+        SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+        if ( !CORBA::is_nil( aMesh ) ) {
+          SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
+          myInfo->append( "" ); // separator
+          bool top_created = false;
+          for ( int i = 0; i < groups->length(); i++ ) {
+            SMESH::SMESH_GroupBase_var aGrp = groups[i];
+            if ( CORBA::is_nil( aGrp ) ) continue;
+            QString aName = aGrp->GetName();
+            if ( aGrp->GetType() != SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+              if ( !top_created ) {
+                myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_AddInfo::tr( "GROUPS" ) ) );
+                top_created = true;
+              }
+              myInfo->append( QString( "+ <b>%1:</b>" ).arg( aName.trimmed() ) );
+              if ( grp_details ) {
+                SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+                SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+                SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+                
+                // type : group on geometry, standalone group, group on filter
+                if ( !CORBA::is_nil( aStdGroup ) ) {
+                  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                  arg( SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) ) );
+                }
+                else if ( !CORBA::is_nil( aGeomGroup ) ) {
+                  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) ) );
+                  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+                  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+                  if ( sobj ) {
+                    myInfo->append( QString( "  - <b>%1:</b> %2: %3" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                    arg( SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) ).arg( sobj->GetName().c_str() ) );
+                  }
+                }
+                else if ( !CORBA::is_nil( aFltGroup ) ) {
+                  myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" ) ).
+                                  arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) ) );
+                }
+                
+                myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" ) ).
+                                arg( QString::number( aGrp->Size() ) ) );
+                
+                // color
+                SALOMEDS::Color color = aGrp->GetColor();
+                myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" ) ).
+                                arg( QColor( color.R*255., color.G*255., color.B*255. ).name() ) );
+              }
+            }
+          }
+        }
       }
       // separator
       if ( ids.count() > 1 ) {
@@ -1584,131 +1584,131 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, SMESHGUI_ElemInfo::tr( "BALL_ELEMENTS" ) );
             i->setText( 1, con );
-	    i->setData( 1, TypeRole, NodeConnectivity );
+            i->setData( 1, TypeRole, NodeConnectivity );
           }
           con = formatConnectivity( connectivity, SMDSAbs_Edge );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, SMESHGUI_ElemInfo::tr( "EDGES" ) );
             i->setText( 1, con );
-	    i->setData( 1, TypeRole, NodeConnectivity );
+            i->setData( 1, TypeRole, NodeConnectivity );
           }
           con = formatConnectivity( connectivity, SMDSAbs_Face );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, SMESHGUI_ElemInfo::tr( "FACES" ) );
             i->setText( 1, con );
-	    i->setData( 1, TypeRole, NodeConnectivity );
+            i->setData( 1, TypeRole, NodeConnectivity );
           }
           con = formatConnectivity( connectivity, SMDSAbs_Volume );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
             i->setText( 0, SMESHGUI_ElemInfo::tr( "VOLUMES" ) );
             i->setText( 1, con );
-	    i->setData( 1, TypeRole, NodeConnectivity );
+            i->setData( 1, TypeRole, NodeConnectivity );
           }
         }
         else {
           conItem->setText( 1, SMESHGUI_ElemInfo::tr( "FREE_NODE" ) );
         }
         // node position
-	SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();	  
-	if ( !CORBA::is_nil( aMeshPtr ) ) {
-	  SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
-	  int shapeID = pos->shapeID;
-	  if ( shapeID > 0 ) {
-	    QString shapeType;
-	    double u, v;
-	    switch ( pos->shapeType ) {
-	    case GEOM::EDGE:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
-	      if ( pos->params.length() == 1 )
-		u = pos->params[0];
-	      break;
-	    case GEOM::FACE:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
-	      if ( pos->params.length() == 2 ) {
-		u = pos->params[0];
-		v = pos->params[1];
-	      }
-	      break;
-	    case GEOM::VERTEX:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
-	      break;
-	    default:
-	      shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
-	      break;
-	    }
-	    QTreeWidgetItem* posItem = createItem( nodeItem, Bold );
-	    posItem->setText( 0, SMESHGUI_ElemInfo::tr("POSITION") );
-	    posItem->setText( 1, (shapeType + " #%1").arg( shapeID ));
-	    if ( pos->shapeType == GEOM::EDGE || pos->shapeType == GEOM::FACE ) {
-	      QTreeWidgetItem* uItem = createItem( posItem );
-	      uItem->setText( 0, SMESHGUI_ElemInfo::tr("U_POSITION") );
-	      uItem->setText( 1, QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )));
-	      if ( pos->shapeType == GEOM::FACE ) {
-		QTreeWidgetItem* vItem = createItem( posItem );
-		vItem->setText( 0, SMESHGUI_ElemInfo::tr("V_POSITION") );
-		vItem->setText( 1, QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )));
-	      }
-	    }
-	  }
-	}
-	// groups node belongs to
-	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
-	if ( !CORBA::is_nil( aMesh ) ) {
-	  SMESH::ListOfGroups_var groups = aMesh->GetGroups();
-	  QTreeWidgetItem* groupsItem = 0;
-	  for ( int i = 0; i < groups->length(); i++ ) {
-	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
-	    if ( CORBA::is_nil( aGrp ) ) continue;
-	    QString aName = aGrp->GetName();
-	    if ( aGrp->GetType() == SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
-	      if ( !groupsItem ) {
-		groupsItem = createItem( nodeItem, Bold );
-		groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
-	      }
-	      QTreeWidgetItem* it = createItem( groupsItem, Bold );
-	      it->setText( 0, aName.trimmed() );
-	      if ( grp_details ) {
-		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
-		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
-		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-		
-		// type : group on geometry, standalone group, group on filter
-		QTreeWidgetItem* typeItem = createItem( it );
-		typeItem->setText( 0, SMESHGUI_AddInfo::tr( "TYPE" ) );
-		if ( !CORBA::is_nil( aStdGroup ) ) {
-		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) );
-		}
-		else if ( !CORBA::is_nil( aGeomGroup ) ) {
-		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) );
-		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
-		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
-		  if ( sobj ) {
-		    QTreeWidgetItem* gobjItem = createItem( typeItem );
-		    gobjItem->setText( 0, SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) );
-		    gobjItem->setText( 1, sobj->GetName().c_str() );
-		  }
-		}
-		else if ( !CORBA::is_nil( aFltGroup ) ) {
-		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
-		}
-		
-		// size
-		QTreeWidgetItem* sizeItem = createItem( it );
-		sizeItem->setText( 0, SMESHGUI_AddInfo::tr( "SIZE" ) );
-		sizeItem->setText( 1, QString::number( aGrp->Size() ) );
-		
-		// color
-		SALOMEDS::Color color = aGrp->GetColor();
-		QTreeWidgetItem* colorItem = createItem( it );
-		colorItem->setText( 0, SMESHGUI_AddInfo::tr( "COLOR" ) );
-		colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
-	      }
-	    }
-	  }
-	}
+        SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();   
+        if ( !CORBA::is_nil( aMeshPtr ) ) {
+          SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
+          int shapeID = pos->shapeID;
+          if ( shapeID > 0 ) {
+            QString shapeType;
+            double u, v;
+            switch ( pos->shapeType ) {
+            case GEOM::EDGE:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
+              if ( pos->params.length() == 1 )
+                u = pos->params[0];
+              break;
+            case GEOM::FACE:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
+              if ( pos->params.length() == 2 ) {
+                u = pos->params[0];
+                v = pos->params[1];
+              }
+              break;
+            case GEOM::VERTEX:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" );
+              break;
+            default:
+              shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );
+              break;
+            }
+            QTreeWidgetItem* posItem = createItem( nodeItem, Bold );
+            posItem->setText( 0, SMESHGUI_ElemInfo::tr("POSITION") );
+            posItem->setText( 1, (shapeType + " #%1").arg( shapeID ));
+            if ( pos->shapeType == GEOM::EDGE || pos->shapeType == GEOM::FACE ) {
+              QTreeWidgetItem* uItem = createItem( posItem );
+              uItem->setText( 0, SMESHGUI_ElemInfo::tr("U_POSITION") );
+              uItem->setText( 1, QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )));
+              if ( pos->shapeType == GEOM::FACE ) {
+                QTreeWidgetItem* vItem = createItem( posItem );
+                vItem->setText( 0, SMESHGUI_ElemInfo::tr("V_POSITION") );
+                vItem->setText( 1, QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )));
+              }
+            }
+          }
+        }
+        // groups node belongs to
+        SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+        if ( !CORBA::is_nil( aMesh ) ) {
+          SMESH::ListOfGroups_var groups = aMesh->GetGroups();
+          QTreeWidgetItem* groupsItem = 0;
+          for ( int i = 0; i < groups->length(); i++ ) {
+            SMESH::SMESH_GroupBase_var aGrp = groups[i];
+            if ( CORBA::is_nil( aGrp ) ) continue;
+            QString aName = aGrp->GetName();
+            if ( aGrp->GetType() == SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+              if ( !groupsItem ) {
+                groupsItem = createItem( nodeItem, Bold );
+                groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
+              }
+              QTreeWidgetItem* it = createItem( groupsItem, Bold );
+              it->setText( 0, aName.trimmed() );
+              if ( grp_details ) {
+                SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+                SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+                SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+                
+                // type : group on geometry, standalone group, group on filter
+                QTreeWidgetItem* typeItem = createItem( it );
+                typeItem->setText( 0, SMESHGUI_AddInfo::tr( "TYPE" ) );
+                if ( !CORBA::is_nil( aStdGroup ) ) {
+                  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) );
+                }
+                else if ( !CORBA::is_nil( aGeomGroup ) ) {
+                  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) );
+                  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+                  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+                  if ( sobj ) {
+                    QTreeWidgetItem* gobjItem = createItem( typeItem );
+                    gobjItem->setText( 0, SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) );
+                    gobjItem->setText( 1, sobj->GetName().c_str() );
+                  }
+                }
+                else if ( !CORBA::is_nil( aFltGroup ) ) {
+                  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
+                }
+                
+                // size
+                QTreeWidgetItem* sizeItem = createItem( it );
+                sizeItem->setText( 0, SMESHGUI_AddInfo::tr( "SIZE" ) );
+                sizeItem->setText( 1, QString::number( aGrp->Size() ) );
+                
+                // color
+                SALOMEDS::Color color = aGrp->GetColor();
+                QTreeWidgetItem* colorItem = createItem( it );
+                colorItem->setText( 0, SMESHGUI_AddInfo::tr( "COLOR" ) );
+                colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
+              }
+            }
+          }
+        }
       }
       else {
         //
@@ -1813,8 +1813,8 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           QTreeWidgetItem* nodeItem = createItem( conItem, Bold );
           nodeItem->setText( 0, QString( "%1 %2 / %3" ).arg( SMESHGUI_ElemInfo::tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
           nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
-	  nodeItem->setData( 1, TypeRole, ElemConnectivity );
-	  nodeItem->setData( 1, IdRole, node->GetID() );
+          nodeItem->setData( 1, TypeRole, ElemConnectivity );
+          nodeItem->setData( 1, IdRole, node->GetID() );
           nodeItem->setExpanded( false );
           // node coordinates
           QTreeWidgetItem* coordItem = createItem( nodeItem );
@@ -1844,28 +1844,28 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, SMESHGUI_ElemInfo::tr( "EDGES" ) );
               i->setText( 1, con );
-	      i->setData( 1, TypeRole, NodeConnectivity );
+              i->setData( 1, TypeRole, NodeConnectivity );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Ball );
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, SMESHGUI_ElemInfo::tr( "BALL_ELEMENTS" ) );
               i->setText( 1, con );
-	      i->setData( 1, TypeRole, NodeConnectivity );
+              i->setData( 1, TypeRole, NodeConnectivity );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Face );
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, SMESHGUI_ElemInfo::tr( "FACES" ) );
               i->setText( 1, con );
-	      i->setData( 1, TypeRole, NodeConnectivity );
+              i->setData( 1, TypeRole, NodeConnectivity );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Volume );
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, SMESHGUI_ElemInfo::tr( "VOLUMES" ) );
               i->setText( 1, con );
-	      i->setData( 1, TypeRole, NodeConnectivity );
+              i->setData( 1, TypeRole, NodeConnectivity );
             }
           }
         }
@@ -1950,83 +1950,83 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ) );
           diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );     
         }
-	// element position
-	if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
-	  SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();	  
-	  if ( !CORBA::is_nil( aMesh ) ) {
-	    SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
-	    int shapeID = pos.shapeID;
-	    if ( shapeID > 0 ) {
-	      QTreeWidgetItem* shItem = createItem( elemItem, Bold );
-	      QString shapeType;
-	      switch ( pos.shapeType ) {
-	      case GEOM::EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
-	      case GEOM::FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
-	      case GEOM::VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
-	      case GEOM::SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
-	      case GEOM::SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
-	      default:           shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
-	      }
-	      shItem->setText( 0, SMESHGUI_ElemInfo::tr( "POSITION" ) );
-	      shItem->setText( 1, QString( "%1 #%2" ).arg( shapeType ).arg( shapeID ) );
-	    }
-	  }
-	}
-	// groups element belongs to
-	SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
-	if ( !CORBA::is_nil( aMesh ) ) {
-	  SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
-	  QTreeWidgetItem* groupsItem = 0;
-	  for ( int i = 0; i < groups->length(); i++ ) {
-	    SMESH::SMESH_GroupBase_var aGrp = groups[i];
-	    if ( CORBA::is_nil( aGrp ) ) continue;
-	    QString aName = aGrp->GetName();
-	    if ( aGrp->GetType() != SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
-	      if ( !groupsItem ) {
-		groupsItem = createItem( elemItem, Bold );
-		groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
-	      }
-	      QTreeWidgetItem* it = createItem( groupsItem, Bold );
-	      it->setText( 0, aName.trimmed() );
-	      if ( grp_details ) {
-		SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
-		SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
-		SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-		
-		// type : group on geometry, standalone group, group on filter
-		QTreeWidgetItem* typeItem = createItem( it );
-		typeItem->setText( 0, SMESHGUI_AddInfo::tr( "TYPE" ) );
-		if ( !CORBA::is_nil( aStdGroup ) ) {
-		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) );
-		}
-		else if ( !CORBA::is_nil( aGeomGroup ) ) {
-		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) );
-		  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
-		  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
-		  if ( sobj ) {
-		    QTreeWidgetItem* gobjItem = createItem( typeItem );
-		    gobjItem->setText( 0, SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) );
-		    gobjItem->setText( 1, sobj->GetName().c_str() );
-		  }
-		}
-		else if ( !CORBA::is_nil( aFltGroup ) ) {
-		  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
-		}
-		
-		// size
-		QTreeWidgetItem* sizeItem = createItem( it );
-		sizeItem->setText( 0, SMESHGUI_AddInfo::tr( "SIZE" ) );
-		sizeItem->setText( 1, QString::number( aGrp->Size() ) );
-		
-		// color
-		SALOMEDS::Color color = aGrp->GetColor();
-		QTreeWidgetItem* colorItem = createItem( it );
-		colorItem->setText( 0, SMESHGUI_AddInfo::tr( "COLOR" ) );
-		colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
-	      }
-	    }
-	  }
-	}
+        // element position
+        if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
+          SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();    
+          if ( !CORBA::is_nil( aMesh ) ) {
+            SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
+            int shapeID = pos.shapeID;
+            if ( shapeID > 0 ) {
+              QTreeWidgetItem* shItem = createItem( elemItem, Bold );
+              QString shapeType;
+              switch ( pos.shapeType ) {
+              case GEOM::EDGE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );   break;
+              case GEOM::FACE:   shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );   break;
+              case GEOM::VERTEX: shapeType = SMESHGUI_ElemInfo::tr( "GEOM_VERTEX" ); break;
+              case GEOM::SOLID:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SOLID" );  break;
+              case GEOM::SHELL:  shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHELL" );  break;
+              default:           shapeType = SMESHGUI_ElemInfo::tr( "GEOM_SHAPE" );  break;
+              }
+              shItem->setText( 0, SMESHGUI_ElemInfo::tr( "POSITION" ) );
+              shItem->setText( 1, QString( "%1 #%2" ).arg( shapeType ).arg( shapeID ) );
+            }
+          }
+        }
+        // groups element belongs to
+        SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+        if ( !CORBA::is_nil( aMesh ) ) {
+          SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
+          QTreeWidgetItem* groupsItem = 0;
+          for ( int i = 0; i < groups->length(); i++ ) {
+            SMESH::SMESH_GroupBase_var aGrp = groups[i];
+            if ( CORBA::is_nil( aGrp ) ) continue;
+            QString aName = aGrp->GetName();
+            if ( aGrp->GetType() != SMESH::NODE && !aName.isEmpty() && aGrp->Contains( id ) ) {
+              if ( !groupsItem ) {
+                groupsItem = createItem( elemItem, Bold );
+                groupsItem->setText( 0, SMESHGUI_AddInfo::tr( "GROUPS" ) );
+              }
+              QTreeWidgetItem* it = createItem( groupsItem, Bold );
+              it->setText( 0, aName.trimmed() );
+              if ( grp_details ) {
+                SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+                SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
+                SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
+                
+                // type : group on geometry, standalone group, group on filter
+                QTreeWidgetItem* typeItem = createItem( it );
+                typeItem->setText( 0, SMESHGUI_AddInfo::tr( "TYPE" ) );
+                if ( !CORBA::is_nil( aStdGroup ) ) {
+                  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "STANDALONE_GROUP" ) );
+                }
+                else if ( !CORBA::is_nil( aGeomGroup ) ) {
+                  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_GEOMETRY" ) );
+                  GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+                  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+                  if ( sobj ) {
+                    QTreeWidgetItem* gobjItem = createItem( typeItem );
+                    gobjItem->setText( 0, SMESHGUI_AddInfo::tr( "GEOM_OBJECT" ) );
+                    gobjItem->setText( 1, sobj->GetName().c_str() );
+                  }
+                }
+                else if ( !CORBA::is_nil( aFltGroup ) ) {
+                  typeItem->setText( 1, SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
+                }
+                
+                // size
+                QTreeWidgetItem* sizeItem = createItem( it );
+                sizeItem->setText( 0, SMESHGUI_AddInfo::tr( "SIZE" ) );
+                sizeItem->setText( 1, QString::number( aGrp->Size() ) );
+                
+                // color
+                SALOMEDS::Color color = aGrp->GetColor();
+                QTreeWidgetItem* colorItem = createItem( it );
+                colorItem->setText( 0, SMESHGUI_AddInfo::tr( "COLOR" ) );
+                colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -2582,7 +2582,7 @@ void SMESHGUI_AddInfo::saveInfo( QTextStream &out )
     if ( !( ( *it )->text(0) ).isEmpty() ) {
       out << QString( SPACING_INFO * itemDepth( *it ), ' ' ) << ( *it )->text(0);
       if ( ( *it )->text(0)  == tr( "COLOR" ) ) {
-	out << ": " << ( ( ( *it )->background(1) ).color() ).name();
+        out << ": " << ( ( ( *it )->background(1) ).color() ).name();
       }
       else if ( !( ( *it )->text(1) ).isEmpty() ) out << ": " << ( *it )->text(1);
       out << "\n";
@@ -2959,7 +2959,7 @@ void SMESHGUI_MeshInfoDlg::dump()
  
       QFile aFile( aFileName );
       if ( !aFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-	return;
+        return;
       
       QTextStream out( &aFile );
       

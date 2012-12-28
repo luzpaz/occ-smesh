@@ -119,8 +119,8 @@ SMESH_CellLabelActor::~SMESH_CellLabelActor() {
 
 
 void SMESH_CellLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
-					      bool bold, bool italic, bool shadow,
-					      vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b  )
+                                              bool bold, bool italic, bool shadow,
+                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b  )
 {
   switch ( family ) {
   case SMESH::FntArial:

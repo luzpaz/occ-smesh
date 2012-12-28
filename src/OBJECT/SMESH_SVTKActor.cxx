@@ -129,9 +129,9 @@ SMESH_SVTKActor
       if (aCell->GetCellType() != VTK_POLYHEDRON)
 #endif
       if(aCell->GetCellType() == VTK_VERTEX ) {
-	my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+        my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
       } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
-	myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+        myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
       } else {
         myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
       }

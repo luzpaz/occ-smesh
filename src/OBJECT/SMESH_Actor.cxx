@@ -645,8 +645,8 @@ void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
 }
 
 void SMESH_ActorDef::SetPointsFontProperties( SMESH::LabelFont theFamily, int theSize,
-					      bool theBold, bool theItalic, bool theShadow,
-					      vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+                                              bool theBold, bool theItalic, bool theShadow,
+                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
 {    
   if(myNodeActor) {
     myNodeActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
@@ -656,8 +656,8 @@ void SMESH_ActorDef::SetPointsFontProperties( SMESH::LabelFont theFamily, int th
 }
 
 void SMESH_ActorDef::SetCellsFontProperties( SMESH::LabelFont theFamily, int theSize,
-					     bool theBold, bool theItalic, bool theShadow,
-					     vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+                                             bool theBold, bool theItalic, bool theShadow,
+                                             vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
 {    
   if(my3DActor) {
     my3DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );

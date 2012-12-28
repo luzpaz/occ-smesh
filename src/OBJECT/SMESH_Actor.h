@@ -164,11 +164,11 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void UpdateDistribution() = 0;
 
   virtual void SetPointsFontProperties( SMESH::LabelFont family, int size, 
-					bool bold, bool italic, bool shadow,
-					vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b ) = 0;
+                                        bool bold, bool italic, bool shadow,
+                                        vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b ) = 0;
   virtual void SetCellsFontProperties( SMESH::LabelFont family, int size, 
-				       bool bold, bool italic, bool shadow,
-				       vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b ) = 0;
+                                       bool bold, bool italic, bool shadow,
+                                       vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b ) = 0;
 
 #ifndef DISABLE_PLOT2DVIEWER
   virtual SPlot2d_Histogram* GetPlot2Histogram() = 0;
