@@ -5099,13 +5099,13 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );
     }
     else if(name ==  QString("numbering_node_color")  || name ==  QString("numbering_node_size") ||
-	    name ==  QString("numbering_node_font")   || name ==  QString("numbering_node_bold") ||
-	    name ==  QString("numbering_node_italic") || name ==  QString("numbering_node_shadow") ) {
+            name ==  QString("numbering_node_font")   || name ==  QString("numbering_node_bold") ||
+            name ==  QString("numbering_node_italic") || name ==  QString("numbering_node_shadow") ) {
       SMESH::UpdateFontProp( this );
     }
     else if(name ==  QString("numbering_elem_color")  || name ==  QString("numbering_elem_size") ||
-	    name ==  QString("numbering_elem_font")   || name ==  QString("numbering_elem_bold") ||
-	    name ==  QString("numbering_elem_italic") || name ==  QString("numbering_elem_shadow") ) {
+            name ==  QString("numbering_elem_font")   || name ==  QString("numbering_elem_bold") ||
+            name ==  QString("numbering_elem_italic") || name ==  QString("numbering_elem_shadow") ) {
       SMESH::UpdateFontProp( this );
     }
 
