@@ -1898,7 +1898,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_MERGED_NODES</source>
-        <translation>%1 nodes successfully merged.</translation>
+        <translation>%1 groups of nodes successfully merged.</translation>
     </message>
     <message>
         <source>SMESH_NO_ELEMENTS_DETECTED</source>
