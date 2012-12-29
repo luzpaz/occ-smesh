@@ -2193,6 +2193,22 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Précision</translation>
     </message>
     <message>
+        <source>PREF_GROUP_NUMBERING</source>
+        <translation type="unfinished">Numbering</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_NODE</source>
+        <translation type="unfinished">Nodes: Color</translation>
+    </message>
+     <message>
+        <source>PREF_NUMBERING_ELEM</source>
+        <translation type="unfinished">Edges: Color</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_FONT</source>
+        <translation>Police</translation>
+    </message>
+    <message>
         <source>SMESH_PREFERENCES_SCALARBAR</source>
         <translation>Préférences de la barre d&apos;échelle</translation>
     </message>

@@ -152,19 +152,39 @@ SMESH_ActorDef::SMESH_ActorDef()
   vtkFloatingPointType aLineWidth    = SMESH::GetFloat("SMESH:element_width",1);
   vtkFloatingPointType aOutlineWidth = SMESH::GetFloat("SMESH:outline_width",1);
 
-  int aSizeNd = mgr->integerValue( "SMESH", "numbering_node_size", 10 );
-  SMESH::LabelFont aFamilyNd = (SMESH::LabelFont)( mgr->integerValue( "SMESH", "numbering_node_font", 2 ) );
-  bool aBoldNd    = mgr->booleanValue( "SMESH", "numbering_node_bold",  true );
-  bool anItalicNd = mgr->booleanValue( "SMESH", "numbering_node_italic", false );
-  bool aShadowNd  = mgr->booleanValue( "SMESH", "numbering_node_shadow", false );
+  SMESH::LabelFont aFamilyNd = SMESH::FntTimes;
+  bool aBoldNd    = true;
+  bool anItalicNd = false;
+  bool aShadowNd  = false;
+  int  aSizeNd    = 10;
+  if ( mgr->hasValue( "SMESH", "numbering_node_font" ) ) {
+    QFont f = mgr->fontValue( "SMESH", "numbering_node_font" );
+    if ( f.family()      == "Arial" )   aFamilyNd = SMESH::FntArial;
+    else if ( f.family() == "Courier" ) aFamilyNd = SMESH::FntCourier;
+    else if ( f.family() == "Times" )   aFamilyNd = SMESH::FntTimes;    
+    aBoldNd    = f.bold();    
+    anItalicNd = f.italic();   
+    aShadowNd  = f.overline();   
+    aSizeNd    = f.pointSize();
+  }
   vtkFloatingPointType anRGBNd[3] = {1,1,1};
   SMESH::GetColor( "SMESH", "numbering_node_color", anRGBNd[0], anRGBNd[1], anRGBNd[2], QColor( 255, 255, 255 ) );
 
-  int aSizeEl = mgr->integerValue( "SMESH", "numbering_elem_size", 12 );
-  SMESH::LabelFont aFamilyEl = (SMESH::LabelFont)( mgr->integerValue( "SMESH", "numbering_elem_font", 2 ) );
-  bool aBoldEl    = mgr->booleanValue( "SMESH", "numbering_elem_bold", true );
-  bool anItalicEl = mgr->booleanValue( "SMESH", "numbering_elem_italic", false );
-  bool aShadowEl  = mgr->booleanValue( "SMESH", "numbering_elem_shadow", false );
+  SMESH::LabelFont aFamilyEl = SMESH::FntTimes;
+  bool aBoldEl    = true;
+  bool anItalicEl = false;
+  bool aShadowEl  = false;
+  int  aSizeEl    = 12;
+  if ( mgr->hasValue( "SMESH", "numbering_elem_font" ) ) {
+    QFont f = mgr->fontValue( "SMESH", "numbering_elem_font" );
+    if ( f.family()      == "Arial" )   aFamilyEl = SMESH::FntArial;
+    else if ( f.family() == "Courier" ) aFamilyEl = SMESH::FntCourier;
+    else if ( f.family() == "Times" )   aFamilyEl = SMESH::FntTimes;    
+    aBoldEl    = f.bold();
+    anItalicEl = f.italic();
+    aShadowEl  = f.overline();    
+    aSizeEl    = f.pointSize();
+  }
   vtkFloatingPointType anRGBEl[3] = {0,1,0};
   SMESH::GetColor( "SMESH", "numbering_elem_color", anRGBEl[0], anRGBEl[1], anRGBEl[2], QColor( 0, 255, 0 ) );
 

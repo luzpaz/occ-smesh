@@ -95,17 +95,9 @@
     <parameter name="preview_actor_chunk_size"     value="100" />
     <parameter name="historical_python_dump"       value="true" />
     <parameter name="numbering_node_color"         value="255, 255, 255" />
-    <parameter name="numbering_node_size"          value="10" />
-    <parameter name="numbering_node_font"          value="Times" />
-    <parameter name="numbering_node_bold"          value="true" />
-    <parameter name="numbering_node_italic"        value="false" />
-    <parameter name="numbering_node_shadow"        value="false" />
+    <parameter name="numbering_node_font"          value="Times,Bold,10" />
     <parameter name="numbering_elem_color"         value="0, 255, 0" />
-    <parameter name="numbering_elem_size"          value="12" />
-    <parameter name="numbering_elem_font"          value="Times" />
-    <parameter name="numbering_elem_bold"          value="true" />
-    <parameter name="numbering_elem_italic"        value="false" />
-    <parameter name="numbering_elem_shadow"        value="false" />
+    <parameter name="numbering_elem_font"          value="Times,Bold,12" />
     <!-- Input field precisions -->
     <parameter name="def_precision"                value="3"  />
     <parameter name="length_precision"             value="-6"  />

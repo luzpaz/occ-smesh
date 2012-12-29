@@ -963,42 +963,65 @@ namespace SMESH
     //
     vtkFloatingPointType anRGBNd[3] = {1,1,1};
     SMESH::GetColor( "SMESH", "numbering_node_color", anRGBNd[0], anRGBNd[1], anRGBNd[2], QColor( 255, 255, 255 ) );
-    int aSizeNd     = mgr->integerValue( "SMESH", "numbering_node_size",  10 );
-    SMESH::LabelFont aFamilyNd = (SMESH::LabelFont)( mgr->integerValue( "SMESH", "numbering_node_font",  2 ) );
-    bool aBoldNd    = mgr->booleanValue( "SMESH", "numbering_node_bold",   true );
-    bool anItalicNd = mgr->booleanValue( "SMESH", "numbering_node_italic", false );
-    bool aShadowNd  = mgr->booleanValue( "SMESH", "numbering_node_shadow", false );
+    int aSizeNd = 10;
+    SMESH::LabelFont aFamilyNd = SMESH::FntTimes;
+    bool aBoldNd    = true;
+    bool anItalicNd = false;
+    bool aShadowNd  = false;
+
+    if ( mgr->hasValue( "SMESH", "numbering_node_font" ) ) {
+      QFont f = mgr->fontValue( "SMESH", "numbering_node_font" );
+      if ( f.family()      == "Arial" )   aFamilyNd = SMESH::FntArial;
+      else if ( f.family() == "Courier" ) aFamilyNd = SMESH::FntCourier;
+      else if ( f.family() == "Times" )   aFamilyNd = SMESH::FntTimes;
+      aBoldNd    = f.bold();
+      anItalicNd = f.italic();
+      aShadowNd  = f.overline();
+      aSizeNd    = f.pointSize();
+    }
     //
     vtkFloatingPointType anRGBEl[3] = {0,1,0};
     SMESH::GetColor( "SMESH", "numbering_elem_color", anRGBEl[0], anRGBEl[1], anRGBEl[2], QColor( 0, 255, 0 ) );
-    int aSizeEl     = mgr->integerValue( "SMESH", "numbering_elem_size",  12 );
-    SMESH::LabelFont aFamilyEl = (SMESH::LabelFont)( mgr->integerValue( "SMESH", "numbering_elem_font",  2 ) );
-    bool aBoldEl    = mgr->booleanValue( "SMESH", "numbering_elem_bold",   true );
-    bool anItalicEl = mgr->booleanValue( "SMESH", "numbering_elem_italic", false );
-    bool aShadowEl  = mgr->booleanValue( "SMESH", "numbering_elem_shadow", false );
+    int aSizeEl = 12;
+    SMESH::LabelFont aFamilyEl = SMESH::FntTimes;
+    bool aBoldEl    = true;
+    bool anItalicEl = false;
+    bool aShadowEl  = false;
+
+    if ( mgr->hasValue( "SMESH", "numbering_elem_font" ) ) {
+      QFont f = mgr->fontValue( "SMESH", "numbering_elem_font" );
+
+      if ( f.family()      == "Arial" )	  aFamilyEl = SMESH::FntArial;
+      else if ( f.family() == "Courier" ) aFamilyEl = SMESH::FntCourier;
+      else if ( f.family() == "Times" )   aFamilyEl = SMESH::FntTimes;    
+      aBoldEl    = f.bold();
+      anItalicEl = f.italic();
+      aShadowEl  = f.overline();
+      aSizeEl    = f.pointSize();
+    }
     //
     ViewManagerList vmList;
     app->viewManagers( SVTK_Viewer::Type(), vmList );
     foreach ( SUIT_ViewManager* vm, vmList ) {
       QVector<SUIT_ViewWindow*> views = vm->getViews();
       foreach ( SUIT_ViewWindow* vw, views ) {
-        // update VTK viewer properties
-        if ( SVTK_ViewWindow* aVtkView = GetVtkViewWindow( vw ) ) {
-          // update actors
-          vtkRenderer* aRenderer = aVtkView->getRenderer();
-          VTK::ActorCollectionCopy aCopy( aRenderer->GetActors() );
-          vtkActorCollection* aCollection = aCopy.GetActors();
-          aCollection->InitTraversal();
-          while ( vtkActor* anAct = aCollection->GetNextActor() ) {
-            if ( SMESH_NodeLabelActor* anActor = dynamic_cast< SMESH_NodeLabelActor* >( anAct ) ) {
-              anActor->SetFontProperties( aFamilyNd, aSizeNd, aBoldNd, anItalicNd, aShadowNd, anRGBNd[0], anRGBNd[1], anRGBNd[2] );
-            }
-            else if ( SMESH_CellLabelActor* anActor = dynamic_cast< SMESH_CellLabelActor* >( anAct ) ) {
-              anActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
-            }
-          }
-          aVtkView->Repaint( false );     
-        }
+	// update VTK viewer properties
+	if ( SVTK_ViewWindow* aVtkView = GetVtkViewWindow( vw ) ) {
+	  // update actors
+	  vtkRenderer* aRenderer = aVtkView->getRenderer();
+	  VTK::ActorCollectionCopy aCopy( aRenderer->GetActors() );
+	  vtkActorCollection* aCollection = aCopy.GetActors();
+	  aCollection->InitTraversal();
+	  while ( vtkActor* anAct = aCollection->GetNextActor() ) {
+	    if ( SMESH_NodeLabelActor* anActor = dynamic_cast< SMESH_NodeLabelActor* >( anAct ) ) {
+	      anActor->SetFontProperties( aFamilyNd, aSizeNd, aBoldNd, anItalicNd, aShadowNd, anRGBNd[0], anRGBNd[1], anRGBNd[2] );
+	    }
+	    else if ( SMESH_CellLabelActor* anActor = dynamic_cast< SMESH_CellLabelActor* >( anAct ) ) {
+	      anActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
+	    }
+	  }
+	  aVtkView->Repaint( false ); 
+	}
       }
     }
   }
