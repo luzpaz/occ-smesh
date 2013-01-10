@@ -795,7 +795,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Make sub-shapes association
   // ---------------------------
 
-  TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
+  TopoDS_Face   tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
   TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
@@ -888,38 +888,47 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     const bool toProjectNodes =
       ( nbFaceNodes > 0 && ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN ));
 
-    // Load pattern from the source face
-    SMESH_Pattern mapper;
-    mapper.Load( srcMesh, srcFace, toProjectNodes );
-    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-      return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
-
-    // Find the first target vertex corresponding to first vertex of the <mapper>
+    // Find the corresponding source and target vertex
     // and <theReverse> flag needed to call mapper.Apply()
 
-    TopoDS_Vertex srcV1 = TopoDS::Vertex( mapper.GetSubShape( 1 ));
-    if ( srcV1.IsNull() )
-      RETURN_BAD_RESULT("Mesh is not bound to the face");
-    if ( !shape2ShapeMap.IsBound( srcV1, /*isSrc=*/true ))
-      RETURN_BAD_RESULT("Not associated vertices, srcV1 " << srcV1.TShape().operator->() );
-    TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
-
-    if ( !SMESH_MesherHelper::IsSubShape( srcV1, srcFace ))
-      RETURN_BAD_RESULT("Wrong srcV1 " << srcV1.TShape().operator->());
-    if ( !SMESH_MesherHelper::IsSubShape( tgtV1, tgtFace ))
-      RETURN_BAD_RESULT("Wrong tgtV1 " << tgtV1.TShape().operator->());
-
-    // try to find out orientation by order of edges
+    TopoDS_Vertex srcV1, tgtV1;
     bool reverse = false;
+
+    if ( _sourceHypo->HasVertexAssociation() ) {
+      srcV1 = _sourceHypo->GetSourceVertex(1);
+      tgtV1 = _sourceHypo->GetTargetVertex(1);
+    } else {
+      srcV1 = TopoDS::Vertex( TopExp_Explorer( srcFace, TopAbs_VERTEX ).Current() );
+      tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
+    }
     list< TopoDS_Edge > tgtEdges, srcEdges;
     list< int > nbEdgesInWires;
-    SMESH_Block::GetOrderedEdges( tgtFace, tgtV1, tgtEdges, nbEdgesInWires);
-    SMESH_Block::GetOrderedEdges( srcFace, srcV1, srcEdges, nbEdgesInWires);
-    if ( nbEdgesInWires.front() > 1 ) // possible to find out
+    SMESH_Block::GetOrderedEdges( tgtFace, tgtV1, tgtEdges, nbEdgesInWires );
+    SMESH_Block::GetOrderedEdges( srcFace, srcV1, srcEdges, nbEdgesInWires );
+
+    if ( nbEdgesInWires.front() > 1 ) // possible to find out orientation
     {
       TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
       TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
       reverse = ( ! srcE1.IsSame( srcE1bis ));
+      if ( reverse &&
+           _sourceHypo->HasVertexAssociation() &&
+           nbEdgesInWires.front() > 2 &&
+           helper.IsRealSeam( tgtEdges.front() ))
+      {
+        // projection to a face with seam EDGE; pb is that GetOrderedEdges()
+        // always puts a seam EDGE first (if possible) and as a result
+        // we can't use only theReverse flag to correctly associate source
+        // and target faces in the mapper. Thus we select srcV1 so that
+        // GetOrderedEdges() to return EDGEs in a needed order
+        list< TopoDS_Edge >::iterator edge = srcEdges.begin();
+        for ( ; edge != srcEdges.end(); ++edge ) {
+          if ( srcE1bis.IsSame( *edge )) {
+            srcV1 = helper.IthVertex( 0, *edge );
+            break;
+          }
+        }
+      }
     }
     else if ( nbEdgesInWires.front() == 1 )
     {
@@ -930,6 +939,12 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     {
       RETURN_BAD_RESULT("Bad result from SMESH_Block::GetOrderedEdges()");
     }
+
+    // Load pattern from the source face
+    SMESH_Pattern mapper;
+    mapper.Load( srcMesh, srcFace, toProjectNodes, srcV1 );
+    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
+      return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
 
     // --------------------
     // Perform 2D mapping 
