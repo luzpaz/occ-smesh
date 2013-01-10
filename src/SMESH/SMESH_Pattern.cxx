@@ -514,7 +514,8 @@ static bool isMeshBoundToShape(SMESHDS_Mesh *     aMeshDS,
 
 bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
                           const TopoDS_Face& theFace,
-                          bool               theProject)
+                          bool               theProject,
+                          TopoDS_Vertex      the1stVertex)
 {
   MESSAGE(" ::Load(face) " );
   Clear();
@@ -538,10 +539,9 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
   // check if face is closed
   bool isClosed = helper.HasSeam();
-  TopoDS_Vertex bidon;
   list<TopoDS_Edge> eList;
   list<TopoDS_Edge>::iterator elIt;
-  SMESH_Block::GetOrderedEdges( face, bidon, eList, myNbKeyPntInBoundary );
+  SMESH_Block::GetOrderedEdges( face, the1stVertex, eList, myNbKeyPntInBoundary );
 
   // check that requested or needed projection is possible
   bool isMainShape = theMesh->IsMainShape( face );
