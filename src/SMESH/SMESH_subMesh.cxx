@@ -1522,7 +1522,26 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         {
           _computeError.reset();
         }
-        updateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
+
+        // send event SUBMESH_COMPUTED
+        if ( ret ) {
+          if ( !algo->NeedDiscreteBoundary() )
+            // send SUBMESH_COMPUTED to dependants of all sub-meshes of shape
+            for (subS.ReInit(); subS.More(); subS.Next())
+            {
+              SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
+              SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,false);
+              while ( smIt->more() ) {
+                sm = smIt->next();
+                if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+                  sm->updateDependantsState( SUBMESH_COMPUTED );
+                else
+                  break;
+              }
+            }
+          else
+            updateDependantsState( SUBMESH_COMPUTED );
+        }
       }
       break;
 #ifdef WITH_SMESH_CANCEL_COMPUTE
@@ -1865,9 +1884,7 @@ void SMESH_subMesh::updateDependantsState(const compute_event theEvent)
   for (; it.More(); it.Next())
   {
     const TopoDS_Shape& ancestor = it.Value();
-    SMESH_subMesh *aSubMesh =
-      _father->GetSubMeshContaining(ancestor);
-    if (aSubMesh)
+    if ( SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor))
       aSubMesh->ComputeStateEngine( theEvent );
   }
 }
