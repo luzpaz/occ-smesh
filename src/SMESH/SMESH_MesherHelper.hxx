@@ -141,13 +141,12 @@ public:
                                         const SMESH_Mesh&   mesh,
                                         TopAbs_ShapeEnum    ancestorType);
   /*!
-   * \brief Find a common ancestors of two shapes of the given type
+   * \brief Find a common ancestor, of the given type, of two shapes
    */
   static TopoDS_Shape GetCommonAncestor(const TopoDS_Shape& shape1,
                                         const TopoDS_Shape& shape2,
                                         const SMESH_Mesh&   mesh,
                                         TopAbs_ShapeEnum    ancestorType);
-
   /*!
    * \brief Return orientation of sub-shape in the main shape
    */
