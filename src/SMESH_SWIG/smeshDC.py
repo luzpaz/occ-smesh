@@ -1388,11 +1388,16 @@ class Mesh:
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
             pass
-        if not geom:
-            geom = self.geom
+        shape = geom
+        if not shape:
+            shape = self.geom
             pass
-        status = self.mesh.RemoveHypothesis(geom, hyp)
-        return status
+        if self.IsUsedHypothesis( hyp, shape ):
+            return self.mesh.RemoveHypothesis(shape, hyp)
+        hypName = GetName( hyp )
+        geoName = GetName( shape )
+        print "WARNING: RemoveHypothesis() failed as '%s' is not assigned to '%s' shape" % ( hypName, geoName )
+        return None
 
     ## Gets the list of hypotheses added on a geometry
     #  @param geom a sub-shape of mesh geometry
