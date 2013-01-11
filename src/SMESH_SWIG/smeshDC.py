@@ -1393,7 +1393,7 @@ class Mesh:
             shape = self.geom
             pass
         if self.IsUsedHypothesis( hyp, shape ):
-            return self.mesh.RemoveHypothesis(shape, hyp)
+            return self.mesh.RemoveHypothesis( shape, hyp )
         hypName = GetName( hyp )
         geoName = GetName( shape )
         print "WARNING: RemoveHypothesis() failed as '%s' is not assigned to '%s' shape" % ( hypName, geoName )
