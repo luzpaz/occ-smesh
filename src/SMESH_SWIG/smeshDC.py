@@ -998,9 +998,9 @@ class Mesh:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
                     if name:
-                        geo_name = name
+                        geo_name = name + " shape"
                     else:
-                        geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
+                        geo_name = "%s_%s to mesh"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
@@ -1010,8 +1010,8 @@ class Mesh:
             self.mesh = self.smeshpyD.CreateEmptyMesh()
         if name:
             self.smeshpyD.SetName(self.mesh, name)
-        elif obj != 0 and objHasName:
-            self.smeshpyD.SetName(self.mesh, GetName(obj))
+        elif objHasName:
+            self.smeshpyD.SetName(self.mesh, GetName(obj) + " mesh")
 
         if not self.geom:
             self.geom = self.mesh.GetShapeToMesh()
