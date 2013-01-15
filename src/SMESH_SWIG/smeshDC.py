@@ -1368,7 +1368,7 @@ class Mesh:
     #  @return True of False
     #  @ingroup l2_hypotheses
     def IsUsedHypothesis(self, hyp, geom):
-        if not hyp or not geom:
+        if not hyp: # or not geom
             return False
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
