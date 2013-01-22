@@ -988,9 +988,9 @@ class Mesh:
             obj = 0
         objHasName = False
         if obj != 0:
-            objHasName = True
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
                 self.geom = obj
+                objHasName = True
                 # publish geom of mesh (issue 0021122)
                 if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
                     objHasName = False
