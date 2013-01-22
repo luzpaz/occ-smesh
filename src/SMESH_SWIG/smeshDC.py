@@ -1107,19 +1107,25 @@ class Mesh:
         return self.smeshpyD.GetGeometryByMeshElement( self.mesh, theElementID, theGeomName )
 
     ## Returns the mesh dimension depending on the dimension of the underlying shape
+    #  or, if the mesh is not based on any shape, basing on deimension of elements
     #  @return mesh dimension as an integer value [0,3]
     #  @ingroup l1_auxiliary
     def MeshDimension(self):
-        shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SHELL"] )
-        if len( shells ) > 0 :
-            return 3
-        elif self.geompyD.NumberOfFaces( self.geom ) > 0 :
-            return 2
-        elif self.geompyD.NumberOfEdges( self.geom ) > 0 :
-            return 1
+        if self.mesh.HasShapeToMesh():
+            shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SOLID"] )
+            if len( shells ) > 0 :
+                return 3
+            elif self.geompyD.NumberOfFaces( self.geom ) > 0 :
+                return 2
+            elif self.geompyD.NumberOfEdges( self.geom ) > 0 :
+                return 1
+            else:
+                return 0;
         else:
-            return 0;
-        pass
+            if self.NbVolumes() > 0: return 3
+            if self.NbFaces()   > 0: return 2
+            if self.NbEdges()   > 0: return 1
+        return 0
 
     ## Evaluates size of prospective mesh on a shape
     #  @return a list where i-th element is a number of elements of i-th SMESH.EntityType
