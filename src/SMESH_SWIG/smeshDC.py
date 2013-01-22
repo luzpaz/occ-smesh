@@ -986,6 +986,7 @@ class Mesh:
         self.geompyD=geompyD
         if obj is None:
             obj = 0
+        objHasName = False
         if obj != 0:
             objHasName = True
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
