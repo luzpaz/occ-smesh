@@ -320,6 +320,8 @@ static SMESH::DriverMED_ReadStatus ConvertDriverMEDReadStatus (int theStatus)
     res = SMESH::DRS_WARN_RENUMBER; break;
   case DriverMED_R_SMESHDS_Mesh::DRS_WARN_SKIP_ELEM:
     res = SMESH::DRS_WARN_SKIP_ELEM; break;
+  case DriverMED_R_SMESHDS_Mesh::DRS_WARN_DESCENDING:
+    res = SMESH::DRS_WARN_DESCENDING; break;
   case DriverMED_R_SMESHDS_Mesh::DRS_FAIL:
   default:
     res = SMESH::DRS_FAIL; break;

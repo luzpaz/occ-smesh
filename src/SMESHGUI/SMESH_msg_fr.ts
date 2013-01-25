@@ -1450,6 +1450,10 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_DRS_4</source>
+        <translation type="unfinished">MED file contains some elements in descending connectivity. They were not read.</translation>
+    </message>
+    <message>
+        <source>SMESH_DRS_5</source>
         <translation>Le fichier n&apos;est pas correct, des données sont manquantes</translation>
     </message>
     <message>

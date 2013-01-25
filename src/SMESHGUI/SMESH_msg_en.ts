@@ -1478,6 +1478,10 @@ so that the application may crash. Do you wish to continue visualization?</trans
     </message>
     <message>
         <source>SMESH_DRS_4</source>
+        <translation type="unfinished">MED file contains some elements in descending connectivity. They were not read.</translation>
+    </message>
+    <message>
+        <source>SMESH_DRS_5</source>
         <translation>The file is incorrect, some data is missed</translation>
     </message>
     <message>
