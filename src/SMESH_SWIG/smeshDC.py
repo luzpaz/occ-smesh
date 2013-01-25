@@ -1012,7 +1012,7 @@ class Mesh:
         if name:
             self.smeshpyD.SetName(self.mesh, name)
         elif objHasName:
-            self.smeshpyD.SetName(self.mesh, GetName(obj) + " mesh")
+            self.smeshpyD.SetName(self.mesh, GetName(obj)) # + " mesh"
 
         if not self.geom:
             self.geom = self.mesh.GetShapeToMesh()
