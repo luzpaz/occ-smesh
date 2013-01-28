@@ -58,12 +58,15 @@ typedef gp_XY (*xyFunPtr)(const gp_XY& uv1, const gp_XY& uv2);
 
 //=======================================================================
 /*!
- * \brief It helps meshers to add elements
+ * \brief It helps meshers to add elements and provides other utilities
  *
- * It allow meshers not to care about creation of medium nodes
+ * - It allows meshers not to care about creation of medium nodes
  * when filling a quadratic mesh. Helper does it itself.
- * It defines degree of elements to create when IsQuadraticSubMesh()
+ * It defines order of elements to create when IsQuadraticSubMesh()
  * is called.
+ * - It provides information on a shape it is initialized with:
+ * periodicity, presence of singularities etc.
+ * - ...
  */
 //=======================================================================
 
@@ -73,13 +76,15 @@ public:
   // ---------- PUBLIC UTILITIES ----------
   
   /*!
-   * \brief Returns true if given node is medium
-    * \param n - node to check
-    * \param typeToCheck - type of elements containing the node to ask about node status
+   * \brief Returns true if all elements of a sub-mesh are of same shape
+    * \param smDS - sub-mesh to check elements of
+    * \param shape - expected shape of elements
+    * \param nullSubMeshRes - result value for the case of smDS == NULL
     * \retval bool - check result
    */
-  static bool IsMedium(const SMDS_MeshNode*      node,
-                       const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
+  static bool IsSameElemGeometry(const SMESHDS_SubMesh* smDS,
+                                 SMDSAbs_GeometryType   shape,
+                                 const bool             nullSubMeshRes = true);
 
   /*!
    * \brief Load nodes bound to face into a map of node columns
@@ -108,6 +113,19 @@ public:
                               SMESHDS_Mesh*      theMesh,
                               SMESH_ProxyMesh*   theProxyMesh=0);
   /*!
+   * \brief Return true if 2D mesh on FACE is structured
+   */
+  static bool IsStructured( SMESH_subMesh* faceSM );
+
+  /*!
+   * \brief Returns true if given node is medium
+    * \param n - node to check
+    * \param typeToCheck - type of elements containing the node to ask about node status
+    * \retval bool - check result
+   */
+  static bool IsMedium(const SMDS_MeshNode*      node,
+                       const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
+  /*!
    * \brief Return support shape of a node
    * \param node - the node
    * \param meshDS - mesh DS
@@ -127,6 +145,17 @@ public:
     if ( ind >= nbNodes ) return ind % nbNodes;
     return ind;
   }
+
+  /*!
+   * \brief Count nb of sub-shapes
+    * \param shape - the shape
+    * \param type - the type of sub-shapes to count
+    * \param ignoreSame - if true, use map not to count same shapes, esle use explorer
+    * \retval int - the calculated number
+   */
+  static int Count(const TopoDS_Shape&    shape,
+                   const TopAbs_ShapeEnum type,
+                   const bool             ignoreSame);
 
   /*!
    * \brief Return number of unique ancestors of the shape
@@ -204,7 +233,8 @@ public:
    *        or the next methods. By defaul elements are set on the shape if
    *        a mesh has no shape to be meshed
    */
-  void SetElementsOnShape(bool toSet) { mySetElemOnShape = toSet; }
+  bool SetElementsOnShape(bool toSet)
+  { bool res = mySetElemOnShape; mySetElemOnShape = toSet; return res; }
 
   /*!
    * \brief Set shape to make elements on without calling IsQuadraticSubMesh()
