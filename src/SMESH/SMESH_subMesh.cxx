@@ -264,11 +264,11 @@ bool SMESH_subMesh::IsMeshComputed() const
 
 //=============================================================================
 /*!
- *
+ * Return true if all sub-meshes have been meshed
  */
 //=============================================================================
 
-bool SMESH_subMesh::subMeshesComputed()
+bool SMESH_subMesh::SubMeshesComputed() const
 {
   int myDim = SMESH_Gen::GetShapeDim( _subShape );
   int dimToCheck = myDim - 1;
@@ -1398,7 +1398,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           if (!algo->OnlyUnaryInput())
             shape = getCollection( gen, algo, subComputed );
           else
-            subComputed = subMeshesComputed();
+            subComputed = SubMeshesComputed();
           ret = ( algo->NeedDiscreteBoundary() ? subComputed :
                   algo->SupportSubmeshes() ? true :
                   ( !subComputed || _father->IsNotConformAllowed() ));
@@ -1953,7 +1953,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
                                           SMESH_Algo* theAlgo,
                                           bool &      theSubComputed)
 {
-  theSubComputed = subMeshesComputed();
+  theSubComputed = SubMeshesComputed();
 
   TopoDS_Shape mainShape = _father->GetMeshDS()->ShapeToMesh();
 
@@ -1986,7 +1986,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
       if (strcmp( anAlgo->GetName(), theAlgo->GetName()) == 0 && // same algo
           anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp) // same hyps
         aBuilder.Add( aCompound, S );
-      if ( !subMesh->subMeshesComputed() )
+      if ( !subMesh->SubMeshesComputed() )
         theSubComputed = false;
     }
   }
@@ -2362,22 +2362,23 @@ namespace {
 //================================================================================
 
 SMESH_subMeshIteratorPtr SMESH_subMesh::getDependsOnIterator(const bool includeSelf,
-                                                             const bool reverse)
+                                                             const bool reverse) const
 {
+  SMESH_subMesh *me = (SMESH_subMesh*) this;
   SMESH_subMesh *prepend=0, *append=0;
   if ( includeSelf ) {
-    if ( reverse ) prepend = this;
-    else            append = this;
+    if ( reverse ) prepend = me;
+    else            append = me;
   }
   typedef map < int, SMESH_subMesh * > TMap;
   if ( reverse )
   {
     return SMESH_subMeshIteratorPtr
-      ( new _Iterator( new SMDS_mapReverseIterator<TMap>( DependsOn() ), prepend, append ));
+      ( new _Iterator( new SMDS_mapReverseIterator<TMap>( me->DependsOn() ), prepend, append ));
   }
   {
     return SMESH_subMeshIteratorPtr
-      ( new _Iterator( new SMDS_mapIterator<TMap>( DependsOn() ), prepend, append ));
+      ( new _Iterator( new SMDS_mapIterator<TMap>( me->DependsOn() ), prepend, append ));
   }
 }
 
