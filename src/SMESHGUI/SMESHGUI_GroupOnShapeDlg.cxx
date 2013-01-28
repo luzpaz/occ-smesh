@@ -491,13 +491,13 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
     }
   }
 
-  if ( myDlg->myElemGeomBtn->isChecked() ) // elem geomerty selection
+  if ( myDlg->myElemGeomBtn->isChecked() ) // elem geometry selection
   {
     myDlg->myElemGeomList->clear();
     myDlg->myElemGeomList->addItems( goodNames );
     myElemGeoIDs = goodIds;
   }
-  else if ( myDlg->myNodeGeomBtn->isChecked() ) // Node geomerty selection
+  else if ( myDlg->myNodeGeomBtn->isChecked() ) // Node geometry selection
   {
     myDlg->myNodeGeomList->clear();
     myDlg->myNodeGeomList->addItems( goodNames );
