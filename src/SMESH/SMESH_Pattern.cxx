@@ -541,7 +541,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
   bool isClosed = helper.HasSeam();
   list<TopoDS_Edge> eList;
   list<TopoDS_Edge>::iterator elIt;
-  SMESH_Block::GetOrderedEdges( face, the1stVertex, eList, myNbKeyPntInBoundary );
+  SMESH_Block::GetOrderedEdges( face, eList, myNbKeyPntInBoundary, the1stVertex );
 
   // check that requested or needed projection is possible
   bool isMainShape = theMesh->IsMainShape( face );
@@ -2370,7 +2370,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
 
   list< TopoDS_Edge > eList;
   list< int >         nbVertexInWires;
-  int nbWires = SMESH_Block::GetOrderedEdges( face, theVertexOnKeyPoint1, eList, nbVertexInWires);
+  int nbWires = SMESH_Block::GetOrderedEdges( face, eList, nbVertexInWires, theVertexOnKeyPoint1);
   if ( !theVertexOnKeyPoint1.IsSame( TopExp::FirstVertex( eList.front(), true )))
   {
     MESSAGE( " theVertexOnKeyPoint1 not found in the outer wire ");
