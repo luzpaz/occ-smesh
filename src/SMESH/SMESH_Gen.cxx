@@ -591,12 +591,13 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
     }
     else
     {
-      bool isGlobal = (aMesh.IsMainShape( aSubMesh->GetSubShape() ));
-      int dim = algo->GetDim();
+      bool       isGlobal = (aMesh.IsMainShape( aSubMesh->GetSubShape() ));
+      int             dim = algo->GetDim();
       int aMaxGlobIgnoDim = ( aGlobIgnoAlgo ? aGlobIgnoAlgo->GetDim() : -1 );
+      bool    isNeededDim = ( aGlobIgnoAlgo ? aGlobIgnoAlgo->NeedLowerHyps( dim ) : false );
 
-      if ( dim < aMaxGlobIgnoDim &&
-           ( isGlobal || !aGlobIgnoAlgo->SupportSubmeshes() ))
+      if (( dim < aMaxGlobIgnoDim && !isNeededDim ) &&
+          ( isGlobal || !aGlobIgnoAlgo->SupportSubmeshes() ))
       {
         // algo is hidden by a global algo
         theErrors.push_back( SMESH_Gen::TAlgoStateError() );
