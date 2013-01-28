@@ -396,8 +396,8 @@ namespace {
 
       // make any local coord systems of src and tgt faces
       vector<gp_Pnt> srcPP, tgtPP; // 3 points on face boundaries to make axes of CS
-      bool sameNbVert = ( TAssocTool::Count( tgtFace, TopAbs_VERTEX, /*ignoreSame=*/true ) ==
-                          TAssocTool::Count( srcFace, TopAbs_VERTEX, /*ignoreSame=*/true ));
+      int tgtNbVert = SMESH_MesherHelper::Count( tgtFace, TopAbs_VERTEX, /*ignoreSame=*/true );
+      int srcNbVert = SMESH_MesherHelper::Count( srcFace, TopAbs_VERTEX, /*ignoreSame=*/true );
       SMESH_subMesh *         srcSM = srcMesh->GetSubMesh( srcFace );
       SMESH_subMeshIteratorPtr smIt = srcSM->getDependsOnIterator(/*includeSelf=*/false,false);
       srcSM = smIt->next(); // sm of a vertex
@@ -435,7 +435,7 @@ namespace {
           if ( tgtShape.ShapeType() == TopAbs_VERTEX )
           {
             tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtShape ));
-            if ( sameNbVert || tgtPP.empty() )
+            if ( srcNbVert == tgtNbVert || tgtPP.empty() )
               pOK = true;
             else
               pOK = (( tgtP.Distance( tgtPP[0] ) > tol*tol ) &&
@@ -806,8 +806,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     if ( srcShape.ShapeType() == TopAbs_FACE )
     {
-      int nbE1 = TAssocTool::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
-      int nbE2 = TAssocTool::Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
+      int nbE1 = SMESH_MesherHelper::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+      int nbE2 = SMESH_MesherHelper::Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
       if ( nbE1 != nbE2 )
         return error(COMPERR_BAD_SHAPE,
                      SMESH_Comment("Different number of edges in source and target faces: ")
@@ -903,8 +903,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     }
     list< TopoDS_Edge > tgtEdges, srcEdges;
     list< int > nbEdgesInWires;
-    SMESH_Block::GetOrderedEdges( tgtFace, tgtV1, tgtEdges, nbEdgesInWires );
-    SMESH_Block::GetOrderedEdges( srcFace, srcV1, srcEdges, nbEdgesInWires );
+    SMESH_Block::GetOrderedEdges( tgtFace, tgtEdges, nbEdgesInWires, tgtV1 );
+    SMESH_Block::GetOrderedEdges( srcFace, srcEdges, nbEdgesInWires, srcV1 );
 
     if ( nbEdgesInWires.front() > 1 ) // possible to find out orientation
     {
@@ -976,7 +976,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     // Make groups of nodes to merge
 
-    // loop on edge and vertex submeshes of a target face
+    // loop on EDGE and VERTEX sub-meshes of a target FACE
     smIt = tgtSubMesh->getDependsOnIterator(/*includeSelf=*/false,/*complexShapeFirst=*/false);
     while ( smIt->more() )
     {
@@ -1002,7 +1002,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
                 groupsOfNodes.back().push_back( nIt->next() );
             }
         }
-        continue; // do not treate sm of degen VERTEX
+        continue; // do not treat sm of degen VERTEX
       }
 
       // Sort new and old nodes of a submesh separately
@@ -1075,23 +1075,16 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
              u2nodesOnSeam.size()            > 0 &&
              seam.ShapeType() == TopAbs_EDGE )
         {
-          int nbE1 = TAssocTool::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
-          int nbE2 = TAssocTool::Count( srcFace, TopAbs_EDGE, /*ignoreSame=*/true );
+          int nbE1 = SMESH_MesherHelper::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+          int nbE2 = SMESH_MesherHelper::Count( srcFace, TopAbs_EDGE, /*ignoreSame=*/true );
           if ( nbE1 != nbE2 ) // 2 EDGEs are mapped to a seam EDGE
           {
             // find the 2 EDGEs of srcFace
             TopTools_DataMapIteratorOfDataMapOfShapeShape src2tgtIt( shape2ShapeMap._map2to1 );
             for ( ; src2tgtIt.More(); src2tgtIt.Next() )
               if ( seam.IsSame( src2tgtIt.Value() ))
-              {
-                const TopoDS_Shape& tgtEdge = src2tgtIt.Key();
-                if ( SMESHDS_SubMesh* tgtSM = srcMesh->GetMeshDS()->MeshElements( tgtEdge ))
-                {
-                  SMDS_NodeIteratorPtr nIt = tgtSM->GetNodes();
-                  while ( nIt->more() )
-                    SMESH_Algo::addBadInputElement( nIt->next() );
-                }
-              }
+                SMESH_Algo::addBadInputElements
+                  ( srcMesh->GetMeshDS()->MeshElements( src2tgtIt.Key() ));
             return error( COMPERR_BAD_INPUT_MESH,
                           "Different number of nodes on two edges projected to a seam edge" );
           }
@@ -1120,7 +1113,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           groupsOfNodes.back().push_back( u_newNode->second );
           groupsOfNodes.back().push_back( u_newOnSeam->second );
         }
-    }
+
+    } // loop on EDGE and VERTEX submeshes of a target FACE
 
     // Merge
 

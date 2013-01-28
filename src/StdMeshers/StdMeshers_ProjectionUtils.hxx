@@ -197,17 +197,6 @@ class StdMeshers_ProjectionUtils
   static bool MakeComputed(SMESH_subMesh * sm, const int iterationNb = 0);
 
   /*!
-   * \brief Count nb of sub-shapes
-    * \param shape - the shape
-    * \param type - the type of sub-shapes to count
-    * \param ignoreSame - if true, use map not to count same shapes, esle use explorer
-    * \retval int - the calculated number
-   */
-  static int Count(const TopoDS_Shape&    shape,
-                   const TopAbs_ShapeEnum type,
-                   const bool             ignoreSame);
-
-  /*!
    * \brief Set event listeners to submesh with projection algo
     * \param subMesh - submesh with projection algo
     * \param srcShape - source shape
@@ -218,7 +207,7 @@ class StdMeshers_ProjectionUtils
                                SMESH_Mesh*    srcMesh);
 
   /*!
-   * \brief Return a boundary EDGE of edgeContainer
+   * \brief Return a boundary EDGE (or all boundary EDGEs) of edgeContainer
    */
   static TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
                                      const SMESH_Mesh&         mesh,
