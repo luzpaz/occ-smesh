@@ -99,6 +99,8 @@ namespace {
            algo->myProxyMesh->GetMesh() != mesh )
         algo->myProxyMesh.reset( new SMESH_ProxyMesh( *mesh ));
 
+      algo->myQuadStruct.reset();
+
       return algo;
     }
   };
