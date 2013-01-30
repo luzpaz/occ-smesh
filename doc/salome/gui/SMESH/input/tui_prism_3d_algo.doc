@@ -72,7 +72,7 @@ mesh.Compute()
 
 \endcode
 
-The result mesh id shown below
+The result mesh is shown below
 \image html prism_tui_sample.png
 
 */
