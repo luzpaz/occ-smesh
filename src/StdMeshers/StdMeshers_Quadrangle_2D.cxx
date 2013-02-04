@@ -959,7 +959,6 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
         MESSAGE (myHelper->GetMeshDS()->ShapeToIndex(quad->side[i]->Edge(e)) << " ");
       MESSAGE (")\n");
     }
-    //cout << endl;
 #endif
     if (!nbSides)
       nbSides = nbEdgesInWire.front();
@@ -1187,10 +1186,20 @@ StdMeshers_Quadrangle_2D::CheckAnd2Dcompute (SMESH_Mesh &         aMesh,
 
 faceQuadStruct::~faceQuadStruct()
 {
-  for (int i = 0; i < side.size(); i++) {
-    if (side[i])     delete side[i];
+  for (size_t i = 0; i < side.size(); i++) {
+    if (side[i]) {
+      delete side[i];
+      for (size_t j = i+1; j < side.size(); j++)
+        if ( side[i] == side[j] )
+          side[j] = 0;
+    }
   }
-  if (uv_grid)       delete [] uv_grid;
+  side.clear();
+
+  if (uv_grid) {
+    delete [] uv_grid;
+    uv_grid = 0;
+  }
 }
 
 namespace
@@ -1527,13 +1536,9 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     UpdateDegenUV( quad );
 
   // arrays for normalized params
-  //cout<<"Dump B:"<<endl;
   TColStd_SequenceOfReal npb, npr, npt, npl;
   for (i=0; i<nb; i++) {
     npb.Append(uv_eb[i].normParam);
-    //cout<<"i="<<i<<" par="<<uv_eb[i].normParam<<" npar="<<uv_eb[i].normParam;
-    //const SMDS_MeshNode* N = uv_eb[i].node;
-    //cout<<" node("<<N->X()<<","<<N->Y()<<","<<N->Z()<<")"<<endl;
   }
   for (i=0; i<nr; i++) {
     npr.Append(uv_er[i].normParam);
@@ -1561,18 +1566,11 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       npl.InsertAfter(1,npl.Value(2)-dpr);
     }
   }
-  //cout<<"npb:";
-  //for (i=1; i<=npb.Length(); i++) {
-  //  cout<<" "<<npb.Value(i);
-  //}
-  //cout<<endl;
   
   gp_XY a0(uv_eb.front().u, uv_eb.front().v);
   gp_XY a1(uv_eb.back().u,  uv_eb.back().v);
   gp_XY a2(uv_et.back().u,  uv_et.back().v);
   gp_XY a3(uv_et.front().u, uv_et.front().v);
-  //cout<<" a0("<<a0.X()<<","<<a0.Y()<<")"<<" a1("<<a1.X()<<","<<a1.Y()<<")"
-  //    <<" a2("<<a2.X()<<","<<a2.Y()<<")"<<" a3("<<a3.X()<<","<<a3.Y()<<")"<<endl;
 
   int nnn = Min(nr,nl);
   // auxilary sequence of XY for creation nodes
@@ -1619,14 +1617,6 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       for (i=1; i<=UVtmp.Length() && UVL.Length()<nbv-nnn; i++) {
         UVL.Append(UVtmp.Value(i));
       }
-      //cout<<"Dump NodesL:"<<endl;
-      //for (i=1; i<=dl+1; i++) {
-      //  cout<<"i="<<i;
-      //  for (j=1; j<=nl; j++) {
-      //    cout<<" ("<<NodesL.Value(i,j)->X()<<","<<NodesL.Value(i,j)->Y()<<","<<NodesL.Value(i,j)->Z()<<")";
-      //  }
-      //  cout<<endl;
-      //}
       // create faces
       for (i=1; i<=dl; i++) {
         for (j=1; j<nl; j++) {
@@ -1752,12 +1742,6 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       }
     }
     // add diagonal layers
-    //cout<<"UVL.Length()="<<UVL.Length()<<" UVR.Length()="<<UVR.Length()<<endl;
-    //cout<<"Dump UVL:"<<endl;
-    //for (i=1; i<=UVL.Length(); i++) {
-    //  cout<<" ("<<UVL.Value(i).X()<<","<<UVL.Value(i).Y()<<")";
-    //}
-    //cout<<endl;
     gp_UV A2 = UVR.Value(nbv-nnn);
     gp_UV A3 = UVL.Value(nbv-nnn);
     for (i=1; i<nbv-nnn; i++) {
