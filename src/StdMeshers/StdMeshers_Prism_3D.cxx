@@ -502,25 +502,28 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     {
       TopoDS_Face face = meshedFaces.front();
       meshedFaces.pop_front();
-      solidIt.Initialize( faceToSolids.FindFromKey( face ));
-      for ( ; solidIt.More(); solidIt.Next() )
+      TopTools_ListOfShape& solidList = faceToSolids.ChangeFromKey( face );
+      while ( !solidList.IsEmpty() )
       {
-        const TopoDS_Shape& solid = solidIt.Value();
-        if ( !meshedSolids.Add( solid ))
-          continue; // already computed prism
+        TopoDS_Shape solid = solidList.First();
+        solidList.RemoveFirst();
+        if ( meshedSolids.Add( solid ))
+        {
+          prism.Clear();
+          prism.myBottom = face;
+          if ( !initPrism( prism, solid ) ||
+               !compute( prism ))
+            return false;
 
-        prism.Clear();
-        prism.myBottom = face;
-        if ( !initPrism( prism, solid ) ||
-             !compute( prism ))
-          return false;
-
-        meshedFaces.push_front( prism.myTop );
-        meshedPrism.push_back( prism );
+          meshedFaces.push_front( prism.myTop );
+          meshedPrism.push_back( prism );
+        }
       }
     }
     if ( meshedSolids.Extent() == nbSolids )
       break;
+
+    // below in the loop we try to find source FACEs somehow
 
     // project mesh from source FACEs of computed prisms to
     // prisms sharing wall FACEs
@@ -533,13 +536,15 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         for ( ; wQuad != prismIt->myWallQuads[iW].end(); ++ wQuad )
         {
           const TopoDS_Face& wFace = (*wQuad)->face;
-          solidIt.Initialize( faceToSolids.FindFromKey( wFace ));
-          for ( ; solidIt.More(); solidIt.Next() )
+          TopTools_ListOfShape& solidList = faceToSolids.ChangeFromKey( wFace );
+          solidIt.Initialize( solidList );
+          while ( solidIt.More() )
           {
             const TopoDS_Shape& solid = solidIt.Value();
-            if ( meshedSolids.Contains( solid ))
+            if ( meshedSolids.Contains( solid )) {
+              solidList.Remove( solidIt );
               continue; // already computed prism
-
+            }
             // find a source FACE of the SOLID: it's a FACE sharing a bottom EDGE with wFace
             const TopoDS_Edge& wEdge = (*wQuad)->side[ QUAD_TOP_SIDE ]->Edge(0);
             PShapeIteratorPtr faceIt = myHelper->GetAncestors( wEdge, *myHelper->GetMesh(),
@@ -567,6 +572,10 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
             }
             mySetErrorToSM = true;
             InitComputeError();
+            if ( meshedSolids.Contains( solid ))
+              solidList.Remove( solidIt );
+            else
+              solidIt.Next();
           }
         }
       }
@@ -574,34 +583,34 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         break; // to compute prisms with avident sources
     }
 
-      // find FACEs with local 1D hyps, which has to be computed by now,
-      // or at least any computed FACEs
-      for ( int iF = 1; iF < faceToSolids.Extent(); ++iF )
+    // find FACEs with local 1D hyps, which has to be computed by now,
+    // or at least any computed FACEs
+    for ( int iF = 1; ( meshedFaces.empty() && iF < faceToSolids.Extent() ); ++iF )
+    {
+      const TopoDS_Face&               face = TopoDS::Face( faceToSolids.FindKey( iF ));
+      const TopTools_ListOfShape& solidList = faceToSolids.FindFromKey( face );
+      if ( solidList.IsEmpty() ) continue;
+      SMESH_subMesh*                 faceSM = theMesh.GetSubMesh( face );
+      if ( !faceSM->IsEmpty() )
       {
-        const TopoDS_Face& face = TopoDS::Face( faceToSolids.FindKey( iF ));
-        SMESH_subMesh*   faceSM = theMesh.GetSubMesh( face );
-        if ( !faceSM->IsEmpty() )
-        {
-          meshedFaces.push_back( face ); // lower priority
-        }
-        else
-        {
-          bool allSubMeComputed = true;
-          SMESH_subMeshIteratorPtr smIt = faceSM->getDependsOnIterator(false,true);
-          while ( smIt->more() && allSubMeComputed )
-            allSubMeComputed = smIt->next()->IsMeshComputed();
-          if ( allSubMeComputed )
-          {
-            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-            if ( !faceSM->IsEmpty() )
-              meshedFaces.push_front( face ); // higher priority
-            else
-              faceSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-          }
-        }
-        if ( !meshedFaces.empty() )
-          break;
+        meshedFaces.push_back( face ); // lower priority
       }
+      else
+      {
+        bool allSubMeComputed = true;
+        SMESH_subMeshIteratorPtr smIt = faceSM->getDependsOnIterator(false,true);
+        while ( smIt->more() && allSubMeComputed )
+          allSubMeComputed = smIt->next()->IsMeshComputed();
+        if ( allSubMeComputed )
+        {
+          faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+          if ( !faceSM->IsEmpty() )
+            meshedFaces.push_front( face ); // higher priority
+          else
+            faceSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+        }
+      }
+    }
 
 
     // TODO. there are other ways to find out the source FACE:
@@ -847,7 +856,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   // try to use transformation (issue 0020680)
   vector<gp_Trsf> trsf;
-  if ( myBlock.GetLayersTransformation(trsf))
+  if ( myBlock.GetLayersTransformation( trsf, thePrism ))
   {
     // loop on nodes inside the bottom face
     TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
@@ -2371,7 +2380,8 @@ const TNodeColumn* StdMeshers_PrismAsBlock::GetNodeColumn(const SMDS_MeshNode* n
 //           from bottom to top.
 //=======================================================================
 
-bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) const
+bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &           trsf,
+                                                      const Prism_3D::TPrismTopo& prism) const
 {
   const int zSize = VerticalSize();
   if ( zSize < 3 ) return true;
@@ -2381,13 +2391,9 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) co
 
   vector< const TNodeColumn* > columns;
   {
-    const TopoDS_Shape& baseFace = Shape(ID_BOT_FACE);
-    list< TopoDS_Edge > orderedEdges;
-    list< int >         nbEdgesInWires;
-    GetOrderedEdges( TopoDS::Face( baseFace ), orderedEdges, nbEdgesInWires );
     bool isReverse;
-    list< TopoDS_Edge >::iterator edgeIt = orderedEdges.begin();
-    for ( int iE = 0; iE < nbEdgesInWires.front(); ++iE, ++edgeIt )
+    list< TopoDS_Edge >::const_iterator edgeIt = prism.myBottomEdges.begin();
+    for ( int iE = 0; iE < prism.myNbEdgesInWires.front(); ++iE, ++edgeIt )
     {
       if ( BRep_Tool::Degenerated( *edgeIt )) continue;
       const TParam2ColumnMap* u2colMap =
