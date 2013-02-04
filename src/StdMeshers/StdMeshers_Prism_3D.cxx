@@ -485,8 +485,8 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   }
   //meshedFaces.splice( meshedFaces.begin(), notQuadMeshedFaces );
 
-  if ( meshedFaces.empty() )
-    return error( COMPERR_BAD_INPUT_MESH, "No meshed source faces found" );
+  // if ( meshedFaces.empty() )
+  //   return error( COMPERR_BAD_INPUT_MESH, "No meshed source faces found" );
 
   TopTools_MapOfShape meshedSolids;
   list< Prism_3D::TPrismTopo > meshedPrism;
@@ -573,6 +573,36 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       if ( !meshedFaces.empty() )
         break; // to compute prisms with avident sources
     }
+
+      // find FACEs with local 1D hyps, which has to be computed by now,
+      // or at least any computed FACEs
+      for ( int iF = 1; iF < faceToSolids.Extent(); ++iF )
+      {
+        const TopoDS_Face& face = TopoDS::Face( faceToSolids.FindKey( iF ));
+        SMESH_subMesh*   faceSM = theMesh.GetSubMesh( face );
+        if ( !faceSM->IsEmpty() )
+        {
+          meshedFaces.push_back( face ); // lower priority
+        }
+        else
+        {
+          bool allSubMeComputed = true;
+          SMESH_subMeshIteratorPtr smIt = faceSM->getDependsOnIterator(false,true);
+          while ( smIt->more() && allSubMeComputed )
+            allSubMeComputed = smIt->next()->IsMeshComputed();
+          if ( allSubMeComputed )
+          {
+            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+            if ( !faceSM->IsEmpty() )
+              meshedFaces.push_front( face ); // higher priority
+            else
+              faceSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+          }
+        }
+        if ( !meshedFaces.empty() )
+          break;
+      }
+
 
     // TODO. there are other ways to find out the source FACE:
     // propagation, topological similarity, ect.
