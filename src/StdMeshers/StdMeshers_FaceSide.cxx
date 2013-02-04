@@ -587,7 +587,7 @@ void StdMeshers_FaceSide::Reverse()
     reverse( myEdge );
     reverse( myEdgeID );
     reverse( myC2d );
-    reverse( myC3dAdaptor );
+    //reverse( myC3dAdaptor );
     reverse( myFirst );
     reverse( myLast );
     reverse( myNormPar );
@@ -606,7 +606,8 @@ void StdMeshers_FaceSide::Reverse()
   {
     double fp,lp;
     Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],fp,lp);
-    myC3dAdaptor[i].Load( C3d, fp,lp );
+    if ( !C3d.IsNull() )
+      myC3dAdaptor[i].Load( C3d, fp,lp );
   }
 }
 
