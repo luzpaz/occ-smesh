@@ -185,7 +185,8 @@ class STDMESHERS_EXPORT StdMeshers_PrismAsBlock: public SMESH_Block
    *        by nodes of the bottom. Layer is a set of nodes at a certain step
    *        from bottom to top.
    */
-  bool GetLayersTransformation(std::vector<gp_Trsf> & trsf) const;
+  bool GetLayersTransformation(std::vector<gp_Trsf> &      trsf,
+                               const Prism_3D::TPrismTopo& prism) const;
   
   /*!
    * \brief Return pointer to mesh
