@@ -89,17 +89,20 @@ namespace {
       : StdMeshers_Quadrangle_2D( gen->GetANewId(), studyId, gen)
     {
     }
-    static StdMeshers_Quadrangle_2D* instance( SMESH_Algo* fatherAlgo,
-                                               SMESH_Mesh* mesh=0)
+    static StdMeshers_Quadrangle_2D* instance( SMESH_Algo*         fatherAlgo,
+                                               SMESH_MesherHelper* helper=0)
     {
       static TQuadrangleAlgo* algo = new TQuadrangleAlgo( fatherAlgo->GetStudyId(),
                                                           fatherAlgo->GetGen() );
-      if ( mesh &&
+      if ( helper &&
            algo->myProxyMesh &&
-           algo->myProxyMesh->GetMesh() != mesh )
-        algo->myProxyMesh.reset( new SMESH_ProxyMesh( *mesh ));
+           algo->myProxyMesh->GetMesh() != helper->GetMesh() )
+        algo->myProxyMesh.reset( new SMESH_ProxyMesh( *helper->GetMesh() ));
 
       algo->myQuadStruct.reset();
+
+      if ( helper )
+        algo->_quadraticMesh = helper->GetIsQuadratic();
 
       return algo;
     }
@@ -649,7 +652,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
 
   SMESH_Mesh* mesh = myHelper->GetMesh();
 
-  StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, mesh );
+  StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
   TopTools_MapOfShape faceMap;
   TopTools_IndexedDataMapOfShapeListOfShape edgeToFaces;   
@@ -1012,7 +1015,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
   SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
 
   TProjction1dAlgo* projector1D = TProjction1dAlgo::instance( this );
-  StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, mesh );
+  StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
   SMESH_HypoFilter hyp1dFilter( SMESH_HypoFilter::IsAlgo(),/*not=*/true);
   hyp1dFilter.And( SMESH_HypoFilter::HasDim( 1 ));
@@ -1041,6 +1044,15 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       }
     }
     wgt2quad.insert( make_pair( wgt, iW ));
+
+    // in quadratic mesh, pass ignoreMediumNodes to quad sides
+    if ( myHelper->GetIsQuadratic() )
+    {
+      quad = thePrism.myWallQuads[iW].begin();
+      for ( ; quad != thePrism.myWallQuads[iW].end(); ++quad )
+        for ( int i = 0; i < NB_QUAD_SIDES; ++i )
+          (*quad)->side[ i ]->SetIgnoreMediumNodes( true );
+    }
   }
 
   // Project 'vertical' EDGEs, from left to right
@@ -1213,20 +1225,28 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       // -------------------------------
       const TopoDS_Face& face = (*quad)->face;
       SMESH_subMesh* fSM = mesh->GetSubMesh( face );
-      if ( fSM->IsMeshComputed() ) continue;
-
-      // make all EDGES meshed
-      fSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
-      if ( !fSM->SubMeshesComputed() )
-        return toSM( error( COMPERR_BAD_INPUT_MESH,
-                            "Not all edges have valid algorithm and hypothesis"));
-      // mesh the <face>
-      quadAlgo->InitComputeError();
-      bool ok = quadAlgo->Compute( *mesh, face );
-      fSM->GetComputeError() = quadAlgo->GetComputeError();
-      if ( !ok )
-        return false;
-      fSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      if ( ! fSM->IsMeshComputed() )
+      {
+        // make all EDGES meshed
+        fSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+        if ( !fSM->SubMeshesComputed() )
+          return toSM( error( COMPERR_BAD_INPUT_MESH,
+                              "Not all edges have valid algorithm and hypothesis"));
+        // mesh the <face>
+        quadAlgo->InitComputeError();
+        bool ok = quadAlgo->Compute( *mesh, face );
+        fSM->GetComputeError() = quadAlgo->GetComputeError();
+        if ( !ok )
+          return false;
+        fSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      }
+      if ( myHelper->GetIsQuadratic() )
+      {
+        // fill myHelper with medium nodes built by quadAlgo
+        SMDS_ElemIteratorPtr fIt = fSM->GetSubMeshDS()->GetElements();
+        while ( fIt->more() )
+          myHelper->AddTLinks( dynamic_cast<const SMDS_MeshFace*>( fIt->next() ));
+      }
     }
   }
 
@@ -1898,7 +1918,7 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
     // Issue 0020843 - one of side FACEs is quasi-quadrilateral (not 4 EDGEs).
     // Remove from notQuadGeomSubMesh faces meshed with regular grid
     int nbQuasiQuads = removeQuasiQuads( notQuadGeomSubMesh, myHelper,
-                                         TQuadrangleAlgo::instance(this,myHelper->GetMesh()) );
+                                         TQuadrangleAlgo::instance(this,myHelper) );
     nbNotQuad -= nbQuasiQuads;
     if ( nbNotQuad > 2 )
       return toSM( error(COMPERR_BAD_SHAPE,
