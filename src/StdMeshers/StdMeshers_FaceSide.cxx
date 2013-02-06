@@ -612,6 +612,33 @@ void StdMeshers_FaceSide::Reverse()
 }
 
 //=======================================================================
+//function : SetIgnoreMediumNodes
+//purpose  : Make ignore medium nodes
+//=======================================================================
+
+void StdMeshers_FaceSide::SetIgnoreMediumNodes(bool toIgnore)
+{
+  if ( myIgnoreMediumNodes != toIgnore )
+  {
+    myIgnoreMediumNodes = toIgnore;
+
+    if ( !myPoints.empty() )
+    {
+      UVPtStructVec newPoints;
+      newPoints.reserve( myPoints.size()/2 + 1 );
+      for ( size_t i = 0; i < myPoints.size(); i += 2 )
+        newPoints.push_back( myPoints[i] );
+
+      myPoints.swap( newPoints );
+    }
+    else
+    {
+      NbPoints( /*update=*/true );
+    }
+  }
+}
+
+//=======================================================================
 //function : NbPoints
 //purpose  : Return nb nodes on edges and vertices (+1 to be == GetUVPtStruct().size() )
 //           Call it with update == true if mesh of this side can be recomputed
@@ -648,7 +675,8 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
           if ( elemIt->more() && elemIt->next()->IsQuadratic() )
             nbN -= sm->NbElements();
         }
-        me->myNbPonits += nbN;
+        me->myNbPonits   += nbN;
+        me->myNbSegments += sm->NbElements();
       }
     }
     TopoDS_Vertex v1 = SMESH_MesherHelper::IthVertex( 1, Edge( NbEdges()-1 ));
@@ -669,7 +697,7 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
 
 int StdMeshers_FaceSide::NbSegments(const bool update) const
 {
-  return Max( 0, NbPoints( update ) - 1 );
+  return NbPoints( update ), myNbSegments;
 }
 
 //================================================================================

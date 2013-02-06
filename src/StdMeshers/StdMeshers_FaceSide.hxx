@@ -102,6 +102,11 @@ public:
    */
   void Reverse();
   /*!
+   * \brief Make ignore medium nodes
+   */
+  void SetIgnoreMediumNodes(bool toIgnore);
+
+  /*!
    * \brief Return nb nodes on edges and vertices (+1 to be == GetUVPtStruct().size() ).
    *        Call it with update == true if mesh of this side can be recomputed
    *        since creation of this side
@@ -121,6 +126,7 @@ public:
    * \brief Return true if there are vertices without nodes
    */
   bool MissVertexNode() const { return myMissingVertexNodes; }
+
   /*!
    * \brief Return detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
@@ -143,6 +149,7 @@ public:
     * For a closed side, the 1st point repeats at end
    */
   std::vector<const SMDS_MeshNode*> GetOrderedNodes() const;
+
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
    */
