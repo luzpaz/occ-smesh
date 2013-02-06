@@ -371,7 +371,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   // fix quadratic mesh by bending iternal links near concave boundary
   if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
-       !aShapesId ) // not preview
+       !aShapesId && // not preview
+       ret ) // everything is OK
   {
     SMESH_MesherHelper aHelper( aMesh );
     if ( aHelper.IsQuadraticMesh() != SMESH_MesherHelper::LINEAR )
