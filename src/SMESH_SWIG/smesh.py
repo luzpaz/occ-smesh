@@ -33,15 +33,16 @@ import salome
 from salome import *
 
 import geompy
+import SMESH, SALOMEDS
 import smeshDC
-from smeshDC import *
+#from smeshDC import *
 
 # retrieve SMESH engine in try/except block
 # to avoid problems in some cases, e.g. when generating documentation
 try:
     # get instance of class smeshDC
-    smesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
-    smesh.init_smesh( salome.myStudy, geompy.geom )
+    engineSmesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
+    smesh = smeshDC.smeshInstance(salome.myStudy, engineSmesh)
 except:
     smesh = None
     pass
@@ -81,3 +82,30 @@ if smesh:
 	globals()[k] = getattr( smesh, k )
     del k
     pass
+
+print """
+===============================================================================
+WARNING:                                                                      |
+Usage of smesh.py is deprecated in SALOME V7.2!                               |
+smesh.py will be removed in a future version!                                 |
+TODO:                                                                         |
+The following changes in your scripts are required to avoid this message:     |
+                                                                              |
+replace                                                                       |
+-------                                                                       |
+                                                                              |
+import smesh, SMESH, SALOMEDS                                                 |
+smesh.SetCurrentStudy(theStudy)                                               |
+                                                                              |
+with                                                                          |
+----                                                                          |
+                                                                              |
+import smeshDC, SMESH, SALOMEDS                                               |
+smesh = smeshDC.smeshInstance(theStudy)                                       |
+                                                                              |
+you also need to modify some lines where smeshDC is used instead of smesh:    |
+                                                                              |
+algo=smesh.xxxx  ==> algo.smeshDC.xxxx                                        |
+                                                                              |
+===============================================================================
+"""

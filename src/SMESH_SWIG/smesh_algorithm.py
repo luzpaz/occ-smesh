@@ -166,7 +166,7 @@ class Mesh_Algorithm:
 
     ## Gets the name of the algorithm
     def GetName(self):
-        from smesh import GetName
+        from smeshDC import GetName
         return GetName(self.algo)
 
     ## Sets the name to the algorithm
@@ -190,7 +190,7 @@ class Mesh_Algorithm:
 
     ## Private method
     def Assign(self, algo, mesh, geom):
-        from smesh import AssureGeomPublished, TreatHypoStatus, GetName
+        from smeshDC import AssureGeomPublished, TreatHypoStatus, GetName
         if geom is None:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
@@ -221,7 +221,7 @@ class Mesh_Algorithm:
     ## Private method
     def Hypothesis (self, hyp, args=[], so="libStdMeshersEngine.so",
                     UseExisting=0, CompareMethod=""):
-        from smesh import TreatHypoStatus, GetName
+        from smeshDC import TreatHypoStatus, GetName
         hypo = None
         if UseExisting:
             if CompareMethod == "": CompareMethod = self.CompareHyp
@@ -310,7 +310,7 @@ class Mesh_Algorithm:
     #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
     #  @ingroup l3_hypos_1dhyps
     def ReversedEdgeIndices(self, reverseList):
-        from smesh import FirstVertexOnCurve
+        from smeshDC import FirstVertexOnCurve
         resList = []
         geompy = self.mesh.geompyD
         for i in reverseList:

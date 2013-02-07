@@ -52,8 +52,8 @@ salomeinclude_HEADERS = \
 	SMESH.hxx
 
 # Scripts to be installed.
-dist_salomescript_DATA= \
-	smeshpy.py
+#dist_salomescript_DATA= \
+#	smeshpy.py
 
 # Libraries targets
 

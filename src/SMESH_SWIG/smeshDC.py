@@ -16,11 +16,11 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-#  File   : smesh.py
+#  File   : smeshDC.py
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
 
-## @package smesh
+## @package smeshDC
 #  Python API for SALOME %Mesh module
 
 ## @defgroup l1_auxiliary Auxiliary methods and structures
@@ -91,6 +91,7 @@ from   smesh_algorithm import Mesh_Algorithm
 
 import SALOME
 import SALOMEDS
+import os
 
 ## @addtogroup l1_auxiliary
 ## @{
@@ -271,17 +272,16 @@ def AssureGeomPublished(mesh, geom, name=''):
         mesh.geompyD.addToStudyInFather( mesh.geom, geom, name )
     return
 
-## Return the first vertex of a geomertical edge by ignoring orienation
+## Return the first vertex of a geometrical edge by ignoring orientation
 def FirstVertexOnCurve(edge):
-    from geompy import SubShapeAll, ShapeType, KindOfShape, PointCoordinates
-    vv = SubShapeAll( edge, ShapeType["VERTEX"])
+    vv = geompyDC.SubShapeAll( edge, geompyDC.ShapeType["VERTEX"])
     if not vv:
         raise TypeError, "Given object has no vertices"
     if len( vv ) == 1: return vv[0]
-    info = KindOfShape(edge)
+    info = geompyDC.KindOfShape(edge)
     xyz = info[1:4] # coords of the first vertex
-    xyz1  = PointCoordinates( vv[0] )
-    xyz2  = PointCoordinates( vv[1] )
+    xyz1  = geompyDC.PointCoordinates( vv[0] )
+    xyz2  = geompyDC.PointCoordinates( vv[1] )
     dist1, dist2 = 0,0
     for i in range(3):
         dist1 += abs( xyz[i] - xyz1[i] )
@@ -294,8 +294,53 @@ def FirstVertexOnCurve(edge):
 # end of l1_auxiliary
 ## @}
 
-# All methods of this class are accessible directly from the smesh.py package.
-class smeshDC(SMESH._objref_SMESH_Gen):
+
+# Warning: smeshInst is a singleton
+smeshInst = None
+engine = None
+doLcc = False
+
+class smeshDC(object, SMESH._objref_SMESH_Gen):
+
+    def __new__(cls):
+        global engine
+        global smeshInst
+        global doLcc
+        print "__new__", engine, smeshInst, doLcc
+
+        if smeshInst is None:
+            # smesh engine is either retrieved from engine, or created
+            smeshInst = engine
+            # Following test avoids a recursive loop
+            if doLcc:
+                if smeshInst is not None:
+                    # smesh engine not created: existing engine found
+                    doLcc = False
+                if doLcc:
+                    doLcc = False
+                    # FindOrLoadComponent called:
+                    # 1. CORBA resolution of server
+                    # 2. the __new__ method is called again
+                    print "smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
+                    smeshInst = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
+            else:
+                # FindOrLoadComponent not called
+                if smeshInst is None:
+                    # smeshDC instance is created from lcc.FindOrLoadComponent
+                    print "smeshInst = super(smeshDC,cls).__new__(cls) ", engine, smeshInst, doLcc
+                    smeshInst = super(smeshDC,cls).__new__(cls)
+                else:
+                    # smesh engine not created: existing engine found
+                    print "existing ", engine, smeshInst, doLcc
+                    pass
+
+            return smeshInst
+
+        return smeshInst
+
+    def __init__(self):
+        print "__init__"
+        SMESH._objref_SMESH_Gen.__init__(self)
 
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.
@@ -314,7 +359,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
-    def init_smesh(self,theStudy,geompyD):
+    def init_smesh(self,theStudy,geompyD = None):
+        print "init_smesh"
         self.SetCurrentStudy(theStudy,geompyD)
 
     ## Creates an empty Mesh. This mesh can have an underlying geometry.
@@ -436,8 +482,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def SetCurrentStudy( self, theStudy, geompyD = None ):
         #self.SetCurrentStudy(theStudy)
         if not geompyD:
-            import geompy
-            geompyD = geompy.geom
+            import geompyDC
+            geompyD = geompyDC.geom
             pass
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
@@ -950,6 +996,19 @@ import omniORB
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
 
 
+def smeshInstance( study, instance=None):
+    global engine
+    global smeshInst
+    global doLcc
+    engine = instance
+    if engine is None:
+      doLcc = True
+    smeshInst = smeshDC()
+    assert isinstance(smeshInst,smeshDC), "Smesh engine class is %s but should be smeshDC.smeshDC. Import smeshmapi before creating the instance."%smeshInst.__class__
+    smeshInst.init_smesh(study)
+    return smeshInst
+
+
 # Public class: Mesh
 # ==================
 
@@ -1015,6 +1074,7 @@ class Mesh:
         for attrName in dir(self):
             attr = getattr( self, attrName )
             if isinstance( attr, algoCreator ):
+                print "algoCreator ", attrName
                 setattr( self, attrName, attr.copy( self ))
 
     ## Initializes the Mesh object from an instance of SMESH_Mesh interface
@@ -4264,3 +4324,32 @@ class hypMethodWrapper:
                 raise ValueError, detail # wrong variable name
 
         return result
+
+for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
+    #
+    print "pluginName: ", pluginName
+    pluginName += "DC"
+    try:
+        exec( "from %s import *" % pluginName )
+    except Exception, e:
+        print "Exception while loading %s: %s" % ( pluginName, e )
+        continue
+    exec( "import %s" % pluginName )
+    plugin = eval( pluginName )
+    print "  plugin:" , str(plugin)
+
+    # add methods creating algorithms to Mesh
+    for k in dir( plugin ):
+        if k[0] == '_': continue
+        algo = getattr( plugin, k )
+        print "             algo:", str(algo)
+        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+            print "                     meshMethod:" , str(algo.meshMethod)
+            if not hasattr( Mesh, algo.meshMethod ):
+                setattr( Mesh, algo.meshMethod, algoCreator() )
+                pass
+            getattr( Mesh, algo.meshMethod ).add( algo )
+            pass
+        pass
+    pass
+del pluginName
