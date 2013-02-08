@@ -1801,6 +1801,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Longueur</translation>
     </message>
     <message>
+        <source>SMESH_LOGARITHMIC_SCALARBAR</source>
+        <translation type="unfinished">Logarithmic</translation>
+    </message>
+    <message>
         <source>SMESH_MAKE_GROUPS</source>
         <translation>Générer les groupes</translation>
     </message>

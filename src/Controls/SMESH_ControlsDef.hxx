@@ -125,7 +125,8 @@ namespace SMESH{
                         std::vector<int>&       nbEvents,
                         std::vector<double>&    funValues,
                         const std::vector<int>& elements,
-                        const double*           minmax=0);
+                        const double*           minmax=0,
+                        const bool              isLogarithmic = false);
       virtual SMDSAbs_ElementType GetType() const = 0;
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;

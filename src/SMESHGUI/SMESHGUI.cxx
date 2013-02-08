@@ -1108,9 +1108,10 @@
               vtkLookupTable* lookupTable =
                 static_cast<vtkLookupTable*>(aScalarBarActor->GetLookupTable());
               double * minmax = lookupTable->GetRange();
+              bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
               std::vector<int>    nbEvents;
               std::vector<double> funValues;
-              aNumFun->GetHistogram( nbIntervals, nbEvents, funValues, elements, minmax );
+              aNumFun->GetHistogram( nbIntervals, nbEvents, funValues, elements, minmax, isLogarithmic );
               QString anInitialPath = "";
               if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
                 anInitialPath = QDir::currentPath();
@@ -1603,7 +1604,7 @@
             aControl = SMESH_Actor::eCoincidentElems3D;
             break;
           }
-            
+
           anActor->SetControlMode(aControl);
           anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
           SMESH::RepaintCurrentView();

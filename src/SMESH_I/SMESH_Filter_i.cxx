@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Filter_i.cxx
 //  Author : Alexey Petrov, OCC
 //  Module : SMESH
-//
+
 #include "SMESH_Filter_i.hxx"
 
 #include "SMDS_ElemIterator.hxx"
@@ -580,12 +579,12 @@ CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
   return myNumericalFunctorPtr->GetValue( theId );
 }
 
-SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals)
+SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals, CORBA::Boolean isLogarithmic)
 {
   std::vector<int> nbEvents;
   std::vector<double> funValues;
   std::vector<int> elements;
-  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements);
+  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements,0,isLogarithmic);
 
 #ifdef WIN32
   nbIntervals = CORBA::Short( min( nbEvents.size(), funValues.size() - 1));

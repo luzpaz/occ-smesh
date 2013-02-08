@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #include "SMESH_ControlsDef.hxx"
 
@@ -322,12 +321,12 @@ double NumericalFunctor::Round( const double & aVal )
  *  \param minmax - boundaries of diapason of values to divide into intervals
  */
 //================================================================================
-
 void NumericalFunctor::GetHistogram(int                  nbIntervals,
                                     std::vector<int>&    nbEvents,
                                     std::vector<double>& funValues,
                                     const vector<int>&   elements,
-                                    const double*        minmax)
+                                    const double*        minmax,
+                                    const bool           isLogarithmic)
 {
   if ( nbIntervals < 1 ||
        !myMesh ||
@@ -380,8 +379,15 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
   for ( int i = 0; i < nbIntervals; ++i )
   {
     // find end value of i-th interval
-    double r = (i+1) / double( nbIntervals );
-    funValues[i+1] = funValues.front() * (1-r) + funValues.back() * r;
+    double r = (i+1) / double(nbIntervals);
+    if (isLogarithmic && funValues.front() > 1e-07 && funValues.back() > 1e-07) {
+      double logmin = log10(funValues.front());
+      double lval = logmin + r * (log10(funValues.back()) - logmin);
+      funValues[i+1] = pow(10.0, lval);
+    }
+    else {
+      funValues[i+1] = funValues.front() * (1-r) + funValues.back() * r;
+    }
 
     // count values in the i-th interval if there are any
     if ( min != values.end() && *min <= funValues[i+1] )

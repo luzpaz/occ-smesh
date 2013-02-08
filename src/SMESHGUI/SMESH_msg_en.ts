@@ -1829,6 +1829,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Length</translation>
     </message>
     <message>
+        <source>SMESH_LOGARITHMIC_SCALARBAR</source>
+        <translation>Logarithmic</translation>
+    </message>
+    <message>
         <source>SMESH_MAKE_GROUPS</source>
         <translation>Generate groups</translation>
     </message>
