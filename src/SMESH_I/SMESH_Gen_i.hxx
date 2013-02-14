@@ -478,7 +478,14 @@ public:
 
   void CleanPythonTrace (int theStudyID);
 
-
+  // ============
+  // Check In / Check Out
+  // ============
+  virtual Engines::ListOfIdentifiers* importData(CORBA::Long studyId,
+						 Engines::DataContainer_ptr data,
+						 const Engines::ListOfOptions& options);
+  virtual Engines::ListOfData* getModifiedData(CORBA::Long studyId);
+    
   // *****************************************
   // Internal methods
   // *****************************************
@@ -621,6 +628,9 @@ private:
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;
   bool                                                     myIsHistoricalPythonDump;
   std::vector< std::string >                               myLastParameters;
+  
+  int myImportedStudyId; // identifier of the imported in importData study to keep no-modifiection flag for getModifiedData method
+  int myImportedStudyChanged; // flag that indicates that the imported study has been changed (by creation of the additional mesh)
 };
 
 
