@@ -174,7 +174,7 @@ pyexamples_SCRIPTS = $(BAD_TESTS) $(GOOD_TESTS)
 
 EXTRA_DIST += $(pyexamples_SCRIPTS) testme.py
 
-check-local:
+installcheck-local:
 	@for f in $(GOOD_TESTS) ; do \
 	  python $(top_srcdir)/doc/salome/examples/testme.py $(top_srcdir)/doc/salome/examples/$$f || exit 1; \
 	done
