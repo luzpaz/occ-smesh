@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #include "SMESH_ControlsDef.hxx"
 
@@ -70,7 +69,10 @@
                             AUXILIARY METHODS
 */
 
-namespace{
+namespace {
+
+  const double theEps = 1e-100;
+  const double theInf = 1e+100;
 
   inline gp_XYZ gpXYZ(const SMDS_MeshNode* aNode )
   {
@@ -319,12 +321,12 @@ double NumericalFunctor::Round( const double & aVal )
  *  \param minmax - boundaries of diapason of values to divide into intervals
  */
 //================================================================================
-
 void NumericalFunctor::GetHistogram(int                  nbIntervals,
                                     std::vector<int>&    nbEvents,
                                     std::vector<double>& funValues,
                                     const vector<int>&   elements,
-                                    const double*        minmax)
+                                    const double*        minmax,
+                                    const bool           isLogarithmic)
 {
   if ( nbIntervals < 1 ||
        !myMesh ||
@@ -377,8 +379,15 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
   for ( int i = 0; i < nbIntervals; ++i )
   {
     // find end value of i-th interval
-    double r = (i+1) / double( nbIntervals );
-    funValues[i+1] = funValues.front() * (1-r) + funValues.back() * r;
+    double r = (i+1) / double(nbIntervals);
+    if (isLogarithmic && funValues.front() > 1e-07 && funValues.back() > 1e-07) {
+      double logmin = log10(funValues.front());
+      double lval = logmin + r * (log10(funValues.back()) - logmin);
+      funValues[i+1] = pow(10.0, lval);
+    }
+    else {
+      funValues[i+1] = funValues.front() * (1-r) + funValues.back() * r;
+    }
 
     // count values in the i-th interval if there are any
     if ( min != values.end() && *min <= funValues[i+1] )
@@ -760,8 +769,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
     double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
-    if ( anArea <= Precision::Confusion() )
-      return 0.;
+    if ( anArea <= theEps  )
+      return theInf;
     return alfa * maxLen * half_perimeter / anArea;
   }
   else if ( nbNodes == 6 ) { // quadratic triangles
@@ -780,8 +789,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
     double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P(1), P(3), P(5) );
-    if ( anArea <= Precision::Confusion() )
-      return 0.;
+    if ( anArea <= theEps )
+      return theInf;
     return alfa * maxLen * half_perimeter / anArea;
   }
   else if( nbNodes == 4 ) { // quadrangle
@@ -824,8 +833,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double C2 = Min( anArea[ 0 ],
                   Min( anArea[ 1 ],
                     Min( anArea[ 2 ], anArea[ 3 ] ) ) );
-    if ( C2 <= Precision::Confusion() )
-      return 0.;
+    if ( C2 <= theEps )
+      return theInf;
     return alpha * L * C1 / C2;
   }
   else if( nbNodes == 8 || nbNodes == 9 ) { // nbNodes==8 - quadratic quadrangle
@@ -868,8 +877,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double C2 = Min( anArea[ 0 ],
                   Min( anArea[ 1 ],
                     Min( anArea[ 2 ], anArea[ 3 ] ) ) );
-    if ( C2 <= Precision::Confusion() )
-      return 0.;
+    if ( C2 <= theEps )
+      return theInf;
     return alpha * L * C1 / C2;
   }
   return 0;
@@ -1287,8 +1296,8 @@ double Warping::ComputeA( const gp_XYZ& thePnt1,
   double aLen1 = gp_Pnt( thePnt1 ).Distance( gp_Pnt( thePnt2 ) );
   double aLen2 = gp_Pnt( thePnt2 ).Distance( gp_Pnt( thePnt3 ) );
   double L = Min( aLen1, aLen2 ) * 0.5;
-  if ( L < Precision::Confusion())
-    return 0.;
+  if ( L < theEps )
+    return theInf;
 
   gp_XYZ GI = ( thePnt2 + thePnt1 ) / 2. - theG;
   gp_XYZ GJ = ( thePnt3 + thePnt2 ) / 2. - theG;
@@ -1333,8 +1342,8 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
   double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2.;
 
   double JA = 0.25 * ( J1 + J2 + J3 + J4 );
-  if ( JA <= Precision::Confusion() )
-    return 0.;
+  if ( JA <= theEps )
+    return theInf;
 
   double T1 = fabs( ( J1 - JA ) / JA );
   double T2 = fabs( ( J2 - JA ) / JA );
@@ -1400,8 +1409,8 @@ double Skew::GetValue( const TSequenceOfXYZ& P )
       ? 0. : fabs( PI2 - v1.Angle( v2 ) );
 
     //BUG SWP12743
-    if ( A < Precision::Angular() )
-      return 0.;
+    if ( A < theEps )
+      return theInf;
 
     return A * 180. / M_PI;
   }
@@ -3668,23 +3677,11 @@ ElementsOnShape::ElementsOnShape()
     myToler(Precision::Confusion()),
     myAllNodesFlag(false)
 {
-  myCurShapeType = TopAbs_SHAPE;
 }
 
 ElementsOnShape::~ElementsOnShape()
 {
-}
-
-void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
-{
-  myMeshModifTracer.SetMesh( theMesh );
-  if ( myMeshModifTracer.IsMeshModified())
-    SetShape(myShape, myType);
-}
-
-bool ElementsOnShape::IsSatisfy (long theElementId)
-{
-  return myIds.Contains(theElementId);
+  clearClassifiers();
 }
 
 SMDSAbs_ElementType ElementsOnShape::GetType() const
@@ -3707,168 +3704,162 @@ double ElementsOnShape::GetTolerance() const
 
 void ElementsOnShape::SetAllNodes (bool theAllNodes)
 {
-  if (myAllNodesFlag != theAllNodes) {
-    myAllNodesFlag = theAllNodes;
-    SetShape(myShape, myType);
-  }
+  myAllNodesFlag = theAllNodes;
+}
+
+void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
+{
+  myMesh = theMesh;
 }
 
 void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
                                 const SMDSAbs_ElementType theType)
 {
-  myType = theType;
+  myType  = theType;
   myShape = theShape;
-  myIds.Clear();
-
-  const SMDS_Mesh* myMesh = myMeshModifTracer.GetMesh();
+  if ( myShape.IsNull() ) return;
   
-  if ( !myMesh ) return;
+  TopTools_IndexedMapOfShape shapesMap;
+  TopAbs_ShapeEnum shapeTypes[4] = { TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX };
+  TopExp_Explorer sub;
+  for ( int i = 0; i < 4; ++i )
+  {
+    if ( shapesMap.IsEmpty() )
+      for ( sub.Init( myShape, shapeTypes[i] ); sub.More(); sub.Next() )
+        shapesMap.Add( sub.Current() );
+    if ( i > 0 )
+      for ( sub.Init( myShape, shapeTypes[i], shapeTypes[i-1] ); sub.More(); sub.Next() )
+        shapesMap.Add( sub.Current() );
+  }
 
-  myIds.ReSize( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
-
-  myShapesMap.Clear();
-  addShape(myShape);
+  clearClassifiers();
+  myClassifiers.resize( shapesMap.Extent() );
+  for ( int i = 0; i < shapesMap.Extent(); ++i )
+    myClassifiers[ i ] = new TClassifier( shapesMap( i+1 ), myToler );
 }
 
-void ElementsOnShape::addShape (const TopoDS_Shape& theShape)
+void ElementsOnShape::clearClassifiers()
 {
-  if (theShape.IsNull() || myMeshModifTracer.GetMesh() == 0)
-    return;
+  for ( size_t i = 0; i < myClassifiers.size(); ++i )
+    delete myClassifiers[ i ];
+  myClassifiers.clear();
+}
 
-  if (!myShapesMap.Add(theShape)) return;
+bool ElementsOnShape::IsSatisfy (long elemId)
+{
+  const SMDS_MeshElement* elem =
+    ( myType == SMDSAbs_Node ? myMesh->FindNode( elemId ) : myMesh->FindElement( elemId ));
+  if ( !elem || myClassifiers.empty() )
+    return false;
 
-  myCurShapeType = theShape.ShapeType();
-  switch (myCurShapeType)
+  for ( size_t i = 0; i < myClassifiers.size(); ++i )
   {
-  case TopAbs_COMPOUND:
-  case TopAbs_COMPSOLID:
-  case TopAbs_SHELL:
-  case TopAbs_WIRE:
+    SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
+    bool isSatisfy = myAllNodesFlag;
+    
+    gp_XYZ centerXYZ (0, 0, 0);
+
+    while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
     {
-      TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
-      for (; anIt.More(); anIt.Next()) addShape(anIt.Value());
+      SMESH_TNodeXYZ aPnt ( aNodeItr->next() );
+      centerXYZ += aPnt;
+      isSatisfy = ! myClassifiers[i]->IsOut( aPnt );
     }
-    break;
-  case TopAbs_SOLID:
+
+    // Check the center point for volumes MantisBug 0020168
+    if (isSatisfy &&
+        myAllNodesFlag &&
+        myClassifiers[i]->ShapeType() == TopAbs_SOLID)
     {
-      myCurSC.Load(theShape);
-      process();
+      centerXYZ /= elem->NbNodes();
+      isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
     }
+    if ( isSatisfy )
+      return true;
+  }
+
+  return false;
+}
+
+TopAbs_ShapeEnum ElementsOnShape::TClassifier::ShapeType() const
+{
+  return myShape.ShapeType();
+}
+
+bool ElementsOnShape::TClassifier::IsOut(const gp_Pnt& p)
+{
+  return (this->*myIsOutFun)( p );
+}
+
+void ElementsOnShape::TClassifier::Init (const TopoDS_Shape& theShape, double theTol)
+{
+  myShape = theShape;
+  myTol   = theTol;
+  switch ( myShape.ShapeType() )
+  {
+  case TopAbs_SOLID: {
+    mySolidClfr.Load(theShape);
+    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfSolid;
     break;
-  case TopAbs_FACE:
-    {
-      TopoDS_Face aFace = TopoDS::Face(theShape);
-      BRepAdaptor_Surface SA (aFace, true);
-      Standard_Real
-        u1 = SA.FirstUParameter(),
-        u2 = SA.LastUParameter(),
-        v1 = SA.FirstVParameter(),
-        v2 = SA.LastVParameter();
-      Handle(Geom_Surface) surf = BRep_Tool::Surface(aFace);
-      myCurProjFace.Init(surf, u1,u2, v1,v2);
-      myCurFace = aFace;
-      process();
-    }
+  }
+  case TopAbs_FACE:  {
+    Standard_Real u1,u2,v1,v2;
+    Handle(Geom_Surface) surf = BRep_Tool::Surface( TopoDS::Face( theShape ));
+    surf->Bounds( u1,u2,v1,v2 );
+    myProjFace.Init(surf, u1,u2, v1,v2, myTol );
+    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfFace;
     break;
-  case TopAbs_EDGE:
-    {
-      TopoDS_Edge anEdge = TopoDS::Edge(theShape);
-      Standard_Real u1, u2;
-      Handle(Geom_Curve) curve = BRep_Tool::Curve(anEdge, u1, u2);
-      myCurProjEdge.Init(curve, u1, u2);
-      process();
-    }
+  }
+  case TopAbs_EDGE:  {
+    Standard_Real u1, u2;
+    Handle(Geom_Curve) curve = BRep_Tool::Curve( TopoDS::Edge(theShape), u1, u2);
+    myProjEdge.Init(curve, u1, u2);
+    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfEdge;
     break;
-  case TopAbs_VERTEX:
-    {
-      TopoDS_Vertex aV = TopoDS::Vertex(theShape);
-      myCurPnt = BRep_Tool::Pnt(aV);
-      process();
-    }
+  }
+  case TopAbs_VERTEX:{
+    myVertexXYZ = BRep_Tool::Pnt( TopoDS::Vertex( theShape ) );
+    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfVertex;
     break;
+  }
   default:
-    break;
+    throw SALOME_Exception("Programmer error in usage of ElementsOnShape::TClassifier");
   }
 }
 
-void ElementsOnShape::process()
+bool ElementsOnShape::TClassifier::isOutOfSolid (const gp_Pnt& p)
 {
-  const SMDS_Mesh* myMesh = myMeshModifTracer.GetMesh();
-  if (myShape.IsNull() || myMesh == 0)
-    return;
-
-  SMDS_ElemIteratorPtr anIter = myMesh->elementsIterator(myType);
-  while (anIter->more())
-    process(anIter->next());
+  mySolidClfr.Perform( p, myTol );
+  return ( mySolidClfr.State() != TopAbs_IN && mySolidClfr.State() != TopAbs_ON );
 }
 
-void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
+bool ElementsOnShape::TClassifier::isOutOfFace  (const gp_Pnt& p)
 {
-  if (myShape.IsNull())
-    return;
-
-  SMDS_ElemIteratorPtr aNodeItr = theElemPtr->nodesIterator();
-  bool isSatisfy = myAllNodesFlag;
-
-  gp_XYZ centerXYZ (0, 0, 0);
-
-  while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
+  myProjFace.Perform( p );
+  if ( myProjFace.IsDone() && myProjFace.LowerDistance() <= myTol )
   {
-    SMESH_TNodeXYZ aPnt ( aNodeItr->next() );
-    centerXYZ += aPnt;
-
-    switch (myCurShapeType)
-    {
-    case TopAbs_SOLID:
-      {
-        myCurSC.Perform(aPnt, myToler);
-        isSatisfy = (myCurSC.State() == TopAbs_IN || myCurSC.State() == TopAbs_ON);
-      }
-      break;
-    case TopAbs_FACE:
-      {
-        myCurProjFace.Perform(aPnt);
-        isSatisfy = (myCurProjFace.IsDone() && myCurProjFace.LowerDistance() <= myToler);
-        if (isSatisfy)
-        {
-          // check relatively the face
-          Quantity_Parameter u, v;
-          myCurProjFace.LowerDistanceParameters(u, v);
-          gp_Pnt2d aProjPnt (u, v);
-          BRepClass_FaceClassifier aClsf (myCurFace, aProjPnt, myToler);
-          isSatisfy = (aClsf.State() == TopAbs_IN || aClsf.State() == TopAbs_ON);
-        }
-      }
-      break;
-    case TopAbs_EDGE:
-      {
-        myCurProjEdge.Perform(aPnt);
-        isSatisfy = (myCurProjEdge.NbPoints() > 0 && myCurProjEdge.LowerDistance() <= myToler);
-      }
-      break;
-    case TopAbs_VERTEX:
-      {
-        isSatisfy = (myCurPnt.Distance(aPnt) <= myToler);
-      }
-      break;
-    default:
-      {
-        isSatisfy = false;
-      }
-    }
+    // check relatively to the face
+    Quantity_Parameter u, v;
+    myProjFace.LowerDistanceParameters(u, v);
+    gp_Pnt2d aProjPnt (u, v);
+    BRepClass_FaceClassifier aClsf ( TopoDS::Face( myShape ), aProjPnt, myTol );
+    if ( aClsf.State() == TopAbs_IN || aClsf.State() == TopAbs_ON )
+      return false;
   }
-
-  if (isSatisfy && myCurShapeType == TopAbs_SOLID) { // Check the center point for volumes MantisBug 0020168
-    centerXYZ /= theElemPtr->NbNodes();
-    gp_Pnt aCenterPnt (centerXYZ);
-    myCurSC.Perform(aCenterPnt, myToler);
-    if ( !(myCurSC.State() == TopAbs_IN || myCurSC.State() == TopAbs_ON))
-      isSatisfy = false;
-  }
-
-  if (isSatisfy)
-    myIds.Add(theElemPtr->GetID());
+  return true;
 }
+
+bool ElementsOnShape::TClassifier::isOutOfEdge  (const gp_Pnt& p)
+{
+  myProjEdge.Perform( p );
+  return ! ( myProjEdge.NbPoints() > 0 && myProjEdge.LowerDistance() <= myTol );
+}
+
+bool ElementsOnShape::TClassifier::isOutOfVertex(const gp_Pnt& p)
+{
+  return ( myVertexXYZ.Distance( p ) > myTol );
+}
+
 
 TSequenceOfXYZ::TSequenceOfXYZ()
 {}

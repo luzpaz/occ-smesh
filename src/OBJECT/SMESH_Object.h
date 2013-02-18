@@ -24,7 +24,6 @@
 //  File   : SMESH_Object.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-//  $Header$
 //
 #ifndef SMESH_OBJECT_H
 #define SMESH_OBJECT_H
@@ -45,6 +44,9 @@
 #include "SMESH_Controls.hxx"
 #include "SMDSAbs_ElementType.hxx"
 
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+
 class SMDS_Mesh;
 class vtkUnstructuredGrid;
 
@@ -62,6 +64,7 @@ public:
 
   virtual int GetNbEntities( const SMDSAbs_ElementType theType) const = 0;
   virtual SMDS_Mesh* GetMesh() const = 0;
+  virtual SMESH::SMESH_Mesh_ptr GetMeshServer() = 0;
 
   virtual bool GetEdgeNodes( const int theElemId,
                              const int theEdgeNum,
