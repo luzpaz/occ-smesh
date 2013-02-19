@@ -831,9 +831,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
   if ( isPublished )
-    aScript += aSMESHGen + ".SetCurrentStudy(theStudy)";
+    aScript += aSMESHGen + " = smeshDC.smeshInstance(theStudy)";
   else
-    aScript += aSMESHGen + ".SetCurrentStudy(None)";
+    aScript += aSMESHGen + " = smeshDC.smeshInstance(None)";
 
   // import python files corresponding to plugins
   set<string> moduleNameSet;
@@ -963,7 +963,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString initPart = "import ";
   if ( isMultiFile )
     initPart += helper + "salome, ";
-  initPart += aSmeshpy + ", SMESH, SALOMEDS\n";
+  initPart += " smeshDC, SMESH, SALOMEDS\n";
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
