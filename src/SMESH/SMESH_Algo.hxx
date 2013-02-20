@@ -287,14 +287,10 @@ public:
                                    const bool                                 ignoreMediumNodes,
                                    std::map< double, const SMDS_MeshNode* > & theNodes);
   /*!
-   * \brief Find out elements orientation on a geometrical face
-   * \param theFace - The face correctly oriented in the shape being meshed
-   * \param theMeshDS - The mesh data structure
-   * \retval bool - true if the face normal and the normal of first element
-   *                in the correspoding submesh point in different directions
+   * Moved to SMESH_MesherHelper
    */
-  static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
-                                 SMESHDS_Mesh*       theMeshDS);
+  // static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
+  //                                SMESHDS_Mesh*       theMeshDS);
   /*!
    * \brief Compute length of an edge
     * \param E - the edge

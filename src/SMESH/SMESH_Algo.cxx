@@ -252,120 +252,13 @@ bool SMESH_Algo::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool norm
   return ok;
 }
 
-//================================================================================
-/*!
- * \brief Find out elements orientation on a geometrical face
- * \param theFace - The face correctly oriented in the shape being meshed
- * \param theMeshDS - The mesh data structure
- * \retval bool - true if the face normal and the normal of first element
- *                in the correspoding submesh point in different directions
+/*
+ * Moved to SMESH_MesherHelper
  */
-//================================================================================
-
-bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
-                                    SMESHDS_Mesh*       theMeshDS)
-{
-  if ( theFace.IsNull() || !theMeshDS )
-    return false;
-
-  // find out orientation of a meshed face
-  int faceID = theMeshDS->ShapeToIndex( theFace );
-  TopoDS_Shape aMeshedFace = theMeshDS->IndexToShape( faceID );
-  bool isReversed = ( theFace.Orientation() != aMeshedFace.Orientation() );
-
-  const SMESHDS_SubMesh * aSubMeshDSFace = theMeshDS->MeshElements( faceID );
-  if ( !aSubMeshDSFace )
-    return isReversed;
-
-  // find element with node located on face and get its normal
-  const SMDS_FacePosition* facePos = 0;
-  int vertexID = 0;
-  gp_Pnt nPnt[3];
-  gp_Vec Ne;
-  bool normalOK = false;
-  SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
-  while ( iteratorElem->more() ) // loop on elements on theFace
-  {
-    const SMDS_MeshElement* elem = iteratorElem->next();
-    if ( elem && elem->NbNodes() > 2 ) {
-      SMDS_ElemIteratorPtr nodesIt = elem->nodesIterator();
-      const SMDS_FacePosition* fPos = 0;
-      int i = 0, vID = 0;
-      while ( nodesIt->more() ) { // loop on nodes
-        const SMDS_MeshNode* node
-          = static_cast<const SMDS_MeshNode *>(nodesIt->next());
-        if ( i == 3 ) i = 2;
-        nPnt[ i++ ].SetCoord( node->X(), node->Y(), node->Z() );
-        // check position
-        const SMDS_PositionPtr& pos = node->GetPosition();
-        if ( !pos ) continue;
-        if ( pos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-          fPos = dynamic_cast< const SMDS_FacePosition* >( pos );
-        }
-        else if ( pos->GetTypeOfPosition() == SMDS_TOP_VERTEX ) {
-          vID = node->getshapeId();
-        }
-      }
-      if ( fPos || ( !normalOK && vID )) {
-        // compute normal
-        gp_Vec v01( nPnt[0], nPnt[1] ), v02( nPnt[0], nPnt[2] );
-        if ( v01.SquareMagnitude() > RealSmall() &&
-             v02.SquareMagnitude() > RealSmall() )
-        {
-          Ne = v01 ^ v02;
-          normalOK = ( Ne.SquareMagnitude() > RealSmall() );
-        }
-        // we need position on theFace or at least on vertex
-        if ( normalOK ) {
-          vertexID = vID;
-          if ((facePos = fPos))
-            break;
-        }
-      }
-    }
-  }
-  if ( !normalOK )
-    return isReversed;
-
-  // node position on face
-  double u,v;
-  if ( facePos ) {
-    u = facePos->GetUParameter();
-    v = facePos->GetVParameter();
-  }
-  else if ( vertexID ) {
-    TopoDS_Shape V = theMeshDS->IndexToShape( vertexID );
-    if ( V.IsNull() || V.ShapeType() != TopAbs_VERTEX )
-      return isReversed;
-    gp_Pnt2d uv = BRep_Tool::Parameters( TopoDS::Vertex( V ), theFace );
-    u = uv.X();
-    v = uv.Y();
-  }
-  else
-  {
-    return isReversed;
-  }
-
-  // face normal at node position
-  TopLoc_Location loc;
-  Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace, loc );
-  // if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 )
-  // some surfaces not detected as GeomAbs_C1 are nevertheless correct for meshing
-  if ( surf.IsNull() || surf->Continuity() < GeomAbs_C0 )
-    {
-      if (!surf.IsNull())
-        MESSAGE("surf->Continuity() < GeomAbs_C1 " << (surf->Continuity() < GeomAbs_C1));
-      return isReversed;
-    }
-  gp_Vec d1u, d1v;
-  surf->D1( u, v, nPnt[0], d1u, d1v );
-  gp_Vec Nf = (d1u ^ d1v).Transformed( loc );
-
-  if ( theFace.Orientation() == TopAbs_REVERSED )
-    Nf.Reverse();
-
-  return Ne * Nf < 0.;
-}
+// bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
+//                                     SMESHDS_Mesh*       theMeshDS)
+// {
+// }
 
 //================================================================================
 /*!
