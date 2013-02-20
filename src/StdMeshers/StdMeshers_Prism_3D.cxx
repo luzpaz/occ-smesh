@@ -1646,7 +1646,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   // if the bottom faces is orienetd OK then top faces must be reversed
   bool reverseTop = true;
   if ( myHelper->NbAncestors( botFace, *myBlock.Mesh(), TopAbs_SOLID ) > 1 )
-    reverseTop = ! SMESH_Algo::IsReversedSubMesh( TopoDS::Face( botFace ), meshDS );
+    reverseTop = ! myHelper->IsReversedSubMesh( TopoDS::Face( botFace ));
   int iFrw, iRev, *iPtr = &( reverseTop ? iRev : iFrw );
 
   // loop on bottom mesh faces

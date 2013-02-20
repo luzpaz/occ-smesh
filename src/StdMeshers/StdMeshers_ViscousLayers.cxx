@@ -1096,7 +1096,7 @@ bool _ViscousBuilder::findFacesWithLayers()
       {     
         _ignoreShapeIds.insert( faceInd );
         ignoreFaces.push_back( exp.Current() );
-        if ( SMESH_Algo::IsReversedSubMesh( TopoDS::Face( exp.Current() ), getMeshDS()))
+        if ( helper.IsReversedSubMesh( TopoDS::Face( exp.Current() )))
           _sdVec[i]._reversedFaceIds.insert( faceInd );
       }
     }
@@ -4480,7 +4480,7 @@ bool _ViscousBuilder::addBoundaryElements()
         reverse = ( helper.GetSubShapeOri( F, E ) == TopAbs_REVERSED );
         if ( helper.GetSubShapeOri( data._solid, F ) == TopAbs_REVERSED )
           reverse = !reverse, F.Reverse();
-        if ( SMESH_Algo::IsReversedSubMesh( TopoDS::Face(F), getMeshDS() ))
+        if ( helper.IsReversedSubMesh( TopoDS::Face(F) ))
           reverse = !reverse;
       }
       else
