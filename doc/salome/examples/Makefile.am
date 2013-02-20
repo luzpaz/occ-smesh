@@ -176,5 +176,5 @@ EXTRA_DIST += $(pyexamples_SCRIPTS) testme.py
 
 installcheck-local:
 	@for f in $(GOOD_TESTS) ; do \
-	  env SMESH_ROOT_DIR=$(prefix) python $(top_srcdir)/doc/salome/examples/testme.py $(top_srcdir)/doc/salome/examples/$$f || exit 1; \
+	  env SMESH_ROOT_DIR=$(prefix) python -B $(top_srcdir)/doc/salome/examples/testme.py $(top_srcdir)/doc/salome/examples/$$f || exit 1; \
 	done
