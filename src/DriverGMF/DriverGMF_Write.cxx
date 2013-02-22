@@ -49,6 +49,16 @@ extern "C"
   const SMDS_MeshElement* elem = elemIt->next();                        \
   GmfSetLin(meshID, GmfKwd,
 
+#define BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity, GmfKwd, elem, nbVertices ) \
+  elemIt = myMesh->elementEntityIterator( SMDSEntity );                 \
+  if ( elemIt->more() )                                                 \
+  {                                                                     \
+  GmfSetKwd(meshID, GmfKwd, myMesh->GetMeshInfo().NbEntities( SMDSEntity )); \
+  for ( int gmfID = 1; elemIt->more(); ++gmfID )                        \
+  {                                                                     \
+  const SMDS_MeshElement* elem = elemIt->next();                        \
+  GmfSetLin(meshID, GmfKwd, gmfID, nbVertices,
+
 #define END_ELEM_WRITE( elem )                  \
   elem->getshapeId() );                         \
   }}                                            \
@@ -58,6 +68,10 @@ extern "C"
   e2id.insert( e2id.end(), make_pair( elem, gmfID ));   \
   }}                                                    \
 
+#define END_EXTRA_VERTICES_WRITE()           \
+  );                                         \
+  }}                                         \
+
 
 DriverGMF_Write::DriverGMF_Write():
   Driver_SMESHDS_Mesh(), _exportRequiredGroups( true )
@@ -66,6 +80,12 @@ DriverGMF_Write::DriverGMF_Write():
 DriverGMF_Write::~DriverGMF_Write()
 {
 }
+
+//================================================================================
+/*!
+ * \brief Reads a GMF file
+ */
+//================================================================================
 
 Driver_Mesh::Status DriverGMF_Write::Perform()
 {
@@ -110,14 +130,17 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     node2IdMap[ edge->GetNode( 0 )],
     node2IdMap[ edge->GetNode( 1 )],
     END_ELEM_WRITE_ADD_TO_MAP( edge, edge2IDMap );
-    
+
   // quadratic edges
-  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Edge, GmfEdgesP2, edge )
+  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Edge, GmfEdges, edge )
     node2IdMap[ edge->GetNode( 0 )],
     node2IdMap[ edge->GetNode( 1 )],
-    node2IdMap[ edge->GetNode( 2 )],
     END_ELEM_WRITE( edge );
-    
+
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_Quad_Edge, GmfExtraVerticesAtEdges, edge, 1 )
+    node2IdMap[ edge->GetNode( 2 )]
+    END_EXTRA_VERTICES_WRITE();
+
   // triangles
   TElem2IDMap tria2IDMap;
   BEGIN_ELEM_WRITE( SMDSEntity_Triangle, GmfTriangles, tria )
@@ -125,17 +148,20 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     node2IdMap[ tria->GetNode( 1 )],
     node2IdMap[ tria->GetNode( 2 )],
     END_ELEM_WRITE_ADD_TO_MAP( tria, tria2IDMap );
-    
+
   // quadratic triangles
-  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Triangle, GmfTrianglesP2, tria )
+  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Triangle, GmfTriangles, tria )
     node2IdMap[ tria->GetNode( 0 )],
     node2IdMap[ tria->GetNode( 1 )],
     node2IdMap[ tria->GetNode( 2 )],
+    END_ELEM_WRITE( tria );
+
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_Quad_Triangle, GmfExtraVerticesAtTriangles, tria, 3 )
     node2IdMap[ tria->GetNode( 3 )],
     node2IdMap[ tria->GetNode( 4 )],
-    node2IdMap[ tria->GetNode( 5 )],
-    END_ELEM_WRITE( tria );
-    
+    node2IdMap[ tria->GetNode( 5 )]
+    END_EXTRA_VERTICES_WRITE();
+
   // quadrangles
   TElem2IDMap quad2IDMap;
   BEGIN_ELEM_WRITE( SMDSEntity_Quadrangle, GmfQuadrilaterals, quad )
@@ -145,19 +171,37 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     node2IdMap[ quad->GetNode( 3 )],
     END_ELEM_WRITE_ADD_TO_MAP( quad, quad2IDMap );
 
-  // bi-quadratic quadrangles
-  BEGIN_ELEM_WRITE( SMDSEntity_BiQuad_Quadrangle, GmfQuadrilateralsQ2, quad )
+  // quadratic quadrangles
+  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Quadrangle, GmfQuadrilaterals, quad )
     node2IdMap[ quad->GetNode( 0 )],
-    node2IdMap[ quad->GetNode( 3 )],
-    node2IdMap[ quad->GetNode( 2 )],
     node2IdMap[ quad->GetNode( 1 )],
-    node2IdMap[ quad->GetNode( 7 )],
-    node2IdMap[ quad->GetNode( 6 )],
-    node2IdMap[ quad->GetNode( 5 )],
-    node2IdMap[ quad->GetNode( 4 )],
-    node2IdMap[ quad->GetNode( 8 )],
+    node2IdMap[ quad->GetNode( 2 )],
+    node2IdMap[ quad->GetNode( 3 )],
     END_ELEM_WRITE( quad );
-    
+
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_Quad_Quadrangle, GmfExtraVerticesAtQuadrilaterals, quad, 4 )
+    node2IdMap[ quad->GetNode( 4 )],
+    node2IdMap[ quad->GetNode( 5 )],
+    node2IdMap[ quad->GetNode( 6 )],
+    node2IdMap[ quad->GetNode( 7 )]
+    END_EXTRA_VERTICES_WRITE();
+
+  // bi-quadratic quadrangles
+  BEGIN_ELEM_WRITE( SMDSEntity_BiQuad_Quadrangle, GmfQuadrilaterals, quad )
+    node2IdMap[ quad->GetNode( 0 )],
+    node2IdMap[ quad->GetNode( 1 )],
+    node2IdMap[ quad->GetNode( 2 )],
+    node2IdMap[ quad->GetNode( 3 )],
+    END_ELEM_WRITE( quad );
+
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_BiQuad_Quadrangle, GmfExtraVerticesAtQuadrilaterals, quad, 5 )
+    node2IdMap[ quad->GetNode( 4 )],
+    node2IdMap[ quad->GetNode( 5 )],
+    node2IdMap[ quad->GetNode( 6 )],
+    node2IdMap[ quad->GetNode( 7 )],
+    node2IdMap[ quad->GetNode( 8 )]
+    END_EXTRA_VERTICES_WRITE();
+
   // terahedra
   BEGIN_ELEM_WRITE( SMDSEntity_Tetra, GmfTetrahedra, tetra )
     node2IdMap[ tetra->GetNode( 0 )],
@@ -165,7 +209,7 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     node2IdMap[ tetra->GetNode( 1 )],
     node2IdMap[ tetra->GetNode( 3 )],
     END_ELEM_WRITE( tetra );
-    
+
   // quadratic terahedra
   BEGIN_ELEM_WRITE( SMDSEntity_Quad_Tetra, GmfTetrahedraP2, tetra )
     node2IdMap[ tetra->GetNode( 0 )],

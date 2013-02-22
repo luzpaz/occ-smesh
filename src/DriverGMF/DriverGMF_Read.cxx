@@ -107,85 +107,156 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
 
   // Read elements
 
-  int iN[28];
+  int iN[28]; // 28 - nb nodes in HEX27 (+ 1 for safety :)
+
+  /* Read extra vertices for quadratic edges */
+  std::vector<int> quadNodesAtEdges;
+  int nbQuadEdges = 0;
+  if ( (nbQuadEdges = GmfStatKwd(meshID, GmfExtraVerticesAtEdges)) )
+  {
+    quadNodesAtEdges.reserve( nbQuadEdges );
+    GmfGotoKwd(meshID, GmfExtraVerticesAtEdges);
+    for ( int i = 1; i <= nbQuadEdges; ++i )
+    {
+      GmfGetLin(meshID, GmfExtraVerticesAtEdges, &iN[0], &iN[1], &iN[2]);
+      quadNodesAtEdges.push_back(iN[2]);
+    }
+  }
 
   /* Read edges */
   const int edgeIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbEdges = GmfStatKwd(meshID, GmfEdges))
   {
+    const bool readQuadNodes = ( nbQuadEdges == nbEdges );
     GmfGotoKwd(meshID, GmfEdges);
     for ( int i = 1; i <= nbEdges; ++i )
     {
       GmfGetLin(meshID, GmfEdges, &iN[0], &iN[1], &ref);
-      if ( !myMesh->AddEdgeWithID( iN[0], iN[1], edgeIDShift + i ))
-        status = storeBadNodeIds( "GmfEdges",i, 2, iN[0], iN[1] );
+      if ( readQuadNodes )
+      {
+        const int midN = quadNodesAtEdges[i-1];
+        if ( !myMesh->AddEdgeWithID( iN[0], iN[1], midN, edgeIDShift + i ))
+          status = storeBadNodeIds( "GmfEdges + GmfExtraVerticesAtEdges",i, 3, iN[0],iN[1],midN);
+      }
+      else
+      {
+        if ( !myMesh->AddEdgeWithID( iN[0], iN[1], edgeIDShift + i ))
+          status = storeBadNodeIds( "GmfEdges",i, 2, iN[0], iN[1] );
+      }
     }
   }
-  /* Read quadratic edges */
-  const int edge2IDShift = myMesh->GetMeshInfo().NbElements();
-  if ( int nbEdges = GmfStatKwd(meshID, GmfEdgesP2))
+
+  /* Read extra vertices for quadratic triangles */
+  std::vector< std::vector<int> > quadNodes;
+  int nbQuadTria = 0;
+  if ( (nbQuadTria = GmfStatKwd(meshID, GmfExtraVerticesAtTriangles)) )
   {
-    GmfGotoKwd(meshID, GmfEdgesP2);
-    for ( int i = 1; i <= nbEdges; ++i )
+    GmfGotoKwd(meshID, GmfExtraVerticesAtTriangles);
+    quadNodes.reserve( nbQuadTria );
+    std::vector<int> nodes(4);
+    for ( int i = 1; i <= nbQuadTria; ++i )
     {
-      GmfGetLin(meshID, GmfEdgesP2, &iN[0], &iN[1], &iN[2], &ref);
-      if ( !myMesh->AddEdgeWithID( iN[0], iN[1], iN[2], edge2IDShift + i ))
-        status = storeBadNodeIds( "GmfEdgesP2",i, 3, iN[0], iN[1], iN[2] );
+      GmfGetLin(meshID, GmfExtraVerticesAtTriangles,
+                &iN[0], &iN[1], &iN[2], &iN[3], &iN[4],
+                &iN[5]); // iN[5] - preview TRIA7
+      nodes.clear();
+      nodes.push_back(iN[2]);
+      nodes.push_back(iN[3]);
+      nodes.push_back(iN[4]);
+      nodes.push_back(iN[5]);
+      nodes.resize( iN[1] );
+
+      quadNodes.push_back(nodes);
     }
   }
+
   /* Read triangles */
   const int triaIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbTria = GmfStatKwd(meshID, GmfTriangles))
   {
+    const bool readQuadNodes = (nbQuadTria == nbTria);
     GmfGotoKwd(meshID, GmfTriangles);
     for ( int i = 1; i <= nbTria; ++i )
     {
       GmfGetLin(meshID, GmfTriangles, &iN[0], &iN[1], &iN[2], &ref);
-      if ( !myMesh->AddFaceWithID( iN[0], iN[1], iN[2], triaIDShift + i ))
-        status = storeBadNodeIds( "GmfTriangles",i, 3, iN[0], iN[1], iN[2] );
+      if ( readQuadNodes )
+      {
+        const std::vector<int>& midN = quadNodes[ i-1 ];
+        if ( !myMesh->AddFaceWithID( iN[0],iN[1],iN[2], midN[0],midN[1],midN[2],  triaIDShift + i ))
+          status = storeBadNodeIds( "GmfTriangles + GmfExtraVerticesAtTriangles",i, 6, 
+                                    iN[0],iN[1],iN[2], midN[0],midN[1],midN[2] );
+      }
+      else
+      {
+        if ( !myMesh->AddFaceWithID( iN[0], iN[1], iN[2], triaIDShift + i ))
+          status = storeBadNodeIds( "GmfTriangles",i, 3, iN[0], iN[1], iN[2] );
+      }
     }
   }
-  /* Read quadratic triangles */
-  const int tria2IDShift = myMesh->GetMeshInfo().NbElements();
-  if ( int nbTria = GmfStatKwd(meshID, GmfTrianglesP2))
+
+  /* Read extra vertices for quadratic quadrangles */
+  std::vector< std::vector<int> > quadNodesAtQuadrilaterals;
+  int nbQuadQuad = 0;
+  if ( (nbQuadQuad = GmfStatKwd(meshID, GmfExtraVerticesAtQuadrilaterals)) )
   {
-    GmfGotoKwd(meshID, GmfTrianglesP2);
-    for ( int i = 1; i <= nbTria; ++i )
+    GmfGotoKwd(meshID, GmfExtraVerticesAtQuadrilaterals);
+    quadNodesAtQuadrilaterals.reserve( nbQuadQuad );
+    std::vector<int> nodes( 5 );
+    for ( int i = 1; i <= nbQuadQuad; ++i )
     {
-      GmfGetLin(meshID, GmfTrianglesP2,
-                &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &iN[5], &ref);
-      if ( !myMesh->AddFaceWithID( iN[0],iN[1],iN[2],iN[3],iN[4],iN[5],
-                                   tria2IDShift + i ))
-        status = storeBadNodeIds( "GmfTrianglesP2",i, 6, iN[0],iN[1],iN[2],iN[3],iN[4],iN[5] );
+      GmfGetLin(meshID, GmfExtraVerticesAtQuadrilaterals,
+                &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &iN[5], &iN[6]);
+      nodes.clear();
+      nodes.push_back(iN[2]);
+      nodes.push_back(iN[3]);
+      nodes.push_back(iN[4]);
+      nodes.push_back(iN[5]);
+      nodes.push_back(iN[6]);
+      nodes.resize( iN[1] );
+
+      quadNodesAtQuadrilaterals.push_back(nodes);
     }
   }
-  /* Read quadrangles */
+
+ /* Read quadrangles */
   const int quadIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbQuad = GmfStatKwd(meshID, GmfQuadrilaterals))
   {
+    const bool readQuadNodes = (nbQuadQuad == nbQuad);
     GmfGotoKwd(meshID, GmfQuadrilaterals);
     for ( int i = 1; i <= nbQuad; ++i )
     {
       GmfGetLin(meshID, GmfQuadrilaterals, &iN[0], &iN[1], &iN[2], &iN[3], &ref);
-      if ( !myMesh->AddFaceWithID( iN[0], iN[1], iN[2], iN[3], quadIDShift + i ))
-        status = storeBadNodeIds( "GmfQuadrilaterals",i, 4, iN[0], iN[1],iN[2], iN[3] );
+      if ( readQuadNodes )
+      {
+        const std::vector<int>& midN = quadNodesAtQuadrilaterals[ i-1 ];
+        if ( midN.size() == 4 )
+        {
+          if ( !myMesh->AddFaceWithID( iN[0], iN[1], iN[2], iN[3],
+                                       midN[0], midN[1], midN[2], midN[3],
+                                       quadIDShift + i ))
+            status = storeBadNodeIds( "GmfQuadrilaterals + GmfExtraVerticesAtQuadrilaterals",i, 8,
+                                      iN[0], iN[1],iN[2], iN[3],
+                                      midN[0], midN[1], midN[2], midN[3]);
+        }
+        else
+        {
+          if ( !myMesh->AddFaceWithID( iN[0], iN[1], iN[2], iN[3],
+                                       midN[0], midN[1], midN[2], midN[3], midN[4],
+                                       quadIDShift + i ))
+            status = storeBadNodeIds( "GmfQuadrilaterals + GmfExtraVerticesAtQuadrilaterals",i, 9,
+                                      iN[0], iN[1],iN[2], iN[3],
+                                      midN[0], midN[1], midN[2], midN[3], midN[4]);
+        }
+      }
+      else
+      {
+        if ( !myMesh->AddFaceWithID( iN[0], iN[1], iN[2], iN[3], quadIDShift + i ))
+          status = storeBadNodeIds( "GmfQuadrilaterals",i, 4, iN[0], iN[1],iN[2], iN[3] );
+      }
     }
   }
-  /* Read bi-quadratic quadrangles */
-  const int quad2IDShift = myMesh->GetMeshInfo().NbElements();
-  if ( int nbQuad = GmfStatKwd(meshID, GmfQuadrilateralsQ2))
-  {
-    GmfGotoKwd(meshID, GmfQuadrilateralsQ2);
-    for ( int i = 1; i <= nbQuad; ++i )
-    {
-      GmfGetLin(meshID, GmfQuadrilateralsQ2,
-                &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &iN[5], &iN[6], &iN[7], &iN[8], &ref);
-      if ( !myMesh->AddFaceWithID( iN[0],iN[1],iN[2],iN[3],iN[4],iN[5],iN[6],iN[7],iN[8],
-                                   quad2IDShift + i ))
-        status = storeBadNodeIds( "GmfQuadrilateralsQ2",i,
-                                  9, iN[0],iN[1],iN[2],iN[3],iN[4],iN[5],iN[6],iN[7],iN[8] );
-    }
-  }
+ 
   /* Read terahedra */
   const int tetIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbTet = GmfStatKwd(meshID, GmfTetrahedra))
