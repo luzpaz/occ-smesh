@@ -77,7 +77,7 @@
 #include <cmath>
 #include <limits>
 
-//#define __myDEBUG
+#define __myDEBUG
 
 using namespace std;
 
@@ -2074,7 +2074,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
   {
     if ( data._edges[i]->IsOnEdge() ) continue;
     data._edges[i]->FindIntersection( *searcher, intersecDist, data._epsilon );
-    if ( geomSize > intersecDist )
+    if ( geomSize > intersecDist && intersecDist > 0 )
       geomSize = intersecDist;
   }
   if ( data._stepSize > 0.3 * geomSize )
