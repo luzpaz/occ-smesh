@@ -77,7 +77,7 @@
 #include <cmath>
 #include <limits>
 
-#define __myDEBUG
+//#define __myDEBUG
 
 using namespace std;
 
