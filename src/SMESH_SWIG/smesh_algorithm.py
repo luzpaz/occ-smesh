@@ -22,7 +22,7 @@
 #  This package is a part of SALOME %Mesh module Python API
 
 import salome
-import geompyDC
+from salome.geom import geomBuilder
 import SMESH
 
 ## The base class to define meshing algorithms
@@ -166,7 +166,7 @@ class Mesh_Algorithm:
 
     ## Gets the name of the algorithm
     def GetName(self):
-        from smeshDC import GetName
+        from salome.smesh.smeshBuilder import GetName
         return GetName(self.algo)
 
     ## Sets the name to the algorithm
@@ -190,7 +190,7 @@ class Mesh_Algorithm:
 
     ## Private method
     def Assign(self, algo, mesh, geom):
-        from smeshDC import AssureGeomPublished, TreatHypoStatus, GetName
+        from salome.smesh.smeshBuilder import AssureGeomPublished, TreatHypoStatus, GetName
         if geom is None:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
@@ -221,7 +221,7 @@ class Mesh_Algorithm:
     ## Private method
     def Hypothesis (self, hyp, args=[], so="libStdMeshersEngine.so",
                     UseExisting=0, CompareMethod=""):
-        from smeshDC import TreatHypoStatus, GetName
+        from salome.smesh.smeshBuilder import TreatHypoStatus, GetName
         hypo = None
         if UseExisting:
             if CompareMethod == "": CompareMethod = self.CompareHyp
@@ -233,7 +233,7 @@ class Mesh_Algorithm:
             s = "="
             for arg in args:
                 argStr = str(arg)
-                if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
+                if isinstance( arg, geomBuilder.GEOM._objref_GEOM_Object ):
                     argStr = arg.GetStudyEntry()
                     if not argStr: argStr = "GEOM_Obj_%s", arg.GetEntry()
                 if len( argStr ) > 10:
@@ -273,7 +273,7 @@ class Mesh_Algorithm:
             raise TypeError, "ViscousLayers are supported by 3D algorithms only"
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
-        if ignoreFaces and isinstance( ignoreFaces[0], geompyDC.GEOM._objref_GEOM_Object ):
+        if ignoreFaces and isinstance( ignoreFaces[0], geomBuilder.GEOM._objref_GEOM_Object ):
             ignoreFaces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreFaces ]
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, ignoreFaces])
@@ -296,7 +296,7 @@ class Mesh_Algorithm:
             raise TypeError, "ViscousLayers2D are supported by 2D algorithms only"
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
-        if ignoreEdges and isinstance( ignoreEdges[0], geompyDC.GEOM._objref_GEOM_Object ):
+        if ignoreEdges and isinstance( ignoreEdges[0], geomBuilder.GEOM._objref_GEOM_Object ):
             ignoreEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreEdges ]
         hyp = self.Hypothesis("ViscousLayers2D",
                               [thickness, numberOfLayers, stretchFactor, ignoreEdges])
@@ -310,30 +310,30 @@ class Mesh_Algorithm:
     #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
     #  @ingroup l3_hypos_1dhyps
     def ReversedEdgeIndices(self, reverseList):
-        from smeshDC import FirstVertexOnCurve
+        from salome.smesh.smeshBuilder import FirstVertexOnCurve
         resList = []
         geompy = self.mesh.geompyD
         for i in reverseList:
             if isinstance( i, int ):
                 s = geompy.SubShapes(self.mesh.geom, [i])[0]
-                if s.GetShapeType() != geompyDC.GEOM.EDGE:
+                if s.GetShapeType() != geomBuilder.GEOM.EDGE:
                     raise TypeError, "Not EDGE index given"
                 resList.append( i )
-            elif isinstance( i, geompyDC.GEOM._objref_GEOM_Object ):
-                if i.GetShapeType() != geompyDC.GEOM.EDGE:
+            elif isinstance( i, geomBuilder.GEOM._objref_GEOM_Object ):
+                if i.GetShapeType() != geomBuilder.GEOM.EDGE:
                     raise TypeError, "Not an EDGE given"
                 resList.append( geompy.GetSubShapeID(self.mesh.geom, i ))
             elif len( i ) > 1:
                 e = i[0]
                 v = i[1]
-                if not isinstance( e, geompyDC.GEOM._objref_GEOM_Object ) or \
-                   not isinstance( v, geompyDC.GEOM._objref_GEOM_Object ):
+                if not isinstance( e, geomBuilder.GEOM._objref_GEOM_Object ) or \
+                   not isinstance( v, geomBuilder.GEOM._objref_GEOM_Object ):
                     raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
-                if v.GetShapeType() == geompyDC.GEOM.EDGE and \
-                   e.GetShapeType() == geompyDC.GEOM.VERTEX:
+                if v.GetShapeType() == geomBuilder.GEOM.EDGE and \
+                   e.GetShapeType() == geomBuilder.GEOM.VERTEX:
                     v,e = e,v
-                if e.GetShapeType() != geompyDC.GEOM.EDGE or \
-                   v.GetShapeType() != geompyDC.GEOM.VERTEX:
+                if e.GetShapeType() != geomBuilder.GEOM.EDGE or \
+                   v.GetShapeType() != geomBuilder.GEOM.VERTEX:
                     raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
                 vFirst = FirstVertexOnCurve( e )
                 tol    = geompy.Tolerance( vFirst )[-1]
