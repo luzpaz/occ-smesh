@@ -831,9 +831,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
   if ( isPublished )
-    aScript += aSMESHGen + " = smeshDC.smeshInstance(theStudy)";
+    aScript += aSMESHGen + " = smeshBuilder.New(theStudy)";
   else
-    aScript += aSMESHGen + " = smeshDC.smeshInstance(None)";
+    aScript += aSMESHGen + " = smeshBuilder.New(None)";
 
   // import python files corresponding to plugins
   set<string> moduleNameSet;
@@ -842,7 +842,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     string moduleName = hyp_creator->second->GetModuleName();
     bool newModule = moduleNameSet.insert( moduleName ).second;
     if ( newModule )
-      aScript += helper + "\n\t" + "import " + (char*) moduleName.c_str();
+      aScript += helper + "\n\t" + "from salome." + (char*) moduleName.c_str() + " import " + (char*) moduleName.c_str() +"Builder";
   }
 
   // Dump trace of restored study
@@ -963,7 +963,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString initPart = "import ";
   if ( isMultiFile )
     initPart += helper + "salome, ";
-  initPart += " smeshDC, SMESH, SALOMEDS\n";
+  initPart += " SMESH, SALOMEDS\n";
+  initPart += "from salome.smesh import smeshBuilder\n";
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"

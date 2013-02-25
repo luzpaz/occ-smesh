@@ -32,7 +32,7 @@
 import salome
 from salome import *
 
-from salome.geom import geompy
+import geompy
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 #from smeshBuilder import *
@@ -49,7 +49,7 @@ except:
 
 # load plugins and add dynamically generated methods to Mesh class,
 # the same for for global variables declared by plug-ins
-from smeshBuilder import Mesh, algoCreator
+from salome.smesh.smeshBuilder import Mesh, algoCreator
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #
     print "pluginName: ", pluginName
