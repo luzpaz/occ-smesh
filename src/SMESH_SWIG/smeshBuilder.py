@@ -309,7 +309,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         global engine
         global smeshInst
         global doLcc
-        print "__new__", engine, smeshInst, doLcc
+        #print "__new__", engine, smeshInst, doLcc
 
         if smeshInst is None:
             # smesh engine is either retrieved from engine, or created
@@ -324,17 +324,17 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     # FindOrLoadComponent called:
                     # 1. CORBA resolution of server
                     # 2. the __new__ method is called again
-                    print "smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
+                    #print "smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
                     smeshInst = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
             else:
                 # FindOrLoadComponent not called
                 if smeshInst is None:
                     # smeshBuilder instance is created from lcc.FindOrLoadComponent
-                    print "smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc
+                    #print "smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc
                     smeshInst = super(smeshBuilder,cls).__new__(cls)
                 else:
                     # smesh engine not created: existing engine found
-                    print "existing ", engine, smeshInst, doLcc
+                    #print "existing ", engine, smeshInst, doLcc
                     pass
 
             return smeshInst
@@ -342,7 +342,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         return smeshInst
 
     def __init__(self):
-        print "__init__"
+        #print "__init__"
         SMESH._objref_SMESH_Gen.__init__(self)
 
     ## Dump component to the Python script
@@ -363,7 +363,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
     def init_smesh(self,theStudy,geompyD = None):
-        print "init_smesh"
+        #print "init_smesh"
         self.SetCurrentStudy(theStudy,geompyD)
 
     ## Creates an empty Mesh. This mesh can have an underlying geometry.
@@ -1083,7 +1083,7 @@ class Mesh:
         for attrName in dir(self):
             attr = getattr( self, attrName )
             if isinstance( attr, algoCreator ):
-                print "algoCreator ", attrName
+                #print "algoCreator ", attrName
                 setattr( self, attrName, attr.copy( self ))
 
     ## Initializes the Mesh object from an instance of SMESH_Mesh interface
@@ -4377,7 +4377,7 @@ class hypMethodWrapper:
 
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #
-    print "pluginName: ", pluginName
+    #print "pluginName: ", pluginName
     pluginBuilderName = pluginName + "Builder"
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
@@ -4386,15 +4386,15 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
         continue
     exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )
-    print "  plugin:" , str(plugin)
+    #print "  plugin:" , str(plugin)
 
     # add methods creating algorithms to Mesh
     for k in dir( plugin ):
         if k[0] == '_': continue
         algo = getattr( plugin, k )
-        print "             algo:", str(algo)
+        #print "             algo:", str(algo)
         if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
-            print "                     meshMethod:" , str(algo.meshMethod)
+            #print "                     meshMethod:" , str(algo.meshMethod)
             if not hasattr( Mesh, algo.meshMethod ):
                 setattr( Mesh, algo.meshMethod, algoCreator() )
                 pass

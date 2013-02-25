@@ -52,7 +52,7 @@ except:
 from salome.smesh.smeshBuilder import Mesh, algoCreator
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #
-    print "pluginName: ", pluginName
+    #print "pluginName: ", pluginName
     pluginBuilderName = pluginName + "Builder"
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
