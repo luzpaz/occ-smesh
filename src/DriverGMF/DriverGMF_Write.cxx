@@ -211,18 +211,21 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     END_ELEM_WRITE( tetra );
 
   // quadratic terahedra
-  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Tetra, GmfTetrahedraP2, tetra )
+  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Tetra, GmfTetrahedra, tetra )
     node2IdMap[ tetra->GetNode( 0 )],
     node2IdMap[ tetra->GetNode( 2 )],
     node2IdMap[ tetra->GetNode( 1 )],
     node2IdMap[ tetra->GetNode( 3 )],
+    END_ELEM_WRITE( tetra );
+    
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_Quad_Tetra, GmfExtraVerticesAtTetrahedra, tetra, 6 )
     node2IdMap[ tetra->GetNode( 6 )],
     node2IdMap[ tetra->GetNode( 5 )],
     node2IdMap[ tetra->GetNode( 4 )],
     node2IdMap[ tetra->GetNode( 7 )],
     node2IdMap[ tetra->GetNode( 9 )],
-    node2IdMap[ tetra->GetNode( 8 )],
-    END_ELEM_WRITE( tetra );
+    node2IdMap[ tetra->GetNode( 8 )]
+    END_EXTRA_VERTICES_WRITE();
     
   // pyramids
   BEGIN_ELEM_WRITE( SMDSEntity_Pyramid, GmfPyramids, pyra )
@@ -245,8 +248,8 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     node2IdMap[ hexa->GetNode( 5 )],
     END_ELEM_WRITE( hexa );
 
-  // tri-quadratic hexahedra
-  BEGIN_ELEM_WRITE( SMDSEntity_TriQuad_Hexa, GmfHexahedraQ2, hexa )
+  // quadratic hexahedra
+  BEGIN_ELEM_WRITE( SMDSEntity_Quad_Hexa, GmfHexahedra, hexa )
     node2IdMap[ hexa->GetNode( 0 )],
     node2IdMap[ hexa->GetNode( 3 )],
     node2IdMap[ hexa->GetNode( 2 )],
@@ -255,26 +258,56 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     node2IdMap[ hexa->GetNode( 7 )],
     node2IdMap[ hexa->GetNode( 6 )],
     node2IdMap[ hexa->GetNode( 5 )],
+    END_ELEM_WRITE( hexa );
+    
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_Quad_Hexa, GmfExtraVerticesAtHexahedra, hexa, 12 )
     node2IdMap[ hexa->GetNode( 11 )],
     node2IdMap[ hexa->GetNode( 10 )],
     node2IdMap[ hexa->GetNode( 9 )],
     node2IdMap[ hexa->GetNode( 8 )],
-    node2IdMap[ hexa->GetNode( 12 )],
     node2IdMap[ hexa->GetNode( 15 )],
     node2IdMap[ hexa->GetNode( 14 )],
     node2IdMap[ hexa->GetNode( 13 )],
+    node2IdMap[ hexa->GetNode( 12 )],
+    node2IdMap[ hexa->GetNode( 16 )],
+    node2IdMap[ hexa->GetNode( 19 )],
+    node2IdMap[ hexa->GetNode( 18 )],
+    node2IdMap[ hexa->GetNode( 17 )]
+    END_EXTRA_VERTICES_WRITE();
+    
+  // tri-quadratic hexahedra
+  BEGIN_ELEM_WRITE( SMDSEntity_TriQuad_Hexa, GmfHexahedra, hexa )
+    node2IdMap[ hexa->GetNode( 0 )],
+    node2IdMap[ hexa->GetNode( 3 )],
+    node2IdMap[ hexa->GetNode( 2 )],
+    node2IdMap[ hexa->GetNode( 1 )],
+    node2IdMap[ hexa->GetNode( 4 )],
+    node2IdMap[ hexa->GetNode( 7 )],
+    node2IdMap[ hexa->GetNode( 6 )],
+    node2IdMap[ hexa->GetNode( 5 )],
+    END_ELEM_WRITE( hexa );
+    
+  BEGIN_EXTRA_VERTICES_WRITE( SMDSEntity_TriQuad_Hexa, GmfExtraVerticesAtHexahedra, hexa, 19 )
+    node2IdMap[ hexa->GetNode( 11 )],
+    node2IdMap[ hexa->GetNode( 10 )],
+    node2IdMap[ hexa->GetNode( 9 )],
+    node2IdMap[ hexa->GetNode( 8 )],
+    node2IdMap[ hexa->GetNode( 15 )],
+    node2IdMap[ hexa->GetNode( 14 )],
+    node2IdMap[ hexa->GetNode( 13 )],
+    node2IdMap[ hexa->GetNode( 12 )],
+    node2IdMap[ hexa->GetNode( 16 )],
     node2IdMap[ hexa->GetNode( 19 )],
     node2IdMap[ hexa->GetNode( 18 )],
     node2IdMap[ hexa->GetNode( 17 )],
-    node2IdMap[ hexa->GetNode( 16 )],
     node2IdMap[ hexa->GetNode( 20 )],
     node2IdMap[ hexa->GetNode( 24 )],
     node2IdMap[ hexa->GetNode( 23 )],
     node2IdMap[ hexa->GetNode( 22 )],
     node2IdMap[ hexa->GetNode( 21 )],
     node2IdMap[ hexa->GetNode( 25 )],
-    node2IdMap[ hexa->GetNode( 26 )],
-    END_ELEM_WRITE( hexa );
+    node2IdMap[ hexa->GetNode( 26 )]
+    END_EXTRA_VERTICES_WRITE();
 
   // prism
   BEGIN_ELEM_WRITE( SMDSEntity_Penta, GmfPrisms, prism )

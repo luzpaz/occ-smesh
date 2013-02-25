@@ -145,14 +145,16 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
       }
     }
   }
+  // the vector of extra vertices at edges won't be used anymore so it is cleared
+  quadNodesAtEdges.clear();
 
   /* Read extra vertices for quadratic triangles */
-  std::vector< std::vector<int> > quadNodes;
+  std::vector< std::vector<int> > quadNodesAtTriangles;
   int nbQuadTria = 0;
   if ( (nbQuadTria = GmfStatKwd(meshID, GmfExtraVerticesAtTriangles)) )
   {
     GmfGotoKwd(meshID, GmfExtraVerticesAtTriangles);
-    quadNodes.reserve( nbQuadTria );
+    quadNodesAtTriangles.reserve( nbQuadTria );
     std::vector<int> nodes(4);
     for ( int i = 1; i <= nbQuadTria; ++i )
     {
@@ -166,7 +168,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
       nodes.push_back(iN[5]);
       nodes.resize( iN[1] );
 
-      quadNodes.push_back(nodes);
+      quadNodesAtTriangles.push_back(nodes);
     }
   }
 
@@ -181,7 +183,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
       GmfGetLin(meshID, GmfTriangles, &iN[0], &iN[1], &iN[2], &ref);
       if ( readQuadNodes )
       {
-        const std::vector<int>& midN = quadNodes[ i-1 ];
+        const std::vector<int>& midN = quadNodesAtTriangles[ i-1 ];
         if ( !myMesh->AddFaceWithID( iN[0],iN[1],iN[2], midN[0],midN[1],midN[2],  triaIDShift + i ))
           status = storeBadNodeIds( "GmfTriangles + GmfExtraVerticesAtTriangles",i, 6, 
                                     iN[0],iN[1],iN[2], midN[0],midN[1],midN[2] );
@@ -193,6 +195,8 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
       }
     }
   }
+  // the vector of extra vertices at triangles won't be used anymore so it is cleared
+  quadNodesAtTriangles.clear();
 
   /* Read extra vertices for quadratic quadrangles */
   std::vector< std::vector<int> > quadNodesAtQuadrilaterals;
@@ -256,35 +260,61 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
       }
     }
   }
+  // the vector of extra vertices at quadrilaterals won't be used anymore so it is cleared
+  quadNodesAtQuadrilaterals.clear();
+
+  /* Read extra vertices for quadratic tetrahedra */
+  std::vector< std::vector<int> > quadNodesAtTetrahedra;
+  int nbQuadTetra = 0;
+  if ( (nbQuadTetra = GmfStatKwd(meshID, GmfExtraVerticesAtTetrahedra)) )
+  {
+    GmfGotoKwd(meshID, GmfExtraVerticesAtTetrahedra);
+    quadNodesAtTetrahedra.reserve( nbQuadTetra );
+    std::vector<int> nodes( 6 );
+    for ( int i = 1; i <= nbQuadTetra; ++i )
+    {
+      GmfGetLin(meshID, GmfExtraVerticesAtTetrahedra,
+                &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &iN[5], &iN[6], &iN[7]);
+      nodes.clear();
+      nodes.push_back(iN[2]);
+      nodes.push_back(iN[3]);
+      nodes.push_back(iN[4]);
+      nodes.push_back(iN[5]);
+      nodes.push_back(iN[6]);
+      nodes.push_back(iN[7]);
+      nodes.resize( iN[1] );
+
+      quadNodesAtTetrahedra.push_back(nodes);
+    }
+  }
  
   /* Read terahedra */
   const int tetIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbTet = GmfStatKwd(meshID, GmfTetrahedra))
   {
+    const bool readQuadNodes = (nbQuadTetra == nbTet);
     GmfGotoKwd(meshID, GmfTetrahedra);
     for ( int i = 1; i <= nbTet; ++i )
     {
       GmfGetLin(meshID, GmfTetrahedra, &iN[0], &iN[1], &iN[2], &iN[3], &ref);
-      if ( !myMesh->AddVolumeWithID( iN[0], iN[2], iN[1], iN[3], tetIDShift + i ))
-        status = storeBadNodeIds( "GmfTetrahedra",i, 4, iN[0], iN[1],iN[2], iN[3] );
+      if ( readQuadNodes )
+      {
+        const std::vector<int>& midN = quadNodesAtTetrahedra[ i-1 ];  
+        if ( !myMesh->AddVolumeWithID( iN[0], iN[2], iN[1], iN[3], 
+                                       midN[2], midN[1], midN[0], midN[3], midN[5], midN[4], tetIDShift + i ))
+          status = storeBadNodeIds( "GmfTetrahedra + GmfExtraVerticesAtTetrahedra",i, 10, iN[0], iN[2], iN[1], iN[3], 
+                                                                midN[2], midN[1], midN[0], midN[3], midN[5], midN[4] );
+      }
+      else
+      {
+        if ( !myMesh->AddVolumeWithID( iN[0], iN[2], iN[1], iN[3], tetIDShift + i ) )
+          status = storeBadNodeIds( "GmfTetrahedra" ,i, 4, iN[0], iN[2], iN[1], iN[3] );
+      }
     }
   }
-  /* Read quadratic terahedra */
-  const int tet2IDShift = myMesh->GetMeshInfo().NbElements();
-  if ( int nbTet = GmfStatKwd(meshID, GmfTetrahedraP2))
-  {
-    GmfGotoKwd(meshID, GmfTetrahedraP2);
-    for ( int i = 1; i <= nbTet; ++i )
-    {
-      GmfGetLin(meshID, GmfTetrahedraP2, &iN[0], &iN[1], &iN[2],
-                &iN[3], &iN[4], &iN[5], &iN[6], &iN[7], &iN[8], &iN[9], &ref);
-      if ( !myMesh->AddVolumeWithID( iN[0],iN[2],iN[1],iN[3],
-                                     iN[6],iN[5],iN[4],
-                                     iN[7],iN[9],iN[8], tet2IDShift + i ))
-        status = storeBadNodeIds( "GmfTetrahedraP2",i, 10, iN[0],iN[1],iN[2],iN[3],
-                                  iN[4],iN[5],iN[6],iN[7],iN[8],iN[9] );
-    }
-  }
+  // the vector of extra vertices at tetrahedra won't be used anymore so it is cleared
+  quadNodesAtTetrahedra.clear();
+
   /* Read pyramids */
   const int pyrIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbPyr = GmfStatKwd(meshID, GmfPyramids))
@@ -297,42 +327,115 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
         status = storeBadNodeIds( "GmfPyramids",i, 5, iN[0], iN[1],iN[2], iN[3], iN[4] );
     }
   }
+
+  /* Read extra vertices for quadratic hexahedra */
+  std::vector< std::vector<int> > quadNodesAtHexahedra;
+  int nbQuadHexa = 0;
+  if ( (nbQuadHexa = GmfStatKwd(meshID, GmfExtraVerticesAtHexahedra)) )
+  {
+    GmfGotoKwd(meshID, GmfExtraVerticesAtHexahedra);
+    quadNodesAtHexahedra.reserve( nbQuadHexa );
+    std::vector<int> nodes( 19 );
+    for ( int i = 1; i <= nbQuadHexa; ++i )
+    {
+      GmfGetLin(meshID, GmfExtraVerticesAtHexahedra, &iN[0], &iN[1],    // Hexa Id, Nb of extra vertices
+                                                     &iN[2], &iN[3], &iN[4], &iN[5],
+                                                     &iN[6], &iN[7], &iN[8], &iN[9],
+                                                     &iN[10], &iN[11], &iN[12], &iN[13], // HEXA20
+                                                     &iN[14], 
+                                                     &iN[15], &iN[16], &iN[17], &iN[18], 
+                                                     &iN[19],
+                                                     &iN[20]);                          // HEXA27
+      nodes.clear();
+      nodes.push_back(iN[2]);
+      nodes.push_back(iN[3]);
+      nodes.push_back(iN[4]);
+      nodes.push_back(iN[5]);
+      nodes.push_back(iN[6]);
+      nodes.push_back(iN[7]);
+      nodes.push_back(iN[8]);
+      nodes.push_back(iN[9]);
+      nodes.push_back(iN[10]);
+      nodes.push_back(iN[11]);
+      nodes.push_back(iN[12]);
+      nodes.push_back(iN[13]);     
+      nodes.push_back(iN[14]);
+      nodes.push_back(iN[15]);
+      nodes.push_back(iN[16]);
+      nodes.push_back(iN[17]);
+      nodes.push_back(iN[18]);
+      nodes.push_back(iN[19]);
+      nodes.push_back(iN[20]);
+      nodes.resize( iN[1] );
+
+      quadNodesAtHexahedra.push_back(nodes);
+    }
+  }
+  
   /* Read hexahedra */
   const int hexIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbHex = GmfStatKwd(meshID, GmfHexahedra))
   {
+    const bool readQuadNodes = (nbQuadHexa == nbHex);
     GmfGotoKwd(meshID, GmfHexahedra);
     for ( int i = 1; i <= nbHex; ++i )
     {
-      GmfGetLin(meshID, GmfHexahedra,
-                &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &iN[5], &iN[6], &iN[7], &ref);
-      if ( !myMesh->AddVolumeWithID( iN[0], iN[3], iN[2], iN[1], iN[4], iN[7], iN[6], iN[5],
-                                     hexIDShift + i))
-        status = storeBadNodeIds( "GmfHexahedra",i,
-                                  8, iN[0], iN[1],iN[2], iN[3], iN[4], iN[7], iN[6], iN[5] );
+      GmfGetLin(meshID, GmfHexahedra, &iN[0], &iN[1], &iN[2], &iN[3],
+                                      &iN[4], &iN[5], &iN[6], &iN[7],&ref);
+      if ( readQuadNodes )
+      {
+        const std::vector<int>& midN = quadNodesAtHexahedra[ i-1 ];  
+        if ( midN.size() == 12 )  // HEXA20
+        {
+          if ( !myMesh->AddVolumeWithID( iN[0], iN[3], iN[2], iN[1],
+                                         iN[4], iN[7], iN[6], iN[5],
+                                         midN[3], midN[2], midN[1], midN[0],
+                                         midN[7], midN[6], midN[5], midN[4],
+                                         midN[8], midN[11], midN[10], midN[9],
+                                         tetIDShift + i ))
+            status = storeBadNodeIds( "GmfHexahedra + GmfExtraVerticesAtHexahedra",i, 20, 
+                                       iN[0], iN[3], iN[2], iN[1],
+                                       iN[4], iN[7], iN[6], iN[5],
+                                       midN[3], midN[2], midN[1], midN[0],
+                                       midN[7], midN[6], midN[5], midN[4],
+                                       midN[8], midN[11], midN[10], midN[9]);
+        }
+        else                      // HEXA27
+        {
+           if ( !myMesh->AddVolumeWithID( iN[0], iN[3], iN[2], iN[1],
+                                          iN[4], iN[7], iN[6], iN[5],
+                                          midN[3], midN[2], midN[1], midN[0],
+                                          midN[7], midN[6], midN[5], midN[4],
+                                          midN[8], midN[11], midN[10], midN[9],
+                                          midN[12],
+                                          midN[16], midN[15], midN[14], midN[13],
+                                          midN[17],
+                                          midN[18],                                                        
+                                          tetIDShift + i ))
+            status = storeBadNodeIds( "GmfHexahedra + GmfExtraVerticesAtHexahedra",i, 27, 
+                                       iN[0], iN[3], iN[2], iN[1],
+                                       iN[4], iN[7], iN[6], iN[5],
+                                       midN[3], midN[2], midN[1], midN[0],
+                                       midN[7], midN[6], midN[5], midN[4],
+                                       midN[8], midN[11], midN[10], midN[9],
+                                       midN[12],
+                                       midN[16], midN[15], midN[14], midN[13],
+                                       midN[17],
+                                       midN[18]);
+        }
+      }
+      else
+      {
+        if ( !myMesh->AddVolumeWithID( iN[0], iN[3], iN[2], iN[1],
+                                       iN[4], iN[7], iN[6], iN[5], hexIDShift + i ) )
+          status = storeBadNodeIds( "GmfHexahedra" ,i, 8, iN[0], iN[3], iN[2], iN[1],
+                                                          iN[4], iN[7], iN[6], iN[5] );
+      }
     }
   }
-  /* Read tri-quadratic hexahedra */
-  const int hex2IDShift = myMesh->GetMeshInfo().NbElements();
-  if ( int nbHex = GmfStatKwd(meshID, GmfHexahedraQ2))
-  {
-    GmfGotoKwd(meshID, GmfHexahedraQ2);
-    for ( int i = 1; i <= nbHex; ++i )
-    {
-      GmfGetLin(meshID, GmfHexahedraQ2, &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &iN[5],
-                &iN[6], &iN[7], &iN[8],&iN[9],&iN[10],&iN[11],&iN[12],&iN[13],&iN[14],
-                &iN[15],&iN[16],&iN[17],&iN[18],&iN[19],&iN[20],&iN[21],&iN[22],&iN[23],
-                &iN[24],&iN[25],&iN[26], &ref);
-      if ( !myMesh->AddVolumeWithID( iN[0],iN[3],iN[2],iN[1],iN[4],iN[7],iN[6],iN[5],iN[11],iN[10],
-                                     iN[9],iN[8],iN[12],iN[15],iN[14], iN[13],iN[19],iN[18],iN[17],
-                                     iN[16],iN[20],iN[24],iN[23],iN[22],iN[21], iN[25],iN[26],
-                                     hex2IDShift + i ))
-        status = storeBadNodeIds( "GmfHexahedraQ2",i, 27,
-                                  iN[0],iN[3],iN[2],iN[1],iN[4], iN[7],iN[6],iN[5],iN[11],iN[10],
-                                  iN[9],iN[8],iN[12],iN[15],iN[14], iN[13],iN[19],iN[18],iN[17],
-                                  iN[16],iN[20],iN[24],iN[23],iN[22],iN[21], iN[25],iN[26]);
-    }
-  }
+  // the vector of extra vertices at tetrahedra won't be used anymore so it is cleared
+  quadNodesAtHexahedra.clear();
+
   /* Read prism */
   const int prismIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbPrism = GmfStatKwd(meshID, GmfPrisms))
