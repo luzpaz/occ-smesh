@@ -69,8 +69,9 @@ using namespace std;
 // cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl;\
 // }
 
-typedef StdMeshers_ProjectionUtils TAssocTool;
-typedef SMESH_Comment              TCom;
+namespace TAssocTool = StdMeshers_ProjectionUtils;
+
+typedef SMESH_Comment TCom;
 
 enum { ID_BOT_FACE = SMESH_Block::ID_Fxy0,
        ID_TOP_FACE = SMESH_Block::ID_Fxy1,
