@@ -62,7 +62,8 @@ using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 
-typedef StdMeshers_ProjectionUtils TAssocTool;
+namespace TAssocTool = StdMeshers_ProjectionUtils;
+//typedef StdMeshers_ProjectionUtils TAssocTool;
 
 //=======================================================================
 //function : StdMeshers_Projection_2D
@@ -824,14 +825,17 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   SMESH_subMesh* srcSubMesh = srcMesh->GetSubMesh( srcFace );
   SMESH_subMesh* tgtSubMesh = tgtMesh->GetSubMesh( tgtFace );
 
+  string srcMeshError;
   if ( tgtMesh == srcMesh ) {
-    if ( !TAssocTool::MakeComputed( srcSubMesh ) || !srcSubMesh->IsMeshComputed() )
-      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+    if ( !TAssocTool::MakeComputed( srcSubMesh ))
+      srcMeshError = TAssocTool::SourceNotComputedError( srcSubMesh, this );
   }
   else {
     if ( !srcSubMesh->IsMeshComputed() )
-      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+      srcMeshError = TAssocTool::SourceNotComputedError();
   }
+  if ( !srcMeshError.empty() )
+    return error(COMPERR_BAD_INPUT_MESH, srcMeshError );
 
   // ===========
   // Projection
