@@ -49,6 +49,7 @@
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <Geom_Surface.hxx>
+#include <LDOMParser.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
@@ -72,6 +73,98 @@
 #include <limits>
 
 using namespace std;
+
+//================================================================================
+/*!
+ * \brief Returns \a true if two algorithms (described by \a this and the given
+ *        algo data) are compatible by their output and input types of elements.
+ */
+//================================================================================
+
+bool SMESH_Algo::Features::IsCompatible( const SMESH_Algo::Features& algo2 ) const
+{
+  if ( _dim > algo2._dim ) return algo2.IsCompatible( *this );
+  // algo2 is of highter dimension
+  if ( _outElemTypes.empty() || algo2._inElemTypes.empty() )
+    return false;
+  bool compatible = true;
+  set<SMDSAbs_GeometryType>::const_iterator myOutType = _outElemTypes.begin();
+  for ( ; myOutType != _outElemTypes.end() && compatible; ++myOutType )
+    compatible = algo2._inElemTypes.count( *myOutType );
+  return compatible;
+}
+
+//================================================================================
+/*!
+ * \brief Return Data of the algorithm
+ */
+//================================================================================
+
+const SMESH_Algo::Features& SMESH_Algo::GetFeatures( const std::string& algoType )
+{
+  static map< string, SMESH_Algo::Features > theFeaturesByName;
+  if ( theFeaturesByName.empty() )
+  {
+    // Read Plugin.xml files
+    vector< string > xmlPaths = SMESH_Gen::GetPluginXMLPaths();
+    LDOMParser xmlParser;
+    for ( size_t iXML = 0; iXML < xmlPaths.size(); ++iXML )
+    {
+      bool error = xmlParser.parse( xmlPaths[iXML].c_str() );
+      if ( error )
+      {
+        TCollection_AsciiString data;
+        INFOS( xmlParser.GetError(data) );
+        continue;
+      }
+      // <algorithm type="Regular_1D"
+      //            ...
+      //            input="EDGE"
+      //            output="QUAD,TRIA">
+      //
+      LDOM_Document xmlDoc = xmlParser.getDocument();
+      LDOM_NodeList algoNodeList = xmlDoc.getElementsByTagName( "algorithm" );
+      for ( int i = 0; i < algoNodeList.getLength(); ++i )
+      {
+        LDOM_Node     algoNode           = algoNodeList.item( i );
+        LDOM_Element& algoElem           = (LDOM_Element&) algoNode;
+        TCollection_AsciiString algoType = algoElem.getAttribute("type");
+        TCollection_AsciiString input    = algoElem.getAttribute("input");
+        TCollection_AsciiString output   = algoElem.getAttribute("output");
+        TCollection_AsciiString dim      = algoElem.getAttribute("dim");
+        TCollection_AsciiString label    = algoElem.getAttribute("label-id");
+        if ( algoType.IsEmpty() ) continue;
+
+        Features & data = theFeaturesByName[ algoType.ToCString() ];
+        data._dim   = dim.IntegerValue();
+        data._label = label.ToCString();
+        for ( int isInput = 0; isInput < 2; ++isInput )
+        {
+          TCollection_AsciiString&   typeStr = isInput ? input : output;
+          set<SMDSAbs_GeometryType>& typeSet = isInput ? data._inElemTypes : data._outElemTypes;
+          int beg = 1, end;
+          while ( beg <= typeStr.Length() )
+          {
+            while ( beg < typeStr.Length() && !isalpha( typeStr.Value( beg ) ))
+              ++beg;
+            end = beg;
+            while ( end < typeStr.Length() && isalpha( typeStr.Value( end + 1 ) ))
+              ++end;
+            if ( end > beg )
+            {
+              TCollection_AsciiString typeName = typeStr.SubString( beg, end );
+              if      ( typeName == "EDGE" ) typeSet.insert( SMDSGeom_EDGE );
+              else if ( typeName == "TRIA" ) typeSet.insert( SMDSGeom_TRIANGLE );
+              else if ( typeName == "QUAD" ) typeSet.insert( SMDSGeom_QUADRANGLE );
+            }
+            beg = end + 1;
+          }
+        }
+      }
+    }
+  }
+  return theFeaturesByName[ algoType ];
+}
 
 //=============================================================================
 /*!
