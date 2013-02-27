@@ -462,7 +462,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   TopExp::MapShapesAndAncestors( theShape, TopAbs_FACE, TopAbs_SOLID, faceToSolids );
 
   // look for meshed FACEs ("source" FACEs) that must be prism bottoms
-  list< TopoDS_Face > meshedFaces, notQuadMeshedFaces;//, notQuadFaces;
+  list< TopoDS_Face > meshedFaces, notQuadMeshedFaces, notQuadFaces;
   const bool meshHasQuads = ( theMesh.NbQuadrangles() > 0 );
   for ( int iF = 1; iF < faceToSolids.Extent(); ++iF )
   {
@@ -480,8 +480,14 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       else
         meshedFaces.push_back( face );
     }
+    else if ( myHelper->Count( face, TopAbs_EDGE, /*ignoreSame=*/false ) != 4 )
+    {
+      notQuadFaces.push_back( face );
+    }
   }
-  // notQuadMeshedFaces are of highest priority
+  // notQuadFaces are of medium priority, put them before ordinary meshed faces
+  meshedFaces.splice( meshedFaces.begin(), notQuadFaces );
+  // notQuadMeshedFaces are of highest priority, put them before notQuadFaces
   meshedFaces.splice( meshedFaces.begin(), notQuadMeshedFaces );
 
   Prism_3D::TPrismTopo prism;
@@ -622,6 +628,27 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     // TODO. there are other ways to find out the source FACE:
     // propagation, topological similarity, ect.
 
+    // simply try to mesh all not meshed SOLIDs
+    if ( meshedFaces.empty() )
+    {
+      for ( TopExp_Explorer solid( theShape, TopAbs_SOLID ); solid.More(); solid.Next() )
+      {
+        mySetErrorToSM = false;
+        prism.Clear();
+        if ( !meshedSolids.Contains( solid.Current() ) &&
+             initPrism( prism, solid.Current() ))
+        {
+          mySetErrorToSM = true;
+          if ( !compute( prism ))
+            return false;
+          meshedFaces.push_front( prism.myTop );
+          meshedFaces.push_front( prism.myBottom );
+          meshedPrism.push_back( prism );
+          meshedSolids.Add( solid.Current() );
+        }
+        mySetErrorToSM = true;
+      }
+    }
 
     if ( meshedFaces.empty() ) // set same error to 10 not-computed solids
     {
@@ -636,7 +663,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
           SMESH_subMesh* sm = theMesh.GetSubMesh( solid.Current() );
           sm->GetComputeError() = err;
         }
-      return false;
+      return error( err );
     }
   }
   return true;
