@@ -522,6 +522,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
           .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+          if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
           SMESH_Hypothesis::Hypothesis_Status status;
           if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
             // mesh a lower smToCompute starting from vertices
