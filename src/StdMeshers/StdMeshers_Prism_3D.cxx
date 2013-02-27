@@ -458,14 +458,6 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   if ( nbSolids < 1 )
     return true;
 
-  Prism_3D::TPrismTopo prism;
-
-  if ( nbSolids == 1 )
-  {
-    return ( initPrism( prism, TopExp_Explorer( theShape, TopAbs_SOLID ).Current() ) &&
-             compute( prism ));
-  }
-
   TopTools_IndexedDataMapOfShapeListOfShape faceToSolids;
   TopExp::MapShapesAndAncestors( theShape, TopAbs_FACE, TopAbs_SOLID, faceToSolids );
 
@@ -492,8 +484,15 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   // notQuadMeshedFaces are of highest priority
   meshedFaces.splice( meshedFaces.begin(), notQuadMeshedFaces );
 
-  // if ( meshedFaces.empty() )
-  //   return error( COMPERR_BAD_INPUT_MESH, "No meshed source faces found" );
+  Prism_3D::TPrismTopo prism;
+
+  if ( nbSolids == 1 )
+  {
+    if ( !meshedFaces.empty() )
+      prism.myBottom = meshedFaces.front();
+    return ( initPrism( prism, TopExp_Explorer( theShape, TopAbs_SOLID ).Current() ) &&
+             compute( prism ));
+  }
 
   TopTools_MapOfShape meshedSolids;
   list< Prism_3D::TPrismTopo > meshedPrism;
