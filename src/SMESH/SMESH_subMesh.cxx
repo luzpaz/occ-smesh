@@ -1181,11 +1181,14 @@ SMESH_Hypothesis::Hypothesis_Status
 
 void SMESH_subMesh::cleanDependsOn( bool keepSupportedsubMeshes )
 {
-  if ( _father->NbNodes() == 0 ) return;
-
   SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,
                                                        /*complexShapeFirst=*/true);
-  if ( !keepSupportedsubMeshes )
+  if ( _father->NbNodes() == 0 )
+  {
+    while ( smIt->more() )
+      smIt->next()->ComputeStateEngine(CHECK_COMPUTE_STATE);
+  }
+  else if ( !keepSupportedsubMeshes )
   {
     while ( smIt->more() )
       smIt->next()->ComputeStateEngine(CLEAN);
