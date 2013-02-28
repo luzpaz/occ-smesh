@@ -773,6 +773,14 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind+1));
       myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     }
+    if ( method == "CreateMeshesFromGMF" )
+    {
+      // CreateMeshesFromGMF( theFileName, theMakeRequiredGroups ) ->
+      // CreateMeshesFromGMF( theFileName )
+      _AString file = theCommand->GetArg(1);
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, file );
+    }
   }
 
   // CreateHypothesis()
@@ -1571,13 +1579,21 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
          method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
       theCommand->SetMethod( "ExportMED" );
     }
-    else if ( method == "ExportCGNS" || method == "ExportGMF" )
+    else if ( method == "ExportCGNS" )
     { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
       _pyID partID = theCommand->GetArg( 1 );
       int nbArgs = theCommand->GetNbArgs();
       for ( int i = 2; i <= nbArgs; ++i )
         theCommand->SetArg( i-1, theCommand->GetArg( i ));
       theCommand->SetArg( nbArgs, partID );
+    }
+    else if ( method == "ExportGMF" )
+    { // ExportGMF(part,file,bool) -> ExportCGNS(file, part)
+      _pyID partID  = theCommand->GetArg( 1 );
+      _AString file = theCommand->GetArg( 2 );
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, file );
+      theCommand->SetArg( 2, partID );
     }
     else if ( theCommand->MethodStartsFrom( "ExportPartTo" ))
     { // ExportPartTo*(part, ...) -> Export*(..., part)
@@ -3593,7 +3609,7 @@ void _pyCommand::SetArg( int index, const TCollection_AsciiString& theArg)
 
 void _pyCommand::RemoveArgs()
 {
-  if ( int pos = myString.Location( '(', 1, Length() ))
+  if ( int pos = myString.Location( '(', Max( 1, GetBegPos( METHOD_IND )), Length() ))
     myString.Trunc( pos );
   myString += ")";
   myArgs.Clear();
