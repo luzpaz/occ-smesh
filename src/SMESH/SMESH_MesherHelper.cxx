@@ -934,7 +934,8 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 //function : GetMediumPos
 //purpose  : Return index and type of the shape  (EDGE or FACE only) to
 //          set a medium node on
-//param useCurSubShape: if true, returns the shape set via SetSubShape()
+//param    : useCurSubShape - if true, returns the shape set via SetSubShape()
+//           if any
 //=======================================================================
 
 std::pair<int, TopAbs_ShapeEnum>
