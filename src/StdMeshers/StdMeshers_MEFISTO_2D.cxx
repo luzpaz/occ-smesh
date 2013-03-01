@@ -770,6 +770,23 @@ void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        aMesh,
   ASSERT(scaley);
 }
 
+// namespace
+// {
+//   bool isDegenTria( const SMDS_MeshNode * nn[3] )
+//   {
+//     SMESH_TNodeXYZ p1( nn[0] );
+//     SMESH_TNodeXYZ p2( nn[1] );
+//     SMESH_TNodeXYZ p3( nn[2] );
+//     gp_XYZ vec1 = p2 - p1;
+//     gp_XYZ vec2 = p3 - p1;
+//     gp_XYZ cross = vec1 ^ vec2;
+//     const double eps = 1e-100;
+//     return ( fabs( cross.X() ) < eps &&
+//              fabs( cross.Y() ) < eps &&
+//              fabs( cross.Z() ) < eps );
+//   }
+// }
+
 //=============================================================================
 /*!
  *  
@@ -784,6 +801,8 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
 
   TopoDS_Face F = TopoDS::Face( _helper->GetSubShape() );
   Handle(Geom_Surface) S = BRep_Tool::Surface( F );
+
+  //const size_t nbInputNodes = mefistoToDS.size();
 
   Z n = mefistoToDS.size(); // nb input points
   mefistoToDS.resize( nbst );
@@ -811,6 +830,9 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
   const SMDS_MeshNode * nn[3];
   for (n = 1; n <= nbt; n++)
   {
+    // const bool allNodesAreOld = ( nust[m + 0] <= nbInputNodes &&
+    //                               nust[m + 1] <= nbInputNodes &&
+    //                               nust[m + 2] <= nbInputNodes );
     nn[ 0 ] = mefistoToDS[ nust[m++] - 1 ];
     nn[ 1 ] = mefistoToDS[ nust[m++] - 1 ];
     nn[ 2 ] = mefistoToDS[ nust[m++] - 1 ];
@@ -819,6 +841,12 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     // avoid creating degenetrated faces
     bool isDegen = ( _helper->HasDegeneratedEdges() &&
                      ( nn[0] == nn[1] || nn[1] == nn[2] || nn[2] == nn[0] ));
+
+    // It was an attemp to fix a problem of a zero area face whose all nodes
+    // are on one staight EDGE. But omitting this face makes a hole in the mesh :(
+    // if ( !isDegen && allNodesAreOld )
+    //   isDegen = isDegenTria( nn );
+
     if ( !isDegen )
       _helper->AddFace( nn[0], nn[i1], nn[i2] );
   }
