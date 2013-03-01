@@ -1142,7 +1142,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         }
         continue;
       }
-      // Compute
+      // Compute 'vertical projection'
       if ( nbTgtMeshed == 0 )
       {
         // compute nodes on target VERTEXes
