@@ -1720,10 +1720,11 @@ bool SMESH_MesherHelper::IsSameElemGeometry(const SMESHDS_SubMesh* smDS,
   if ( !smDS ) return nullSubMeshRes;
 
   SMDS_ElemIteratorPtr elemIt = smDS->GetElements();
-  while ( elemIt->more() )
-    if ( elemIt->next()->GetGeomType() != shape )
+  while ( elemIt->more() ) {
+    const SMDS_MeshElement* e = elemIt->next();
+    if ( e->GetGeomType() != shape )
       return false;
-
+  }
   return true;
 }
 
@@ -1898,7 +1899,8 @@ namespace
   //================================================================================
 
   bool isCornerOfStructure( const SMDS_MeshNode*   n,
-                            const SMESHDS_SubMesh* faceSM )
+                            const SMESHDS_SubMesh* faceSM,
+                            SMESH_MesherHelper&    faceAnalyser )
   {
     int nbFacesInSM = 0;
     if ( n ) {
@@ -1906,7 +1908,14 @@ namespace
       while ( fIt->more() )
         nbFacesInSM += faceSM->Contains( fIt->next() );
     }
-    return ( nbFacesInSM == 1 );
+    if ( nbFacesInSM == 1 )
+      return true;
+
+    if ( nbFacesInSM == 2 && n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+    {
+      return faceAnalyser.IsRealSeam( n->getshapeId() );
+    }
+    return false;
   }
 }
 
@@ -1925,13 +1934,15 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSM->GetSubShape() ),
                                               edges, nbEdgesInWires );
-  if ( nbWires != 1 )
+  if ( nbWires != 1 || nbEdgesInWires.front() != 4 )
     return false;
 
   // algo: find corners of a structure and then analyze nb of faces and
   // length of structure sides
 
   SMESHDS_Mesh* meshDS = faceSM->GetFather()->GetMeshDS();
+  SMESH_MesherHelper faceAnalyser( *faceSM->GetFather() );
+  faceAnalyser.SetSubShape( faceSM->GetSubShape() );
 
   // rotate edges to get the first node being at corner
   // (in principle it's not necessary but so far none SALOME algo can make
@@ -1940,7 +1951,8 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   int nbRemainEdges = nbEdgesInWires.front();
   do {
     TopoDS_Vertex V = IthVertex( 0, edges.front() );
-    isCorner = isCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ), fSM);
+    isCorner = isCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ),
+                                    fSM, faceAnalyser);
     if ( !isCorner ) {
       edges.splice( edges.end(), edges, edges.begin() );
       --nbRemainEdges;
@@ -1963,16 +1975,13 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
 
     list< const SMDS_MeshNode* > edgeNodes;
     map< double, const SMDS_MeshNode* >::iterator u2n = u2Nodes.begin();
-    if ( !nodes.empty() && nodes.back() == u2n->second )
-      ++u2n;
-    map< double, const SMDS_MeshNode* >::iterator u2nEnd = --u2Nodes.end();
-    if ( nodes.empty() || nodes.back() != u2nEnd->second )
-      ++u2nEnd;
-    for ( ; u2n != u2nEnd; ++u2n )
+    for ( ; u2n != u2Nodes.end(); ++u2n )
       edgeNodes.push_back( u2n->second );
-
     if ( edge->Orientation() == TopAbs_REVERSED )
       edgeNodes.reverse();
+
+    if ( !nodes.empty() && nodes.back() == edgeNodes.front() )
+      edgeNodes.pop_front();
     nodes.splice( nodes.end(), edgeNodes, edgeNodes.begin(), edgeNodes.end() );
   }
 
@@ -1983,7 +1992,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   for ( ; n != nodes.end(); ++n )
   {
     ++nbEdges;
-    if ( isCornerOfStructure( *n, fSM )) {
+    if ( isCornerOfStructure( *n, fSM, faceAnalyser )) {
       nbEdgesInSide.push_back( nbEdges );
       nbEdges = 0;
     }
