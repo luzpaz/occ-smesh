@@ -934,11 +934,17 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 //function : GetMediumPos
 //purpose  : Return index and type of the shape  (EDGE or FACE only) to
 //          set a medium node on
+//param useCurSubShape: if true, returns the shape set via SetSubShape()
 //=======================================================================
 
-std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
-                                                                  const SMDS_MeshNode* n2)
+std::pair<int, TopAbs_ShapeEnum>
+SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
+                                 const SMDS_MeshNode* n2,
+                                 const bool           useCurSubShape)
 {
+  if ( useCurSubShape && !myShape.IsNull() )
+    return std::make_pair( myShapeID, myShape.ShapeType() );
+
   TopAbs_ShapeEnum shapeType = TopAbs_SHAPE;
   int              shapeID = -1;
   TopoDS_Shape     shape;
@@ -1041,7 +1047,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { false, false };
 
-  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2 );
+  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2, mySetElemOnShape );
 
   // get positions of the given nodes on shapes
   if ( pos.second == TopAbs_FACE )

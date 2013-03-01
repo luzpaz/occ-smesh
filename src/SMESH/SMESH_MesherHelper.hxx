@@ -529,7 +529,8 @@ public:
    * \brief Return index and type of the shape (EDGE or FACE only) to set a medium node on
    */
   std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
-                                                const SMDS_MeshNode* n2);
+                                                const SMDS_MeshNode* n2,
+                                                const bool           useCurSubShape=false);
   /*!
    * \brief Add a link in my data structure
    */
