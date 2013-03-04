@@ -22,7 +22,6 @@
 #  Author : Marc Tajchman (CEA)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#  $Header$
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
@@ -83,6 +82,6 @@ MED_Test_LDADD = \
 	-lMEDWrapper \
 	-lMEDWrapperBase \
 	-lMEDWrapper_V2_2 \
-	-lMEDWrapper_V2_1 \	
+	-lMEDWrapper_V2_1 \
 	$(BOOST_LIB_SYSTEM) 
 
