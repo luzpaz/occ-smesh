@@ -43,15 +43,11 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
-static TCollection_AsciiString NotPublishedObjectName()
-{
-  return "__NOT__Published__Object__";
-}
-
 namespace SMESH
 {
 
   size_t TPythonDump::myCounter = 0;
+  const char theNotPublishedObjectName[] = "__NOT__Published__Object__";
 
   TVar::TVar(CORBA::Double value):myVals(1) { myVals[0] = SMESH_Comment(value); }
   TVar::TVar(CORBA::Long   value):myVals(1) { myVals[0] = SMESH_Comment(value); }
@@ -279,7 +275,7 @@ namespace SMESH
       myStream << entry.in();
     }
     else {
-      myStream << NotPublishedObjectName();
+      myStream << theNotPublishedObjectName;
     }
     return *this;
   }
@@ -298,7 +294,7 @@ namespace SMESH
       if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
         myStream << "smeshObj_" << size_t(theArg);
       else
-        myStream << NotPublishedObjectName();
+        myStream << theNotPublishedObjectName;
     }
     else
       myStream << "None";
@@ -343,7 +339,7 @@ namespace SMESH
       SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
       return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
     }
-    return *this;
+    return *this << theNotPublishedObjectName;
   }
 
   TPythonDump&
@@ -504,6 +500,10 @@ namespace SMESH
   {
     DumpArray( theList, *this );
     return *this;
+  }
+  const char* TPythonDump::NotPublishedObjectName()
+  {
+    return theNotPublishedObjectName;
   }
 
   TCollection_AsciiString myLongStringStart( "TPythonDump::LongStringStart" );
@@ -679,7 +679,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   CORBA::Octet* anOctetBuf =  (CORBA::Octet*)aBuffer;
   Engines::TMPFile_var aStreamFile = new Engines::TMPFile(aLen+1, aLen+1, anOctetBuf, 1);
 
-  bool hasNotPublishedObjects = aScript.Location( NotPublishedObjectName(), 1, aLen);
+  bool hasNotPublishedObjects = aScript.Location( SMESH::theNotPublishedObjectName, 1, aLen);
   isValidScript = isValidScript && !hasNotPublishedObjects;
 
   return aStreamFile._retn();

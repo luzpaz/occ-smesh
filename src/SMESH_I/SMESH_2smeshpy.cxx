@@ -179,6 +179,11 @@ namespace {
 
   void CheckObjectPresence( const Handle(_pyCommand)& cmd, set<_pyID> & presentObjects)
   {
+    if ( cmd->GetString().Location( TPythonDump::NotPublishedObjectName(), 1, cmd->Length() ))
+    {
+      cmd->Comment();
+      return;
+    }
     for ( int iArg = cmd->GetNbArgs(); iArg; --iArg )
     {
       const _pyID& arg = cmd->GetArg( iArg );
