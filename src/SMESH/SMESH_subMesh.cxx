@@ -1352,7 +1352,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   {
     _computeState = READY_TO_COMPUTE;
     SMESHDS_SubMesh* smDS = GetSubMeshDS();
-    if ( smDS && smDS->NbNodes() ) {
+    if ( smDS && smDS->NbNodes() )
+    {
       if ( event == CLEAN ) {
         cleanDependants();
         cleanSubMesh( this );
@@ -1360,7 +1361,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       else
         _computeState = COMPUTE_OK;
     }
-    else if ( event == COMPUTE && !_alwaysComputed ) {
+    else if (( event == COMPUTE || event == COMPUTE_SUBMESH )
+             && !_alwaysComputed )
+    {
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
       gp_Pnt P = BRep_Tool::Pnt(V);
       if ( SMDS_MeshNode * n = _father->GetMeshDS()->AddNode(P.X(), P.Y(), P.Z()) ) {
