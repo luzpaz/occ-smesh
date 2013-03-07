@@ -915,9 +915,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   // Some objects are wrapped with python classes and
   // Resource_DataMapOfAsciiStringAsciiString holds methods returning wrapped objects
   Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
+  std::set< TCollection_AsciiString >      aRemovedObjIDs;
   if ( !getenv("NO_2smeshpy_conversion"))
     aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod,
-                                             theObjectNames, theStudy, isHistoricalDump );
+                                             theObjectNames, aRemovedObjIDs,
+                                             theStudy, isHistoricalDump );
 
   // Replace characters used instead of quote marks to quote notebook variables
   {
@@ -1017,6 +1019,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     anUpdatedScript += "\n\taStudyBuilder = theStudy.NewBuilder()";
   }
   for (int ir = 1; ir <= seqRemoved.Length(); ir++) {
+    if ( aRemovedObjIDs.count( seqRemoved.Value(ir) )) continue;
     anUpdatedScript += "\n\tSO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
     anUpdatedScript += seqRemoved.Value(ir);
     // for object wrapped by class of smesh.py
@@ -1037,13 +1040,14 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   for (Standard_Integer i = 1; i <= aLen; i += 2)
   {
     anEntry = aScript.SubString(aSeq->Value(i), aSeq->Value(i + 1));
-    aName = geom->GetDumpName( anEntry.ToCString() );
+    aName   = geom->GetDumpName( anEntry.ToCString() );
     if (aName.IsEmpty() && // Not a GEOM object
         theNames.IsBound(anEntry) &&
+        !aRemovedObjIDs.count(anEntry) && // a command creating anEntry was erased
         !mapEntries.IsBound(anEntry) && // Not yet processed
         !mapRemoved.IsBound(anEntry)) // Was not removed
     {
-      aName = theObjectNames.Find(anEntry);
+      aName    = theObjectNames.Find(anEntry);
       aGUIName = theNames.Find(anEntry);
       mapEntries.Bind(anEntry, aName);
       anUpdatedScript += helper + "\n\t" + aSMESHGen + ".SetName(" + aName;
