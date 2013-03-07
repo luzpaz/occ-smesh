@@ -2015,7 +2015,6 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
   if ( theParam2ColumnMap.empty() )
   {
     // get data of edges for normalization of params
-
     vector< double > length;
     double fullLen = 0;
     list<TopoDS_Edge>::const_iterator edge;
@@ -2039,8 +2038,8 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
       map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNN.begin();
       if ( theProxyMesh ) // from sortedBaseNN remove nodes not shared by faces of faceSubMesh
       {
-        const SMDS_MeshNode* n1 = sortedBaseNN.begin()->second;
-        const SMDS_MeshNode* n2 = sortedBaseNN.rbegin()->second;
+        const SMDS_MeshNode* n1 = (++sortedBaseNN.begin())->second;
+        const SMDS_MeshNode* n2 = (++sortedBaseNN.rbegin())->second;
         bool allNodesAreProxy = ( n1 != theProxyMesh->GetProxyNode( n1 ) &&
                                   n2 != theProxyMesh->GetProxyNode( n2 ));
         if ( allNodesAreProxy )
@@ -2052,7 +2051,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
           while ( ++u_n != sortedBaseNN.end() && !isNodeInSubMesh( u_n->second, faceSubMesh ));
           sortedBaseNN.erase( sortedBaseNN.begin(), u_n );
         }
-        else if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+        if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
         {
           while ( u_n != sortedBaseNN.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
           sortedBaseNN.erase( ++u_n, sortedBaseNN.end() );
