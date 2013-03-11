@@ -1423,8 +1423,8 @@ double Skew::GetValue( const TSequenceOfXYZ& P )
       ? 0. : fabs( PI2 - v1.Angle( v2 ) );
 
     //BUG SWP12743
-    if ( A < theEps )
-      return theInf;
+    if ( A < Precision::Angular() )
+      return 0.;
 
     return A * 180. / M_PI;
   }
