@@ -276,15 +276,15 @@ def AssureGeomPublished(mesh, geom, name=''):
 
 ## Return the first vertex of a geomertical edge by ignoring orienation
 def FirstVertexOnCurve(edge):
-    from geompy import SubShapeAll, ShapeType, KindOfShape, PointCoordinates
+    from geompy import SubShapeAll, ShapeType, MakeVertexOnCurve, PointCoordinates
     vv = SubShapeAll( edge, ShapeType["VERTEX"])
     if not vv:
         raise TypeError, "Given object has no vertices"
     if len( vv ) == 1: return vv[0]
-    info = KindOfShape(edge)
-    xyz = info[1:4] # coords of the first vertex
-    xyz1  = PointCoordinates( vv[0] )
-    xyz2  = PointCoordinates( vv[1] )
+    v0   = MakeVertexOnCurve(edge,0.)
+    xyz  = PointCoordinates( v0 ) # coords of the first vertex
+    xyz1 = PointCoordinates( vv[0] )
+    xyz2 = PointCoordinates( vv[1] )
     dist1, dist2 = 0,0
     for i in range(3):
         dist1 += abs( xyz[i] - xyz1[i] )
