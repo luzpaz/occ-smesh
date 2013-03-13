@@ -1162,7 +1162,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
 
         // compute nodes on target EDGEs
         rgtSide->Reverse(); // direct it same as the lftSide
-        myHelper->SetElementsOnShape( false );
+        myHelper->SetElementsOnShape( false ); // myHelper holds the prism shape
         TopoDS_Edge tgtEdge;
         for ( size_t iN = 1; iN < srcNodeStr.size()-1; ++iN ) // add nodes
         {
@@ -1173,25 +1173,24 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         }
         for ( size_t iN = 1; iN < srcNodeStr.size(); ++iN ) // add segments
         {
-          SMDS_MeshElement* newEdge = myHelper->AddEdge( newNodes[ iN-1 ], newNodes[ iN ] );
+          // find an EDGE to set a new segment
           std::pair<int, TopAbs_ShapeEnum> id2type = 
             myHelper->GetMediumPos( newNodes[ iN-1 ], newNodes[ iN ] );
-          if ( id2type.second == TopAbs_EDGE )
+          if ( id2type.second != TopAbs_EDGE )
           {
-            meshDS->SetMeshElementOnShape( newEdge, id2type.first );
-          }
-          else // new nodes are on different EDGEs; put one of them on VERTEX
-          {
+            // new nodes are on different EDGEs; put one of them on VERTEX
             const int      edgeIndex = rgtSide->EdgeIndex( srcNodeStr[ iN-1 ].normParam );
             const double vertexParam = rgtSide->LastParameter( edgeIndex );
             const gp_Pnt           p = BRep_Tool::Pnt( rgtSide->LastVertex( edgeIndex ));
             const int         isPrev = ( Abs( srcNodeStr[ iN-1 ].normParam - vertexParam ) <
                                          Abs( srcNodeStr[ iN   ].normParam - vertexParam ));
-            meshDS->SetMeshElementOnShape( newEdge, newNodes[ iN-(1-isPrev) ]->getshapeId() );
             meshDS->UnSetNodeOnShape( newNodes[ iN-isPrev ] );
             meshDS->SetNodeOnVertex ( newNodes[ iN-isPrev ], rgtSide->LastVertex( edgeIndex ));
-            meshDS->MoveNode( newNodes[ iN-isPrev ], p.X(), p.Y(), p.Z() );
+            meshDS->MoveNode        ( newNodes[ iN-isPrev ], p.X(), p.Y(), p.Z() );
+            id2type.first = newNodes[ iN-(1-isPrev) ]->getshapeId();
           }
+          SMDS_MeshElement* newEdge = myHelper->AddEdge( newNodes[ iN-1 ], newNodes[ iN ] );
+          meshDS->SetMeshElementOnShape( newEdge, id2type.first );
         }
         myHelper->SetElementsOnShape( true );
         for ( int i = 0; i < rgtSide->NbEdges(); ++i ) // update state of sub-meshes
