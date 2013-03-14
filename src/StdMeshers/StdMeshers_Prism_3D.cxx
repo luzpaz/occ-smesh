@@ -68,6 +68,9 @@ using namespace std;
 // gp_Pnt p (xyz); \
 // cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl;\
 // }
+#ifdef _DEBUG_
+#define DBGOUT(msg) //cout << msg << endl;
+#endif
 
 namespace TAssocTool = StdMeshers_ProjectionUtils;
 
@@ -464,6 +467,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   // look for meshed FACEs ("source" FACEs) that must be prism bottoms
   list< TopoDS_Face > meshedFaces, notQuadMeshedFaces, notQuadFaces;
   const bool meshHasQuads = ( theMesh.NbQuadrangles() > 0 );
+  //StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this );
   for ( int iF = 1; iF < faceToSolids.Extent(); ++iF )
   {
     const TopoDS_Face& face = TopoDS::Face( faceToSolids.FindKey( iF ));
@@ -480,10 +484,13 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       else
         meshedFaces.push_back( face );
     }
-    else if ( myHelper->Count( face, TopAbs_EDGE, /*ignoreSame=*/false ) != 4 )
-    {
-      notQuadFaces.push_back( face );
-    }
+    // not add not quadrilateral FACE as we can't compute it
+    // else if ( !quadAlgo->CheckNbEdges( theMesh, face ))
+    // // not add not quadrilateral FACE as it can be a prism side
+    // // else if ( myHelper->Count( face, TopAbs_EDGE, /*ignoreSame=*/false ) != 4 )
+    // {
+    //   notQuadFaces.push_back( face );
+    // }
   }
   // notQuadFaces are of medium priority, put them before ordinary meshed faces
   meshedFaces.splice( meshedFaces.begin(), notQuadFaces );
@@ -1043,6 +1050,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
 {
   SMESH_Mesh*     mesh = myHelper->GetMesh();
   SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
+  DBGOUT( endl << "COMPUTE Prism " << meshDS->ShapeToIndex( thePrism.myShape3D ));
 
   TProjction1dAlgo* projector1D = TProjction1dAlgo::instance( this );
   StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
@@ -1108,6 +1116,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         const TopoDS_Edge& srcE = lftSide->Edge(i);
         SMESH_subMesh*    srcSM = mesh->GetSubMesh( srcE );
         if ( !srcSM->IsMeshComputed() ) {
+          DBGOUT( "COMPUTE V edge " << srcSM->GetId() );
           srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
           srcSM->ComputeStateEngine       ( SMESH_subMesh::COMPUTE );
           if ( !srcSM->IsMeshComputed() )
@@ -1161,6 +1170,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         }
 
         // compute nodes on target EDGEs
+        DBGOUT( "COMPUTE V edge (proj) " << shapeID( lftSide->Edge(0)));
         rgtSide->Reverse(); // direct it same as the lftSide
         myHelper->SetElementsOnShape( false ); // myHelper holds the prism shape
         TopoDS_Edge tgtEdge;
@@ -1227,28 +1237,43 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       // Top EDGEs must be projections from the bottom ones
       // to compute stuctured quad mesh on wall FACEs
       // ---------------------------------------------------
-      const TopoDS_Edge& botE = (*quad)->side[ QUAD_BOTTOM_SIDE ]->Edge(0);
-      const TopoDS_Edge& topE = (*quad)->side[ QUAD_TOP_SIDE    ]->Edge(0);
-
-      projector1D->myHyp.SetSourceEdge( botE );
-
-      SMESH_subMesh* tgtEdgeSm = mesh->GetSubMesh( topE );
-      if ( !tgtEdgeSm->IsMeshComputed() )
       {
-        // compute nodes on VERTEXes
-        tgtEdgeSm->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
-        // project segments
-        projector1D->InitComputeError();
-        bool ok = projector1D->Compute( *mesh, topE );
-        if ( !ok )
+        const TopoDS_Edge& botE = (*quad)->side[ QUAD_BOTTOM_SIDE ]->Edge(0);
+        const TopoDS_Edge& topE = (*quad)->side[ QUAD_TOP_SIDE    ]->Edge(0);
+        SMESH_subMesh*    botSM = mesh->GetSubMesh( botE );
+        SMESH_subMesh*    topSM = mesh->GetSubMesh( topE );
+        SMESH_subMesh*    srcSM = botSM;
+        SMESH_subMesh*    tgtSM = topSM;
+        if ( !srcSM->IsMeshComputed() && topSM->IsMeshComputed() )
+          std::swap( srcSM, tgtSM );
+
+        if ( !srcSM->IsMeshComputed() )
         {
-          SMESH_ComputeErrorPtr err = projector1D->GetComputeError();
-          if ( err->IsOK() ) err->myName = COMPERR_ALGO_FAILED;
-          tgtEdgeSm->GetComputeError() = err;
-          return false;
+          DBGOUT( "COMPUTE H edge " << srcSM->GetId());
+          srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE ); // nodes on VERTEXes
+          srcSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );        // segments on the EDGE
         }
+        srcSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+
+        if ( !tgtSM->IsMeshComputed() )
+        {
+          // compute nodes on VERTEXes
+          tgtSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+          // project segments
+          DBGOUT( "COMPUTE H edge (proj) " << tgtSM->GetId());
+          projector1D->myHyp.SetSourceEdge( TopoDS::Edge( srcSM->GetSubShape() ));
+          projector1D->InitComputeError();
+          bool ok = projector1D->Compute( *mesh, tgtSM->GetSubShape() );
+          if ( !ok )
+          {
+            SMESH_ComputeErrorPtr err = projector1D->GetComputeError();
+            if ( err->IsOK() ) err->myName = COMPERR_ALGO_FAILED;
+            tgtSM->GetComputeError() = err;
+            return false;
+          }
+        }
+        tgtSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
       }
-      tgtEdgeSm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
       // Compute quad mesh on wall FACEs
       // -------------------------------
@@ -1263,6 +1288,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
                               "Not all edges have valid algorithm and hypothesis"));
         // mesh the <face>
         quadAlgo->InitComputeError();
+        DBGOUT( "COMPUTE Quad face " << fSM->GetId());
         bool ok = quadAlgo->Compute( *mesh, face );
         fSM->GetComputeError() = quadAlgo->GetComputeError();
         if ( !ok )
@@ -1544,7 +1570,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
     _gen->Compute( *myHelper->GetMesh(), botSM->GetSubShape() );
     botSMDS = botSM->GetSubMeshDS();
     if ( !botSMDS || botSMDS->NbElements() == 0 )
-      return toSM( error(TCom("No elememts on face #") << botSM->GetId() ));
+      return toSM( error(TCom("No elements on face #") << botSM->GetId() ));
   }
 
   bool needProject = !topSM->IsMeshComputed();
