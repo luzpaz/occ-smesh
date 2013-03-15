@@ -70,6 +70,8 @@ using namespace std;
 // }
 #ifdef _DEBUG_
 #define DBGOUT(msg) //cout << msg << endl;
+#else
+#define DBGOUT(msg)
 #endif
 
 namespace TAssocTool = StdMeshers_ProjectionUtils;
