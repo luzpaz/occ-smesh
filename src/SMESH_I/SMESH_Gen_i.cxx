@@ -5056,7 +5056,7 @@ Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
 {
   Engines::ListOfData_var aResult = new Engines::ListOfData;
   
-  if (myImportedStudyId == 0 || !myImportedStudyChanged) {
+  if (!myImportedStudyChanged) {
     MESSAGE("Study is not changed")
     return aResult._retn();
   }
