@@ -1984,12 +1984,12 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
         list<const SMESHDS_Hypothesis*>& hyps = indS_hyps->second;
         int oldID = geom._index;
         int newID = meshDS->ShapeToIndex( geom._shape );
-        if ( !newID )
-          continue;
         if ( oldID == 1 ) { // main shape
           newID = 1;
           geom._shape = newShape;
         }
+        if ( !newID )
+          continue;
         for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
           _impl->AddHypothesis( geom._shape, (*hypIt)->GetID());
         // care of submeshes
