@@ -571,10 +571,12 @@ public:
    */
   SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
 
-  void UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* theParameters);
+  void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
   char* GetParameters(CORBA::Object_ptr theObject);
-  char* ParseParameters(const char* theParameters);
+  //char* ParseParameters(const char* theParameters);
+  const std::vector< int >&         GetLastParamIndices() const { return myLastParamIndex; }
   const std::vector< std::string >& GetLastParameters() const { return myLastParameters; }
+  std::vector< std::string >        GetAllParameters(const std::string& theObjectEntry) const;
 
 private:
   // Create hypothesis of given type
@@ -620,6 +622,7 @@ private:
   // Dump Python: trace of API methods calls
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;
   bool                                                     myIsHistoricalPythonDump;
+  std::vector< int >                                       myLastParamIndex;
   std::vector< std::string >                               myLastParameters;
 };
 

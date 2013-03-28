@@ -153,7 +153,7 @@ void SMESH_Hypothesis_i::SetVarParameter (const char* theParameter,
 {
   if ( SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen() )
   {
-    gen->UpdateParameters(theParameter);
+    gen->UpdateParameters( CORBA::Object_var( _this() ).in(), theParameter );
 
     const std::vector< std::string >& pars = gen->GetLastParameters();
     if ( !pars.empty() )
@@ -201,7 +201,7 @@ void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
     if ( pos >= 0 ) aOldParameters = aOldParameters.Split(pos);
     pos = aOldParameters.SearchFromEnd(";*=");
     if ( pos >= 0 ) aOldParameters.Split(pos-1);
-    gen->UpdateParameters( aOldParameters.ToCString() );
+    gen->UpdateParameters( CORBA::Object_var( _this() ).in(), aOldParameters.ToCString() );
 
     myMethod2VarParams.clear();
     const std::vector< std::string >& pars = gen->GetLastParameters();
@@ -210,7 +210,7 @@ void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
       std::string meth = getMethodOfParameter( i, pars.size() );
       myMethod2VarParams[ meth ] = pars[i];
     }
-    gen->UpdateParameters(""); // clear params
+    gen->UpdateParameters( CORBA::Object_var( _this() ).in(), "" ); // clear params
   }
 }
 

@@ -4285,9 +4285,8 @@ void SMESH_Mesh_i::checkGroupNames()
 //=============================================================================
 void SMESH_Mesh_i::SetParameters(const char* theParameters)
 {
-  // SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Mesh::_narrow(_this()),
-  //                                              CORBA::string_dup(theParameters));
-  SMESH_Gen_i::GetSMESHGen()->UpdateParameters(theParameters);
+  SMESH_Gen_i::GetSMESHGen()->UpdateParameters( CORBA::Object_var( _this() ).in(),
+                                                theParameters );
 }
 
 //=============================================================================
