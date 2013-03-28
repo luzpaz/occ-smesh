@@ -2170,7 +2170,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSM->GetSubShape() ),
                                               edges, nbEdgesInWires );
-  if ( nbWires != 1 || nbEdgesInWires.front() != 4 )
+  if ( nbWires != 1 /*|| nbEdgesInWires.front() != 4*/ ) // allow composite sides
     return false;
 
   // algo: find corners of a structure and then analyze nb of faces and
