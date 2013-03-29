@@ -1378,8 +1378,12 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
   }
 
   //if ( mySetElemOnShape ) node is not elem!
-  GetMeshDS()->SetNodeOnEdge(n12, edges[iOkEdge], u);
-
+  {
+    int edgeID = GetMeshDS()->ShapeToIndex( edges[iOkEdge] );
+    if ( edgeID != n12->getshapeId() )
+      GetMeshDS()->UnSetNodeOnShape( n12 );
+    GetMeshDS()->SetNodeOnEdge(n12, edgeID, u);
+  }
   myTLinkNodeMap.insert( make_pair( SMESH_TLink(n1,n2), n12 ));
 
   return n12;
