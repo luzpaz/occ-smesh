@@ -576,6 +576,7 @@ public:
   //char* ParseParameters(const char* theParameters);
   const std::vector< int >&         GetLastParamIndices() const { return myLastParamIndex; }
   const std::vector< std::string >& GetLastParameters() const { return myLastParameters; }
+  const std::string &               GetLastObjEntry() const { return myLastObj; }
   std::vector< std::string >        GetAllParameters(const std::string& theObjectEntry) const;
 
 private:
@@ -624,6 +625,7 @@ private:
   bool                                                     myIsHistoricalPythonDump;
   std::vector< int >                                       myLastParamIndex;
   std::vector< std::string >                               myLastParameters;
+  std::string                                              myLastObj;
 };
 
 

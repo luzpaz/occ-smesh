@@ -952,6 +952,7 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
 
   // find variable names within theParameters
 
+  myLastObj.clear();
   myLastParameters.clear();
   myLastParamIndex.clear(); /* vector holding indices of virables within the string
                                of all varibles used for theObject */ 
@@ -986,9 +987,12 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   // (1) variable names in the string of all varibles used for theObject and
   // (2) indices of found variables in myLastParamIndex.
 
+  // remember theObject
   SALOMEDS::SObject_wrap aSObj =  ObjectToSObject(aStudy,theObject);
   if ( aSObj->_is_nil() )
     return;
+  CORBA::String_var anObjEntry = aSObj->GetID();
+  myLastObj = anObjEntry.in();
 
   // get a string of variable names
   SALOMEDS::StudyBuilder_var   aStudyBuilder = aStudy->NewBuilder();
@@ -1082,9 +1086,10 @@ std::vector< std::string > SMESH_Gen_i::GetAllParameters(const std::string& theO
   while ( pos < varStr.size() )
   {
     // skip separators
-    while ( separators.find( varStr[ pos ]) != std::string::npos )
-      if ( ++pos >= varStr.size() )
-        break;
+    pos = varStr.find_first_not_of( separators, pos );
+    // while ( separators.find( varStr[ pos ]) != std::string::npos )
+    //   if ( ++pos >= varStr.size() )
+    //     break;
     // skip repetition number following '='
     if ( varStr[ pos-1 ] == '=' )
     {
@@ -1096,7 +1101,7 @@ std::vector< std::string > SMESH_Gen_i::GetAllParameters(const std::string& theO
     if ( pos < varStr.size() )
     {
       size_t pos2 = varStr.find_first_of( separators, pos );
-      varNames.push_back( varStr.substr( pos, pos2-1 ));
+      varNames.push_back( varStr.substr( pos, pos2 - pos));
       pos = pos2;
     }
   }
