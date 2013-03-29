@@ -73,6 +73,9 @@ namespace SMESH
       SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
       if(!aStudy->_is_nil() && !aCollection.IsEmpty())
       {
+        const std::string & objEntry = SMESH_Gen_i::GetSMESHGen()->GetLastObjEntry();
+        if ( !objEntry.empty() )
+          aCollection += (TVar::ObjPrefix() + objEntry ).c_str();
         aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
         if(MYDEBUG) MESSAGE(aString);
         // prevent misuse of already treated variables
@@ -312,7 +315,7 @@ namespace SMESH
     if(aSObject->_is_nil() && !CORBA::is_nil(theArg))
       myStream << "hyp_" << theArg->GetId();
     else
-      *this << CORBA::Object_ptr( theArg );
+      *this << aSObject;
     return *this;
   }
 

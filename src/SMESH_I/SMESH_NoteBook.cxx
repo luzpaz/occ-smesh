@@ -250,11 +250,28 @@ void SMESH_NoteBook::ReplaceVariables()
     }
 
     // NEW APPROACH
+    // Names of variables are stored in the Study, in "StringAttribute". Python commands
+    // store zero-based indices (as e.g.'$1$') of variables within "StringAttribute";
+    // An entry of object storing "StringAttribute" is at the end of the command
+    // after TVar::ObjPrefix().
 
-    TEntry2VarVecMap::iterator ent2varVec = _entry2VarsMap.find( aObject );
+    // Get the entry of object storing "StringAttribute"
+    TCollection_AsciiString & cmdStr = aCmd->GetString();
+    TEntry2VarVecMap::iterator ent2varVec;
+    if (int pos = cmdStr.Location( SMESH::TVar::ObjPrefix(), 6, cmdStr.Length() ))
+    {
+      TCollection_AsciiString varHolderEntry =
+        cmdStr.SubString( pos + strlen( SMESH::TVar::ObjPrefix() ), cmdStr.Length() );
+      ent2varVec = _entry2VarsMap.find( varHolderEntry );
+      cmdStr.Split( pos - 1 );
+    }
+    else
+    {
+      ent2varVec = _entry2VarsMap.find( aObject );
+    }
+    // Set variables in cmdStr
     if ( ent2varVec != _entry2VarsMap.end() && !ent2varVec->second.empty() )
     {
-      TCollection_AsciiString &       cmdStr = aCmd->GetString();
       const std::vector< std::string >& vars = ent2varVec->second;
       int pos = 1, pos2;
       // look for '$VarIndex$' in cmdStr. TVar::Quote() == '$'
@@ -287,6 +304,8 @@ void SMESH_NoteBook::ReplaceVariables()
     }
 
     // OLD APPROACH
+    // Variable names are stored historically in "StringAttribute",
+    // i.e. for each command there is a set of either var names or separated empty places.
 
     // check if method modifies the object itself
     TVariablesMap::const_iterator it = _objectMap.find(aObject);

@@ -102,6 +102,8 @@ namespace SMESH
     // string used to temporary quote variable names in order
     // not to confuse variables with string arguments
     static char Quote() { return '$'; }
+    // string preceding an entry of object storing the attribute holding var names
+    static const char* ObjPrefix() { return " # OBJ: "; }
   };
 
   // ===========================================================================================
