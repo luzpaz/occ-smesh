@@ -1348,6 +1348,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   default:;
   }
 
+  if ( event == CLEAN )
+    _alwaysComputed = false; // Unset 'true' set by MergeNodes() (issue 0022182)
+
   if (_subShape.ShapeType() == TopAbs_VERTEX)
   {
     _computeState = READY_TO_COMPUTE;
