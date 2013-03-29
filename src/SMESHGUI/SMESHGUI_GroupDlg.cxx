@@ -1560,7 +1560,7 @@ void SMESHGUI_GroupDlg::onSelectAll()
 
   myElementsLab->setEnabled( !noElemsModif );
   myElements->setEnabled   ( !noElemsModif );
-  myFilterBtn->setEnabled  ( !mySelectAll->isChecked() );
+  myFilterBtn->setEnabled  ( !noElemsModif );
   myAddBtn->setEnabled     ( !noElemsModif );
   myRemoveBtn->setEnabled  ( !noElemsModif );
   mySortBtn->setEnabled    ( !noElemsModif );
