@@ -994,8 +994,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
     initVariableName( hyp, item, "SetLayerDistribution" );
-    customWidgets()->append
-      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
+    customWidgets()->append ( new StdMeshersGUI_LayerDistributionParamWdg
+                              ( h, h->GetLayerDistribution(), hypName(), dlg() ));
   }
   else if( hypType()=="NumberOfLayers2D" )
   {
@@ -1014,8 +1014,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
     initVariableName( hyp, item, "SetLayerDistribution" );
-    customWidgets()->append
-      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
+    customWidgets()->append ( new StdMeshersGUI_LayerDistributionParamWdg
+                              ( h, h->GetLayerDistribution(), hypName(), dlg() ));
   }
   else if( hypType()=="ProjectionSource1D" )
   {

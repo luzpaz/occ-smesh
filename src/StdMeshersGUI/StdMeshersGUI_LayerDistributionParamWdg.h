@@ -51,9 +51,10 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_LayerDistributionParamWdg : public QWid
   Q_OBJECT
 
 public:
-  StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr,
-                                          const QString&,
-                                          QDialog*);
+  StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr holderHyp,
+                                          SMESH::SMESH_Hypothesis_ptr distribHyp,
+                                          const QString&              name,
+                                          QDialog*                    dlg);
   ~StdMeshersGUI_LayerDistributionParamWdg();
 
   SMESH::SMESH_Hypothesis_var GetHypothesis() { return myHyp; }
@@ -74,6 +75,7 @@ private:
   
 private:
  SMESH::SMESH_Hypothesis_var myHyp;
+ SMESH::SMESH_Hypothesis_var myHolderHyp;
  SMESHGUI*                   mySMESHGUI;
 
  QPushButton*           myCreateButton;
