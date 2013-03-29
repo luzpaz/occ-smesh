@@ -9714,6 +9714,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
   int totalNbElems = meshDS->NbEdges() + meshDS->NbFaces() + meshDS->NbVolumes();
   if ( nbCheckedElems < totalNbElems ) // not all elements are in submeshes
   {
+    aHelper.SetElementsOnShape(false);
     SMESHDS_SubMesh *smDS = 0;
     SMDS_EdgeIteratorPtr aEdgeItr = meshDS->edgesIterator();
     while(aEdgeItr->more())
