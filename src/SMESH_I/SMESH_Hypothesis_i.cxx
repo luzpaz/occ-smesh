@@ -153,7 +153,10 @@ void SMESH_Hypothesis_i::SetVarParameter (const char* theParameter,
 {
   if ( SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen() )
   {
-    gen->UpdateParameters( CORBA::Object_var( _this() ).in(), theParameter );
+    SMESH::SMESH_Hypothesis_var varHolder;
+    if ( myHolder->_is_nil() ) varHolder = _this();
+    else                       varHolder = myHolder;
+    gen->UpdateParameters( varHolder, theParameter );
 
     const std::vector< std::string >& pars = gen->GetLastParameters();
     if ( !pars.empty() )
@@ -184,6 +187,20 @@ char* SMESH_Hypothesis_i::GetVarParameter (const char* theMethod)
     return CORBA::string_dup( meth_param->second.c_str() );
 
   return CORBA::string_dup("");
+}
+
+//================================================================================
+/*!
+ * \brief Store a hypothesis wrapping this not published one.
+ *
+ * This hyp, which has no own parameters but is published, is used to store variables
+ * defining parameters of this hypothesis.
+ */
+//================================================================================
+
+void SMESH_Hypothesis_i::SetHolderHypothesis(const SMESH::SMESH_Hypothesis_ptr hyp)
+{
+  myHolder = SMESH::SMESH_Hypothesis::_duplicate( hyp );
 }
 
 //================================================================================
