@@ -4726,7 +4726,7 @@ void SMESHGUI::createPreferences()
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
-  addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
+  //addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
   int computeGroup = addPreference( tr( "PREF_GROUP_COMPUTE" ), genTab );
   setPreferenceProperty( computeGroup, "columns", 2 );
