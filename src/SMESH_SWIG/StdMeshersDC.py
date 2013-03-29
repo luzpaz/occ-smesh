@@ -870,7 +870,7 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         else:
             self.algoType = "RadialPrism_3D"
             self.Create(mesh, geom, "RadialPrism_3D")
-            self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
+            self.distribHyp = None #self.Hypothesis("LayerDistribution", UseExisting=0)
             self.nbLayers = None
             pass
         pass
@@ -895,6 +895,8 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        if not distribHyp:
+            self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
@@ -1012,7 +1014,7 @@ class StdMeshersDC_RadialPrism3D(StdMeshersDC_Prism3D):
         if not shape:
             shape = mesh.geom
         self.Create(mesh, geom, "RadialPrism_3D")
-        self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
+        self.distribHyp = None
         self.nbLayers = None
         return
 
