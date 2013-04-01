@@ -123,7 +123,7 @@ STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
 #USE_HTAGS              = NO
-VERBATIM_HEADERS       = NO
+VERBATIM_HEADERS       = YES
 
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
