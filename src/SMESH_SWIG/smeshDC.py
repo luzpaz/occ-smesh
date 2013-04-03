@@ -1337,8 +1337,7 @@ class Mesh:
             self.Triangle().LengthFromEdges()
             pass
         if dim > 2 :
-            from NETGENPluginDC import NETGEN
-            self.Tetrahedron(NETGEN)
+            self.Tetrahedron()
             pass
         return self.Compute()
 
