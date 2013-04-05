@@ -11,11 +11,12 @@ SOURCEDIR     = $(srcdir)
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
+CONF_FILE_DIR = .
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees -c $(CONF_FILE_DIR) $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
 .PHONY: help clean html latexpdf 
 
