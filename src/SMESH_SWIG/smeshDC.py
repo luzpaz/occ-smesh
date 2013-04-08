@@ -3589,7 +3589,6 @@ class Mesh:
     #  @param IDsOfElements list of elements ids
     #  @param Mirror is AxisStruct or geom object(point, line, plane)
     #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is a geom object this parameter is unnecessary
     #  @param Copy allows to copy element (Copy is 1) or to replace with its mirroring (Copy is 0)
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3599,7 +3598,8 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        self.mesh.SetParameters(Mirror.parameters)
+        else:
+            self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorMakeGroups(IDsOfElements, Mirror, theMirrorType)
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
