@@ -5,6 +5,16 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 yamsdocdir=$(docdir)/gui/SMESH/yams
 
+
+RSTFILES = lct.rst \
+	   index.rst \
+	   editHypo.rst \
+	   Mandatory_params.rst \
+	   Generics_params.rst \
+	   Advanced_params.rst
+
+EXTRA_DIST += $(RSTFILES)
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SOURCEDIR     = $(srcdir)
