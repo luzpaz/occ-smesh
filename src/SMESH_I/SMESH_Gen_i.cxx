@@ -5086,13 +5086,15 @@ Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
       if(!aCORBAMesh->_is_nil()) {
         SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>(GetServant(aCORBAMesh).in());
         if (myImpl) {
-          CORBA::String_var objStr = GetORB()->object_to_string(anObj);
-          int id = myStudyContext->findId(string(objStr.in()));
+          //CORBA::String_var objStr = GetORB()->object_to_string(anObj);
+          //int id = myStudyContext->findId(string(objStr.in()));
+          CORBA::String_var objName = aSO->GetName();
           SMESHDS_Mesh* mySMESHDSMesh = myImpl->GetImpl().GetMeshDS();
           if (mySMESHDSMesh->NbNodes() > 0) {
             // write mesh data to med file
             aWriter.SetMesh(mySMESHDSMesh);
-            aWriter.SetMeshId(id);
+            //aWriter.SetMeshId(id);
+            aWriter.SetMeshName(objName.in());
             aNumMeshes++;
           } else {
             MESSAGE("Mesh has zero nodes and can not be exported");
