@@ -5057,7 +5057,7 @@ Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
   Engines::ListOfData_var aResult = new Engines::ListOfData;
   
   if (!myImportedStudyChanged) {
-    MESSAGE("Study is not changed")
+    INFOS("SMESH module data was not changed")
     return aResult._retn();
   }
 
@@ -5086,26 +5086,24 @@ Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
       if(!aCORBAMesh->_is_nil()) {
         SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>(GetServant(aCORBAMesh).in());
         if (myImpl) {
-          //CORBA::String_var objStr = GetORB()->object_to_string(anObj);
-          //int id = myStudyContext->findId(string(objStr.in()));
+          myImpl->Load();
           CORBA::String_var objName = aSO->GetName();
           SMESHDS_Mesh* mySMESHDSMesh = myImpl->GetImpl().GetMeshDS();
           if (mySMESHDSMesh->NbNodes() > 0) {
             // write mesh data to med file
             aWriter.SetMesh(mySMESHDSMesh);
-            //aWriter.SetMeshId(id);
             aWriter.SetMeshName(objName.in());
+            aWriter.Perform();
             aNumMeshes++;
           } else {
-            MESSAGE("Mesh has zero nodes and can not be exported");
+            INFOS("Mesh has zero nodes and can not be exported "<<objName.in());
           }
         }
       }
     }
   }
-  if (aNumMeshes > 0) { // compund is correct, write it to the temporary file
-    MESSAGE("Write "<<aNumMeshes<<" meshes to "<<aFullPath.c_str());
-    aWriter.Perform();
+  if (aNumMeshes > 0) { // prepare a container to store files
+    INFOS("Write "<<aNumMeshes<<" meshes to "<<aFullPath.c_str());
     aResult->length(1);
     Engines::DataContainer_var aData = (new Engines_DataContainer_i(
                     aFullPath.c_str(), "", "", true))->_this();
