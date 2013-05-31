@@ -5072,8 +5072,6 @@ Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
 
   std::string aFullPath(Kernel_Utils::GetTmpFileName());
   aFullPath += ".med";
-  DriverMED_W_SMESHDS_Mesh aWriter;
-  aWriter.SetFile(aFullPath.c_str());
   StudyContext* myStudyContext = GetCurrentStudyContext();
 
   SALOMEDS::ChildIterator_var anIter = aStudy->NewChildIterator(aComponent); // check only published meshes
@@ -5087,17 +5085,10 @@ Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
         SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>(GetServant(aCORBAMesh).in());
         if (myImpl) {
           myImpl->Load();
+          SMESH_Mesh& aMesh = myImpl->GetImpl();
           CORBA::String_var objName = aSO->GetName();
-          SMESHDS_Mesh* mySMESHDSMesh = myImpl->GetImpl().GetMeshDS();
-          if (mySMESHDSMesh->NbNodes() > 0) {
-            // write mesh data to med file
-            aWriter.SetMesh(mySMESHDSMesh);
-            aWriter.SetMeshName(objName.in());
-            aWriter.Perform();
-            aNumMeshes++;
-          } else {
-            INFOS("Mesh has zero nodes and can not be exported "<<objName.in());
-          }
+          aMesh.ExportMED(aFullPath.c_str(), objName.in(), false, MED::eV2_2, 0);
+          aNumMeshes++;
         }
       }
     }
