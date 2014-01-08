@@ -23,6 +23,7 @@
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
 import sys, traceback
+import math
 from blocFissure import gmu
 from blocFissure.gmu import initLog
 #initLog.setDebug()
@@ -365,7 +366,28 @@ def fissureCoudeDlg(context):
       dico = self.creeDico()
       NOK = self.testval(dico)
       if not(NOK):
-        dico['lenSegPipe'] = (dico['longueur'] + 3.14*dico['profondeur'])/dico['nbTranches']
+        dico['lenSegPipe'] = (dico['longueur'] + math.pi*dico['profondeur'])/dico['nbTranches']
+        print 'lenSegPipe', dico['lenSegPipe']
+        areteMinAngle = (dico['rCintr'] -dico['dext']/2.0)*(dico['angle']*math.pi/180.0)/dico['nbAxeCoude']
+        print'areteMinAngle', areteMinAngle
+        areteMinCirco = dico['dext']*math.pi/(2*dico['nbCirconf'])
+        print'areteMinCirco', areteMinCirco
+        areteMinEpais = dico['epais']/dico['nbEpaisseur']
+        print'areteMinEpais', areteMinEpais
+        if dico['influence'] == 0:
+          dico['influence'] = max(areteMinAngle, areteMinCirco, areteMinEpais)
+          print 'influence', dico['influence']
+        if dico['aretesFaceFissure'] == 0:
+          dico['aretesFaceFissure'] = (areteMinAngle + areteMinCirco)/2.0
+          print 'aretesFaceFissure', dico['aretesFaceFissure']
+        if dico['rbPosiAngul'] == False:
+          rmoy = (dico['dext'] - dico['epais'])/2.0
+          eta = 1
+          if dico['rbFissExt'] == False:
+            eta = -1
+          dico['posiAngul'] = (180.0/math.pi)*dico['absCurv']/(dico['rCintr']+(rmoy+eta*dico['epais']/2.0)*math.cos(math.pi*dico['azimut']/180.))
+          print 'posiAngul' , dico['posiAngul']
+        
         self.writeDefault(dico)
         self.ui.lb_calcul.show()
         probleme = fissureCoude_ihm(0)
