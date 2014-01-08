@@ -82,6 +82,7 @@ def fissureCoudeDlg(context):
       self.ui.sb_nbSecteur.setSpecialValueText("saisie_obligatoire")
       self.ui.dsb_aretesFaceFissure.setSpecialValueText("automatique")
       self.ui.dsb_influence.setSpecialValueText("automatique")
+      self.ui.lb_calcul.hide()
       
       # Connect up the buttons.
       self.connect(self.ui.pb_valPrec, QtCore.SIGNAL("clicked()"),
@@ -366,6 +367,7 @@ def fissureCoudeDlg(context):
       if not(NOK):
         dico['lenSegPipe'] = (dico['longueur'] + 3.14*dico['profondeur'])/dico['nbTranches']
         self.writeDefault(dico)
+        self.ui.lb_calcul.show()
         probleme = fissureCoude_ihm(0)
         probleme.setDicoParams(dico)
         probleme.executeProbleme()
