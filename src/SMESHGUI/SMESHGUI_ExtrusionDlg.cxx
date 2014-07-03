@@ -59,7 +59,7 @@
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
+#include <NCollection_IndexedMap.hxx>
 #include <gp_XYZ.hxx>
 
 // Qt includes
@@ -861,7 +861,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
         return;
     } else {
       // get indices of selcted elements
-      TColStd_IndexedMapOfInteger aMapIndex;
+      NCollection_IndexedMap<Standard_Integer> aMapIndex;
       mySelector->GetIndex(IO,aMapIndex);
       aNbElements = aMapIndex.Extent();
 
@@ -882,7 +882,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     myBusy = false;
   }
   else if(myEditCurrentArgument == (QWidget*)SpinBox_Vx){
-    TColStd_IndexedMapOfInteger aMapIndex;
+    NCollection_IndexedMap<Standard_Integer> aMapIndex;
     mySelector->GetIndex(IO,aMapIndex);
     int aNbElements = aMapIndex.Extent();
     SMESH::SMESH_Mesh_var aMesh_var = SMESH::GetMeshByIO(IO);

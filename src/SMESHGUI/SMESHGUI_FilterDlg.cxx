@@ -80,7 +80,7 @@
 #include <Geom_CylindricalSurface.hxx>
 #include <Precision.hxx>
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
+#include <NCollection_IndexedMap.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 
 // Qt includes
@@ -2961,7 +2961,7 @@ void SMESHGUI_FilterDlg::reject()
       aList.Append(anIter.Key());
 
       TColStd_MapOfInteger aResMap;
-      const TColStd_IndexedMapOfInteger& anIndMap = anIter.Value();
+      const NCollection_IndexedMap<Standard_Integer>& anIndMap = anIter.Value();
       for (int i = 1, n = anIndMap.Extent(); i <= n; i++)
         aResMap.Add(anIndMap(i));
 
@@ -3245,7 +3245,7 @@ void SMESHGUI_FilterDlg::SetSelection()
     const SALOME_ListIO& anObjs = mySelector->StoredIObjects(); 
     SALOME_ListIteratorOfListIO anIter (anObjs);
     for ( ; anIter.More(); anIter.Next()) {
-      TColStd_IndexedMapOfInteger aMap;
+      NCollection_IndexedMap<Standard_Integer> aMap;
       mySelector->GetIndex(anIter.Value(), aMap);
       myIObjects.Bind(anIter.Value(), aMap);
     }
@@ -3507,7 +3507,7 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
     SMESH::SMESH_Mesh_var aMeshPtr = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIter.Key());
     if (!aMeshPtr->_is_nil() && aMeshPtr->GetId() == myMesh->GetId())
     {
-      const TColStd_IndexedMapOfInteger& aSelMap = anIter.Value();
+      const NCollection_IndexedMap<Standard_Integer>& aSelMap = anIter.Value();
 
       if (aSelMap.Extent() > 0)
       {

@@ -74,7 +74,6 @@
 #include <vtkUnstructuredGrid.h>
 
 // OCCT includes
-#include <TColStd_IndexedMapOfInteger.hxx>
 #include <Standard_ErrorHandler.hxx>
 
 namespace SMESH
@@ -1117,7 +1116,7 @@ namespace SMESH
                              QString& theName)
   {
     theName = "";
-    TColStd_IndexedMapOfInteger aMapIndex;
+    NCollection_IndexedMap<Standard_Integer> aMapIndex;
     theSelector->GetIndex(theIO,aMapIndex);
 
     for(int i = 1; i <= aMapIndex.Extent(); i++)
@@ -1131,7 +1130,7 @@ namespace SMESH
                                 QString& theName)
   {
     theName = "";
-    TColStd_IndexedMapOfInteger aMapIndex;
+    NCollection_IndexedMap<Standard_Integer> aMapIndex;
     theSelector->GetIndex(theIO,aMapIndex);
 
     typedef std::set<int> TIdContainer;
@@ -1161,7 +1160,7 @@ namespace SMESH
     if ( anIO.IsNull() || !anIO->hasEntry() )
       return -1;
 
-    TColStd_IndexedMapOfInteger aMapIndex;
+    NCollection_IndexedMap<Standard_Integer> aMapIndex;
     theSelector->GetIndex( anIO, aMapIndex );
     if ( aMapIndex.Extent() != 2 )
       return -1;
@@ -1189,7 +1188,7 @@ namespace SMESH
     theName = "";
     if(theIO->hasEntry()){
       if(FindActorByEntry(theIO->getEntry())){
-        TColStd_IndexedMapOfInteger aMapIndex;
+        NCollection_IndexedMap<Standard_Integer> aMapIndex;
         theMgr->GetIndexes(theIO,aMapIndex);
         for(int i = 1; i <= aMapIndex.Extent(); i++){
           theName += QString(" %1").arg(aMapIndex(i));
@@ -1218,7 +1217,7 @@ namespace SMESH
     theName = "";
     if(theIO->hasEntry()){
       if(FindActorByEntry(theIO->getEntry())){
-        TColStd_IndexedMapOfInteger aMapIndex;
+        NCollection_IndexedMap<Standard_Integer> aMapIndex;
         theMgr->GetIndexes(theIO,aMapIndex);
         typedef std::set<int> TIdContainer;
         TIdContainer anIdContainer;
@@ -1248,7 +1247,7 @@ namespace SMESH
   }
 
   int GetSelected(LightApp_SelectionMgr*       theMgr,
-                  TColStd_IndexedMapOfInteger& theMap,
+                  NCollection_IndexedMap<Standard_Integer>& theMap,
                   const bool                   theIsElement)
   {
     theMap.Clear();
@@ -1280,7 +1279,7 @@ namespace SMESH
     if ( anActor == 0 )
       return -1;
 
-    TColStd_IndexedMapOfInteger aMapIndex;
+    NCollection_IndexedMap<Standard_Integer> aMapIndex;
     theMgr->GetIndexes( anIO, aMapIndex );
     if ( aMapIndex.Extent() != 2 )
       return -1;

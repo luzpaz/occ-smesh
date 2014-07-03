@@ -40,7 +40,8 @@
 #include <SALOME_InteractiveObject.hxx>
 #include <VTKViewer_Filter.h>
 
-class TColStd_IndexedMapOfInteger;
+// OCCT includes
+#include <NCollection_IndexedMap.hxx>
 
 class SALOMEDSClient_Study;
 
@@ -185,7 +186,7 @@ SMESHGUI_EXPORT
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( LightApp_SelectionMgr*, QString& );
 SMESHGUI_EXPORT
-  int GetSelected( LightApp_SelectionMgr*, TColStd_IndexedMapOfInteger&, 
+  int GetSelected( LightApp_SelectionMgr*, NCollection_IndexedMap<Standard_Integer>&,
                    const bool = true );
 
 SMESHGUI_EXPORT

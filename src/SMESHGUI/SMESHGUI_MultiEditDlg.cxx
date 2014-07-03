@@ -63,7 +63,7 @@
 // OCCT includes
 #include <Bnd_B3d.hxx>
 #include <TColStd_DataMapOfIntegerInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
+#include <NCollection_IndexedMap.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <gp_Ax1.hxx>
 
@@ -666,7 +666,7 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
   if (nbSelected == 0)
     return;
 
-  TColStd_IndexedMapOfInteger toBeAdded;
+  NCollection_IndexedMap<Standard_Integer> toBeAdded;
 
   if (!mySubmeshChk->isChecked() && !myGroupChk->isChecked()) {
     if (nbSelected > 0)
@@ -1787,7 +1787,7 @@ void SMESHGUI_SplitVolumesDlg::onSelectionDone()
       if (!aSelMesh->_is_nil())
         myMesh = aSelMesh;
 
-      TColStd_IndexedMapOfInteger aMapIndex;
+      NCollection_IndexedMap<Standard_Integer> aMapIndex;
       mySelector->GetIndex( anIO, aMapIndex );
       if ( !aMapIndex.IsEmpty() )
         showFacetByElement( aMapIndex(1) );

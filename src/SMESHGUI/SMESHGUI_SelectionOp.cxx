@@ -375,7 +375,7 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
       QString id_str = QString( "%1%2%3" ).arg( vtkowner->entry() ).arg( idChar() ), current_id_str;
       Selection_Mode mode = vtkowner->GetMode();
       EntityType objtype = mode == NodeSelection ? MeshNode : MeshElement;
-      const TColStd_IndexedMapOfInteger& ownerids = vtkowner->GetIds();
+      const NCollection_IndexedMap<Standard_Integer>& ownerids = vtkowner->GetIds();
 
       for( int i=1, n=ownerids.Extent(); i<=n; i++ )
       {
@@ -397,7 +397,7 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
   }*/
 
   SALOME_ListIO selObjs;
-  TColStd_IndexedMapOfInteger selIndices;
+  NCollection_IndexedMap<Standard_Integer> selIndices;
   selectionMgr()->selectedObjects( selObjs );
   Selection_Mode mode = selectionMode();
   EntityType objtype = mode == NodeSelection ? MeshNode : MeshElement;

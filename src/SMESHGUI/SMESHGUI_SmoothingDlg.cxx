@@ -590,7 +590,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
       myNbOkElements = true;
     } else {
       // get indices of selected elements
-      TColStd_IndexedMapOfInteger aMapIndex;
+      NCollection_IndexedMap<Standard_Integer> aMapIndex;
       mySelector->GetIndex(IO,aMapIndex);
       myNbOkElements = aMapIndex.Extent();
 

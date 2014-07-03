@@ -462,7 +462,7 @@ void SMESHGUI_ReorientFacesOp::selectionDone()
 
       if ( nbSelected == 1 )
       {
-        TColStd_IndexedMapOfInteger faceIndices;
+        NCollection_IndexedMap<Standard_Integer> faceIndices;
         selector()->GetIndex( anIO, faceIndices );
         if ( faceIndices.Extent() == 1 )
         {
@@ -502,7 +502,7 @@ void SMESHGUI_ReorientFacesOp::selectionDone()
         }
         else
         {
-          TColStd_IndexedMapOfInteger nodeIndices;
+          NCollection_IndexedMap<Standard_Integer> nodeIndices;
           selector()->GetIndex( anIO, nodeIndices );
           if ( nodeIndices.Extent() > 0 && nodeIndices.Extent() <=2 )
           {

@@ -48,7 +48,7 @@
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
+#include <NCollection_IndexedMap.hxx>
 
 // Qt includes
 #include <QVBoxLayout>
@@ -345,7 +345,7 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       aList.Append(anIO);
       mySelectionMgr->setSelectedObjects(aList,false);
       
-      TColStd_IndexedMapOfInteger selectedIndices;
+      NCollection_IndexedMap<Standard_Integer> selectedIndices;
       TColStd_MapOfInteger newIndices;
       mySelector->GetIndex(anIO,selectedIndices);
 
