@@ -51,6 +51,7 @@
 
 #include <SVTK_ViewWindow.h>
 
+#include "utilities.h"
 // OCCT includes
 #include <TColStd_ListOfInteger.hxx>
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
