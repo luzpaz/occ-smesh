@@ -68,11 +68,18 @@ class MonViewText(Ui_ViewExe, QDialog):
         f.write(cmds)
         f.close()
 
+        self.make_executable(nomFichier)
+
         maBidouille=nomFichier
         self.monExe.start(maBidouille)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
         self.show()
+
+    def make_executable(self, path):
+        mode = os.stat(path).st_mode
+        mode |= (mode & 0o444) >> 2    # copy R bits to X
+        os.chmod(path, mode)
 
     def saveFile(self):
         #recuperation du nom du fichier
