@@ -95,7 +95,7 @@ class MonViewText(Ui_ViewExe, QDialog):
 
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
-        aa=unicode(a.data())
+        aa=QString.fromUtf8(a.data(),len(a))
         self.TB_Exe.append(aa)
         if "END_OF_Yams" in aa:
           self.parent().enregistreResultat()
