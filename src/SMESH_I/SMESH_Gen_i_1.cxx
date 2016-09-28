@@ -161,6 +161,13 @@ long SMESH_Gen_i::GetBallElementsGroupsTag()
 
 bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
+  std::string containerName = this->getContainerName();
+  MESSAGE(containerName);
+  if (containerName.find("FactoryServer") == std::string::npos)
+    {
+      MESSAGE(containerName << " no publication in study");
+      return false; // do not publish in study for specific containers...
+    }
   if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(myCurrentStudy));
   if( GetCurrentStudyID() < 0 )
     return false;
@@ -898,6 +905,8 @@ bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
                                        GEOM::GEOM_Object_ptr       theShape,
                                        SMESH::SMESH_Hypothesis_ptr theHyp)
 {
+  if (!CanPublishInStudy(theHyp))
+    return false;
   if(MYDEBUG) MESSAGE("AddHypothesisToShape")
   if (theStudy->_is_nil() || theMesh->_is_nil() ||
       theHyp->_is_nil() || (theShape->_is_nil()
