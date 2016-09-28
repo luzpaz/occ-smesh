@@ -1627,6 +1627,22 @@ class Mesh:
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser(1)
 
+    ## Removes all nodes and elements, and all study references.
+    #  To use only with caution, when meshing several meshes in a loop, to control memory
+    #  @ingroup l2_construct
+    def ClearAllMeshAndStudyReferences(self):
+        self.Clear()
+        theStudy = self.smeshpyD.GetCurrentStudy()
+        aStudyBuilder = theStudy.NewBuilder()
+        SO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(self.mesh))
+        if SO is not None:
+          objects_to_unpublish = [SO]
+          refs = theStudy.FindDependances(SO)
+          objects_to_unpublish += refs
+          for o in objects_to_unpublish:
+            if o is not None:
+              aStudyBuilder.RemoveObjectWithChildren(o)
+
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
     #  @param fineness [0.0,1.0] defines mesh fineness
     #  @return True or False
