@@ -1065,12 +1065,11 @@ bool SMESHGUI_GroupDlg::onApply()
 
         // create a geometry group
         GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
-        if (geomGen->_is_nil() || !aStudy)
+        if (geomGen->_is_nil())
           return false;
 
-        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations(aStudy->StudyId());
+        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
         if (op->_is_nil())
           return false;
 
@@ -1096,7 +1095,7 @@ bool SMESHGUI_GroupDlg::onApply()
           QString aNewGeomGroupName ( "Auto_group_for_" );
           aNewGeomGroupName += myName->text();
           SALOMEDS::SObject_var aNewGroupSO =
-            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGroupVar,
+            geomGen->AddInStudy(aGroupVar,
                                 SMESH::toUtf8(aNewGeomGroupName), aMeshShape);
         }
 
@@ -1419,7 +1418,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
         GEOM::GEOM_Object_var aGroupMainShape;
         if (aGeomGroup->GetType() == 37) {
           GEOM::GEOM_IGroupOperations_wrap anOp =
-            SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+            SMESH::GetGEOMGen()->GetIGroupOperations();
           aGroupMainShape = anOp->GetMainShape(aGeomGroup);
           // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         }
@@ -2007,7 +2006,7 @@ void SMESHGUI_GroupDlg::onAdd()
   } else if (myCurrentLineEdit == myGeomGroupLine && myGeomObjects->length() == 1) {
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-      SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+      SMESH::GetGEOMGen()->GetIGroupOperations();
 
     SMESH::ElementType aGroupType = SMESH::ALL;
     switch(aGroupOp->GetType(myGeomObjects[0])) {

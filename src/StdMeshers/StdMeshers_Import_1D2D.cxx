@@ -95,8 +95,8 @@ namespace
  */
 //=============================================================================
 
-StdMeshers_Import_1D2D::StdMeshers_Import_1D2D(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_2D_Algo(hypId, studyId, gen), _sourceHyp(0)
+StdMeshers_Import_1D2D::StdMeshers_Import_1D2D(int hypId, SMESH_Gen * gen)
+  :SMESH_2D_Algo(hypId, gen), _sourceHyp(0)
 {
   MESSAGE("StdMeshers_Import_1D2D::StdMeshers_Import_1D2D");
   _name = "Import_1D2D";

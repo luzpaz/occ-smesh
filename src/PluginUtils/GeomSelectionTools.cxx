@@ -225,7 +225,7 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
         if (aShape->GetType() == GEOM_GROUP){
 //           MESSAGE("It's a group");
           GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-            _geomEngine->GetIGroupOperations(myStudy->StudyId());
+            _geomEngine->GetIGroupOperations();
           ShapeType= (TopAbs_ShapeEnum)aGroupOp->GetType(aShape);
         }
         // if not

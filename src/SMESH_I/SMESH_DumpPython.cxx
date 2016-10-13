@@ -74,13 +74,13 @@ namespace SMESH
       SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
       std::string aString = myStream.str();
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
-      SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+      SALOMEDS::Study_var aStudy = aSMESHGen->GetStudy();
       if(!aStudy->_is_nil() && !aCollection.IsEmpty())
       {
         const std::string & objEntry = SMESH_Gen_i::GetSMESHGen()->GetLastObjEntry();
         if ( !objEntry.empty() )
           aCollection += (TVar::ObjPrefix() + objEntry ).c_str();
-        aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
+        aSMESHGen->AddToPythonScript(aCollection);
         if(MYDEBUG) MESSAGE(aString);
         // prevent misuse of already treated variables
         aSMESHGen->UpdateParameters(CORBA::Object_var().in(),"");
@@ -309,8 +309,7 @@ namespace SMESH
   operator<<(CORBA::Object_ptr theArg)
   {
     SMESH_Gen_i*          aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var      aStudy = aSMESHGen->GetCurrentStudy();
-    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
     if(!aSObject->_is_nil()) {
       CORBA::String_var id = aSObject->GetID();
       myStream << id;
@@ -329,8 +328,7 @@ namespace SMESH
   TPythonDump::
   operator<<(SMESH::SMESH_Hypothesis_ptr theArg)
   {
-    SALOMEDS::Study_var     aStudy = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
-    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
     if(aSObject->_is_nil() && !CORBA::is_nil(theArg))
       myStream << "hyp_" << theArg->GetId();
     else
@@ -345,8 +343,7 @@ namespace SMESH
     if ( CORBA::is_nil( theArg ) )
       return *this << "None";
     SMESH_Gen_i*          aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var      aStudy = aSMESHGen->GetCurrentStudy();
-    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
     if(!aSObject->_is_nil())
     {
       return *this << aSObject;
@@ -361,7 +358,7 @@ namespace SMESH
       SMESH::long_array_var    anElementsId = theArg->GetIDs();
       SMESH::array_of_ElementType_var types = theArg->GetTypes();
       SMESH::ElementType               type = types->length() ? types[0] : SMESH::ALL;
-      SALOMEDS::SObject_wrap         meshSO = SMESH_Gen_i::ObjectToSObject(aStudy,mesh);
+      SALOMEDS::SObject_wrap         meshSO = SMESH_Gen_i::ObjectToSObject(mesh);
       if ( meshSO->_is_nil() ) // don't waste memory for dumping not published objects
         return *this << mesh << ".GetIDSource([], " << type << ")";
       else
@@ -711,17 +708,15 @@ void RemoveTabulation( TCollection_AsciiString& theScript )
 //function : DumpPython
 //purpose  :
 //=======================================================================
-Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
-                                           CORBA::Boolean isPublished,
+Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean isPublished,
                                            CORBA::Boolean isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {
-  SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow(theStudy);
-  if (CORBA::is_nil(aStudy))
+  if (CORBA::is_nil(myStudy))
     return new Engines::TMPFile(0);
 
   CORBA::String_var compDataType = ComponentDataType();
-  SALOMEDS::SObject_wrap aSO = aStudy->FindComponent( compDataType.in() );
+  SALOMEDS::SObject_wrap aSO = myStudy->FindComponent( compDataType.in() );
   if (CORBA::is_nil(aSO))
     return new Engines::TMPFile(0);
 
@@ -729,7 +724,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   Resource_DataMapOfAsciiStringAsciiString aMap;
   Resource_DataMapOfAsciiStringAsciiString aMapNames;
 
-  SALOMEDS::ChildIterator_wrap Itr = aStudy->NewChildIterator(aSO);
+  SALOMEDS::ChildIterator_wrap Itr = myStudy->NewChildIterator(aSO);
   for (Itr->InitEx(true); Itr->More(); Itr->Next()) {
     SALOMEDS::SObject_wrap aValue = Itr->Value();
     CORBA::String_var anID = aValue->GetID();
@@ -743,7 +738,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   }
 
   // Get trace of restored study
-  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+  SALOMEDS::StudyBuilder_var aStudyBuilder = myStudy->NewBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");
 
@@ -754,7 +749,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
 
   // Add trace of API methods calls and replace study entries by names
   TCollection_AsciiString aScript;
-  aScript += DumpPython_impl(aStudy, aMap, aMapNames, isPublished, isMultiFile,
+  aScript += DumpPython_impl(aMap, aMapNames, isPublished, isMultiFile,
                              myIsHistoricalPythonDump, isValidScript, aSavedTrace);
 
   int aLen = aScript.Length();
@@ -775,12 +770,12 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
  *  AddToPythonScript
  */
 //=============================================================================
-void SMESH_Gen_i::AddToPythonScript (int theStudyID, const TCollection_AsciiString& theString)
+void SMESH_Gen_i::AddToPythonScript (const TCollection_AsciiString& theString)
 {
-  if (myPythonScripts.find(theStudyID) == myPythonScripts.end()) {
-    myPythonScripts[theStudyID] = new TColStd_HSequenceOfAsciiString;
+  if (myPythonScript.IsNull()) {
+    myPythonScript = new TColStd_HSequenceOfAsciiString;
   }
-  myPythonScripts[theStudyID]->Append(theString);
+  myPythonScript->Append(theString);
 }
 
 //=============================================================================
@@ -788,11 +783,11 @@ void SMESH_Gen_i::AddToPythonScript (int theStudyID, const TCollection_AsciiStri
  *  RemoveLastFromPythonScript
  */
 //=============================================================================
-void SMESH_Gen_i::RemoveLastFromPythonScript (int theStudyID)
+void SMESH_Gen_i::RemoveLastFromPythonScript()
 {
-  if (myPythonScripts.find(theStudyID) != myPythonScripts.end()) {
-    int aLen = myPythonScripts[theStudyID]->Length();
-    myPythonScripts[theStudyID]->Remove(aLen);
+  if (!myPythonScript.IsNull()) {
+    int aLen = myPythonScript->Length();
+    myPythonScript->Remove(aLen);
   }
 }
 
@@ -800,15 +795,15 @@ void SMESH_Gen_i::RemoveLastFromPythonScript (int theStudyID)
 //function : SavePython
 //purpose  :
 //=======================================================================
-void SMESH_Gen_i::SavePython (SALOMEDS::Study_ptr theStudy)
+void SMESH_Gen_i::SavePython()
 {
   // Dump trace of API methods calls
-  TCollection_AsciiString aScript = GetNewPythonLines(theStudy->StudyId());
+  TCollection_AsciiString aScript = GetNewPythonLines();
 
   // Check contents of PythonObject attribute
   CORBA::String_var compDataType = ComponentDataType();
-  SALOMEDS::SObject_wrap aSO = theStudy->FindComponent( compDataType.in() );
-  SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder();
+  SALOMEDS::SObject_wrap aSO = myStudy->FindComponent( compDataType.in() );
+  SALOMEDS::StudyBuilder_var aStudyBuilder = myStudy->NewBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");
 
@@ -828,7 +823,7 @@ void SMESH_Gen_i::SavePython (SALOMEDS::Study_ptr theStudy)
   pyAttr->SetObject(oldScript.ToCString(), 1);
 
   // Clean trace of API methods calls
-  CleanPythonTrace(theStudy->StudyId());
+  CleanPythonTrace();
 }
 
 
@@ -986,8 +981,7 @@ namespace {
 //================================================================================
 
 TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
-                        (SALOMEDS::Study_ptr                       theStudy,
-                         Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+                        (Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                          Resource_DataMapOfAsciiStringAsciiString& theNames,
                          bool                                      isPublished,
                          bool                                      isMultiFile,
@@ -996,7 +990,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
                          TCollection_AsciiString&                  theSavedTrace)
 {
   SMESH_TRY;
-  const int aStudyID = theStudy->StudyId();
 
   const TCollection_AsciiString aSmeshpy ( SMESH_2smeshpy::SmeshpyName() );
   const TCollection_AsciiString aSMESHGen( SMESH_2smeshpy::GenName() );
@@ -1056,9 +1049,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // Add new dump trace of API methods calls to script lines
-  if (myPythonScripts.find( aStudyID ) != myPythonScripts.end())
+  if (!myPythonScript.IsNull())
   {
-    Handle(TColStd_HSequenceOfAsciiString) aPythonScript = myPythonScripts[ aStudyID ];
+    Handle(TColStd_HSequenceOfAsciiString) aPythonScript = myPythonScript;
     Standard_Integer istr, aLen = aPythonScript->Length();
     for (istr = 1; istr <= aLen; istr++)
       lines.push_back( aPythonScript->Value( istr ));
@@ -1072,7 +1065,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if ( !getenv("NO_2smeshpy_conversion"))
     SMESH_2smeshpy::ConvertScript( lines, anEntry2AccessorMethod,
                                    theObjectNames, aRemovedObjIDs,
-                                   theStudy, isHistoricalDump );
+                                   isHistoricalDump );
 
   bool importGeom = false;
   GEOM::GEOM_Gen_ptr geom = GetGeomEngine();
@@ -1265,7 +1258,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   {
     //Output the script that sets up the visual parameters.
     CORBA::String_var compDataType = ComponentDataType();
-    CORBA::String_var script = theStudy->GetDefaultScript( compDataType.in(), tab.ToCString() );
+    CORBA::String_var script = myStudy->GetDefaultScript( compDataType.in(), tab.ToCString() );
     if ( script.in() && script.in()[0] ) {
       visualPropertiesPart += nt + "### Store presentation parameters of displayed objects\n";
       visualPropertiesPart += script.in();
@@ -1361,13 +1354,13 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
  *  GetNewPythonLines
  */
 //=============================================================================
-TCollection_AsciiString SMESH_Gen_i::GetNewPythonLines (int theStudyID)
+TCollection_AsciiString SMESH_Gen_i::GetNewPythonLines()
 {
   TCollection_AsciiString aScript;
 
   // Dump trace of API methods calls
-  if (myPythonScripts.find(theStudyID) != myPythonScripts.end()) {
-    Handle(TColStd_HSequenceOfAsciiString) aPythonScript = myPythonScripts[theStudyID];
+  if (!myPythonScript.IsNull()) {
+    Handle(TColStd_HSequenceOfAsciiString) aPythonScript = myPythonScript;
     Standard_Integer istr, aLen = aPythonScript->Length();
     for (istr = 1; istr <= aLen; istr++) {
       aScript += "\n";
@@ -1384,12 +1377,12 @@ TCollection_AsciiString SMESH_Gen_i::GetNewPythonLines (int theStudyID)
  *  CleanPythonTrace
  */
 //=============================================================================
-void SMESH_Gen_i::CleanPythonTrace (int theStudyID)
+void SMESH_Gen_i::CleanPythonTrace()
 {
   TCollection_AsciiString aScript;
 
   // Clean trace of API methods calls
-  if (myPythonScripts.find(theStudyID) != myPythonScripts.end()) {
-    myPythonScripts[theStudyID]->Clear();
+  if (!myPythonScript.IsNull()) {
+    myPythonScript->Clear();
   }
 }

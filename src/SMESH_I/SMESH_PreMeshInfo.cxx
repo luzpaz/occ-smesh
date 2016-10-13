@@ -63,8 +63,8 @@ namespace
 {
   enum {  GroupOnFilter_OutOfDate = -1 };
 
-  // a map to count not yet loaded meshes 
-  static std::map< int, int > theStudyIDToMeshCounter;
+  // count not yet loaded meshes
+  static int theMeshCounter = 0;
 
   //================================================================================
   /*!
@@ -74,9 +74,7 @@ namespace
 
   void meshInfoLoaded( SMESH_Mesh_i* mesh )
   {
-    std::map< int, int >::iterator id2counter =
-      theStudyIDToMeshCounter.insert( std::make_pair( (int) mesh->GetStudyId(), 0 )).first;
-    id2counter->second++;
+    theMeshCounter++;
   }
   //================================================================================
   /*!
@@ -88,7 +86,7 @@ namespace
                          std::string   medFile,
                          std::string   hdfFile)
   {
-    if ( --theStudyIDToMeshCounter[ (int) mesh->GetStudyId() ] == 0 )
+    if ( --theMeshCounter == 0 )
     {
       std::string tmpDir = SALOMEDS_Tool::GetDirFromPath( hdfFile );
 
@@ -117,25 +115,22 @@ namespace
     SignalToGUI( SMESH_Mesh_i* mesh )
     {
       SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_var study = gen->GetCurrentStudy();
-      if ( !study->_is_nil() && study->StudyId() == mesh->GetStudyId() )
+
+      SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( mesh->_this() );
+      CORBA::Object_var        obj = gen->GetNS()->Resolve( "/Kernel/Session" );
+      _session = SALOME::Session::_narrow( obj );
+      if ( !meshSO->_is_nil() && !_session->_is_nil() )
       {
-        SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject(study, mesh->_this() );
-        CORBA::Object_var        obj = gen->GetNS()->Resolve( "/Kernel/Session" );
-        _session = SALOME::Session::_narrow( obj );
-        if ( !meshSO->_is_nil() && !_session->_is_nil() )
-        {
-          CORBA::String_var meshEntry = meshSO->GetID();
-          _messagePrefix = "SMESH/mesh_loading/";
-          _messagePrefix += meshEntry.in();
+        CORBA::String_var meshEntry = meshSO->GetID();
+        _messagePrefix = "SMESH/mesh_loading/";
+        _messagePrefix += meshEntry.in();
 
-          std::string msgToGUI = _messagePrefix + "/";
-          msgToGUI += SMESH_Comment( mesh->NbNodes() );
-          msgToGUI += "/";
-          msgToGUI += SMESH_Comment( mesh->NbElements() );
+        std::string msgToGUI = _messagePrefix + "/";
+        msgToGUI += SMESH_Comment( mesh->NbNodes() );
+        msgToGUI += "/";
+        msgToGUI += SMESH_Comment( mesh->NbElements() );
 
-          _session->emitMessageOneWay( msgToGUI.c_str());
-        }
+        _session->emitMessageOneWay( msgToGUI.c_str());
       }
     }
     void sendStop()
@@ -1226,7 +1221,7 @@ bool SMESH_PreMeshInfo::IsMeshInfoCorrect() const
 void SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD(SALOMEDS::SComponent_ptr smeshComp)
 {
   SALOMEDS::Study_var study = smeshComp->GetStudy();
-  if ( theStudyIDToMeshCounter[ (int) study->StudyId() ] > 0 )
+  if ( theMeshCounter > 0 )
   {
     SALOMEDS::ChildIterator_wrap itBig = study->NewChildIterator( smeshComp );
     for ( ; itBig->More(); itBig->Next() ) {

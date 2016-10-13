@@ -313,20 +313,17 @@ SMESH_Swig::SMESH_Swig()
 
 //===============================================================
 void
-SMESH_Swig::Init(int theStudyID)
+SMESH_Swig::Init()
 {
   class TEvent: public SALOME_Event
   {
-    int                         myStudyID;
     SALOMEDS::Study_var&        myStudy;
     SALOMEDS::StudyBuilder_var& myStudyBuilder;
     SALOMEDS::SComponent_var&   mySComponentMesh;
   public:
-    TEvent(int                         theStudyID,
-           SALOMEDS::Study_var&        theStudy,
+    TEvent(SALOMEDS::Study_var&        theStudy,
            SALOMEDS::StudyBuilder_var& theStudyBuilder,
            SALOMEDS::SComponent_var&   theSComponentMesh):
-      myStudyID       (theStudyID),
       myStudy         (theStudy),
       myStudyBuilder  (theStudyBuilder),
       mySComponentMesh(theSComponentMesh)
@@ -346,12 +343,10 @@ SMESH_Swig::Init(int theStudyID)
       SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
 
       SALOME_NamingService* aNamingService = anApp->namingService();
-      CORBA::Object_var anObject           = aNamingService->Resolve("/myStudyManager");
-      SALOMEDS::StudyManager_var aStudyMgr = SALOMEDS::StudyManager::_narrow(anObject);
-      myStudy = aStudyMgr->GetStudyByID(myStudyID);
+      CORBA::Object_var anObject           = aNamingService->Resolve("/Study");
+      myStudy                              = SALOMEDS::Study::_narrow(anObject);
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
-      aSMESHGen->SetCurrentStudy( myStudy.in() );
 
       myStudyBuilder = myStudy->NewBuilder();
 
@@ -404,8 +399,7 @@ SMESH_Swig::Init(int theStudyID)
 
   //MESSAGE("Init");
 
-  ProcessVoidEvent(new TEvent(theStudyID,
-                              myStudy,
+  ProcessVoidEvent(new TEvent(myStudy,
                               myStudyBuilder,
                               mySComponentMesh));
 }

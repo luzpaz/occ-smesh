@@ -219,13 +219,12 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
     case GEOM::COMPOUND: break;
     default:             return SMESH::ALL;
     }
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     GEOM::GEOM_IShapesOperations_wrap aShapeOp =
-      SMESH::GetGEOMGen()->GetIShapesOperations(aStudy->StudyId());
+      SMESH::GetGEOMGen()->GetIShapesOperations();
 
     if ( geom->GetType() == 37 ) { // geom group
       GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-        SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+        SMESH::GetGEOMGen()->GetIGroupOperations();
       if ( !aGroupOp->_is_nil() ) {
         // mainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         GEOM::GEOM_Object_var mainShape = aGroupOp->GetMainShape( geom );

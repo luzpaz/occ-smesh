@@ -40,7 +40,6 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i( PortableServer::POA_ptr thePOA,
-                                                        int                     theStudyId,
                                                         ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA ), 
@@ -49,8 +48,7 @@ StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i" );
   myBaseImpl = new ::StdMeshers_Projection_3D( theGenImpl->GetANewId(),
-                                    theStudyId,
-                                    theGenImpl );
+                                               theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -85,7 +83,6 @@ CORBA::Boolean StdMeshers_Projection_3D_i::IsApplicable(const TopoDS_Shape &S,
 //=============================================================================
 
 StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i( PortableServer::POA_ptr thePOA,
-                                                        int                     theStudyId,
                                                         ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA ), 
@@ -94,8 +91,7 @@ StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i" );
   myBaseImpl = new ::StdMeshers_Projection_2D( theGenImpl->GetANewId(),
-                                    theStudyId,
-                                    theGenImpl );
+                                               theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -119,7 +115,6 @@ StdMeshers_Projection_2D_i::~StdMeshers_Projection_2D_i()
 //=============================================================================
 
 StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i( PortableServer::POA_ptr thePOA,
-                                                            int                     theStudyId,
                                                             ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ),
        SMESH_Hypothesis_i( thePOA ),
@@ -128,7 +123,6 @@ StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i( PortableServer::POA_
 {
   MESSAGE( "StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i" );
   myBaseImpl = new ::StdMeshers_Projection_1D2D( theGenImpl->GetANewId(),
-                                                 theStudyId,
                                                  theGenImpl );
 }
 //-----------------------------------------------------------------------------
@@ -153,7 +147,6 @@ StdMeshers_Projection_1D2D_i::~StdMeshers_Projection_1D2D_i()
 //=============================================================================
 
 StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i( PortableServer::POA_ptr thePOA,
-                                                        int                     theStudyId,
                                                         ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA ), 
@@ -162,8 +155,7 @@ StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i" );
   myBaseImpl = new ::StdMeshers_Projection_1D( theGenImpl->GetANewId(),
-                                    theStudyId,
-                                    theGenImpl );
+                                               theGenImpl );
 }
 //-----------------------------------------------------------------------------
 

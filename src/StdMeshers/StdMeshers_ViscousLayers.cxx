@@ -1191,8 +1191,8 @@ namespace VISCOUS_3D
 //================================================================================
 // StdMeshers_ViscousLayers hypothesis
 //
-StdMeshers_ViscousLayers::StdMeshers_ViscousLayers(int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_Hypothesis(hypId, studyId, gen),
+StdMeshers_ViscousLayers::StdMeshers_ViscousLayers(int hypId, SMESH_Gen* gen)
+  :SMESH_Hypothesis(hypId, gen),
    _isToIgnoreShapes(1), _nbLayers(1), _thickness(1), _stretchFactor(1),
    _method( SURF_OFFSET_SMOOTH )
 {
@@ -1667,7 +1667,7 @@ namespace VISCOUS_3D
       *py << "import SMESH" << endl
           << "from salome.smesh import smeshBuilder" << endl
           << "smesh  = smeshBuilder.New(salome.myStudy)" << endl
-          << "meshSO = smesh.GetCurrentStudy().FindObjectID('0:1:2:" << tag <<"')" << endl
+          << "meshSO = smesh.GetStudy().FindObjectID('0:1:2:" << tag <<"')" << endl
           << "mesh   = smesh.Mesh( meshSO.GetObject() )"<<endl;
       theNbPyFunc = 0;
     }

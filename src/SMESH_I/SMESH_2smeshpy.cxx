@@ -461,7 +461,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                               Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                               std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-                              SALOMEDS::Study_ptr&                      theStudy,
                               const bool                                theToKeepAllCommands)
 {
   std::list< TCollection_AsciiString >::iterator lineIt;
@@ -484,7 +483,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
   theGen = new _pyGen( theEntry2AccessorMethod,
                        theObjectNames,
                        theRemovedObjIDs,
-                       theStudy,
                        theToKeepAllCommands );
 
   for ( lineIt = theScriptLines.begin(); lineIt != theScriptLines.end(); ++lineIt )
@@ -516,7 +514,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
   set<_pyID> createdObjects;
   createdObjects.insert( "smeshBuilder" );
   createdObjects.insert( "smesh" );
-  createdObjects.insert( "theStudy" );
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
   {
 #ifdef DUMP_CONVERSION
@@ -544,7 +541,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-               SALOMEDS::Study_ptr&                      theStudy,
                const bool                                theToKeepAllCommands)
   : _pyObject( new _pyCommand( "", 0 )),
     myNbCommands( 0 ),
@@ -553,7 +549,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
     myRemovedObjIDs( theRemovedObjIDs ),
     myNbFilters( 0 ),
     myToKeepAllCommands( theToKeepAllCommands ),
-    myStudy( SALOMEDS::Study::_duplicate( theStudy )),
+    myStudy( SALOMEDS::Study::_duplicate( SMESH_Gen_i::GetStudyPtr() )),
     myGeomIDNb(0), myGeomIDIndex(-1)
 {
   // make that GetID() to return TPythonDump::SMESHGenName()
@@ -562,11 +558,11 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
   GetCreationCmd()->GetString() += "=";
 
   // Find 1st digit of study entry by which a GEOM object differs from a SMESH object
-  if ( !theObjectNames.IsEmpty() && !CORBA::is_nil( theStudy ))
+  if ( !theObjectNames.IsEmpty() && !CORBA::is_nil( myStudy ))
   {
     // find a GEOM entry
     _pyID geomID;
-    SALOMEDS::SComponent_wrap geomComp = theStudy->FindComponent("GEOM");
+    SALOMEDS::SComponent_wrap geomComp = myStudy->FindComponent("GEOM");
     if ( geomComp->_is_nil() ) return;
     CORBA::String_var entry = geomComp->GetID();
     geomID = entry.in();
@@ -1099,7 +1095,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   static TStringSet smeshpyMethods;
   if ( smeshpyMethods.empty() ) {
     const char * names[] =
-      { "SetEmbeddedMode","IsEmbeddedMode","SetCurrentStudy","GetCurrentStudy",
+      { "SetEmbeddedMode","IsEmbeddedMode","UpdateStudy","GetStudy",
         "GetPattern","GetSubShapesId",
         "" }; // <- mark of array end
     smeshpyMethods.Insert( names );
@@ -2120,7 +2116,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
     const char * names[] =
       { "ExportDAT","ExportUNV","ExportSTL","ExportSAUV", "RemoveGroup","RemoveGroupWithContents",
         "GetGroups","UnionGroups","IntersectGroups","CutGroups","CreateDimGroup","GetLog","GetId",
-        "ClearLog","GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
+        "ClearLog","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
         "NbEdges","NbEdgesOfOrder","NbFaces","NbFacesOfOrder","NbTriangles",
         "NbTrianglesOfOrder","NbQuadrangles","NbQuadranglesOfOrder","NbPolygons","NbVolumes",
         "NbVolumesOfOrder","NbTetras","NbTetrasOfOrder","NbHexas","NbHexasOfOrder",

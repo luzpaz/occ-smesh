@@ -81,12 +81,8 @@ SMESH_Gen::SMESH_Gen()
 
 SMESH_Gen::~SMESH_Gen()
 {
-  std::map < int, StudyContextStruct * >::iterator i_sc = _mapStudyContext.begin();
-  for ( ; i_sc != _mapStudyContext.end(); ++i_sc )
-  {
-    delete i_sc->second->myDocument;
-    delete i_sc->second;
-  }  
+  delete _studyContext->myDocument;
+  delete _studyContext;
 }
 
 //=============================================================================
@@ -96,17 +92,16 @@ SMESH_Gen::~SMESH_Gen()
  */
 //=============================================================================
 
-SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
+SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
 
   // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-  StudyContextStruct *aStudyContext = GetStudyContext(theStudyId);
+  StudyContextStruct *aStudyContext = GetStudyContext();
 
   // create a new SMESH_mesh object
   SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
-                                     theStudyId,
                                      this,
                                      theIsEmbeddedMode,
                                      aStudyContext->myDocument);
@@ -1123,17 +1118,16 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_subMesh * aSubMesh,
  */
 //=============================================================================
 
-StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
+StudyContextStruct *SMESH_Gen::GetStudyContext()
 {
   // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-  if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
+  if (!_studyContext)
   {
-    _mapStudyContext[studyId] = new StudyContextStruct;
-    _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
+    _studyContext = new StudyContextStruct;
+    _studyContext->myDocument = new SMESHDS_Document();
   }
-  StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
-  return myStudyContext;
+  return _studyContext;
 }
 
 //================================================================================

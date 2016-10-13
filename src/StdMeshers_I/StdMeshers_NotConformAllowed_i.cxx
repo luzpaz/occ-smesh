@@ -42,14 +42,12 @@ using namespace std;
 
 StdMeshers_NotConformAllowed_i::StdMeshers_NotConformAllowed_i
                                 (PortableServer::POA_ptr thePOA,
-                                 int                     studyId,
                                  ::SMESH_Gen*            genImpl)
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE("StdMeshers_NotConformAllowed_i::StdMeshers_NotConformAllowed_i");
   myBaseImpl = new ::StdMeshers_NotConformAllowed(genImpl->GetANewId(),
-                                                  studyId,
                                                   genImpl);
 }
 

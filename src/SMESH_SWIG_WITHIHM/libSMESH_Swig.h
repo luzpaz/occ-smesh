@@ -64,7 +64,7 @@ public:
   SMESH_Swig();
   ~SMESH_Swig();
     
-  void                       Init( int );
+  void                       Init();
 
   const char*                AddNewMesh( const char* );
 

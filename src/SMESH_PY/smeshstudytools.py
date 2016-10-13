@@ -77,12 +77,12 @@ class SMeshStudyTools:
 
     ## This function updates the tools so that it works on the
     #  specified study.
-    def updateStudy(self, studyId=None):
+    def updateStudy(self):
         """
         This function updates the tools so that it works on the
         specified study.
         """
-        self.editor = getStudyEditor(studyId)
+        self.editor = getStudyEditor()
 
     ## Get the mesh item owning the mesh group \em meshGroupItem.
     #  \param  meshGroupItem (SObject) mesh group belonging to the searched mesh.

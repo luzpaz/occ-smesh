@@ -153,11 +153,10 @@ namespace SMESH
                                      long                  theID)
   {
     GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!aStudy || geomGen->_is_nil())
+    if (geomGen->_is_nil())
       return GEOM::GEOM_Object::_nil();
     GEOM::GEOM_IShapesOperations_wrap aShapesOp =
-      geomGen->GetIShapesOperations(aStudy->StudyId());
+      geomGen->GetIShapesOperations();
     if (aShapesOp->_is_nil())
       return GEOM::GEOM_Object::_nil();
     GEOM::GEOM_Object_wrap subShape = aShapesOp->GetSubShape (theMainShape,theID);

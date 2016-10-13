@@ -345,10 +345,9 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
 
   if (aGEOMs.count() > 0) {
     GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (geomGen->_is_nil() || !aStudy) return false;
+    if (geomGen->_is_nil()) return false;
 
-    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations(aStudy->StudyId());
+    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
     if (op->_is_nil()) return false;
 
     // check all selected shapes
@@ -375,7 +374,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
       if ( aSubGeomVar->GetShapeType() == GEOM::COMPOUND )
       {
         // is aSubGeomVar a compound of sub-shapes?
-        GEOM::GEOM_IShapesOperations_wrap sop = geomGen->GetIShapesOperations(aStudy->StudyId());
+        GEOM::GEOM_IShapesOperations_wrap sop = geomGen->GetIShapesOperations();
         if (sop->_is_nil()) return false;
         GEOM::ListOfLong_var ids = sop->GetAllSubShapesIDs( aSubGeomVar,
                                                             GEOM::SHAPE,/*sorted=*/false);
@@ -1922,10 +1921,9 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
   {
     // create a GEOM group
     GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!geomGen->_is_nil() && aStudy) {
+    if (!geomGen->_is_nil()) {
       GEOM::GEOM_IGroupOperations_wrap op =
-        geomGen->GetIGroupOperations(aStudy->StudyId());
+        geomGen->GetIGroupOperations();
       if (!op->_is_nil()) {
         // check and add all selected GEOM objects: they must be
         // a sub-shapes of the main GEOM and must be of one type
@@ -1959,9 +1957,8 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
           // publish the GEOM group in study
           QString aNewGeomGroupName ("Auto_group_for_");
           aNewGeomGroupName += aName;
-          SALOMEDS::Study_var aStudyVar = _CAST(Study, aStudy)->GetStudy();
           SALOMEDS::SObject_wrap aNewGroupSO =
-            geomGen->AddInStudy( aStudyVar, aGeomVar,
+            geomGen->AddInStudy( aGeomVar,
                                  aNewGeomGroupName.toLatin1().data(), mainGeom);
         }
       }

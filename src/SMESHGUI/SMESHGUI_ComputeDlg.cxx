@@ -1261,7 +1261,6 @@ void SMESHGUI_BaseComputeOp::stopOperation()
 void SMESHGUI_BaseComputeOp::onPublishShape()
 {
   GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen();
-  SALOMEDS::Study_var       study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
   GEOM::GEOM_Object_var meshShape = myMesh->GetShapeToMesh();
 
   QStringList entryList;
@@ -1277,7 +1276,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
       if ( !SMESH::getSubShapeSO( 1, myMainShape )) // the main shape not published
       {
         QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
-        SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, myMainShape,
+        SALOMEDS::SObject_wrap so = geomGen->AddInStudy( myMainShape,
                                                          name.toLatin1().data(),
                                                          GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
@@ -1296,7 +1295,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         if ( curSub == 1 ) continue;
       }
       QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
-      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, shape,
+      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( shape,
                                                        name.toLatin1().data(), myMainShape);
       if ( !so->_is_nil() ) {
         CORBA::String_var name  = so->GetName();

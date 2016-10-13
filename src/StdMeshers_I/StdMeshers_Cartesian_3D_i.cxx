@@ -38,7 +38,6 @@
 //=============================================================================
 
 StdMeshers_Cartesian_3D_i::StdMeshers_Cartesian_3D_i( PortableServer::POA_ptr thePOA,
-                                                      int                     theStudyId,
                                                       ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA ), 
@@ -47,7 +46,6 @@ StdMeshers_Cartesian_3D_i::StdMeshers_Cartesian_3D_i( PortableServer::POA_ptr th
 {
   MESSAGE( "StdMeshers_Cartesian_3D_i::StdMeshers_Cartesian_3D_i" );
   myBaseImpl = new ::StdMeshers_Cartesian_3D( theGenImpl->GetANewId(),
-                                              theStudyId,
                                               theGenImpl );
 }
 

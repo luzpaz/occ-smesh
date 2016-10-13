@@ -50,14 +50,12 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_ImportSource2D_i::StdMeshers_ImportSource2D_i( PortableServer::POA_ptr thePOA,
-                                                          int                     theStudyId,
                                                           ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_ImportSource2D_i::StdMeshers_ImportSource2D_i" );
   myBaseImpl = new ::StdMeshers_ImportSource2D( theGenImpl->GetANewId(),
-                                                theStudyId,
                                                 theGenImpl );
   _groupEntries = new SMESH::string_array();
 }
@@ -89,7 +87,6 @@ void StdMeshers_ImportSource2D_i::SetSourceFaces(const SMESH::ListOfGroups& grou
   {
     std::vector<SMESH_Group*> smesh_groups;
     std::vector<string> entries;
-    SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
     for ( CORBA::ULong i = 0; i < groups.length(); ++i )
       if ( SMESH_GroupBase_i* gp_i = SMESH::DownCast<SMESH_GroupBase_i*>( groups[i] ))
       {
@@ -97,7 +94,7 @@ void StdMeshers_ImportSource2D_i::SetSourceFaces(const SMESH::ListOfGroups& grou
           THROW_SALOME_CORBA_EXCEPTION("Wrong group type", SALOME::BAD_PARAM);
         smesh_groups.push_back( gp_i->GetSmeshGroup() );
 
-        SALOMEDS::SObject_var so = SMESH_Gen_i::ObjectToSObject(study, groups[i]);
+        SALOMEDS::SObject_var so = SMESH_Gen_i::ObjectToSObject(groups[i]);
         if ( !so->_is_nil())
         {
           CORBA::String_var entry = so->GetID();
@@ -172,7 +169,7 @@ char* StdMeshers_ImportSource2D_i::SaveTo()
   std::ostringstream os;
   os << " " << _groupEntries->length();
 
-  SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
+  SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetStudy();
   for ( CORBA::ULong i = 0; i < _groupEntries->length(); ++i )
   {
     // entry

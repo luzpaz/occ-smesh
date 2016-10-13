@@ -59,7 +59,7 @@ StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject (const std::string&  theEntry,
 
   // try by entry
   if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
-    SALOMEDS::Study_var study = gen->GetCurrentStudy();
+    SALOMEDS::Study_var study = gen->GetStudy();
     if ( ! theEntry.empty() && ! study->_is_nil() ) {
       SALOMEDS::SObject_wrap sobj = study->FindObjectID( theEntry.c_str() );
       CORBA::Object_var       obj = gen->SObjectToObject( sobj );
@@ -88,7 +88,7 @@ void StdMeshers_ObjRefUlils::SaveToStream( const TopoDS_Shape& theShape, ostream
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
       GEOM::GEOM_Object_var geom = gen->ShapeToGeomObject( theShape );
       if ( ! geom->_is_nil() ) {
-        SALOMEDS::SObject_wrap sobj = gen->ObjectToSObject( gen->GetCurrentStudy(), geom );
+        SALOMEDS::SObject_wrap sobj = gen->ObjectToSObject( geom );
         if ( !sobj->_is_nil() ) {
           CORBA::String_var entry = sobj->GetID();
           stream << " " << entry.in();
@@ -117,7 +117,7 @@ TopoDS_Shape StdMeshers_ObjRefUlils::LoadFromStream( istream &    stream,
     if ( entry )
       * entry = str;
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
-      SALOMEDS::Study_var study = gen->GetCurrentStudy();
+      SALOMEDS::Study_var study = gen->GetStudy();
       if ( ! study->_is_nil() ) {
         SALOMEDS::SObject_wrap sobj = study->FindObjectID( str.c_str() );
         CORBA::Object_var       obj = gen->SObjectToObject( sobj );

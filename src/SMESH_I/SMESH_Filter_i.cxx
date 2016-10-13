@@ -138,7 +138,7 @@ static TopoDS_Shape getShapeByName( const char* theName )
   if ( theName != 0 )
   {
     SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetStudy();
     if ( !aStudy->_is_nil() )
     {
       SALOMEDS::Study::ListOfSObject_var aList = aStudy->FindObjectByName( theName, "GEOM" );
@@ -159,7 +159,7 @@ static TopoDS_Shape getShapeByID (const char* theID)
 {
   if ( theID && strlen( theID ) > 0 ) {
     SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetStudy();
     if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID(theID);
       if ( !aSObj->_is_nil() ) {
@@ -176,7 +176,7 @@ static TopoDS_Shape getShapeByID (const char* theID)
 // {
 //   if ( theID && strlen( theID ) > 0 ) {
 //     SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-//     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+//     SALOMEDS::Study_var aStudy = aSMESHGen->GetStudy();
 //     if ( !aStudy->_is_nil() ) {
 //       SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID(theID);
 //       if ( !aSObj->_is_nil() ) {
@@ -780,7 +780,7 @@ void BelongToMeshGroup_i::SetGroupID( const char* theID ) // IOR or StoreName
   else if ( strncmp( "0:", myID.c_str(), 2 ) == 0 ) // transient mode + GUI
   {
     SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetStudy();
     if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID( myID.c_str() );
       if ( !aSObj->_is_nil() ) {
@@ -812,7 +812,7 @@ SMESH::SMESH_GroupBase_ptr BelongToMeshGroup_i::GetGroup()
   {
     // search for a group in a current study
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    if ( StudyContext*  sc = aSMESHGen->GetCurrentStudyContext() )
+    if ( StudyContext*  sc = aSMESHGen->GetStudyContext() )
     {
       int id = 1;
       std::string ior;
@@ -1677,7 +1677,7 @@ void ConnectedElements_i::SetThreshold ( const char*                            
     }
   case SMESH::ConnectedElements::VERTEX: // get a VERTEX by its entry /////////////////
     {
-      SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
+      SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetStudy();
       if ( study->_is_nil() )
         THROW_SALOME_CORBA_EXCEPTION
           ( "ConnectedElements_i::SetThreshold(): NULL current study", SALOME::BAD_PARAM );

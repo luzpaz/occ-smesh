@@ -426,7 +426,7 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       _PTR(Study)         aStudy = SMESH::GetActiveStudyDocument();
       GEOM::GEOM_IShapesOperations_wrap shapeOp;
       if ( !geomGen->_is_nil() && aStudy )
-        shapeOp = geomGen->GetIShapesOperations( aStudy->StudyId() );
+        shapeOp = geomGen->GetIShapesOperations();
       if ( !shapeOp->_is_nil() )
       {
         GEOM::ListOfLong_var vertices =

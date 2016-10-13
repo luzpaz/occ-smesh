@@ -991,10 +991,9 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         if not self.nbLayers is None:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
-        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
-        self.mesh.smeshpyD.SetCurrentStudy( None )
+        self.mesh.smeshpyD.SetEnablePublish( False ) # prevents publishing own 1D hypothesis
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        self.mesh.smeshpyD.SetEnablePublish( True ) # enables publishing
         if not self.distribHyp:
             self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
         self.distribHyp.SetLayerDistribution( hyp )

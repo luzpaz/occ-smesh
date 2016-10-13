@@ -194,7 +194,7 @@ namespace
 
   void ExportMeshToFile(int theCommandID);
 
-  void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap);
+  void SetDisplayMode(int theCommandID, VTK::MarkerMap& theMarkerMap);
 
   void SetDisplayEntity(int theCommandID);
 
@@ -1337,7 +1337,7 @@ namespace
     }
   }
 
-  void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap)
+  void SetDisplayMode(int theCommandID, VTK::MarkerMap& theMarkerMap)
   {
     SALOME_ListIO selected;
     SalomeApp_Application* app =
@@ -1358,8 +1358,6 @@ namespace
       }
       return;
     }
-
-    _PTR(Study) aStudy = appStudy->studyDS();
 
     aSel->selectedObjects( selected );
 
@@ -1459,7 +1457,7 @@ namespace
             break;
         }
 
-        SMESHGUI_PropertiesDlg dlg( theMarkerMap[ aStudy->StudyId() ], SMESHGUI::desktop() );
+        SMESHGUI_PropertiesDlg dlg( theMarkerMap, SMESHGUI::desktop() );
         // nodes: color, marker
         dlg.setNodeColor( nodeColor );
         if( markerType != VTK::MT_USER )
@@ -1515,8 +1513,8 @@ namespace
           orientation3d    = dlg.orientation3d();
           shrinkCoef       = dlg.shrinkCoef() / 100.;
 
-          // store point markers map that might be changed by the user
-          theMarkerMap[ aStudy->StudyId() ] = dlg.customMarkers();
+          // store point markers that might be changed by the user
+          theMarkerMap = dlg.customMarkers();
 
           // set properties from dialog box to the presentations
           SALOME_ListIteratorOfListIO It( selected );
@@ -1532,9 +1530,8 @@ namespace
               anActor->SetMarkerStd( markerType, markerScale );
             }
             else {
-              const VTK::MarkerMap& markerMap = theMarkerMap[ aStudy->StudyId() ];
-              VTK::MarkerMap::const_iterator iter = markerMap.find( markerId );
-              if ( iter != markerMap.end() )
+              VTK::MarkerMap::const_iterator iter = theMarkerMap.find( markerId );
+              if ( iter != theMarkerMap.end() )
                 anActor->SetMarkerTexture( markerId, iter->second.second );
             }
             // volumes: normal color, reversed color (delta)
@@ -2200,17 +2197,6 @@ SMESHGUI* SMESHGUI::GetSMESHGUI()
     smeshMod = dynamic_cast<SMESHGUI*>( module );
   }
 
-  if ( smeshMod && smeshMod->application() && smeshMod->application()->activeStudy() )
-  {
-    SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( smeshMod->application()->activeStudy() );
-    if ( study )
-    {
-      _PTR(Study) aStudy = study->studyDS();
-      if ( aStudy )
-        GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
-    }
-  }
-
   return smeshMod;
 }
 
@@ -2428,10 +2414,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   SUIT_ResourceMgr* mgr = resourceMgr();
   if( !mgr )
     return false;
-
-  if (CORBA::is_nil(GetSMESHGen()->GetCurrentStudy())) {
-    GetSMESHGen()->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
-  }
 
   SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
@@ -4819,11 +4801,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   action(SMESHOp::OpDelete)->setEnabled(true); // Delete: Key_Delete
 
   //  0020210. Make SMESH_Gen update meshes at switching GEOM->SMESH
-  GetSMESHGen()->SetCurrentStudy(SALOMEDS::Study::_nil());
-  if ( SalomeApp_Study* s = dynamic_cast<SalomeApp_Study*>( study )) {
-    if ( _PTR(Study) aStudy = s->studyDS() )
-      GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
-  }
+  GetSMESHGen()->UpdateStudy();
 
   // get all view currently opened in the study and connect their signals  to
   // the corresponding slots of the class.
@@ -4872,16 +4850,11 @@ void SMESHGUI::OnGUIEvent()
 
 SMESH::SMESH_Gen_var SMESHGUI::GetSMESHGen()
 {
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
   if ( CORBA::is_nil( myComponentSMESH ) )
-    {
-      SMESHGUI aGUI; //SRN BugID: IPAL9186: Create an instance of SMESHGUI to initialize myComponentSMESH
-      if ( aStudy )
-        aGUI.myComponentSMESH->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
-      return aGUI.myComponentSMESH;
-    }
-  if ( aStudy )
-    myComponentSMESH->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
+  {
+    SMESHGUI aGUI; //SRN BugID: IPAL9186: Create an instance of SMESHGUI to initialize myComponentSMESH
+    return aGUI.myComponentSMESH;
+  }
   return myComponentSMESH;
 }
 
@@ -5685,12 +5658,11 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                                                              savePoint);
   _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
 
-  // store map of custom markers
-  const VTK::MarkerMap& aMarkerMap = myMarkerMap[ studyDS->StudyId() ];
-  if( !aMarkerMap.empty() )
+  // store custom markers
+  if( !myMarkerMap.empty() )
   {
-    VTK::MarkerMap::const_iterator anIter = aMarkerMap.begin();
-    for( ; anIter != aMarkerMap.end(); anIter++ )
+    VTK::MarkerMap::const_iterator anIter = myMarkerMap.begin();
+    for( ; anIter != myMarkerMap.end(); anIter++ )
     {
       int anId = anIter->first;
       VTK::MarkerData aMarkerData = anIter->second;
@@ -6038,8 +6010,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                                                              savePoint);
   _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
 
-  // restore map of custom markers and map of clipping planes
-  VTK::MarkerMap& aMarkerMap = myMarkerMap[ studyDS->StudyId() ];
+  // restore custom markers and map of clipping planes
   TPlaneDataMap aPlaneDataMap;
 
   std::vector<std::string> properties = ip->getProperties();
@@ -6096,7 +6067,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
           aMarkerTexture.push_back( aChar.digitValue() );
       }
 
-      aMarkerMap[ anId ] = VTK::MarkerData( aMarkerFileName, aMarkerTexture );
+      myMarkerMap[ anId ] = VTK::MarkerData( aMarkerFileName, aMarkerTexture );
     }
     else if( aPropertyType == "ClippingPlane" )
     {
@@ -6614,8 +6585,8 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                     aSmeshActor->SetMarkerStd( (VTK::MarkerType)aParam1, (VTK::MarkerScale)aParam2 );
                   }
                   else if( data[0] == "custom" ) {
-                    VTK::MarkerMap::const_iterator markerIt = aMarkerMap.find( aParam1 );
-                    if( markerIt != aMarkerMap.end() ) {
+                    VTK::MarkerMap::const_iterator markerIt = myMarkerMap.find( aParam1 );
+                    if( markerIt != myMarkerMap.end() ) {
                       VTK::MarkerData aMarkerData = markerIt->second;
                       aSmeshActor->SetMarkerTexture( aParam1, aMarkerData.second );
                     }

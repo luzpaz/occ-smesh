@@ -46,15 +46,13 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i( PortableServer::POA_ptr thePOA,
-                                                    int                     theStudyId,
-                                                    ::SMESH_Gen*            theGenImpl )
+                                                              ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i" );
   myBaseImpl = new ::StdMeshers_NumberOfSegments( theGenImpl->GetANewId(),
-                                             theStudyId,
-                                             theGenImpl );
+                                                  theGenImpl );
 }
 
 //=============================================================================

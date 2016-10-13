@@ -187,12 +187,9 @@ def GetName(obj):
             ior = None
         if ior:
             # CORBA object
-            studies = salome.myStudyManager.GetOpenStudies()
-            for sname in studies:
-                s = salome.myStudyManager.GetStudyByName(sname)
-                if not s: continue
-                sobj = s.FindObjectIOR(ior)
-                if not sobj: continue
+            study = salome.myStudy
+            sobj = s.FindObjectIOR(ior)
+            if sobj:
                 return sobj.GetName()
             if hasattr(obj, "GetName"):
                 # unknown CORBA object, having GetName() method
@@ -263,12 +260,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
 def AssureGeomPublished(mesh, geom, name=''):
     if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
         return
-    if not geom.GetStudyEntry() and \
-           mesh.smeshpyD.GetCurrentStudy():
-        ## set the study
-        studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
-        if studyID != mesh.geompyD.myStudyId:
-            mesh.geompyD.init_geom( mesh.smeshpyD.GetCurrentStudy())
+    if not geom.GetStudyEntry():
         ## get a name
         if not name and geom.GetShapeType() != geomBuilder.GEOM.COMPOUND:
             # for all groups SubShapeName() returns "Compound_-1"
@@ -393,7 +385,6 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #  @ingroup l1_auxiliary
     def init_smesh(self,theStudy,geompyD = None):
         #print "init_smesh"
-        self.SetCurrentStudy(theStudy,geompyD)
         if theStudy:
             global notebook
             notebook.myStudy = theStudy
@@ -545,11 +536,11 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             pass
         pass
 
-    ## Gets the current study
+    ## Gets the study
     #  @ingroup l1_auxiliary
-    def GetCurrentStudy(self):
-        #return self.GetCurrentStudy()
-        return SMESH._objref_SMESH_Gen.GetCurrentStudy(self)
+    def GetStudy(self):
+        #return self.GetStudy()
+        return SMESH._objref_SMESH_Gen.GetStudy(self)
 
     ## Creates a Mesh object importing data from the given UNV file
     #  @return an instance of Mesh class
@@ -758,7 +749,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     raise ValueError, "Group type mismatches Element type"
                 aCriterion.ThresholdStr = aThreshold.GetName()
                 aCriterion.ThresholdID  = salome.orb.object_to_string( aThreshold )
-                study = self.GetCurrentStudy()
+                study = self.GetStudy()
                 if study:
                     so = study.FindObjectIOR( aCriterion.ThresholdID )
                     if so:
@@ -1235,12 +1226,8 @@ class Mesh:
                 self.geom = obj
                 objHasName = True
                 # publish geom of mesh (issue 0021122)
-                if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
+                if not self.geom.GetStudyEntry():
                     objHasName = False
-                    studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
-                    if studyID != geompyD.myStudyId:
-                        geompyD.init_geom( smeshpyD.GetCurrentStudy())
-                        pass
                     if name:
                         geo_name = name + " shape"
                     else:
@@ -1500,10 +1487,10 @@ class Mesh:
                 print msg
                 print allReasons
             pass
-        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+        if salome.sg.hasDesktop():
             if not isinstance( refresh, list): # not a call from subMesh.Compute()
                 smeshgui = salome.ImportComponentGUI("SMESH")
-                smeshgui.Init(self.mesh.GetStudyId())
+                smeshgui.Init()
                 smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
                 if refresh: salome.sg.updateObjBrowser(True)
 
@@ -1528,11 +1515,9 @@ class Mesh:
         try:
             shapeText = ""
             mainIOR  = salome.orb.object_to_string( self.GetShape() )
-            for sname in salome.myStudyManager.GetOpenStudies():
-                s = salome.myStudyManager.GetStudyByName(sname)
-                if not s: continue
-                mainSO = s.FindObjectIOR(mainIOR)
-                if not mainSO: continue
+            s = salome.myStudy
+            mainSO = s.FindObjectIOR(mainIOR)
+            if mainSO:
                 if subShapeID == 1:
                     shapeText = '"%s"' % mainSO.GetName()
                 subIt = s.NewChildIterator(mainSO)
@@ -1549,7 +1534,6 @@ class Mesh:
                         continue
                     if ids == subShapeID:
                         shapeText = '"%s"' % subSO.GetName()
-                        break
             if not shapeText:
                 shape = self.geompyD.GetSubShape( self.GetShape(), [subShapeID])
                 if shape:
@@ -1619,10 +1603,8 @@ class Mesh:
     #  @ingroup l2_construct
     def Clear(self, refresh=False):
         self.mesh.Clear()
-        if ( salome.sg.hasDesktop() and 
-             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() ) ):
+        if ( salome.sg.hasDesktop() ):
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser(True)
 
@@ -1634,7 +1616,6 @@ class Mesh:
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser(True)
 
@@ -2231,12 +2212,6 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def GetId(self):
         return self.mesh.GetId()
-
-    ## Get the study Id
-    #  @return integer value, which is the study Id of the mesh
-    #  @ingroup l1_auxiliary
-    def GetStudyId(self):
-        return self.mesh.GetStudyId()
 
     ## Checks the group names for duplications.
     #  Consider the maximum group name length stored in MED file.
@@ -5047,9 +5022,9 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
 
         ok = self.mesh.Compute( self.GetSubShape(),refresh=[] )
 
-        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+        if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
             if refresh: salome.sg.updateObjBrowser(True)
             pass
