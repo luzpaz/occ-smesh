@@ -1688,7 +1688,7 @@ namespace
             if ( !anIDSrc->_is_nil() ) {
               SMESH_Actor *anActor = SMESH::FindActorByEntry( anIO->getEntry());
               if (( !anActor && selected.Extent() == 1 ) &&
-                  ( anActor = SMESH::CreateActor( aStudy, anIO->getEntry() )))
+                  ( anActor = SMESH::CreateActor( anIO->getEntry() )))
               {
                 anActor->SetControlMode( aControl );
                 SMESH::DisplayActor( SMESH::GetCurrentVtkView(), anActor );
@@ -4834,7 +4834,7 @@ void SMESHGUI::studyClosed( SUIT_Study* s )
 {
   if( !s )
     return;
-  SMESH::RemoveVisuData( s->id() );
+  SMESH::RemoveVisuData();
   SalomeApp_Module::studyClosed( s );
 }
 

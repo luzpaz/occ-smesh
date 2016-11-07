@@ -334,7 +334,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       SMESH::UpdateView();
 
       _PTR(SObject) aSO = SMESH::FindSObject(aMesh.in());
-      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) ) {
+      if ( SMESH_Actor* anActor = SMESH::CreateActor( aSO->GetID().c_str()) ) {
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
         SMESH::UpdateView();
       }

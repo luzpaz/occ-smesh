@@ -207,8 +207,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(CORBA::Object_ptr theObject)
 //function : GetStudyPtr
 //purpose  : Get study from naming service
 //=======================================================================
-
-static SALOMEDS::Study_ptr GetStudyPtr()
+SALOMEDS::Study_ptr SMESH_Gen_i::GetStudyPtr()
 {
   SALOME_NamingService* aNamingService = new SALOME_NamingService(SMESH_Gen_i::GetORB());
   CORBA::Object_var aStudyObject = aNamingService->Resolve( "/Study" );

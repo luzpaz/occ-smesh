@@ -234,8 +234,7 @@ void SMESHGUI_DisplayEntitiesDlg::onOk()
   const char* entry = myIObject->getEntry();
   
   if ( !myActor ) {
-    myActor = SMESH::CreateActor(SMESH::GetActiveStudyDocument(), 
-                                 entry, true);
+    myActor = SMESH::CreateActor(entry, true);
   }
 
   if( myEntityMode != myActor->GetEntityMode() ) {

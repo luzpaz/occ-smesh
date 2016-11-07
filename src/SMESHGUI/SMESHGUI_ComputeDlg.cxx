@@ -996,8 +996,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
               {
                 toDisplay = true;
                 SMESH_Actor *anActor = SMESH::FindActorByObject( aMesh );
-                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetStudy(),
-                                                              (*anIter).second->GetID().c_str(),
+                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetID().c_str(),
                                                               /*clearLog =*/ true );
                 if ( anActor ) // actor is not created for an empty mesh
                 {
