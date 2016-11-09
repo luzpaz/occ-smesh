@@ -77,4 +77,4 @@ print "Triangles  : ", trias.NbTriangles()
 print "Quadrangles: ", trias.NbQuadrangles()
 print "Volumes    : ", trias.NbVolumes()
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -217,4 +217,4 @@ for i in range(0,nbrs):
     oldnodes = newnodes
     pass
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

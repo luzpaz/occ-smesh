@@ -41,4 +41,4 @@ for i in range(len(aGroupElemIDs)):
   pass
 print ""
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

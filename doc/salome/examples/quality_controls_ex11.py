@@ -47,4 +47,4 @@ print ""
 aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Faces with length 2D > " + `length_margin`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

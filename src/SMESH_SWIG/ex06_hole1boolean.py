@@ -169,4 +169,4 @@ hexa.Compute()
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

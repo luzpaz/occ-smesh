@@ -50,7 +50,7 @@ status = geompy.CheckShape(compshell)
 print " check status ", status
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 print "-------------------------- create Mesh, algorithm, hypothesis"
 
@@ -76,4 +76,4 @@ if ret != 0:
 else:
     print "problem when computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

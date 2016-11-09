@@ -62,7 +62,7 @@ print "number of Edges  in flight : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- init a Mesh with the shell
 shape_mesh = salome.IDToObject( idShape )
@@ -107,4 +107,4 @@ if ret != 0:
 else:
     print "probleme when computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

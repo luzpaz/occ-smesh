@@ -352,7 +352,7 @@ class PluginDialog(QDialog):
         medfilename = os.path.join(meshJobResults.results_dirname,
                                    meshJobResults.outputmesh_filename)
 
-        smesh.SetCurrentStudy(studyedit.getActiveStudy())
+        smesh.UpdateStudy()
         ([outputMesh], status) = smesh.CreateMeshesFromMED(medfilename)
 
         # By convention, the name of the output mesh in the study is

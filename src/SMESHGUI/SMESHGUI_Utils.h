@@ -80,10 +80,6 @@ SMESHGUI_EXPORT
 SMESHGUI_EXPORT
   SUIT_ResourceMgr*
   GetResourceMgr( const SalomeApp_Module* );
-  
-SMESHGUI_EXPORT
-  _PTR(Study)
-  GetCStudy( const SalomeApp_Study* );
 
 SMESHGUI_EXPORT
   CORBA::Object_var DataOwnerToObject( const LightApp_DataOwnerPtr& );

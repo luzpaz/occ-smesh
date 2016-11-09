@@ -141,4 +141,4 @@ print "Criterion: Element Diameter 2D > 10 Nb = ", len( anIds )
   #print anIds[ i ]
 
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

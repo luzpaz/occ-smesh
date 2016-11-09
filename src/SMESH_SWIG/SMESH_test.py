@@ -63,7 +63,7 @@ ide = geompy.addToStudyInFather(face, edge, name)
 
 # ---- SMESH
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 box = salome.IDToObject(idb)
 mesh = smesh.Mesh(box, "Meshbox")
 
@@ -147,4 +147,4 @@ for a in log:
             ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

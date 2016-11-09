@@ -63,4 +63,4 @@ name = geompy.SubShapeName(edge, face)
 print name
 idedge = geompy.addToStudyInFather(face, edge, name)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

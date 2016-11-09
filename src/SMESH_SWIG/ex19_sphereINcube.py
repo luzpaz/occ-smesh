@@ -190,4 +190,4 @@ hexa_groupe = hexa.Group(groupe)
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -163,7 +163,6 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
     maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
     (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
     name=str(self.LE_MeshSmesh.text())
     initialMeshFile=None
@@ -284,7 +283,6 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     smesh = smeshBuilder.New(salome.myStudy)
 
     maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
 
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")

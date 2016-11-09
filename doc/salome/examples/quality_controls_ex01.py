@@ -44,4 +44,4 @@ print ""
 aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Free borders")
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -59,4 +59,4 @@ Mesh_1.Tetrahedron()
 Mesh_1.Compute()
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

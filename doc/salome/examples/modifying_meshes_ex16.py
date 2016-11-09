@@ -51,4 +51,4 @@ res = mesh.InverseDiag(bb[1], tt[2])
 if not res: print "failed!"
 else:       print "done."
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -58,12 +58,12 @@ idblob = geompy.addToStudy(blob,"blob")
 edgeGroups = geompy.Propagate( blob )
 assert len( edgeGroups ) == 3
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 
 # -----------------------------------------------------------------------------
 
 print "-------------------------- mesh"
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- define a mesh on the geom shape 'blob'
 mesh=smesh.Mesh(blob, "MeshBlob")
@@ -98,4 +98,4 @@ if ok:
 else:
     print "problem when Computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

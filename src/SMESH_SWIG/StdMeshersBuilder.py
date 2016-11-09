@@ -1158,9 +1158,9 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
         else:
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
         study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
-        self.mesh.smeshpyD.SetCurrentStudy( None )
+        self.mesh.smeshpyD.SetEnablePublish( False )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        self.mesh.smeshpyD.SetEnablePublish( True )
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 

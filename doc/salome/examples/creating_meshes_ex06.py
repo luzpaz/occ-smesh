@@ -84,7 +84,7 @@ geompy.DifferenceList(group_1, [group_1_box])
 # Mesh the blocks with hexahedral
 # -------------------------------
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 def discretize(x, y, z,  nbSeg, shape=blocks):
     vert = geompy.MakeVertex( x, y, z )

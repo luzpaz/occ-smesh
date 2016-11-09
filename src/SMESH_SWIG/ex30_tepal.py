@@ -53,7 +53,7 @@ geompy.addToStudy(cylinder, "Cylinder")
 # Define a mesh on a geometry
 # ---------------------------
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 m = smesh.Mesh(cylinder)
 
@@ -94,4 +94,4 @@ else:
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

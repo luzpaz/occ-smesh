@@ -76,12 +76,6 @@ namespace SMESH
     return SUIT_Session::session()->resourceMgr();
   }
 
-  _PTR(Study)
-  GetCStudy(const SalomeApp_Study* theStudy)
-  {
-    return theStudy->studyDS();
-  }
-
   CORBA::Object_var 
   DataOwnerToObject(const LightApp_DataOwnerPtr& theOwner)
   {

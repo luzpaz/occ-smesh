@@ -511,30 +511,30 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     def IsEmbeddedMode(self):
         #return self.IsEmbeddedMode()
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
-
-    ## Sets the current study. Calling SetCurrentStudy( None ) allows to
+    
+    ## Update the current study. Calling UpdateStudy() allows to 
+    #  update meshes at switching GEOM->SMESH
     #  switch OFF automatic pubilishing in the Study of mesh objects.
     #  @ingroup l1_auxiliary
-    def SetCurrentStudy( self, theStudy, geompyD = None ):
-        #self.SetCurrentStudy(theStudy)
-        if not geompyD:
-            from salome.geom import geomBuilder
-            geompyD = geomBuilder.geom
-            pass
-        self.geompyD=geompyD
-        self.SetGeomEngine(geompyD)
-        SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
+    def UpdateStudy( self ):
+        #self.UpdateStudy()
+        SMESH._objref_SMESH_Gen.UpdateStudy(self)
+        sb = salome.myStudy.NewBuilder()
+        sc = salome.myStudy.FindComponent("SMESH")
+        if sc: sb.LoadWith(sc, self)
+        pass
+        
+    ## Sets enable publishing in the study. Calling SetEnablePublish( false ) allows to
+    #  switch OFF pubilishing in the Study of mesh objects.
+    #  @ingroup l1_auxiliary
+    def SetEnablePublish( self, theIsEnablePublish ):
+        #self.SetEnablePublish(theIsEnablePublish)
+        SMESH._objref_SMESH_Gen.SetEnablePublish(self,theIsEnablePublish)
         global notebook
-        if theStudy:
-            notebook = salome_notebook.NoteBook( theStudy )
+        if theIsEnablePublish:
+            notebook = salome_notebook.NoteBook( salome.myStudy )
         else:
             notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
-        if theStudy:
-            sb = theStudy.NewBuilder()
-            sc = theStudy.FindComponent("SMESH")
-            if sc: sb.LoadWith(sc, self)
-            pass
-        pass
 
     ## Gets the study
     #  @ingroup l1_auxiliary
@@ -1492,7 +1492,7 @@ class Mesh:
                 smeshgui = salome.ImportComponentGUI("SMESH")
                 smeshgui.Init()
                 smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
-                if refresh: salome.sg.updateObjBrowser(True)
+                if refresh: salome.sg.updateObjBrowser()
 
         return ok
 
@@ -1606,7 +1606,7 @@ class Mesh:
         if ( salome.sg.hasDesktop() ):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
 
     ## Removes all nodes and elements of indicated shape
     #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
@@ -1617,7 +1617,7 @@ class Mesh:
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
 
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
     #  @param fineness [0.0,1.0] defines mesh fineness
@@ -5026,7 +5026,7 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
             pass
 
         return ok

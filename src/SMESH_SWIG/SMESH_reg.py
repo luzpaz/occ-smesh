@@ -60,12 +60,12 @@ for f in subShapeList:
   print name
   idedge.append( geompy.addToStudyInFather(box, f, name) )
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 
 # ---- launch SMESH
 smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init()
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- Creating meshes
 
@@ -115,5 +115,5 @@ algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 

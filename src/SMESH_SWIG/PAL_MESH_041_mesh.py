@@ -103,5 +103,5 @@ print "---------------------Compute the mesh"
 ret = mesh.Compute()
 print ret
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 

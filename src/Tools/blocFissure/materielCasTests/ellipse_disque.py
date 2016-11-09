@@ -50,4 +50,4 @@ geompy.addToStudy( Ellipse_disque, 'Ellipse_disque' )
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

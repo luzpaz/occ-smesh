@@ -39,7 +39,7 @@ geompy.addToStudy(Box_sup, "Box_sup")
 geompy.addToStudyInFather(Box_sup, Fsup2, "Fsup")
 geompy.addToStudyInFather(Box_sup, Finf2, "Finf")
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 ## create a bottom mesh
 Mesh_inf = smesh.Mesh(Box_inf, "Mesh_inf")
@@ -78,4 +78,4 @@ Compound2 = smesh.Concatenate([Mesh_inf, Mesh_sup], 1, 0, 1e-05, True,
                               name='Compound_with_UniteGrps_and_GrpsOfAllElems')
 
 if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()

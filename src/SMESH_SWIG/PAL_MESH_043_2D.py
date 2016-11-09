@@ -81,4 +81,4 @@ mesh2.Compute()
 
 
 # ---- udate object browser
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

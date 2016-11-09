@@ -30,7 +30,6 @@ import batchmode_smesh
 from salome.StdMeshers import StdMeshersBuilder
 
 smesh = batchmode_smesh.smesh
-smesh.SetCurrentStudy(batchmode_salome.myStudy)
 
 def CreateMesh (theFileName, area, len = None, nbseg = None):
     

@@ -51,4 +51,4 @@ for i in range(len(anNodeIds)):
   pass
 print ""
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

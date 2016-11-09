@@ -127,7 +127,7 @@ name      = geompy.SubShapeName( sub_face4, mechanic )
 Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )
@@ -188,4 +188,4 @@ print "Number of quadrangles : ", mesh.NbQuadrangles()
 print "Number of volumes     : ", mesh.NbVolumes()
 print "Number of tetrahedrons: ", mesh.NbTetras()
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

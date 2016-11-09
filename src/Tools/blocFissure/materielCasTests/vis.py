@@ -245,4 +245,4 @@ smesh.SetName(tige_haute_2, 'tige_haute')
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()
