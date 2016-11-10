@@ -9,7 +9,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # make two not sewed quadranges
 OY0 = geompy.MakeVectorDXDYDZ(0, 1, 0)

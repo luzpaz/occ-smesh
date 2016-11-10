@@ -49,7 +49,7 @@ geompy.addToStudy( Cut_1, 'Cut_1' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 boite = smesh.Mesh(Box_1)
 Regular_1D = boite.Segment()

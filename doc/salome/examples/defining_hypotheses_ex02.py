@@ -8,7 +8,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create a face from arc and straight segment
 px = geompy.MakeVertex(100., 0.  , 0.  )

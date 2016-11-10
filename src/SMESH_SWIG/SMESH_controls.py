@@ -30,7 +30,7 @@ import SMESH_mechanic
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 mesh = SMESH_mechanic.mesh
 
 # ---- Criterion : AREA > 100

@@ -8,7 +8,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # make geometry of a box
 box = geompy.MakeBoxDXDYDZ(100,100,100)

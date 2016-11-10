@@ -75,7 +75,7 @@ geompy.addToStudy( FaceFissExtCoupe, 'FaceFissExtCoupe' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(objetSain)
 Regular_1D = Mesh_1.Segment()

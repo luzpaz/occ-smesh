@@ -37,7 +37,7 @@ from salome.kernel.uiexception import AdminException
 from omniORB import CORBA
 import SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 import MESHJOB
 
 gui_states = ["CAN_SELECT", "CAN_COMPUTE", "CAN_REFRESH", "CAN_PUBLISH"]

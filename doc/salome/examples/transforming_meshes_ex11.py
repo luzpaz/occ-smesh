@@ -10,7 +10,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # Create a box
 

@@ -72,7 +72,7 @@ geompy.addToStudyInFather( EprouvetteCourbe, Compound_x, 'Compound_x' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 EprouvetteCourbe_1 = smesh.Mesh(EprouvetteCourbe)
 Regular_1D = EprouvetteCourbe_1.Segment()

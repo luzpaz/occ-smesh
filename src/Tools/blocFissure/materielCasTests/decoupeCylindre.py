@@ -125,7 +125,7 @@ geompy.addToStudy( FissInCylindre2, 'FissInCylindre2' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 smeshObj_1 = smesh.CreateHypothesis('NumberOfSegments')
 smeshObj_1.SetNumberOfSegments( 5 )

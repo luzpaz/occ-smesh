@@ -381,11 +381,11 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         else:            val = "false"
         SMESH._objref_SMESH_Gen.SetOption(self, "historical_python_dump", val)
 
-    ## Sets the current study and Geometry component
+    ## Sets Geometry component
     #  @ingroup l1_auxiliary
-    def init_smesh(self,theStudy,geompyD = None):
+    def init_smesh(self,isPublished,geompyD = None):
         #print "init_smesh"
-        if theStudy:
+        if isPublished:
             global notebook
             notebook.myStudy = theStudy
 
@@ -514,10 +514,15 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     
     ## Update the current study. Calling UpdateStudy() allows to 
     #  update meshes at switching GEOM->SMESH
-    #  switch OFF automatic pubilishing in the Study of mesh objects.
     #  @ingroup l1_auxiliary
-    def UpdateStudy( self ):
+    def UpdateStudy( self, geompyD = None  ):
         #self.UpdateStudy()
+        if not geompyD:
+            from salome.geom import geomBuilder
+            geompyD = geomBuilder.geom
+            pass
+        self.geompyD=geompyD
+        self.SetGeomEngine(geompyD)
         SMESH._objref_SMESH_Gen.UpdateStudy(self)
         sb = salome.myStudy.NewBuilder()
         sc = salome.myStudy.FindComponent("SMESH")
@@ -525,7 +530,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         pass
         
     ## Sets enable publishing in the study. Calling SetEnablePublish( false ) allows to
-    #  switch OFF pubilishing in the Study of mesh objects.
+    #  switch OFF publishing in the Study of mesh objects.
     #  @ingroup l1_auxiliary
     def SetEnablePublish( self, theIsEnablePublish ):
         #self.SetEnablePublish(theIsEnablePublish)
@@ -1156,13 +1161,13 @@ omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
 #    import salome
 #    salome.salome_init()
 #    from salome.smesh import smeshBuilder
-#    smesh = smeshBuilder.New(salome.myStudy)
+#    smesh = smeshBuilder.New()
 #  \endcode
-#  @param  study     SALOME study, generally obtained by salome.myStudy.
+#  @param  isPublished If False, the notebool will not be used.
 #  @param  instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
 #  @return smeshBuilder instance
 
-def New( study, instance=None):
+def New( isPublished = True, instance=None):
     """
     Create a new smeshBuilder instance.The smeshBuilder class provides the Python
     interface to create or load meshes.
@@ -1171,10 +1176,10 @@ def New( study, instance=None):
         import salome
         salome.salome_init()
         from salome.smesh import smeshBuilder
-        smesh = smeshBuilder.New(salome.myStudy)
+        smesh = smeshBuilder.New()
 
     Parameters:
-        study     SALOME study, generally obtained by salome.myStudy.
+        isPublished If False, the notebool will not be used.
         instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
     Returns:
         smeshBuilder instance
@@ -1187,7 +1192,7 @@ def New( study, instance=None):
       doLcc = True
     smeshInst = smeshBuilder()
     assert isinstance(smeshInst,smeshBuilder), "Smesh engine class is %s but should be smeshBuilder.smeshBuilder. Import salome.smesh.smeshBuilder before creating the instance."%smeshInst.__class__
-    smeshInst.init_smesh(study)
+    smeshInst.init_smesh(isPublished)
     return smeshInst
 
 
@@ -1605,6 +1610,7 @@ class Mesh:
         self.mesh.Clear()
         if ( salome.sg.hasDesktop() ):
             smeshgui = salome.ImportComponentGUI("SMESH")
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser()
 
@@ -1616,6 +1622,7 @@ class Mesh:
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser()
 

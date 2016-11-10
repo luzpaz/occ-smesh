@@ -104,7 +104,7 @@ geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests/c
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 cubeFin_1 = smesh.Mesh(cubeFin)
 Regular_1D = cubeFin_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(20)

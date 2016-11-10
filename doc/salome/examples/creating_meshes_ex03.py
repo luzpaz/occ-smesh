@@ -8,7 +8,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 [Face_1,Face_2,Face_3,Face_4,Face_5,Face_6] = geompy.SubShapeAllSorted(Box_1, geompy.ShapeType["FACE"])

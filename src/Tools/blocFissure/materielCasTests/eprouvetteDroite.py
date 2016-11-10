@@ -107,7 +107,7 @@ geompy.addToStudy( Face_2, 'Face_2' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 eprouvetteDroite_1 = smesh.Mesh(eprouvetteDroite)
 Regular_1D = eprouvetteDroite_1.Segment()

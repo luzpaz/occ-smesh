@@ -101,7 +101,7 @@ geompy.addToStudyInFather( objetSain, Compound_6, 'Compound_6' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 objetSain_1 = smesh.Mesh(objetSain)
 Regular_1D = objetSain_1.Segment()

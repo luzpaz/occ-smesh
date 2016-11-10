@@ -8,7 +8,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 X = geompy.MakeVectorDXDYDZ( 1,0,0 )
 O = geompy.MakeVertex( 100,50,50 )

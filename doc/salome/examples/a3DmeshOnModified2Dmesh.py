@@ -31,7 +31,7 @@ Sph_Face = geompy.GetInPlace(Cut_1, Sph_Face, isNewImplementation=True, theName=
 
 import  SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 
 Mesh_1 = smesh.Mesh(Cut_1)
 

@@ -8,7 +8,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # Get 1/4 part from the disk face.
 Box_1 = geompy.MakeBoxDXDYDZ(100, 100, 100)

@@ -293,6 +293,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   _id = myPoa->activate_object( _thisObj );
 
   myStudy = GetStudyPtr();
+  myStudyContext = new StudyContext;
 
   myIsEmbeddedMode = false;
   myIsEnablePublish = true;
@@ -677,8 +678,6 @@ SALOMEDS::Study_ptr SMESH_Gen_i::GetStudy()
 //=============================================================================
 StudyContext* SMESH_Gen_i::GetStudyContext()
 {
-  if( !myStudyContext )
-    myStudyContext = new StudyContext;
   return myStudyContext;
 }
 

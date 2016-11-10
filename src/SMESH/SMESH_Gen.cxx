@@ -65,6 +65,8 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
+  _studyContext = new StudyContextStruct;
+  _studyContext->myDocument = new SMESHDS_Document();
   _localId = 0;
   _hypId   = 0;
   _segmentation = _nbSegments = 10;
@@ -97,15 +99,12 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
 {
   Unexpect aCatch(SalomeException);
 
-  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-  StudyContextStruct *aStudyContext = GetStudyContext();
-
   // create a new SMESH_mesh object
   SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
                                      this,
                                      theIsEmbeddedMode,
-                                     aStudyContext->myDocument);
-  aStudyContext->mapMesh[_localId-1] = aMesh;
+                                     _studyContext->myDocument);
+  _studyContext->mapMesh[_localId-1] = aMesh;
 
   return aMesh;
 }
@@ -1120,13 +1119,6 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_subMesh * aSubMesh,
 
 StudyContextStruct *SMESH_Gen::GetStudyContext()
 {
-  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-
-  if (!_studyContext)
-  {
-    _studyContext = new StudyContextStruct;
-    _studyContext->myDocument = new SMESHDS_Document();
-  }
   return _studyContext;
 }
 

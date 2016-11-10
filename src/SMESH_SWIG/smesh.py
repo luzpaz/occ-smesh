@@ -42,7 +42,7 @@ from salome.smesh import smeshBuilder
 try:
     # get instance of class smeshBuilder
     engineSmesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
-    smesh = smeshBuilder.New(salome.myStudy, engineSmesh)
+    smesh = smeshBuilder.New(True,engineSmesh)
 except:
     print "exception in smesh.py: instance creation failed"
     smesh = None
@@ -106,7 +106,7 @@ with
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 
 you also need to modify some lines where smeshBuilder is used instead of smesh
 

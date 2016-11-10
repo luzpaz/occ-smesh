@@ -56,7 +56,7 @@ geompy.addToStudyInFather( Disque, Compound_4, 'Compound_4' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Disque_1 = smesh.Mesh(Disque)
 Regular_1D = Disque_1.Segment()

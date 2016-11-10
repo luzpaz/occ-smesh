@@ -11,7 +11,7 @@ from salome.geom import geomBuilder
 geompy = geomBuilder.New(salome.myStudy)
 
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 
 # logging.debug("initialisation de geompy et smesh OK")
 

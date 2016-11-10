@@ -55,7 +55,7 @@ geompy.addToStudy( Common_1, 'Common_1' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(Box_1)
 Regular_1D = Mesh_1.Segment()

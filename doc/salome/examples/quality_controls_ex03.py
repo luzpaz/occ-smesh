@@ -9,7 +9,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create open shell: a box without one plane
 box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)

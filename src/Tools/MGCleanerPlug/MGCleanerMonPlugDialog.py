@@ -157,7 +157,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     import SMESH
     from salome.kernel import studyedit
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
     
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
@@ -280,7 +280,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
     
     if verbose: print("save hypothesis in Object Browser")
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
     maStudy=studyedit.getActiveStudy()
 
@@ -495,7 +495,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:

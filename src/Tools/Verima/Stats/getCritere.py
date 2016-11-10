@@ -9,7 +9,7 @@ from Type_Maille import dicoDimENtite
 def getCritere(dim,NomMesh,acritere,theStudy):
   import SMESH
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   import numpy
 #  print dim,NomMesh,acritere
   if dim == 2 :
@@ -39,7 +39,7 @@ def getCritere(dim,NomMesh,acritere,theStudy):
 def getCritereGroupe(NomMesh,NomGr,acritere,theStudy):
   import SMESH
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   import numpy
     
   # on ne traite que les mailles 2D et 3D

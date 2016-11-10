@@ -7,7 +7,7 @@ salome.salome_init()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 # create an empty mesh structure

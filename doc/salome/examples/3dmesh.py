@@ -7,7 +7,7 @@ geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 ###
 # Geometry: an assembly of a box, a cylinder and a truncated cone

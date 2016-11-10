@@ -26,7 +26,7 @@ from salome.geom import geomBuilder
 geompy = geomBuilder.New( Config.theStudy )
 
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New( Config.theStudy )
+smesh = smeshBuilder.New()
 
 ##########################################################################################################
 

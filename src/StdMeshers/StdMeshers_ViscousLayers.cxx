@@ -1666,7 +1666,7 @@ namespace VISCOUS_3D
       py = new ofstream(fname);
       *py << "import SMESH" << endl
           << "from salome.smesh import smeshBuilder" << endl
-          << "smesh  = smeshBuilder.New(salome.myStudy)" << endl
+          << "smesh  = smeshBuilder.New()" << endl
           << "meshSO = smesh.GetStudy().FindObjectID('0:1:2:" << tag <<"')" << endl
           << "mesh   = smesh.Mesh( meshSO.GetObject() )"<<endl;
       theNbPyFunc = 0;

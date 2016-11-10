@@ -167,7 +167,7 @@ geompy.addToStudyInFather( Fissure, fondFiss, 'fondFiss' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 coupe_vis_1 = smesh.Mesh(coupe_vis)
 Regular_1D = coupe_vis_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)

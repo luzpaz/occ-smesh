@@ -125,7 +125,7 @@ class SMeshStudyTools:
             return None
         import SMESH
         from salome.smesh import smeshBuilder
-        smesh = smeshBuilder.New(self.editor.study)
+        smesh = smeshBuilder.New()
 
         meshObject=salome.IDToObject(entry)
         return smesh.Mesh( meshObject )
@@ -193,7 +193,7 @@ def TEST_createBoxMesh():
 
     import SMESH, SALOMEDS
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(theStudy) 
+    smesh = smeshBuilder.New() 
 
     from salome.StdMeshers import StdMeshersBuilder
     boxmesh = smesh.Mesh(box)

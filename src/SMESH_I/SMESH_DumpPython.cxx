@@ -1001,9 +1001,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   std::list< TCollection_AsciiString >::iterator linesIt;
   
   if ( isPublished )
-    lines.push_back(  aSMESHGen + " = smeshBuilder.New(theStudy)" );
+    lines.push_back(  aSMESHGen + " = smeshBuilder.New()" );
    else
-    lines.push_back(  aSMESHGen + " = smeshBuilder.New(None)" );
+    lines.push_back(  aSMESHGen + " = smeshBuilder.New(False)" );
   lines.push_back( helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()" );
   lines.push_back( helper + "aMeasurements = "  + aSMESHGen + ".CreateMeasurements()" );
 
