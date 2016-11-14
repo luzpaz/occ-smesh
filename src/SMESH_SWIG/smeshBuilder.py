@@ -1234,6 +1234,7 @@ class Mesh:
                 # publish geom of mesh (issue 0021122)
                 if not self.geom.GetStudyEntry():
                     objHasName = False
+                    geompyD.init_geom( salome.myStudy )
                     if name:
                         geo_name = name + " shape"
                     else:
