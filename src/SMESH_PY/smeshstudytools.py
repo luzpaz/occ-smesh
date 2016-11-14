@@ -183,7 +183,7 @@ class SMeshStudyTools:
 
 
 def TEST_createBoxMesh():
-    theStudy = helper.getActiveStudy()
+    theStudy = helper.getStudy()
     
     import GEOM
     from salome.geom import geomBuilder

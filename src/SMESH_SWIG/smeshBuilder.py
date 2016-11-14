@@ -385,9 +385,10 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #  @ingroup l1_auxiliary
     def init_smesh(self,isPublished,geompyD = None):
         #print "init_smesh"
+        self.UpdateStudy(geompyD)
         if isPublished:
             global notebook
-            notebook.myStudy = theStudy
+            notebook.myStudy = salome.myStudy
 
     ## Creates a mesh. This can be either an empty mesh, possibly having an underlying geometry,
     #  or a mesh wrapping a CORBA mesh given as a parameter.
