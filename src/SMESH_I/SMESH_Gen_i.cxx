@@ -292,7 +292,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   _thisObj = this ;
   _id = myPoa->activate_object( _thisObj );
 
-  myStudy = GetStudyPtr();
+  myStudy = SALOMEDS::Study::_duplicate( GetStudyPtr() );
   myStudyContext = new StudyContext;
 
   myIsEmbeddedMode = false;

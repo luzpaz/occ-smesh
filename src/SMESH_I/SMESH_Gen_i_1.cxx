@@ -198,7 +198,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(CORBA::Object_ptr theObject)
   if ( !CORBA::is_nil( theObject ))
   {
     CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theObject );
-    aSO = SMESH_Gen_i::GetStudyPtr()->FindObjectIOR( objStr.in() );
+    SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetStudyPtr();
+    aSO = aStudy->FindObjectIOR( objStr.in() );
   }
   return aSO._retn();
 }
@@ -212,7 +213,8 @@ SALOMEDS::Study_ptr SMESH_Gen_i::GetStudyPtr()
   SALOME_NamingService* aNamingService = new SALOME_NamingService(SMESH_Gen_i::GetORB());
   CORBA::Object_var aStudyObject = aNamingService->Resolve( "/Study" );
   delete aNamingService;
-  return SALOMEDS::Study::_narrow( aStudyObject );
+  SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow( aStudyObject );
+  return aStudy._retn();
 }
 
 //=======================================================================
