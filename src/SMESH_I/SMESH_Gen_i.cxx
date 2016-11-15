@@ -666,7 +666,7 @@ void SMESH_Gen_i::UpdateStudy()
 //=============================================================================
 SALOMEDS::Study_ptr SMESH_Gen_i::GetStudy()
 {
-  return myStudy;
+  return SALOMEDS::Study::_duplicate( myStudy );
 }
 
 //=============================================================================

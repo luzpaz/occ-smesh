@@ -186,9 +186,7 @@ def GetName(obj):
         except:
             ior = None
         if ior:
-            # CORBA object
-            study = salome.myStudy
-            sobj = s.FindObjectIOR(ior)
+            sobj = salome.myStudy.FindObjectIOR(ior)
             if sobj:
                 return sobj.GetName()
             if hasattr(obj, "GetName"):
