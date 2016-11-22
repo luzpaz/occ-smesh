@@ -204,7 +204,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     newLink=monStudyBuilder.NewObject(SOMesh)
     monStudyBuilder.Addreference(newLink, newStudyIter)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num+=1
     return True
 
@@ -262,7 +262,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
     ACmt.SetValue(datai)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
     if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
     return True
@@ -305,7 +305,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     notebook.set("MGCleaner_%i" % self.num, data)
     """
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
     if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
     return True

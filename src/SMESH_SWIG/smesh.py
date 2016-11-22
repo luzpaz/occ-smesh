@@ -99,7 +99,6 @@ replace
 -------
 
 import smesh, SMESH
-smesh.SetCurrentStudy(theStudy)
 
 with
 ----
