@@ -967,7 +967,6 @@ namespace {
 //================================================================================
 /*!
  * \brief Createa a Dump Python script
- *  \param [in] theStudy - the study to dump
  *  \param [in,out] theObjectNames - map of an entry to a study and python name
  *  \param [in] theNames -  - map of an entry to a study name
  *  \param [in] isPublished - \c true if dump of object publication in study is needed
@@ -1204,7 +1203,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   if ( isMultiFile )
-    initPart += "def RebuildData(theStudy):";
+    initPart += "def RebuildData():";
   initPart += "\n";
 
   anUpdatedScript.Prepend( initPart );
@@ -1215,12 +1214,12 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString removeObjPart;
   if ( !mapRemoved.IsEmpty() ) {
     removeObjPart += nt + "## some objects were removed";
-    removeObjPart += nt + "aStudyBuilder = theStudy.NewBuilder()";
+    removeObjPart += nt + "aStudyBuilder = salome.myStudy.NewBuilder()";
     Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString mapRemovedIt;
     for ( mapRemovedIt.Initialize( mapRemoved ); mapRemovedIt.More(); mapRemovedIt.Next() ) {
       aName   = mapRemovedIt.Value(); // python name
       anEntry = mapRemovedIt.Key();
-      removeObjPart += nt + "SO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
+      removeObjPart += nt + "SO = salome.myStudy.FindObjectIOR(salome.myStudy.ConvertObjectToIOR(";
       removeObjPart += aName;
       // for object wrapped by class of smeshBuilder.py
       if ( anEntry2AccessorMethod.IsBound( anEntry ) )
@@ -1275,9 +1274,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       "\nif __name__ == '__main__':"
       "\n\tSMESH_RebuildData = RebuildData"
       "\n\texec('import '+re.sub('SMESH$','GEOM',thisModule)+' as GEOM_dump')"
-      "\n\tGEOM_dump.RebuildData( salome.myStudy )"
+      "\n\tGEOM_dump.RebuildData()"
       "\n\texec('from '+re.sub('SMESH$','GEOM',thisModule)+' import * ')"
-      "\n\tSMESH_RebuildData( salome.myStudy )";
+      "\n\tSMESH_RebuildData()";
   }
   anUpdatedScript += "\n";
 
