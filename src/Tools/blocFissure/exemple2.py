@@ -4,10 +4,8 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
 
 ###
 ### GEOM component
@@ -18,8 +16,7 @@ from salome.geom import geomBuilder
 import math
 import SALOMEDS
 
-
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New(salome.myStudy)
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
