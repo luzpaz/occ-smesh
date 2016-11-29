@@ -366,8 +366,8 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.
-    def DumpPython(self, theStudy, theIsPublished=True, theIsMultiFile=True):
-        return SMESH._objref_SMESH_Gen.DumpPython(self, theStudy, theIsPublished, theIsMultiFile)
+    def DumpPython(self, theIsPublished=True, theIsMultiFile=True):
+        return SMESH._objref_SMESH_Gen.DumpPython(self, theIsPublished, theIsMultiFile)
 
     ## Set mode of DumpPython(), \a historical or \a snapshot.
     # In the \a historical mode, the Python Dump script includes all commands
