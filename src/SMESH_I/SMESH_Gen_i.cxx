@@ -638,21 +638,27 @@ CORBA::Boolean SMESH_Gen_i::IsEnablePublish()
 
 void SMESH_Gen_i::UpdateStudy()
 {
-  SALOMEDS::StudyBuilder_var aStudyBuilder = myStudy->NewBuilder();
-  SALOMEDS::SComponent_wrap GEOM_var = myStudy->FindComponent( "GEOM" );
-  if( !GEOM_var->_is_nil() )
-    aStudyBuilder->LoadWith( GEOM_var, GetGeomEngine() );
-  // NPAL16168, issue 0020210
-  // Let meshes update their data depending on GEOM groups that could change
-  CORBA::String_var compDataType = ComponentDataType();
-  SALOMEDS::SComponent_wrap me = myStudy->FindComponent( compDataType.in() );
-  if ( !me->_is_nil() ) {
-    SALOMEDS::ChildIterator_wrap anIter = myStudy->NewChildIterator( me );
-    for ( ; anIter->More(); anIter->Next() ) {
-      SALOMEDS::SObject_wrap so = anIter->Value();
-      CORBA::Object_var     ior = SObjectToObject( so );
-      if ( SMESH_Mesh_i*   mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
-        mesh->CheckGeomModif();
+  if ( CORBA::is_nil( myStudy ) ) {
+    myStudy = SALOMEDS::Study::_duplicate( GetStudyPtr() );
+    myStudyContext = new StudyContext;
+  }
+  if ( !CORBA::is_nil( myStudy ) ) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myStudy->NewBuilder();
+    SALOMEDS::SComponent_wrap GEOM_var = myStudy->FindComponent( "GEOM" );
+    if( !GEOM_var->_is_nil() )
+      aStudyBuilder->LoadWith( GEOM_var, GetGeomEngine() );
+    // NPAL16168, issue 0020210
+    // Let meshes update their data depending on GEOM groups that could change
+    CORBA::String_var compDataType = ComponentDataType();
+    SALOMEDS::SComponent_wrap me = myStudy->FindComponent( compDataType.in() );
+    if ( !me->_is_nil() ) {
+      SALOMEDS::ChildIterator_wrap anIter = myStudy->NewChildIterator( me );
+      for ( ; anIter->More(); anIter->Next() ) {
+        SALOMEDS::SObject_wrap so = anIter->Value();
+        CORBA::Object_var     ior = SObjectToObject( so );
+        if ( SMESH_Mesh_i*   mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
+          mesh->CheckGeomModif();
+      }
     }
   }
 }
