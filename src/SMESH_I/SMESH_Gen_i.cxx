@@ -3007,8 +3007,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
     ( isMultiFile ) ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
 
   // Create a sequence of files processed
-  SALOMEDS::ListOfFileNames_var aFileSeq = new SALOMEDS::ListOfFileNames;
-  aFileSeq->length( NUM_TMP_FILES );
+  SALOMEDS_Tool::ListOfFiles aFileSeq;
+  aFileSeq.reserve( NUM_TMP_FILES );
 
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile )
@@ -3019,8 +3019,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
     aStudyName + TCollection_AsciiString( "_SMESH.hdf" );        // for SMESH data itself
   TCollection_AsciiString meshfile =
     aStudyName + TCollection_AsciiString( "_SMESH_Mesh.med" );   // for mesh data to be stored in MED file
-  aFileSeq[ 0 ] = CORBA::string_dup( filename.ToCString() );
-  aFileSeq[ 1 ] = CORBA::string_dup( meshfile.ToCString() );
+  aFileSeq.push_back(CORBA::string_dup( filename.ToCString() ));
+  aFileSeq.push_back(CORBA::string_dup( meshfile.ToCString() ));
   filename = tmpDir + filename;
   meshfile = tmpDir + meshfile;
 
@@ -3923,11 +3923,11 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   delete aFile;
 
   // Convert temporary files to stream
-  aStreamFile = SALOMEDS_Tool::PutFilesToStream( tmpDir.ToCString(), aFileSeq.in(), isMultiFile );
+  aStreamFile = SALOMEDS_Tool::PutFilesToStream( tmpDir.ToCString(), aFileSeq, isMultiFile );
 
   // Remove temporary files and directory
   if ( !isMultiFile )
-    SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
+    SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq, true );
 
   return aStreamFile._retn();
 }
@@ -4007,9 +4007,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     ( char* )( isMultiFile ? theURL : SALOMEDS_Tool::GetTmpDir().c_str() );
 
   // Convert the stream into sequence of files to process
-  SALOMEDS::ListOfFileNames_var aFileSeq = SALOMEDS_Tool::PutStreamToFiles( theStream,
-                                                                            tmpDir.ToCString(),
-                                                                            isMultiFile );
+  SALOMEDS_Tool::ListOfFiles aFileSeq = SALOMEDS_Tool::PutStreamToFiles( theStream,
+                                                                         tmpDir.ToCString(),
+                                                                         isMultiFile );
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile ) {
     CORBA::String_var url = myStudy->URL();
@@ -4824,7 +4824,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     SMESH_File meshFile( meshfile.ToCString() );
     if ( !meshFile ) // no meshfile exists
     {
-      SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
+      SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq, true );
     }
     else
     {

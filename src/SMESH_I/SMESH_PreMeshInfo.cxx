@@ -90,14 +90,14 @@ namespace
     {
       std::string tmpDir = SALOMEDS_Tool::GetDirFromPath( hdfFile );
 
-      SALOMEDS::ListOfFileNames_var aFiles = new SALOMEDS::ListOfFileNames;
-      aFiles->length(2);
+      SALOMEDS_Tool::ListOfFiles aFiles;
+      aFiles.reserve(2);
       medFile = SALOMEDS_Tool::GetNameFromPath( medFile ) + ".med";
       hdfFile = SALOMEDS_Tool::GetNameFromPath( hdfFile ) + ".hdf";
-      aFiles[0] = medFile.c_str();
-      aFiles[1] = hdfFile.c_str();
+      aFiles.push_back(medFile.c_str());
+      aFiles.push_back(hdfFile.c_str());
 
-      SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.c_str(), aFiles.in(), true );
+      SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.c_str(), aFiles, true );
     }
   }
 
