@@ -237,9 +237,7 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
         for ( ; data != _geomGroupData.end(); ++data )
           if ( data->_smeshObject->_is_equivalent( _this() ))
           {
-            SALOMEDS::Study_var study = _gen_i->GetStudy();
-            if ( study->_is_nil() ) break;
-            SALOMEDS::SObject_wrap so = study->FindObjectID( data->_groupEntry.c_str() );
+            SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudy()->FindObjectID( data->_groupEntry.c_str() );
             CORBA::Object_var     obj = _gen_i->SObjectToObject( so );
             aShapeObj = GEOM::GEOM_Object::_narrow( obj );
             break;
@@ -887,28 +885,25 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
     return;
 
   GEOM::GEOM_Object_var aSubShape;
-  SALOMEDS::Study_var aStudy = _gen_i->GetStudy();
-  if ( !aStudy->_is_nil() )  {
-    // Remove submesh's SObject
-    SALOMEDS::SObject_wrap anSO = _gen_i->ObjectToSObject( theSubMesh );
-    if ( !anSO->_is_nil() ) {
-      long aTag = SMESH_Gen_i::GetRefOnShapeTag();
-      SALOMEDS::SObject_wrap anObj, aRef;
-      if ( anSO->FindSubObject( aTag, anObj.inout() ) &&
-           anObj->ReferencedObject( aRef.inout() ))
-      {
-        CORBA::Object_var obj = aRef->GetObject();
-        aSubShape = GEOM::GEOM_Object::_narrow( obj );
-      }
-      // if ( aSubShape->_is_nil() ) // not published shape (IPAL13617)
-      //   aSubShape = theSubMesh->GetSubShape();
-
-      SALOMEDS::StudyBuilder_var builder = aStudy->NewBuilder();
-      builder->RemoveObjectWithChildren( anSO );
-
-      // Update Python script
-      TPythonDump() << SMESH::SMESH_Mesh_var( _this() ) << ".RemoveSubMesh( " << anSO << " )";
+  // Remove submesh's SObject
+  SALOMEDS::SObject_wrap anSO = _gen_i->ObjectToSObject( theSubMesh );
+  if ( !anSO->_is_nil() ) {
+    long aTag = SMESH_Gen_i::GetRefOnShapeTag();
+    SALOMEDS::SObject_wrap anObj, aRef;
+    if ( anSO->FindSubObject( aTag, anObj.inout() ) &&
+         anObj->ReferencedObject( aRef.inout() ))
+    {
+      CORBA::Object_var obj = aRef->GetObject();
+      aSubShape = GEOM::GEOM_Object::_narrow( obj );
     }
+    // if ( aSubShape->_is_nil() ) // not published shape (IPAL13617)
+    //   aSubShape = theSubMesh->GetSubShape();
+
+    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudy()->NewBuilder();
+    builder->RemoveObjectWithChildren( anSO );
+
+    // Update Python script
+    TPythonDump() << SMESH::SMESH_Mesh_var( _this() ) << ".RemoveSubMesh( " << anSO << " )";
   }
 
   if ( removeSubMesh( theSubMesh, aSubShape.in() ))
@@ -1050,19 +1045,15 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
   if ( !aGroup )
     return;
 
-  SALOMEDS::Study_var aStudy = _gen_i->GetStudy();
-  if ( !aStudy->_is_nil() )
+  SALOMEDS::SObject_wrap aGroupSO = _gen_i->ObjectToSObject( theGroup );
+  if ( !aGroupSO->_is_nil() )
   {
-    SALOMEDS::SObject_wrap aGroupSO = _gen_i->ObjectToSObject( theGroup );
-    if ( !aGroupSO->_is_nil() )
-    {
-      // Update Python script
-      TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".RemoveGroup( " << aGroupSO << " )";
+    // Update Python script
+    TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".RemoveGroup( " << aGroupSO << " )";
 
-      // Remove group's SObject
-      SALOMEDS::StudyBuilder_var builder = aStudy->NewBuilder();
-      builder->RemoveObjectWithChildren( aGroupSO );
-    }
+    // Remove group's SObject
+    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudy()->NewBuilder();
+    builder->RemoveObjectWithChildren( aGroupSO );
   }
   aGroup->Modified(/*removed=*/true); // notify dependent Filter with FT_BelongToMeshGroup criterion
 
@@ -1877,9 +1868,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
   TopoDS_Shape newShape;
 
   // get geom group
-  SALOMEDS::Study_var study = _gen_i->GetStudy();
-  if ( study->_is_nil() ) return newShape; // means "not changed"
-  SALOMEDS::SObject_wrap groupSO = study->FindObjectID( groupData._groupEntry.c_str() );
+  SALOMEDS::SObject_wrap groupSO = SMESH_Gen_i::getStudy()->FindObjectID( groupData._groupEntry.c_str() );
   if ( !groupSO->_is_nil() )
   {
     CORBA::Object_var groupObj = _gen_i->SObjectToObject( groupSO );
@@ -2362,7 +2351,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
 
   SALOMEDS::StudyBuilder_var builder;
   SALOMEDS::SObject_wrap     aGroupSO;
-  SALOMEDS::Study_var        aStudy = _gen_i->GetStudy();
+  SALOMEDS::Study_var        aStudy = SMESH_Gen_i::getStudy();
   if ( !aStudy->_is_nil() ) {
     builder  = aStudy->NewBuilder();
     aGroupSO = _gen_i->ObjectToSObject( theGroup );
@@ -2945,7 +2934,7 @@ string SMESH_Mesh_i::prepareMeshNameAndGroups(const char*    file,
   // Perform Export
   PrepareForWriting(file, overwrite);
   string aMeshName = "Mesh";
-  SALOMEDS::Study_var aStudy = _gen_i->GetStudy();
+  SALOMEDS::Study_var aStudy = SMESH_Gen_i::getStudy();
   if ( !aStudy->_is_nil() ) {
     SALOMEDS::SObject_wrap aMeshSO = _gen_i->ObjectToSObject(  _this() );
     if ( !aMeshSO->_is_nil() ) {
@@ -5067,15 +5056,12 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   if(gen) {
     CORBA::String_var aParameters = GetParameters();
-    SALOMEDS::Study_var    aStudy = gen->GetStudy();
-    if ( !aStudy->_is_nil()) {
-      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
-      if ( aSections->length() > 0 ) {
-        SALOMEDS::ListOfStrings aVars = aSections[ aSections->length() - 1 ];
-        aResult->length( aVars.length() );
-        for ( CORBA::ULong i = 0;i < aVars.length(); i++ )
-          aResult[i] = CORBA::string_dup( aVars[i] );
-      }
+    SALOMEDS::ListOfListOfStrings_var aSections = SMESH_Gen_i::getStudy()->ParseVariables(aParameters);
+    if ( aSections->length() > 0 ) {
+      SALOMEDS::ListOfStrings aVars = aSections[ aSections->length() - 1 ];
+      aResult->length( aVars.length() );
+      for ( CORBA::ULong i = 0;i < aVars.length(); i++ )
+        aResult[i] = CORBA::string_dup( aVars[i] );
     }
   }
   return aResult._retn();

@@ -84,9 +84,8 @@ namespace SMESH
       const Handle(SALOME_InteractiveObject)& anIO = theOwner->IO();
       if(!anIO.IsNull()){
         if(anIO->hasEntry()){
-          _PTR(Study) aStudy = GetActiveStudyDocument();
-          _PTR(SObject) aSObj = aStudy->FindObjectID(anIO->getEntry());
-          anObj = SObjectToObject(aSObj,aStudy);
+          _PTR(SObject) aSObj = getStudy()->FindObjectID(anIO->getEntry());
+          anObj = SObjectToObject(aSObj);
         }
       }
     }
@@ -112,13 +111,9 @@ namespace SMESH
       return NULL;
   }
 
-  _PTR(Study) GetActiveStudyDocument()
+  _PTR(Study) getStudy()
   {
-    SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(GetActiveStudy());
-    if (aStudy)
-      return aStudy->studyDS();
-    else
-      return _PTR(Study)();
+    SalomeApp_Application::getStudy();
   }
 
   _PTR(SObject) FindSObject (CORBA::Object_ptr theObject)
@@ -126,26 +121,23 @@ namespace SMESH
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
     if (app && !CORBA::is_nil(theObject)) {
-      if(_PTR(Study) aStudy = GetActiveStudyDocument()){
-        CORBA::String_var anIOR = app->orb()->object_to_string(theObject);
-        if (strcmp(anIOR.in(), "") != 0)
-          return aStudy->FindObjectIOR(anIOR.in());
-      }
+      CORBA::String_var anIOR = app->orb()->object_to_string(theObject);
+      if (strcmp(anIOR.in(), "") != 0)
+        return getStudy()->FindObjectIOR(anIOR.in());
     }
     return _PTR(SObject)();
   }
 
   void SetName (_PTR(SObject) theSObject, const QString& theName)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
-    if (aStudy->GetProperties()->IsLocked())
+    if (getStudy()->GetProperties()->IsLocked())
       return;
     SMESHGUI::GetSMESHGen()->SetName(theSObject->GetIOR().c_str(), theName.toLatin1().data());
   }
 
   void SetValue (_PTR(SObject) theSObject, const QString& theValue)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy = getStudy();
     if (aStudy->GetProperties()->IsLocked())
       return;
     _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
@@ -158,7 +150,7 @@ namespace SMESH
   
   void setFileName (_PTR(SObject) theSObject, const QString& theValue)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy = getStudy();
     if (aStudy->GetProperties()->IsLocked())
       return;
     _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
@@ -171,7 +163,7 @@ namespace SMESH
   
   void setFileType (_PTR(SObject) theSObject, const QString& theValue)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy = getStudy();
     if (aStudy->GetProperties()->IsLocked())
       return;
     _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
@@ -182,8 +174,7 @@ namespace SMESH
       aFileType->SetValue(theValue.toLatin1().data());
   }
 
-  CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
-                                     _PTR(Study)   /*theStudy*/)
+  CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject )
   {
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
@@ -199,12 +190,6 @@ namespace SMESH
       }
     }
     return CORBA::Object::_nil();
-  }
-
-  CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject)
-  {
-    _PTR(Study) aStudy;// = GetActiveStudyDocument(); -- aStudy is not used
-    return SObjectToObject(theSObject,aStudy);
   }
 
   _PTR(SObject) ObjectToSObject( CORBA::Object_ptr theObject )
@@ -225,9 +210,8 @@ namespace SMESH
   {
     if (!theIO.IsNull()) {
       if (theIO->hasEntry()) {
-        _PTR(Study) aStudy = GetActiveStudyDocument();
-        _PTR(SObject) anObj = aStudy->FindObjectID(theIO->getEntry());
-        return SObjectToObject(anObj,aStudy);
+        _PTR(SObject) anObj = getStudy()->FindObjectID(theIO->getEntry());
+        return SObjectToObject(anObj);
       }
     }
     return CORBA::Object::_nil();
@@ -273,7 +257,7 @@ namespace SMESH
 
   void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNotModif, bool isEmptyMesh)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy = getStudy();
     if (aStudy->GetProperties()->IsLocked())
       return;
 
@@ -308,7 +292,7 @@ namespace SMESH
           aPixmap = anAttr;
 
           std::string entry = aSObj1->GetID();
-          int objType = SMESHGUI_Selection::type( entry.c_str(), aStudy );
+          int objType = SMESHGUI_Selection::type( entry.c_str() );
           if ( objType == SMESH::HYPOTHESIS || objType == SMESH::ALGORITHM )
             continue;
 

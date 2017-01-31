@@ -227,7 +227,7 @@ void SMESHGUI_MeshOp::startOperation()
   }
   SMESHGUI_SelectionOp::startOperation();
   // iterate through dimensions and get available algorithms, set them to the dialog
-  _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
+  _PTR(SComponent) aFather = SMESH::getStudy()->FindComponent( "SMESH" );
   for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ )
   {
     SMESHGUI_MeshTab* aTab = myDlg->tab( i );
@@ -479,7 +479,7 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
       }
       _PTR(GenericAttribute) anAttr;
       _PTR(SObject) aSubmeshRoot;
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+      _PTR(Study) aStudy = SMESH::getStudy();
       if ( pMesh->FindSubObject( tag, aSubmeshRoot ) )
       {
         _PTR(ChildIterator) smIter = aStudy->NewChildIterator( aSubmeshRoot );
@@ -1050,8 +1050,7 @@ void SMESHGUI_MeshOp::existingHyps( const int       theDim,
 
   if ( theFather->FindSubObject( aPart, aHypRoot ) )
   {
-    _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypRoot );
+    _PTR(ChildIterator) anIter = SMESH::getStudy()->NewChildIterator( aHypRoot );
     for ( ; anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();
@@ -1396,7 +1395,7 @@ void SMESHGUI_MeshOp::onHypoCreated( int result )
     myDlg->setEnabled( true );
   }
 
-  _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
+  _PTR(SComponent) aFather = SMESH::getStudy()->FindComponent("SMESH");
 
   int nbHyp = myExistingHyps[myDim][myType].count();
   HypothesisData* algoData = hypData( myDim, Algo, currentHyp( myDim, Algo ));
@@ -1609,7 +1608,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
   // set hypotheses corresponding to the found algorithms
 
-  _PTR(SObject) pObj = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
+  _PTR(SObject) pObj = SMESH::getStudy()->FindComponent("SMESH");
 
   for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
@@ -2113,7 +2112,7 @@ void SMESHGUI_MeshOp::setDefaultName( const QString& thePrefix ) const
 {
   QString aResName;
 
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  _PTR(Study) aStudy = SMESH::getStudy();
   int i = 1;
 
   QString aPrefix = thePrefix;
@@ -2154,7 +2153,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
   QString aHypName = dataList[ aHypIndex ]->TypeName;
 
   // get existing algorithms
-  _PTR(SObject) pObj = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
+  _PTR(SObject) pObj = SMESH::getStudy()->FindComponent("SMESH");
   QStringList tmp;
   existingHyps( theDim, Algo, pObj, tmp, myExistingHyps[ theDim ][ Algo ]);
 
@@ -2200,7 +2199,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
         delete aCreator;
       }
       QStringList tmpList;
-      _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
+      _PTR(SComponent) aFather = SMESH::getStudy()->FindComponent( "SMESH" );
       existingHyps( theDim, Algo, aFather, tmpList, myExistingHyps[ theDim ][ Algo ] );
     }
 

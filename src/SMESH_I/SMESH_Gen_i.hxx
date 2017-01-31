@@ -156,7 +156,7 @@ public:
   // Get the SALOMEDS::SObject corresponding to a CORBA object
   static SALOMEDS::SObject_ptr ObjectToSObject(CORBA::Object_ptr theObject);
   // Get the SALOMEDS::Study from naming service
-  static SALOMEDS::Study_ptr GetStudyPtr();
+  static SALOMEDS::Study_ptr getStudy();
   // Get GEOM Object correspoding to TopoDS_Shape
   GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
   // Get TopoDS_Shape correspoding to GEOM_Object
@@ -196,9 +196,6 @@ public:
 
   // Update study
   void UpdateStudy();
-
-  // Get study
-  SALOMEDS::Study_ptr GetStudy();
 
   // Create hypothesis/algorothm of given type
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,

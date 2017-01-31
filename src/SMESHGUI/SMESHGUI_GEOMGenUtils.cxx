@@ -93,11 +93,7 @@ namespace SMESH
     if ( !aMeshShape->_is_nil() )
       return aMeshShape;
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!aStudy)
-      return aMeshShape;
-
-    _PTR(ChildIterator) anIter (aStudy->NewChildIterator(theSO));
+    _PTR(ChildIterator) anIter (SMESH::getStudy()->NewChildIterator(theSO));
     for ( ; anIter->More(); anIter->Next()) {
       _PTR(SObject) aSObject = anIter->Value();
       _PTR(SObject) aRefSOClient;
@@ -120,11 +116,7 @@ namespace SMESH
     if (!smeshSO)
       return 0;
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!aStudy)
-      return 0;
-
-    _PTR(ChildIterator) anIter (aStudy->NewChildIterator( smeshSO ));
+    _PTR(ChildIterator) anIter (SMESH::getStudy()->NewChildIterator( smeshSO ));
     for ( ; anIter->More(); anIter->Next()) {
       _PTR(SObject) aSObject = anIter->Value();
       _PTR(SObject) aRefSOClient;
@@ -182,10 +174,7 @@ namespace SMESH
     meshGeom.clear();
     if ( hypIO.IsNull() ) return false;
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if ( !aStudy ) return false;
-
-    _PTR(SObject) hypSO = aStudy->FindObjectID( hypIO->getEntry() );
+    _PTR(SObject) hypSO = SMESH::getStudy()->FindObjectID( hypIO->getEntry() );
     if ( !hypSO ) return false;
 
     // Depth() is a number of fathers

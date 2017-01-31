@@ -90,11 +90,10 @@ void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesi
     // Remove SO of 1D hypothesis if it was published
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen())
     {
-      SALOMEDS::Study_var study = gen->GetStudy();
       SALOMEDS::SObject_var  SO = gen->ObjectToSObject( hyp1D );
       if ( ! SO->_is_nil() )
       {
-        SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
+        SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudy()->NewBuilder();
         builder->RemoveObjectWithChildren( SO );
         SO->UnRegister();
       }

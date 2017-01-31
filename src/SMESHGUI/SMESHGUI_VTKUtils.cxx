@@ -541,7 +541,7 @@ namespace SMESH
       return NULL;
 
     if(!CORBA::is_nil(theObject)){
-      _PTR(Study) aStudy = GetActiveStudyDocument();
+      _PTR(Study) aStudy = getStudy();
       CORBA::String_var anIOR = app->orb()->object_to_string( theObject );
       _PTR(SObject) aSObject = aStudy->FindObjectIOR(anIOR.in());
       if(aSObject){
@@ -558,7 +558,7 @@ namespace SMESH
   {
     SMESH_Actor *anActor = NULL;
     if(TVisualObjPtr aVisualObj = GetVisualObj(theEntry)){
-      _PTR(SObject) aSObj = GetActiveStudyDocument()->FindObjectID(theEntry);
+      _PTR(SObject) aSObj = getStudy()->FindObjectID(theEntry);
       if(aSObj){
         _PTR(GenericAttribute) anAttr;
         if(aSObj->FindAttribute(anAttr,"AttributeName")){

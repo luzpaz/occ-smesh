@@ -169,14 +169,13 @@ char* StdMeshers_ImportSource1D_i::SaveTo()
   std::ostringstream os;
   os << " " << _groupEntries->length();
 
-  SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetStudy();
   for ( size_t i = 0; i < _groupEntries->length(); ++i )
   {
     // entry
     os << " " << _groupEntries[i];
 
     // id
-    SALOMEDS::SObject_wrap groupSO = study->FindObjectID( _groupEntries[i] );
+    SALOMEDS::SObject_wrap groupSO = SMESH_Gen_i::getStudy()->FindObjectID( _groupEntries[i] );
     CORBA::Object_var     groupObj;
     if ( !groupSO->_is_nil() )
       groupObj = groupSO->GetObject();

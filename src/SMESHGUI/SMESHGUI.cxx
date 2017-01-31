@@ -271,7 +271,7 @@ namespace
     if ( filenames.count() > 0 )
     {
       SUIT_OverrideCursor wc;
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+      _PTR(Study) aStudy = SMESH::getStudy();
 
       QStringList errors;
       QStringList anEntryList;
@@ -1326,7 +1326,7 @@ namespace
       if ( selected.Extent() )
       {
         Handle(SALOME_InteractiveObject) anIObject = selected.First();
-        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+        _PTR(Study) aStudy = SMESH::getStudy();
         _PTR(SObject) aSObj = aStudy->FindObjectID(anIObject->getEntry());
         if (aSObj) {
           if ( aStudy->GetUseCaseBuilder()->SortChildren( aSObj, true/*AscendingOrder*/ ) ) {
@@ -1669,7 +1669,7 @@ namespace
   void Control( int theCommandID )
   {
     SMESH_Actor::eControl aControl = SMESH_Actor::eControl( ActionToControl( theCommandID ));
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(Study) aStudy = SMESH::getStudy();
 
     SALOME_ListIO selected;
     if ( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
@@ -1745,7 +1745,7 @@ namespace
 
   QString CheckTypeObject(const Handle(SALOME_InteractiveObject) & theIO)
   {
-    _PTR(Study)  aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(Study)  aStudy = SMESH::getStudy();
     _PTR(SObject) aSObj = aStudy->FindObjectID(theIO->getEntry());
     if (aSObj) {
       _PTR(SComponent) aSComp = aSObj->GetFatherComponent();
@@ -1809,7 +1809,7 @@ void SMESHGUI::OnEditDelete()
   LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
   SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
 
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  _PTR(Study) aStudy = SMESH::getStudy();
   _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
   _PTR(GenericAttribute) anAttr;
   _PTR(AttributeIOR) anIOR;
@@ -2374,29 +2374,18 @@ bool SMESHGUI::DefineDlgPosition(QWidget * aDlg, int &x, int &y)
  *
  */
 //=============================================================================
-static int isStudyLocked(_PTR(Study) theStudy){
-  return theStudy->GetProperties()->IsLocked();
+static int isStudyLocked(){
+  return SMESH::getStudy()->GetProperties()->IsLocked();
 }
 
-static bool checkLock(_PTR(Study) theStudy) {
-  if (isStudyLocked(theStudy)) {
+static bool checkLock() {
+  if (isStudyLocked()) {
     SUIT_MessageBox::warning( SMESHGUI::desktop(),
                               QObject::tr("WRN_WARNING"),
                               QObject::tr("WRN_STUDY_LOCKED") );
     return true;
   }
   return false;
-}
-
-//=======================================================================
-//function : CheckActiveStudyLocked
-//purpose  :
-//=======================================================================
-
-bool SMESHGUI::isActiveStudyLocked()
-{
-  _PTR(Study) aStudy = activeStudy()->studyDS();
-  return checkLock( aStudy );
 }
 
 //=============================================================================
@@ -2410,7 +2399,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   if( !anApp )
     return false;
 
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
   SUIT_ResourceMgr* mgr = resourceMgr();
   if( !mgr )
     return false;
@@ -2422,7 +2410,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   switch (theCommandID) {
   case SMESHOp::OpDelete:
-    if(checkLock(aStudy)) break;
+    if(checkLock()) break;
     OnEditDelete();
     break;
   case SMESHOp::OpImportDAT:
@@ -2435,7 +2423,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpImportSAUV:
   case SMESHOp::OpImportGMF:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       ::ImportMeshesFromFile(GetSMESHGen(),theCommandID);
       break;
     }
@@ -2601,7 +2589,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpUpdate:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       SUIT_OverrideCursor wc;
       try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
@@ -2670,7 +2658,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         }
 
         // PAL13338 + PAL15161 -->
-        if ( ( theCommandID==SMESHOp::OpShow || theCommandID==SMESHOp::OpShowOnly ) && !checkLock(aStudy)) {
+        if ( ( theCommandID==SMESHOp::OpShow || theCommandID==SMESHOp::OpShowOnly ) && !checkLock()) {
           SMESH::UpdateView();
           SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
         }
@@ -2692,7 +2680,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpNode:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
 
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
@@ -2719,14 +2707,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     break;
   case SMESHOp::OpCopyMesh:
     {
-      if (checkLock(aStudy)) break;
+      if (checkLock()) break;
       EmitSignalDeactivateDialog();
       ( new SMESHGUI_CopyMeshDlg( this ) )->show();
     }
     break;
   case SMESHOp::OpBuildCompoundMesh:
     {
-      if (checkLock(aStudy)) break;
+      if (checkLock()) break;
       EmitSignalDeactivateDialog();
       ( new SMESHGUI_BuildCompoundDlg( this ) )->show();
     }
@@ -2741,7 +2729,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if ( checkLock( aStudy ) )
+      if ( checkLock() )
         break;
 
       /*Standard_Boolean aRes;
@@ -2771,7 +2759,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if ( checkLock( aStudy ) )
+      if ( checkLock() )
         break;
 
       EmitSignalDeactivateDialog();
@@ -2790,7 +2778,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpSmoothing:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SmoothingDlg( this ) )->show();
@@ -2802,7 +2790,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpExtrusion:
     {
-      if (checkLock(aStudy)) break;
+      if (checkLock()) break;
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionDlg ( this ) )->show();
@@ -2813,7 +2801,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpExtrusionAlongAPath:
     {
-      if (checkLock(aStudy)) break;
+      if (checkLock()) break;
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionAlongPathDlg( this ) )->show();
@@ -2824,7 +2812,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpRevolution:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RevolutionDlg( this ) )->show();
@@ -2836,7 +2824,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpPatternMapping:
     {
-      if ( checkLock( aStudy ) )
+      if ( checkLock() )
         break;
       if ( vtkwnd )
       {
@@ -2865,7 +2853,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       EmitSignalDeactivateDialog();
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
 
@@ -2892,7 +2880,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -2905,7 +2893,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         // check if submesh is selected
         Handle(SALOME_InteractiveObject) IObject = selected.First();
         if (IObject->hasEntry()) {
-          _PTR(SObject) aSObj = aStudy->FindObjectID(IObject->getEntry());
+          _PTR(SObject) aSObj = SMESH::getStudy()->FindObjectID(IObject->getEntry());
           if( aSObj ) {
             SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( aSObj ) );
             if (!aSubMesh->_is_nil()) {
@@ -2969,7 +2957,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -2999,7 +2987,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpAddElemGroupPopup:     // Add elements to group
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if (myState == 800) {
         SMESHGUI_GroupDlg *aDlg = (SMESHGUI_GroupDlg*) myActiveDialogBox;
         if (aDlg) aDlg->onAdd();
@@ -3009,7 +2997,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpRemoveElemGroupPopup:  // Remove elements from group
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if (myState == 800) {
         SMESHGUI_GroupDlg *aDlg = (SMESHGUI_GroupDlg*) myActiveDialogBox;
         if (aDlg) aDlg->onRemove();
@@ -3025,7 +3013,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3065,7 +3053,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if ( checkLock( aStudy ) )
+      if ( checkLock() )
         break;
 
       EmitSignalDeactivateDialog();
@@ -3085,7 +3073,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
     case SMESHOp::OpGroupUnderlyingElem: // Create groups of entities from existing groups of superior dimensions
     {
-      if ( checkLock( aStudy ) )
+      if ( checkLock() )
         break;
 
       EmitSignalDeactivateDialog();
@@ -3103,7 +3091,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         break;
       }
 
-      if ( checkLock( aStudy ) )
+      if ( checkLock() )
         break;
 
       EmitSignalDeactivateDialog();
@@ -3145,7 +3133,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpEditHypothesis:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
@@ -3190,7 +3178,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpUnassign:                      // REMOVE HYPOTHESIS / ALGORITHMS
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       SUIT_OverrideCursor wc;
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3221,7 +3209,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpPyramid:
   case SMESHOp::OpHexagonalPrism:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Edge;
@@ -3247,7 +3235,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpPolyhedron:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_CreatePolyhedralVolumeDlg( this ) )->show();
@@ -3269,7 +3257,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpQuadraticHexahedron:
   case SMESHOp::OpTriQuadraticHexahedron:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Last;
@@ -3299,7 +3287,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpRemoveNodes:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RemoveNodesDlg( this ) )->show();
@@ -3312,7 +3300,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpRemoveElements:                                    // REMOVES ELEMENTS
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RemoveElementsDlg( this ) )->show();
@@ -3326,7 +3314,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpClearMesh: {
 
-    if(checkLock(aStudy)) break;
+    if(checkLock()) break;
 
     SALOME_ListIO selected;
     if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
@@ -3347,7 +3335,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SMESH::ModifiedMesh( aMeshSObj, false, true);
         // hide groups and submeshes
         _PTR(ChildIterator) anIter =
-          SMESH::GetActiveStudyDocument()->NewChildIterator( aMeshSObj );
+          SMESH::getStudy()->NewChildIterator( aMeshSObj );
         for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
         {
           _PTR(SObject) so = anIter->Value();
@@ -3366,7 +3354,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   }
   case SMESHOp::OpRemoveOrphanNodes:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       SALOME_ListIO selected;
       if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
         aSel->selectedObjects( selected );
@@ -3405,7 +3393,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpRenumberingNodes:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RenumberingDlg( this, 0 ) )->show();
@@ -3419,7 +3407,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpRenumberingElements:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RenumberingDlg( this, 1 ) )->show();
@@ -3433,7 +3421,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpTranslation:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_TranslationDlg( this ) )->show();
@@ -3446,7 +3434,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpRotation:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RotationDlg( this ) )->show();
@@ -3459,7 +3447,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpSymmetry:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SymmetryDlg( this ) )->show();
@@ -3472,7 +3460,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpScale:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ScaleDlg( this ) )->show();
@@ -3486,7 +3474,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpSewing:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SewingDlg( this ) )->show();
@@ -3499,7 +3487,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpMergeNodes:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_MergeDlg( this, 0 ) )->show();
@@ -3512,7 +3500,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpMergeElements:
     {
-      if (checkLock(aStudy)) break;
+      if (checkLock()) break;
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_MergeDlg( this, 1 ) )->show();
@@ -3529,7 +3517,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpDuplicateNodes:
     {
-      if(checkLock(aStudy)) break;
+      if(checkLock()) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_DuplicateNodesDlg( this ) )->show();
@@ -5564,8 +5552,7 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
 
 void SMESHGUI::switchToOperation(int id)
 {
-  if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() )
-    activeStudy()->abortAllOperations();
+  activeStudy()->abortAllOperations();
   startOperation( id );
 }
 
@@ -6990,7 +6977,7 @@ bool SMESHGUI::renameAllowed( const QString& entry) const {
     return false;
 
   // check type to prevent renaming of inappropriate objects
-  int aType = SMESHGUI_Selection::type(qPrintable(entry), SMESH::GetActiveStudyDocument());
+  int aType = SMESHGUI_Selection::type(qPrintable(entry));
   if (aType == SMESH::MESH || aType == SMESH::GROUP ||
       aType == SMESH::SUBMESH || aType == SMESH::SUBMESH_COMPOUND ||
       aType == SMESH::SUBMESH_SOLID || aType == SMESH::SUBMESH_FACE ||
@@ -7037,7 +7024,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
     if ( obj->FindAttribute(anAttr, "AttributeName") ) {
       aName = anAttr;
       // check type to prevent renaming of inappropriate objects
-      int aType = SMESHGUI_Selection::type( qPrintable(entry), SMESH::GetActiveStudyDocument() );
+      int aType = SMESHGUI_Selection::type( qPrintable(entry));
       if (aType == SMESH::MESH || aType == SMESH::GROUP ||
           aType == SMESH::SUBMESH || aType == SMESH::SUBMESH_COMPOUND ||
           aType == SMESH::SUBMESH_SOLID || aType == SMESH::SUBMESH_FACE ||

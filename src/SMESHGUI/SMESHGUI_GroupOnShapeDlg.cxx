@@ -299,7 +299,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
     return false;
 
   // study
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  _PTR(Study) aStudy = SMESH::getStudy();
   if ( !aStudy ) return false;
 
   // mesh
@@ -459,7 +459,7 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
   QStringList goodNames, goodIds;
   if (nbSelected > 0) {
     // study
-    if (_PTR(Study) aStudy = SMESH::GetActiveStudyDocument()) {
+    if (_PTR(Study) aStudy = SMESH::getStudy()) {
       // mesh
       if (_PTR(SObject)  meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() )) {
         // shape to mesh

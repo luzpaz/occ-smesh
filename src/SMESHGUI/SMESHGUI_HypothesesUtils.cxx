@@ -697,7 +697,7 @@ namespace SMESH
     SUIT_OverrideCursor wc;
 
     try {
-      _PTR(Study) aStudy = GetActiveStudyDocument();
+      _PTR(Study) aStudy = getStudy();
       _PTR(SObject) aHypObj = aStudy->FindObjectID( IObject->getEntry() );
       if( aHypObj )
         {

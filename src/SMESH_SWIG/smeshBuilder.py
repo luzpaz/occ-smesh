@@ -540,12 +540,6 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         else:
             notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
 
-    ## Gets the study
-    #  @ingroup l1_auxiliary
-    def GetStudy(self):
-        #return self.GetStudy()
-        return SMESH._objref_SMESH_Gen.GetStudy(self)
-
     ## Creates a Mesh object importing data from the given UNV file
     #  @return an instance of Mesh class
     #  @ingroup l2_impexp
@@ -753,7 +747,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     raise ValueError, "Group type mismatches Element type"
                 aCriterion.ThresholdStr = aThreshold.GetName()
                 aCriterion.ThresholdID  = salome.orb.object_to_string( aThreshold )
-                study = self.GetStudy()
+                study = salome.myStudy
                 if study:
                     so = study.FindObjectIOR( aCriterion.ThresholdID )
                     if so:

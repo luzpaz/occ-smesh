@@ -377,9 +377,7 @@ namespace SMESH
     _PTR(SObject) so = SMESH::FindSObject(aMainShape);
     if ( subShapeID == 1 || !so )
       return so;
-    _PTR(ChildIterator) it;
-    if (_PTR(Study) study = SMESH::GetActiveStudyDocument())
-      it =  study->NewChildIterator(so);
+    _PTR(ChildIterator) it = SMESH::getStudy()->NewChildIterator(so);
     _PTR(SObject) subSO;
     if ( it ) {
       for ( it->InitEx(true); !subSO && it->More(); it->Next() ) {
@@ -925,7 +923,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
     // NPAL16631: if ( !memoryLack )
     {
-      _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID(myIObject->getEntry());
+      _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID(myIObject->getEntry());
       SMESH::ModifiedMesh( sobj,
                            !computeFailed && aHypErrors.isEmpty(),
                            myMesh->NbNodes() == 0);
@@ -1778,8 +1776,7 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject)  theMesh,
   int aPart = SMESH::Tag_RefOnAppliedAlgorithms;
   if ( theMesh->FindSubObject( aPart, aHypFolder ))
   {
-    _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
+    _PTR(ChildIterator) anIter = SMESH::getStudy()->NewChildIterator( aHypFolder );
     for ( ; anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();
@@ -1822,8 +1819,7 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject)  theMesh,
     if ( !theMesh->FindSubObject( aPart, aHypFolder ))
       continue;
 
-    _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
+    _PTR(ChildIterator) anIter = SMESH::getStudy()->NewChildIterator( aHypFolder );
     for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();

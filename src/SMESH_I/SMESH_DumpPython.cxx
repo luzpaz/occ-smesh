@@ -74,8 +74,7 @@ namespace SMESH
       SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
       std::string aString = myStream.str();
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
-      SALOMEDS::Study_var aStudy = aSMESHGen->GetStudy();
-      if(!aStudy->_is_nil() && !aCollection.IsEmpty())
+      if(!aCollection.IsEmpty())
       {
         const std::string & objEntry = SMESH_Gen_i::GetSMESHGen()->GetLastObjEntry();
         if ( !objEntry.empty() )

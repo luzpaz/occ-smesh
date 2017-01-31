@@ -325,7 +325,6 @@ private:
   Handle(_pyCommand)                        myLastCommand;
   int                                       myNbFilters;
   bool                                      myToKeepAllCommands;
-  SALOMEDS::Study_var                       myStudy;
   int                                       myGeomIDNb, myGeomIDIndex;
   std::map< _AString, ExportedMeshData >    myFile2ExportedMesh;
   Handle( _pyHypothesisReader )             myHypReader;

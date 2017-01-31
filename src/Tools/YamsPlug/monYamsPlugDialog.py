@@ -135,7 +135,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
-    maStudy=studyedit.getStudy()
+    maStudy=salome.myStudy
     smesh.UpdateStudy()
     (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
     name=str(self.LE_MeshSmesh.text())
@@ -256,7 +256,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if verbose: print("save hypothesis in Object Browser")
     smesh = smeshBuilder.New()
 
-    maStudy=studyedit.getStudy()
+    maStudy=salome.myStudy
     smesh.UpdateStudy()
 
     self.editor = studyedit.getStudyEditor()

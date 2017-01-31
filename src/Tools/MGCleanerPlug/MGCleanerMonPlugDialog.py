@@ -162,7 +162,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
-    maStudy=studyedit.getStudy()
+    maStudy=salome.myStudy
     (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
     name=str(self.LE_MeshSmesh.text())
     initialMeshFile=None
@@ -282,7 +282,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if verbose: print("save hypothesis in Object Browser")
     smesh = smeshBuilder.New()
 
-    maStudy=studyedit.getStudy()
+    maStudy=salome.myStudy
 
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
@@ -640,7 +640,7 @@ def TEST_standalone():
   import SMESH
   from salome.kernel import studyedit
   salome.salome_init()
-  maStudy=studyedit.getStudy()
+  maStudy=salome.myStudy
   #etc...a mano...
 
 #

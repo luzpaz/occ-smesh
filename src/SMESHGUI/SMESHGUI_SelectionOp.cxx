@@ -307,7 +307,7 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
     SalomeApp_Study* _study = dynamic_cast<SalomeApp_Study*>( study() );
     if( _study )
     {
-      int t = SMESHGUI_Selection::type( str, _study->studyDS() );
+      int t = SMESHGUI_Selection::type( str );
       if( t<0 )
       {
         //try to get GEOM type

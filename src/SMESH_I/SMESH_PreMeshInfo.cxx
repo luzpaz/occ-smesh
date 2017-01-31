@@ -1220,10 +1220,9 @@ bool SMESH_PreMeshInfo::IsMeshInfoCorrect() const
 
 void SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD(SALOMEDS::SComponent_ptr smeshComp)
 {
-  SALOMEDS::Study_var study = smeshComp->GetStudy();
   if ( theMeshCounter > 0 )
   {
-    SALOMEDS::ChildIterator_wrap itBig = study->NewChildIterator( smeshComp );
+    SALOMEDS::ChildIterator_wrap itBig = SMESH_Gen_i::getStudy()->NewChildIterator( smeshComp );
     for ( ; itBig->More(); itBig->Next() ) {
       SALOMEDS::SObject_wrap gotBranch = itBig->Value();
       CORBA::Object_var       anObject = SMESH_Gen_i::SObjectToObject( gotBranch );

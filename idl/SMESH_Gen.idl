@@ -142,11 +142,6 @@ module SMESH
       Update the study
      */
     void UpdateStudy();
-
-    /*!
-      Get the study
-     */
-    SALOMEDS::Study GetStudy();
     
     /*!
       Set enable publishing in the study
