@@ -711,11 +711,12 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean isPublished,
                                            CORBA::Boolean isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {
-  if (CORBA::is_nil(myStudy))
+  SALOMEDS::Study_var aStudy = getStudyServant();
+  if (CORBA::is_nil(aStudy))
     return new Engines::TMPFile(0);
 
   CORBA::String_var compDataType = ComponentDataType();
-  SALOMEDS::SObject_wrap aSO = myStudy->FindComponent( compDataType.in() );
+  SALOMEDS::SObject_wrap aSO = aStudy->FindComponent( compDataType.in() );
   if (CORBA::is_nil(aSO))
     return new Engines::TMPFile(0);
 
@@ -723,7 +724,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean isPublished,
   Resource_DataMapOfAsciiStringAsciiString aMap;
   Resource_DataMapOfAsciiStringAsciiString aMapNames;
 
-  SALOMEDS::ChildIterator_wrap Itr = myStudy->NewChildIterator(aSO);
+  SALOMEDS::ChildIterator_wrap Itr = aStudy->NewChildIterator(aSO);
   for (Itr->InitEx(true); Itr->More(); Itr->Next()) {
     SALOMEDS::SObject_wrap aValue = Itr->Value();
     CORBA::String_var anID = aValue->GetID();
@@ -737,7 +738,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean isPublished,
   }
 
   // Get trace of restored study
-  SALOMEDS::StudyBuilder_var aStudyBuilder = myStudy->NewBuilder();
+  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");
 
@@ -801,8 +802,8 @@ void SMESH_Gen_i::SavePython()
 
   // Check contents of PythonObject attribute
   CORBA::String_var compDataType = ComponentDataType();
-  SALOMEDS::SObject_wrap aSO = myStudy->FindComponent( compDataType.in() );
-  SALOMEDS::StudyBuilder_var aStudyBuilder = myStudy->NewBuilder();
+  SALOMEDS::SObject_wrap aSO = getStudyServant()->FindComponent( compDataType.in() );
+  SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");
 
@@ -1256,7 +1257,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   {
     //Output the script that sets up the visual parameters.
     CORBA::String_var compDataType = ComponentDataType();
-    CORBA::String_var script = myStudy->GetDefaultScript( compDataType.in(), tab.ToCString() );
+    CORBA::String_var script = getStudyServant()->GetDefaultScript( compDataType.in(), tab.ToCString() );
     if ( script.in() && script.in()[0] ) {
       visualPropertiesPart += nt + "### Store presentation parameters of displayed objects\n";
       visualPropertiesPart += script.in();

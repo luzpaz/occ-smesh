@@ -133,7 +133,7 @@ LightApp_Dialog* SMESHGUI_MeshOp::dlg() const
 //================================================================================
 bool SMESHGUI_MeshOp::onApply()
 {
-  if (isStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   QString aMess;
@@ -329,7 +329,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
 
   // mesh
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+  _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() );
   if (!pMesh) return false;
 
   SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
@@ -354,7 +354,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
     QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
     for ( ; aSubShapesIter != aGEOMs.end(); aSubShapesIter++) {
       QString aSubGeomEntry = (*aSubShapesIter);
-      _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.toLatin1().data());
+      _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID(aSubGeomEntry.toLatin1().data());
       if (!pSubGeom) return false;
 
       GEOM::GEOM_Object_var aSubGeomVar =
@@ -416,7 +416,7 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
 
     QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
     QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-    _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+    _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() );
     if ( pMesh ) {
 
       QStringList algoNames;
@@ -432,7 +432,7 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
       }
 
 //       GEOM::GEOM_Object_var geom;
-//       if (_PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() ))
+//       if (_PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toLatin1().data() ))
 //         geom = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
 
 //       if ( !geom->_is_nil() && geom->GetShapeType() >= GEOM::FACE ) { // WIRE, EDGE as well
@@ -461,8 +461,8 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
 {
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
   QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+  _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() );
+  _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toLatin1().data() );
   if ( pMesh && pGeom ) {
     GEOM::GEOM_Object_var geom = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
     if ( !geom->_is_nil() ) {
@@ -522,7 +522,7 @@ void SMESHGUI_MeshOp::selectionDone()
 
     //Check geometry for mesh
     QString anObjEntry = myDlg->selectedObject(SMESHGUI_MeshDlg::Obj);
-    _PTR(SObject) pObj = studyDS()->FindObjectID(anObjEntry.toLatin1().data());
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID(anObjEntry.toLatin1().data());
     if (pObj)
     {
       SMESH::SMESH_Mesh_var aMeshVar =
@@ -550,7 +550,7 @@ void SMESHGUI_MeshOp::selectionDone()
         int iSubSh = 0;
         for ( ; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
           QString aSubGeomEntry = (*aSubShapesIter);
-          _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.toLatin1().data());
+          _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID(aSubGeomEntry.toLatin1().data());
          
           if( pSubGeom ) { 
             SALOMEDS_SObject* sobj = _CAST(SObject,pSubGeom);
@@ -566,7 +566,7 @@ void SMESHGUI_MeshOp::selectionDone()
       } else {
         // get geometry by selected sub-mesh
         QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-        _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+        _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
         GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
         if (!aGeomVar->_is_nil()) {
           aSeq->length(1);
@@ -693,12 +693,12 @@ void SMESHGUI_MeshOp::selectionDone()
         // enable/disable popup for choice of geom selection way
         bool enable = false;
         QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-        if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() )) {
+        if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() )) {
           SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
           if ( !mesh->_is_nil() ) {
             //rnv: issue 21056: EDF 1608 SMESH: Dialog Box "Create Sub Mesh": focus should automatically switch to geometry
             QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-            _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+            _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toLatin1().data() );
             if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
               myDlg->activateObject(SMESHGUI_MeshDlg::Geom);
             enable = ( shapeDim > 1 ) && ( mesh->NbEdges() > 0 );
@@ -774,7 +774,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
   {
     QString aMeshEntry = myDlg->selectedObject
       ( myToCreate ? SMESHGUI_MeshDlg::Mesh : SMESHGUI_MeshDlg::Obj );
-    if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() )) {
+    if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() )) {
       SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
       if ( !mesh->_is_nil() && CORBA::is_nil( mesh->GetShapeToMesh() )) {
         theMess = tr( "IMPORTED_MESH" );
@@ -803,7 +803,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
       }
       return true;
     }
-    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+    _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toLatin1().data() );
     if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
     {
       theMess = tr( "GEOMETRY_OBJECT_IS_NULL" );
@@ -819,7 +819,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
         theMess = tr( "MESH_IS_NOT_DEFINED" );
         return false;
       }
-      _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+      _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() );
       if ( !pMesh || SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() )->_is_nil() )
       {
         theMess = tr( "MESH_IS_NULL" );
@@ -946,7 +946,7 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
   QString aCurrentGeomToSelect;
   if ( !theMeshType.isEmpty() ) {
     aCurrentGeomToSelect = myDlg->selectedObject( myToCreate ? SMESHGUI_MeshDlg::Geom : SMESHGUI_MeshDlg::Obj );
-    if ( _PTR(SObject) so = studyDS()->FindObjectID( aCurrentGeomToSelect.toLatin1().data() )) {
+    if ( _PTR(SObject) so = SMESH::getStudy()->FindObjectID( aCurrentGeomToSelect.toLatin1().data() )) {
       aGeomVar = SMESH::GetGeom( so );
     }
    if ( aCurrentGeomToSelect != myLastGeomToSelect )
@@ -1121,14 +1121,14 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
   {
     anEntry = myDlg->selectedObject
       ( myToCreate ? SMESHGUI_MeshDlg::Mesh : SMESHGUI_MeshDlg::Obj );
-    if ( _PTR(SObject) pObj = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
+    if ( _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anEntry.toLatin1().data() ))
     {
       CORBA::Object_ptr Obj = _CAST( SObject,pObj )->GetObject();
       if ( myToCreate ) // mesh and geom may be selected
       {
         aMeshVar = SMESH::SMESH_Mesh::_narrow( Obj );
         anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-        if ( _PTR(SObject) pGeom = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
+        if ( _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( anEntry.toLatin1().data() ))
           aGeomVar= GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
       }
       else // edition: sub-mesh may be selected
@@ -1146,7 +1146,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     if ( !myToCreate ) // mesh to edit can be selected
     {
       anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-      if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
+      if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( anEntry.toLatin1().data() ))
       {
         aMeshVar = SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
         if ( !aMeshVar->_is_nil() )
@@ -1155,7 +1155,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     }
     if ( aGeomVar->_is_nil() ) {
       anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-      if ( _PTR(SObject) pGeom = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
+      if ( _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( anEntry.toLatin1().data() ))
       {
         aGeomVar= GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
       }
@@ -1201,13 +1201,13 @@ void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCrea
     aMeshEntry = aGeomEntry;
 
   if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
-    _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() );
     GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
     aMeshEntry = ( aGeomVar->_is_nil() ) ? QString() : SMESH::toQStr( aGeomVar->GetStudyEntry() );
   }
 
   if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
-    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
     bool isMesh;
     GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
     if ( !aGeomVar->_is_nil() )
@@ -1220,7 +1220,7 @@ void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCrea
 
   if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
     // take geometry from submesh being created
-    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
     if ( pObj ) {
       // if current object is sub-mesh
       SMESH::SMESH_subMesh_var aSubMeshVar =
@@ -1826,7 +1826,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
   for ( int i = 0; it!=aList.end(); it++, ++i )
   {
     QString aGeomEntry = *it;
-    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+    _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toLatin1().data() );
     GEOM::GEOM_Object_var aGeomVar =
       GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
 
@@ -1893,7 +1893,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
 
   // get mesh object
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+  _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() );
   SMESH::SMESH_Mesh_var aMeshVar =
     SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
   if (aMeshVar->_is_nil())
@@ -1913,7 +1913,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
   {
     //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
     QString aGeomEntry = aGEOMs.first();
-    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+    _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toLatin1().data() );
     aGeomVar = GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
   }
   else if (aGEOMs.count() > 1)
@@ -1933,7 +1933,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
         QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
         for ( ; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
           QString aSubGeomEntry = (*aSubShapesIter);
-          _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.toLatin1().data());
+          _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID(aSubGeomEntry.toLatin1().data());
           GEOM::GEOM_Object_var aSubGeomVar =
             GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
           TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aSubGeomVar->GetShapeType();
@@ -2228,7 +2228,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
 void SMESHGUI_MeshOp::readMesh()
 {
   QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+  _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
   if ( !pObj )
     return;
 
@@ -2394,7 +2394,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
     return false;
 
   QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+  _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
   if ( !pObj )
     return false;
 
@@ -2577,7 +2577,7 @@ void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
     }
     // set mesh object to SMESHGUI_ShapeByMeshOp and start it
     QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-    if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() )) {
+    if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() )) {
       SMESH::SMESH_Mesh_var aMeshVar =
         SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
       if ( !aMeshVar->_is_nil() ) {
@@ -2606,7 +2606,7 @@ void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
     if ( !aGeomVar->_is_nil() )
     {
       QString ID = SMESH::toQStr( aGeomVar->GetStudyEntry() );
-      if ( _PTR(SObject) aGeomSO = studyDS()->FindObjectID( ID.toLatin1().data() )) {
+      if ( _PTR(SObject) aGeomSO = SMESH::getStudy()->FindObjectID( ID.toLatin1().data() )) {
         selectObject( aGeomSO );
         selectionDone();
       }

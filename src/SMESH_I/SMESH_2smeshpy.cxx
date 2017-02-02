@@ -561,7 +561,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
   {
     // find a GEOM entry
     _pyID geomID;
-    SALOMEDS::SComponent_wrap geomComp = SMESH_Gen_i::getStudy()->FindComponent("GEOM");
+    SALOMEDS::SComponent_wrap geomComp = SMESH_Gen_i::getStudyServant()->FindComponent("GEOM");
     if ( geomComp->_is_nil() ) return;
     CORBA::String_var entry = geomComp->GetID();
     geomID = entry.in();
@@ -1666,7 +1666,7 @@ bool _pyGen::IsNotPublished(const _pyID& theObjID) const
   // either the SMESH object is not in study or it is a GEOM object
   if ( IsGeomObject( theObjID ))
   {
-    SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudy()->FindObjectID( theObjID.ToCString() );
+    SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudyServant()->FindObjectID( theObjID.ToCString() );
     if ( so->_is_nil() ) return true;
     CORBA::Object_var obj = so->GetObject();
     return CORBA::is_nil( obj );

@@ -640,7 +640,7 @@ void SMESH_Gen_i::UpdateStudy()
   if ( !myStudyContext )
     myStudyContext = new StudyContext;
 
-  SALOMEDS::Study_var aStudy = getStudy();
+  SALOMEDS::Study_var aStudy = getStudyServant();
   if ( !CORBA::is_nil( aStudy ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
     SALOMEDS::SComponent_wrap GEOM_var = aStudy->FindComponent( "GEOM" );
@@ -822,7 +822,7 @@ CORBA::Boolean SMESH_Gen_i::GetSoleSubMeshUsingHyp( SMESH::SMESH_Hypothesis_ptr 
 
   // get Mesh component SO
   CORBA::String_var compDataType = ComponentDataType();
-  SALOMEDS::SComponent_wrap comp = getStudy()->FindComponent( compDataType.in() );
+  SALOMEDS::SComponent_wrap comp = getStudyServant()->FindComponent( compDataType.in() );
   if ( CORBA::is_nil( comp ))
     return false;
 
@@ -830,7 +830,7 @@ CORBA::Boolean SMESH_Gen_i::GetSoleSubMeshUsingHyp( SMESH::SMESH_Hypothesis_ptr 
   SMESH::SMESH_Mesh_var foundMesh;
   TopoDS_Shape          foundShape;
   bool                  isSole = true;
-  SALOMEDS::ChildIterator_wrap meshIter = getStudy()->NewChildIterator( comp );
+  SALOMEDS::ChildIterator_wrap meshIter = getStudyServant()->NewChildIterator( comp );
   for ( ; meshIter->More() && isSole; meshIter->Next() )
   {
     SALOMEDS::SObject_wrap curSO = meshIter->Value();
@@ -1029,7 +1029,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
 
   // publish mesh in the study
   if ( CanPublishInStudy( mesh ) ) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
     SALOMEDS::SObject_wrap aSO = PublishMesh( mesh.in() );
     aStudyBuilder->CommitCommand();
@@ -1060,7 +1060,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
 
   // publish mesh in the study
   if ( CanPublishInStudy( mesh ) ) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
     SALOMEDS::SObject_wrap aSO = PublishMesh( mesh.in() );
     aStudyBuilder->CommitCommand();
@@ -1115,7 +1115,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   string aFileName;
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
     SALOMEDS::SObject_wrap aSO = PublishMesh( aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
@@ -1173,7 +1173,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
 
   if (theStatus == SMESH::DRS_OK) {
     SALOMEDS::StudyBuilder_var aStudyBuilder;
-    aStudyBuilder = getStudy()->NewBuilder();
+    aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
 
     aResult->length( aNames.size() );
@@ -1305,7 +1305,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
 #endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
     SALOMEDS::SObject_wrap aSO = PublishInStudy( SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
@@ -1355,7 +1355,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
 
     if (theStatus == SMESH::DRS_OK)
     {
-      SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+      SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
       aStudyBuilder->NewCommand();  // There is a transaction
 
       int i = 0;
@@ -1433,7 +1433,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
 #endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
     SALOMEDS::SObject_wrap aSO = PublishInStudy( SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
@@ -1502,7 +1502,7 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
 SALOMEDS::SObject_ptr SMESH_Gen_i::GetAlgoSO(const ::SMESH_Algo* algo)
 {
   if ( algo ) {
-  SALOMEDS::Study_var aStudy = getStudy();
+  SALOMEDS::Study_var aStudy = getStudyServant();
     if ( !aStudy->_is_nil() ) {
       // find algo in the study
       CORBA::String_var compDataType  = ComponentDataType();
@@ -2254,7 +2254,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
         SALOMEDS::SObject_wrap mainSO = ObjectToSObject( mainShape );
         SALOMEDS::ChildIterator_wrap it;
         if ( !mainSO->_is_nil() ) {
-          it = getStudy()->NewChildIterator( mainSO );
+          it = getStudyServant()->NewChildIterator( mainSO );
         }
         if ( !it->_is_nil() ) {
           for ( it->InitEx(true); it->More(); it->Next() ) {
@@ -2325,7 +2325,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
           SALOMEDS::SObject_wrap mainSO = ObjectToSObject( mainShape );
           SALOMEDS::ChildIterator_wrap it;
           if ( !mainSO->_is_nil() ) {
-            it = getStudy()->NewChildIterator( mainSO );
+            it = getStudyServant()->NewChildIterator( mainSO );
           }
           if ( !it->_is_nil() ) {
             for ( it->InitEx(true); it->More(); it->Next() ) {
@@ -2985,7 +2985,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   // Store study contents as a set of python commands
   SavePython();
 
-  SALOMEDS::Study_var aStudy = getStudy();
+  SALOMEDS::Study_var aStudy = getStudyServant();
   StudyContext* myStudyContext = GetStudyContext();
 
   // Declare a byte stream
@@ -3963,7 +3963,7 @@ void SMESH_Gen_i::loadGeomData( SALOMEDS::SComponent_ptr theCompRoot )
   if ( theCompRoot->_is_nil() )
     return;
 
-  SALOMEDS::StudyBuilder_var aStudyBuilder = getStudy()->NewBuilder();
+  SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
   aStudyBuilder->LoadWith( theCompRoot, GetGeomEngine() );
 }
 
@@ -3980,7 +3980,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                         const char*              theURL,
                         bool                     isMultiFile )
 {
-  SALOMEDS::Study_var aStudy = getStudy();
+  SALOMEDS::Study_var aStudy = getStudyServant();
   /*  if( !theComponent->_is_nil() )
       {
       if( !aStudy->FindComponent( "GEOM" )->_is_nil() )
@@ -5034,8 +5034,8 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
 {
   if ( CORBA::is_nil( where ) ) return;
 
-  SALOMEDS::StudyBuilder_var studyBuilder = getStudy()->NewBuilder();
-  SALOMEDS::UseCaseBuilder_var useCaseBuilder = getStudy()->GetUseCaseBuilder();
+  SALOMEDS::StudyBuilder_var studyBuilder = getStudyServant()->NewBuilder();
+  SALOMEDS::UseCaseBuilder_var useCaseBuilder = getStudyServant()->GetUseCaseBuilder();
   SALOMEDS::SComponent_var father = where->GetFatherComponent();
   std::string dataType = father->ComponentDataType();
   if ( dataType != "SMESH" ) return; // not a SMESH component

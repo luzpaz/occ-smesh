@@ -499,10 +499,7 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
   QString aName = "";
 
   // collect all object names of SMESH component
-  SalomeApp_Study* appStudy =
-    dynamic_cast<SalomeApp_Study*>( SUIT_Session::session()->activeApplication()->activeStudy() );
-  if ( !appStudy ) return aName;
-  _PTR(Study) aStudy = appStudy->studyDS();
+  _PTR(Study) aStudy = SMESH::getStudy();
 
   std::set<std::string> aSet;
   _PTR(SComponent) aMeshCompo (aStudy->FindComponent( "SMESH" ));
@@ -915,7 +912,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 //=================================================================================
 bool SMESHGUI_GroupDlg::onApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if (myName->text().trimmed().isEmpty())

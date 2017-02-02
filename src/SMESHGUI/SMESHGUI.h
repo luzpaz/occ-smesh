@@ -94,13 +94,13 @@ public :
   static SUIT_ResourceMgr*        resourceMgr();
   static SUIT_Desktop*            desktop();
   static SalomeApp_Study*         activeStudy();
-  
-  bool                            isActiveStudyLocked();
 
   static bool                     automaticUpdate(unsigned int requestedSize = 0, bool* limitExceeded = 0);
   static bool                     automaticUpdate( SMESH::SMESH_IDSource_ptr, int*, bool*, int*, long* );
 
   static void                     Modified( bool = true );
+
+  static bool                     isStudyLocked( bool = true );
 
   virtual LightApp_Displayer*     displayer();
   virtual QString                 engineIOR() const;

@@ -199,9 +199,8 @@ namespace SMESH
       (SUIT_Session::session()->activeApplication());
     if ( app ) {
       CORBA::String_var ior = app->orb()->object_to_string( theObject );
-      SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
-      if ( study && strlen( ior ) > 0 )
-        res = study->studyDS()->FindObjectIOR( ior.in() );
+      if ( strlen( ior ) > 0 )
+        res = getStudy()->FindObjectIOR( ior.in() );
     }
     return res;
   }

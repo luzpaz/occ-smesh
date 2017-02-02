@@ -175,7 +175,7 @@ char* StdMeshers_ImportSource2D_i::SaveTo()
     os << " " << _groupEntries[i];
 
     // id
-    SALOMEDS::SObject_var groupSO = SMESH_Gen_i::getStudy()->FindObjectID( _groupEntries[i] );
+    SALOMEDS::SObject_var groupSO = SMESH_Gen_i::getStudyServant()->FindObjectID( _groupEntries[i] );
     CORBA::Object_var    groupObj;
     if ( !groupSO->_is_nil() ) {
       groupObj = groupSO->GetObject();

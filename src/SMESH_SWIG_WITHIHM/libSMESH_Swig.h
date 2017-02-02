@@ -100,7 +100,6 @@ public:
   void select( const char *id, int id1, bool append = false );
 
 private:
-  SALOMEDS::Study_var        myStudy;
   SALOMEDS::StudyBuilder_var myStudyBuilder;
   SALOMEDS::SComponent_var   mySComponentMesh;
 };

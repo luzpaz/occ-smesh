@@ -295,7 +295,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 {
   SUIT_OverrideCursor aWaitCursor;
 
-  if (isStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   // study

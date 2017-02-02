@@ -156,7 +156,7 @@ public:
   // Get the SALOMEDS::SObject corresponding to a CORBA object
   static SALOMEDS::SObject_ptr ObjectToSObject(CORBA::Object_ptr theObject);
   // Get the SALOMEDS::Study from naming service
-  static SALOMEDS::Study_ptr getStudy();
+  static SALOMEDS::Study_ptr getStudyServant();
   // Get GEOM Object correspoding to TopoDS_Shape
   GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
   // Get TopoDS_Shape correspoding to GEOM_Object
@@ -665,7 +665,6 @@ private:
   StudyContext*                  myStudyContext;  // study context
 
   GEOM_Client*                   myShapeReader;      // Shape reader
-  SALOMEDS::Study_var            myStudy;            // Current study
   CORBA::Boolean                 myIsEmbeddedMode;   // Current mode
   CORBA::Boolean                 myIsEnablePublish;  // Enable publishing
 

@@ -421,7 +421,7 @@ void SMESHGUI_NodesDlg::ClickOnOk()
 //=================================================================================
 bool SMESHGUI_NodesDlg::ClickOnApply()
 {
-  if ( mySMESHGUI->isActiveStudyLocked() )
+  if ( SMESHGUI::isStudyLocked() )
     return false;
 
   if ( myMesh->_is_nil() ) {

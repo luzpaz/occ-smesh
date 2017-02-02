@@ -277,7 +277,7 @@ namespace SMESH
       }else{
         SalomeApp_Application* app =
           dynamic_cast<SalomeApp_Application*>( SMESHGUI::activeStudy()->application() );
-        _PTR(Study) aStudy = SMESHGUI::activeStudy()->studyDS();
+        _PTR(Study) aStudy = SMESH::getStudy();
         _PTR(SObject) aSObj = aStudy->FindObjectID(theEntry);
         if(aSObj){
           _PTR(GenericAttribute) anAttr;

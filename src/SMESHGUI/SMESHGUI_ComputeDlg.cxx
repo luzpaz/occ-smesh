@@ -1733,7 +1733,7 @@ void SMESHGUI_PrecomputeOp::initDialog()
   QList<int> modes;
 
   QMap<int, int> modeMap;
-  _PTR(SObject)  pMesh = studyDS()->FindObjectID( myIObject->getEntry() );
+  _PTR(SObject)  pMesh = SMESH::getStudy()->FindObjectID( myIObject->getEntry() );
   getAssignedAlgos( pMesh, modeMap );
   if ( modeMap.contains( SMESH::DIM_3D ) )
   {

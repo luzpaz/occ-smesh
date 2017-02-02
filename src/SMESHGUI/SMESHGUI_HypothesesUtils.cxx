@@ -783,8 +783,7 @@ namespace SMESH
     if (!AlgoOrHyp->_is_nil()) {
       _PTR(SObject) SO_Hypothesis = SMESH::FindSObject(AlgoOrHyp);
       if (SO_Hypothesis) {
-        SObjectList listSO =
-          SMESHGUI::activeStudy()->studyDS()->FindDependances(SO_Hypothesis);
+        SObjectList listSO = SMESH::getStudy()->FindDependances(SO_Hypothesis);
 
         if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency number ="<<listSO.size());
         for (unsigned int i = 0; i < listSO.size(); i++) {

@@ -183,11 +183,10 @@ class SMeshStudyTools:
 
 
 def TEST_createBoxMesh():
-    theStudy = salome.myStudy
     
     import GEOM
     from salome.geom import geomBuilder
-    geompy = geomBuilder.New(theStudy)
+    geompy = geomBuilder.New()
     
     box = geompy.MakeBoxDXDYDZ(200, 200, 200)
 

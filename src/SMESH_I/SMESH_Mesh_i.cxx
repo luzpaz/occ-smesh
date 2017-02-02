@@ -237,7 +237,7 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
         for ( ; data != _geomGroupData.end(); ++data )
           if ( data->_smeshObject->_is_equivalent( _this() ))
           {
-            SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudy()->FindObjectID( data->_groupEntry.c_str() );
+            SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudyServant()->FindObjectID( data->_groupEntry.c_str() );
             CORBA::Object_var     obj = _gen_i->SObjectToObject( so );
             aShapeObj = GEOM::GEOM_Object::_narrow( obj );
             break;
@@ -899,7 +899,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
     // if ( aSubShape->_is_nil() ) // not published shape (IPAL13617)
     //   aSubShape = theSubMesh->GetSubShape();
 
-    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudyServant()->NewBuilder();
     builder->RemoveObjectWithChildren( anSO );
 
     // Update Python script
@@ -1052,7 +1052,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
     TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".RemoveGroup( " << aGroupSO << " )";
 
     // Remove group's SObject
-    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudy()->NewBuilder();
+    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudyServant()->NewBuilder();
     builder->RemoveObjectWithChildren( aGroupSO );
   }
   aGroup->Modified(/*removed=*/true); // notify dependent Filter with FT_BelongToMeshGroup criterion
@@ -1868,7 +1868,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
   TopoDS_Shape newShape;
 
   // get geom group
-  SALOMEDS::SObject_wrap groupSO = SMESH_Gen_i::getStudy()->FindObjectID( groupData._groupEntry.c_str() );
+  SALOMEDS::SObject_wrap groupSO = SMESH_Gen_i::getStudyServant()->FindObjectID( groupData._groupEntry.c_str() );
   if ( !groupSO->_is_nil() )
   {
     CORBA::Object_var groupObj = _gen_i->SObjectToObject( groupSO );
@@ -2351,7 +2351,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
 
   SALOMEDS::StudyBuilder_var builder;
   SALOMEDS::SObject_wrap     aGroupSO;
-  SALOMEDS::Study_var        aStudy = SMESH_Gen_i::getStudy();
+  SALOMEDS::Study_var        aStudy = SMESH_Gen_i::getStudyServant();
   if ( !aStudy->_is_nil() ) {
     builder  = aStudy->NewBuilder();
     aGroupSO = _gen_i->ObjectToSObject( theGroup );
@@ -2934,7 +2934,7 @@ string SMESH_Mesh_i::prepareMeshNameAndGroups(const char*    file,
   // Perform Export
   PrepareForWriting(file, overwrite);
   string aMeshName = "Mesh";
-  SALOMEDS::Study_var aStudy = SMESH_Gen_i::getStudy();
+  SALOMEDS::Study_var aStudy = SMESH_Gen_i::getStudyServant();
   if ( !aStudy->_is_nil() ) {
     SALOMEDS::SObject_wrap aMeshSO = _gen_i->ObjectToSObject(  _this() );
     if ( !aMeshSO->_is_nil() ) {
@@ -5056,7 +5056,7 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   if(gen) {
     CORBA::String_var aParameters = GetParameters();
-    SALOMEDS::ListOfListOfStrings_var aSections = SMESH_Gen_i::getStudy()->ParseVariables(aParameters);
+    SALOMEDS::ListOfListOfStrings_var aSections = SMESH_Gen_i::getStudyServant()->ParseVariables(aParameters);
     if ( aSections->length() > 0 ) {
       SALOMEDS::ListOfStrings aVars = aSections[ aSections->length() - 1 ];
       aResult->length( aVars.length() );
