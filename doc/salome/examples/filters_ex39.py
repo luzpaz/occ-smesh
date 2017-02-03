@@ -3,7 +3,7 @@
 import salome, SMESH
 salome.salome_init()
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 

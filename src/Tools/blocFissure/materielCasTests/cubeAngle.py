@@ -20,7 +20,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)

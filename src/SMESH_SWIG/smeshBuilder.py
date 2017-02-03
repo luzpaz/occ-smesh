@@ -381,7 +381,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
     ## Sets Geometry component
     #  @ingroup l1_auxiliary
-    def init_smesh(self,isPublished,geompyD = None):
+    def init_smesh(self,isPublished = True,geompyD = None):
         #print "init_smesh"
         self.UpdateStudy(geompyD)
         if isPublished:
@@ -535,10 +535,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         #self.SetEnablePublish(theIsEnablePublish)
         SMESH._objref_SMESH_Gen.SetEnablePublish(self,theIsEnablePublish)
         global notebook
-        if theIsEnablePublish:
-            notebook = salome_notebook.NoteBook( salome.myStudy )
-        else:
-            notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
+        notebook = salome_notebook.NoteBook( theIsEnablePublish )
 
     ## Creates a Mesh object importing data from the given UNV file
     #  @return an instance of Mesh class
@@ -1226,7 +1223,7 @@ class Mesh:
                 # publish geom of mesh (issue 0021122)
                 if not self.geom.GetStudyEntry():
                     objHasName = False
-                    geompyD.init_geom( salome.myStudy )
+                    geompyD.init_geom()
                     if name:
                         geo_name = name + " shape"
                     else:

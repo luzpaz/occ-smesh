@@ -740,7 +740,7 @@ namespace
     }
 
     // cout << "from salome.geom import geomBuilder" << endl;
-    // cout << "geompy = geomBuilder.New(salome.myStudy)" << endl;
+    // cout << "geompy = geomBuilder.New()" << endl;
     Handle(TColgp_HArray1OfPnt) points = new TColgp_HArray1OfPnt(1, pnt.size());
     for ( size_t i = 0; i < pnt.size(); ++i )
     {

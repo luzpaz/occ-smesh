@@ -210,7 +210,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(CORBA::Object_ptr theObject)
 //=======================================================================
 SALOMEDS::Study_ptr SMESH_Gen_i::getStudyServant()
 {
-  return KERNEL::getStudyServant();
+  return SALOMEDS::Study::_duplicate(KERNEL::getStudyServant());
 }
 
 //=======================================================================

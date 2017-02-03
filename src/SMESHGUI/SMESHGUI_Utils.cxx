@@ -113,7 +113,10 @@ namespace SMESH
 
   _PTR(Study) getStudy()
   {
-    SalomeApp_Application::getStudy();
+    static _PTR(Study) _study;
+    if(!_study)
+      _study = SalomeApp_Application::getStudy();
+    return _study;
   }
 
   _PTR(SObject) FindSObject (CORBA::Object_ptr theObject)

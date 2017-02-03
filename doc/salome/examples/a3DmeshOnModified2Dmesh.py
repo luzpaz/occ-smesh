@@ -2,7 +2,7 @@ import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 # This script demonstrates generation of 3D mesh basing on a modified 2D mesh
 #
