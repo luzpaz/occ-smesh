@@ -2982,11 +2982,13 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                                       const char*              theURL,
                                       bool                     isMultiFile )
 {
+  if (!myStudyContext)
+    UpdateStudy();
+
   // Store study contents as a set of python commands
   SavePython();
 
   SALOMEDS::Study_var aStudy = getStudyServant();
-  StudyContext* myStudyContext = GetStudyContext();
 
   // Declare a byte stream
   SALOMEDS::TMPFile_var aStreamFile;
@@ -3980,6 +3982,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                         const char*              theURL,
                         bool                     isMultiFile )
 {
+  if (!myStudyContext)
+    UpdateStudy();
   SALOMEDS::Study_var aStudy = getStudyServant();
   /*  if( !theComponent->_is_nil() )
       {
@@ -4892,6 +4896,7 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
 
   // Clear study contexts data
   delete myStudyContext;
+  myStudyContext = 0;
 
   // remove the tmp files meshes are loaded from
   SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD( theComponent );
