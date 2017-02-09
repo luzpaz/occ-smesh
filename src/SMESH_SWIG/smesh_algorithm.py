@@ -70,7 +70,7 @@ class Mesh_Algorithm:
     #  Finds only the hypotheses created in smeshpyD engine.
     #  @return SMESH.SMESH_Hypothesis
     def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
-        study = sme.myStudy
+        study = salome.myStudy
         if not study: return None
         #to do: find component by smeshpyD object, not by its data type
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
