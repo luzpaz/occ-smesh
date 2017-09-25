@@ -37,6 +37,10 @@ SET(_link_LIBRARIES
   ${HDF5_LIBS}
   ${MEDFILE_C_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${KERNEL_OpUtil}
+  ${KERNEL_SALOMELocalTrace}
+  ${KERNEL_SALOMEBasics}
+  ${KERNEL_SalomeIDLKERNEL}
   MEDWrapperBase
 )
 

@@ -26,6 +26,7 @@ INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/../Base
   ${CMAKE_CURRENT_SOURCE_DIR}/../V2_2
+  ${PROJECT_BINARY_DIR}/idl
 )
 
 # additional preprocessor / compiler flags
