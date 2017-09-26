@@ -107,9 +107,7 @@ namespace MED
         myFileName(theFileName),
         myMinor(theMinor)
       {
-        MESSAGE("myMinor:"<<myMinor);
         if ((myMinor < 0) || (myMinor > MED_MINOR_NUM)) myMinor = MED_MINOR_NUM;
-        MESSAGE("myMinor:"<<myMinor);
       }
       
       ~TFile()
@@ -162,7 +160,6 @@ namespace MED
         myFile(theFile),
         myMinor(theMinor)
       {
-        MESSAGE("myMinor:"<<myMinor);
         if (myMinor < 0) myMinor = MED_MINOR_NUM;
         myFile->Open(theMode,theErr);
       }
@@ -179,7 +176,6 @@ namespace MED
       myMinor(theMinor),
       myFile(new TFile(theFileName, theMinor))
     {
-      MESSAGE("myMinor:"<<myMinor);
       TErr aRet;
       myFile->Open( eLECTURE_ECRITURE, &aRet );
       if(aRet < 0) {

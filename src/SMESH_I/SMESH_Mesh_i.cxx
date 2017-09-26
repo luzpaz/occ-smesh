@@ -3022,7 +3022,7 @@ void SMESH_Mesh_i::ExportToMEDX (const char*        file,
                                  CORBA::Boolean     autoDimension)
   throw(SALOME::SALOME_Exception)
 {
-  MESSAGE("SMESH::MED_VERSION:"<< theVersion);
+  //MESSAGE("SMESH::MED_VERSION:"<< theVersion);
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -3049,7 +3049,7 @@ void SMESH_Mesh_i::ExportToMED (const char*        file,
                                 SMESH::MED_VERSION theVersion)
   throw(SALOME::SALOME_Exception)
 {
-  MESSAGE("SMESH::MED_VERSION:"<< theVersion);
+  //MESSAGE("SMESH::MED_VERSION:"<< theVersion);
   ExportToMEDX(file,auto_groups,theVersion,true);
 }
 
@@ -3063,7 +3063,7 @@ void SMESH_Mesh_i::ExportMED (const char* file,
                               CORBA::Boolean auto_groups)
   throw(SALOME::SALOME_Exception)
 {
-  MESSAGE("SMESH::MED_VERSION:"<< SMESH::MED_LATEST);
+  //MESSAGE("SMESH::MED_VERSION:"<< SMESH::MED_LATEST);
   ExportToMEDX(file,auto_groups,SMESH::MED_LATEST,true);
 }
 

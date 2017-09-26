@@ -128,7 +128,6 @@ namespace MED
                      bool theDoPreCheckInSeparateProcess,
                      int  theMinor)
   {
-    MESSAGE("theMinor:"<<theMinor);
     PWrapper aWrapper;
     if (theMinor <0)
       theMinor = MED_MINOR_NUM;
@@ -145,7 +144,6 @@ namespace MED
 
   PWrapper CrWrapper(const std::string& theFileName, EVersion theId)
   {
-    MESSAGE("theId:"<<theId);
     EVersion aVersion = GetVersionId(theFileName);
     if (aVersion == eVUnknown) // no existing file
       aVersion = theId;
@@ -164,7 +162,6 @@ namespace MED
       case eLATEST:   theMinor = MED_MINOR_NUM; break;
       default:        theMinor = aVersion - eMINOR_0;
     }
-    MESSAGE("theMinor:"<<theMinor);
 
     if (theMinor < 0)
       EXCEPTION(std::runtime_error,"Cannot open file '"<<theFileName<<"'. Med version 2.1 is not supported any more.");

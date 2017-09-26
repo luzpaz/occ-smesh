@@ -70,7 +70,7 @@ void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName,
 {
   Driver_SMESHDS_Mesh::SetFile(theFileName);
   myMedVersion = theId;
-  MESSAGE("myMedVersion:"<<myMedVersion);
+  //MESSAGE("myMedVersion:"<<myMedVersion);
 }
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName)
@@ -477,7 +477,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         break;
       }
     }
-    MESSAGE("myMedVersion:"<<myMedVersion);
+    //MESSAGE("myMedVersion:"<<myMedVersion);
     MED::PWrapper myMed = CrWrapper(myFile,myMedVersion);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
