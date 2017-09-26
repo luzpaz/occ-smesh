@@ -654,7 +654,7 @@ namespace
     // Get parameters of export operation
 
     QString            aFilename;
-    SMESH::MED_VERSION aFormat = SMESH::MED_V2_2;
+    SMESH::MED_VERSION aFormat = SMESH::MED_LATEST;
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
     bool toCreateGroups = false;

@@ -3063,8 +3063,8 @@ void SMESH_Mesh_i::ExportMED (const char* file,
                               CORBA::Boolean auto_groups)
   throw(SALOME::SALOME_Exception)
 {
-  MESSAGE("SMESH::MED_VERSION:"<< SMESH::MED_V2_2);
-  ExportToMEDX(file,auto_groups,SMESH::MED_V2_2,true);
+  MESSAGE("SMESH::MED_VERSION:"<< SMESH::MED_LATEST);
+  ExportToMEDX(file,auto_groups,SMESH::MED_LATEST,true);
 }
 
 //================================================================================
