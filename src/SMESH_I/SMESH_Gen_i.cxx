@@ -64,7 +64,7 @@
  #define UnLoadLib( handle ) FreeLibrary( handle );
 #else
  #define LibHandle void*
- #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_LOCAL )
  #define GetProc dlsym
  #define UnLoadLib( handle ) dlclose( handle );
 #endif
