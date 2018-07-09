@@ -61,7 +61,7 @@ using namespace std;
 
 namespace
 {
-  enum {  GroupOnFilter_OutOfDate = -1 };
+  enum {  GroupOnFilter_OutOfDate = -777 };
 
   // a map to count not yet loaded meshes 
   static std::map< int, int > theStudyIDToMeshCounter;
@@ -259,7 +259,7 @@ namespace
     std::vector<int> data;
 
     for ( size_t i = 0; i < meshInfo->length(); ++i )
-      if ( meshInfo[i] > 0 )
+      if ( meshInfo[i] > 0 || meshInfo[i] == GroupOnFilter_OutOfDate )
       {
         data.push_back( DriverMED::GetMedGeoType( SMDSAbs_EntityType( i ))); //medTypes[ i ] );
         data.push_back( meshInfo[ i ] );
