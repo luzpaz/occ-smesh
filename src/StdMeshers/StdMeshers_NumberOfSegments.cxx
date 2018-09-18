@@ -61,7 +61,7 @@ const double PRECISION = 1e-7;
 StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int         hypId,
                                                          int         studyId,
                                                          SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen),
+  : StdMeshers_Reversible1D(hypId, studyId, gen),
     _numberOfSegments(15),//issue 19923
     _distrType(DT_Regular),
     _scaleFactor(1.),
@@ -722,19 +722,3 @@ bool StdMeshers_NumberOfSegments::SetParametersByDefaults(const TDefaults&  dflt
 {
   return (_numberOfSegments = dflts._nbSegments );
 }
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-void StdMeshers_NumberOfSegments::SetReversedEdges( std::vector<int>& ids )
-{
-  if ( ids != _edgeIDs ) {
-    _edgeIDs = ids;
-
-    NotifySubMeshesHypothesisModification();
-  }
-}
-

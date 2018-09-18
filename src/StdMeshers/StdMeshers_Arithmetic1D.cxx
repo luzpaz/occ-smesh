@@ -49,7 +49,7 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Arithmetic1D::StdMeshers_Arithmetic1D(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+  :StdMeshers_Reversible1D(hypId, studyId, gen)
 {
   _begLength = 1.;
   _endLength = 10.;
@@ -105,21 +105,6 @@ double StdMeshers_Arithmetic1D::GetLength(bool isStartLength) const
  */
 //=============================================================================
 
-void StdMeshers_Arithmetic1D::SetReversedEdges( std::vector<int>& ids )
-{
-  if ( ids != _edgeIDs ) {
-    _edgeIDs = ids;
-
-    NotifySubMeshesHypothesisModification();
-  }
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
 ostream & StdMeshers_Arithmetic1D::SaveTo(ostream & save)
 {
   int listSize = _edgeIDs.size();
@@ -163,28 +148,6 @@ istream & StdMeshers_Arithmetic1D::LoadFrom(istream & load)
   }
 
   return load;
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-
-ostream & operator <<(ostream & save, StdMeshers_Arithmetic1D & hyp)
-{
-  return hyp.SaveTo( save );
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-istream & operator >>(istream & load, StdMeshers_Arithmetic1D & hyp)
-{
-  return hyp.LoadFrom( load );
 }
 
 //================================================================================

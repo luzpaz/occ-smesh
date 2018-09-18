@@ -689,10 +689,45 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 		an instance of Mesh class
 	"""
 
-        if (isinstance( meshPart, Mesh )):
+        if isinstance( meshPart, Mesh ):
             meshPart = meshPart.GetMesh()
         mesh = SMESH._objref_SMESH_Gen.CopyMesh( self,meshPart,meshName,toCopyGroups,toKeepIDs )
         return Mesh(self, self.geompyD, mesh)
+
+    def CopyMeshWithGeom( self, sourceMesh, newGeom, meshName="", toCopyGroups=True,
+                          toReuseHypotheses=True, toCopyElements=True):
+        """
+        Create a mesh by copying a mesh definition (hypotheses and groups) to a new geometry.
+        It is supposed that the new geometry is a modified geometry of *sourceMesh*.
+        To facilitate and speed up the operation, consider using
+        "Set presentation parameters and sub-shapes from arguments" option in
+        a dialog of geometrical operation used to create the new geometry.
+
+        Parameters:
+                sourceMesh: the mesh to copy definition of.
+                newGeom: the new geomtry.
+                meshName: an optional name of the new mesh. If omitted, the mesh name is kept.
+                toCopyGroups: to create groups in the new mesh.
+                toReuseHypotheses: to reuse hypotheses of the *sourceMesh*.
+                toCopyElements: to copy mesh elements present on non-modified sub-shapes of 
+                                *sourceMesh*.
+        Returns:
+                tuple ( ok, newMesh, newGroups, newSubMeshes, newHypotheses, invalidEntries )
+                *invalidEntries* are study entries of objects whose
+                counterparts are not found in the *newGeom*, followed by entries
+                of mesh sub-objects that are invalid because they depend on a not found
+                preceeding sub-shape
+        """
+        if isinstance( sourceMesh, Mesh ):
+            sourceMesh = sourceMesh.GetMesh()
+
+        ok, newMesh, newGroups, newSubMeshes, newHypotheses, invalidEntries = \
+           SMESH._objref_SMESH_Gen.CopyMeshWithGeom( self, sourceMesh, newGeom, meshName,
+                                                     toCopyGroups,
+                                                     toReuseHypotheses,
+                                                     toCopyElements)
+        return ( ok, Mesh(self, self.geompyD, newMesh),
+                 newGroups, newSubMeshes, newHypotheses, invalidEntries )
 
     def GetSubShapesId( self, theMainObject, theListOfSubObjects ):
 	"""

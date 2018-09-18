@@ -50,7 +50,7 @@ using namespace std;
 StdMeshers_StartEndLength::StdMeshers_StartEndLength(int         hypId,
                                                      int         studyId,
                                                      SMESH_Gen * gen)
-     :SMESH_Hypothesis(hypId, studyId, gen)
+     :StdMeshers_Reversible1D(hypId, studyId, gen)
 {
   _begLength = 1.;
   _endLength = 10.;
@@ -106,21 +106,6 @@ double StdMeshers_StartEndLength::GetLength(bool isStartLength) const
  */
 //=============================================================================
 
-void StdMeshers_StartEndLength::SetReversedEdges( std::vector<int>& ids )
-{
-  if ( ids != _edgeIDs ) {
-    _edgeIDs = ids;
-
-    NotifySubMeshesHypothesisModification();
-  }
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
 ostream & StdMeshers_StartEndLength::SaveTo(ostream & save)
 {
   int listSize = _edgeIDs.size();
@@ -165,28 +150,6 @@ istream & StdMeshers_StartEndLength::LoadFrom(istream & load)
   }
 
   return load;
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-
-ostream & operator <<(ostream & save, StdMeshers_StartEndLength & hyp)
-{
-  return hyp.SaveTo( save );
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-istream & operator >>(istream & load, StdMeshers_StartEndLength & hyp)
-{
-  return hyp.LoadFrom( load );
 }
 
 //================================================================================

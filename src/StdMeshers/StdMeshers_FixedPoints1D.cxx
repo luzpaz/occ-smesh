@@ -37,7 +37,7 @@ using namespace std;
 
 StdMeshers_FixedPoints1D::StdMeshers_FixedPoints1D(int hypId, int studyId,
                                                    SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+  :StdMeshers_Reversible1D(hypId, studyId, gen)
 {
   _name = "FixedPoints1D";
   _param_algo_dim = 1;
@@ -80,27 +80,6 @@ void StdMeshers_FixedPoints1D::SetNbSegments(std::vector<int>& listNbSeg)
   _nbsegs = listNbSeg;
   NotifySubMeshesHypothesisModification();
 }
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-void StdMeshers_FixedPoints1D::SetReversedEdges( std::vector<int>& ids )
-{
-  if ( ids != _edgeIDs ) {
-    _edgeIDs = ids;
-
-    NotifySubMeshesHypothesisModification();
-  }
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
 
 ostream & StdMeshers_FixedPoints1D::SaveTo(ostream & save)
 {

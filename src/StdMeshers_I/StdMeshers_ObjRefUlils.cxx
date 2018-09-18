@@ -166,3 +166,26 @@ void StdMeshers_ObjRefUlils::SaveToStream( const std::string& studyEntry,
   else
     stream << " " << studyEntry;
 }
+
+//=======================================================================
+//function : EntryToShape
+//purpose  : Return TopoDS_Shape by a study entry
+//=======================================================================
+
+TopoDS_Shape StdMeshers_ObjRefUlils::EntryToShape(const std::string theEntry)
+{
+  TopoDS_Shape shape;
+
+  if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen())
+  {
+    SALOMEDS::Study_var study = gen->GetCurrentStudy();
+    if ( !study->_is_nil() )
+    {
+      SALOMEDS::SObject_wrap sobj = study->FindObjectID( theEntry.c_str() );
+      CORBA::Object_var       obj = gen->SObjectToObject( sobj );
+      GEOM::GEOM_Object_var  geom = GEOM::GEOM_Object::_narrow( obj );
+      shape = gen->GeomObjectToShape( geom.in() );
+    }
+  }
+  return shape;
+}
