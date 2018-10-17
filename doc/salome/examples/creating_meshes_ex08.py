@@ -45,3 +45,12 @@ newMesh = smesh.CopyMesh( mesh.GetIDSource( nodeIds, SMESH.NODE), "some nodes co
 
 # 6. copy a sub-mesh
 newMesh = smesh.CopyMesh( subMesh, "sub-mesh copy" )
+
+
+# make a new mesh with same hypotheses on a modified geometry
+
+smallBox = geompy.MakeScaleAlongAxes( box, None, 1, 0.5, 0.5 )
+cutBox = geompy.MakeCut( box, smallBox, theName="box - smallBox" )
+
+ok, newMesh, groups, submehses, hyps, invIDs = smesh.CopyMeshWithGeom( mesh, cutBox, "cutBox" )
+newMesh.Compute()

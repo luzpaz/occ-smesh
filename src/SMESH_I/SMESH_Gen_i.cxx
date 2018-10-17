@@ -3160,8 +3160,12 @@ namespace // utils for CopyMeshWithGeom()
 
       if ( 0 < oldID && oldID < (int)myGIPMap->length() )
       {
-        if ( myGIPMap[ oldID ].length() == 1 )
+        if (( myGIPMap[ oldID ].length() == 1 ) ||
+            ( myGIPMap[ oldID ].length() > 1 &&
+              getShapeType( mySrcMesh_i, oldID ) == TopAbs_VERTEX ))
+        {
           newID = myGIPMap[ oldID ][ 0 ];
+        }
       }
       return newID;
     }
@@ -3573,9 +3577,9 @@ throw ( SALOME::SALOME_Exception )
 
 
   // copy mesh elements, keeping IDs
+  SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
   if ( theToCopyElements && theSourceMesh->NbNodes() > 0 )
   {
-    SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
     ::SMESH_MeshEditor editor( &newMesh_i->GetImpl() );
     ::SMESH_MeshEditor::ElemFeatures elemData;
 
@@ -3656,12 +3660,19 @@ throw ( SALOME::SALOME_Exception )
 
     if ( !stdlGroup->_is_nil() )
     {
-      if ( theToCopyElements )
+      if ( newMeshDS->GetMeshInfo().NbElements( SMDSAbs_ElementType( elemType )) > 0 )
       {
         SMESH::long_array_var elemIDs = stdlGroup->GetIDs();
-        stdlGroup = theNewMesh->CreateGroup( elemType, name );
-        stdlGroup->Add( elemIDs );
-        newGroup = SMESH::SMESH_GroupBase::_narrow( stdlGroup );
+        CORBA::ULong iE = 0;
+        for ( ; iE < elemIDs->length(); ++iE ) // check if elements have been copied
+          if ( newMeshDS->GetElementType( elemIDs[ iE ], elemType != SMESH::NODE ))
+            break;
+        if ( iE < elemIDs->length() )
+        {
+          stdlGroup = theNewMesh->CreateGroup( elemType, name );
+          stdlGroup->Add( elemIDs );
+          newGroup = SMESH::SMESH_GroupBase::_narrow( stdlGroup );
+        }
       }
     }
     else if ( !geomGroup->_is_nil() )
@@ -3776,7 +3787,7 @@ throw ( SALOME::SALOME_Exception )
     SALOMEDS::SObject_wrap newSO = ObjectToSObject( study, newGroup );
     if ( !srcSO->_is_nil() )
     {
-      CORBA::String_var srcID, newID;
+      CORBA::String_var srcID, newID("");
       srcID = srcSO->GetID();
       if ( !newSO->_is_nil() )
         newID = newSO->GetID();
