@@ -4,14 +4,14 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)
+# --- calcul de la position d'une shape par rapport a une face (dessus, dessous, sur la surface meme)
 
 def whichSideMulti(facerefs, ifil, obj, centre, tol = 1.e-3):
   """
-  Position d'un objet par rapport a un ensemble de faces (non nécessairement planes).
-  Ces faces délimitent partiellement un volume, le point "centre" est supposé dans le volume
-  L'objet est supposé situé entierement d'un coté des faces,
-  ou appartenant totalement à une face (objets traversants non pris en compte)
+  Position d'un objet par rapport a un ensemble de faces (non necessairement planes).
+  Ces faces delimitent partiellement un volume, le point "centre" est suppose dans le volume
+  L'objet est suppose situe entierement d'un cote des faces,
+  ou appartenant totalement a une face (objets traversants non pris en compte)
   renvoie 1 si 'objet est dedans (inside),
   -1 dehors (outside), 0 si il est sur une face d'index ifil
   """
@@ -52,13 +52,13 @@ def whichSideMulti(facerefs, ifil, obj, centre, tol = 1.e-3):
           break
         else:
           nbMiss += 1
-          pass           # peut-être inside, tester les autres faces
+          pass           # peut-etre inside, tester les autres faces
       else:
         if i == ifil:
-          nbOnRef +=1    # le point est sur la face de référence, on continue avec les autres points
+          nbOnRef +=1    # le point est sur la face de reference, on continue avec les autres points
           break
         else:
-          nbOnOther += 1 # le point est sur une autre face, mais il peut aussi être sur la face de référence...
+          nbOnOther += 1 # le point est sur une autre face, mais il peut aussi etre sur la face de reference...
           pass           # on peut tester les autres faces
     if nbMiss == len(facerefs):
       side = 1 # inside

@@ -8,10 +8,10 @@ from blocFissure.gmu.getStatsMaillageFissure import getStatsMaillageFissure
 
 class fissureGenerique():
   """
-  classe générique problème fissure:
-  génération géométrie et maillage sain
-  définition et positionnement d'une fissure
-  génération d'un bloc défaut inséré dans le maillage sain
+  classe generique probleme fissure:
+  generation geometrie et maillage sain
+  definition et positionnement d'une fissure
+  generation d'un bloc defaut insere dans le maillage sain
   """
 
   nomProbleme = "generique"

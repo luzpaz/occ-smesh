@@ -197,7 +197,7 @@
        <item>
         <widget class="QLabel" name="lblNumericalParameters">
          <property name="text">
-          <string>Paramètres numériques:</string>
+          <string>Parametres numeriques:</string>
          </property>
         </widget>
        </item>
@@ -208,7 +208,7 @@
            <item>
             <widget class="QLabel" name="lblParamNbIter">
              <property name="text">
-              <string>Nb. Itérations</string>
+              <string>Nb. Iterations</string>
              </property>
             </widget>
            </item>

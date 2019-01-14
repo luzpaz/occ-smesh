@@ -13,18 +13,18 @@ def mydot(a):
   return np.dot(a,a)
 
 # -----------------------------------------------------------------------------
-# --- groupe de quadrangles de face transformé en face géométrique par filling
+# --- groupe de quadrangles de face transforme en face geometrique par filling
 
 def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
   """
-  groupe de quadrangles de face transformée en faces géométriques par filling
-  on part de quadrangles définissant une zone a 4 cotés (convexe), et on reconstitue n lignes de p points.
-  Ces n lignes de p points sont transformées en n courbes géométriques,
-  à partir desquelles on reconstitue une surface géométrique.
-  Il peut y avoir plusieurs faces géométriques reconstituées, si on fournit des groupes de quadrangles non connexes.
-  On détecte les angles vifs, pour conserver des arêtes vives délimitant des faces connexes.
-  @param meshQuad : maillages constitué de quadrangles constituant une ou plusieurs zones convexes
-  @return (fillings, noeuds_Bords) : liste de geomObject, listes des bords (bord = liste ordonnée de noeuds (geomObject))
+  groupe de quadrangles de face transformee en faces geometriques par filling
+  on part de quadrangles definissant une zone a 4 cotes (convexe), et on reconstitue n lignes de p points.
+  Ces n lignes de p points sont transformees en n courbes geometriques,
+  a partir desquelles on reconstitue une surface geometrique.
+  Il peut y avoir plusieurs faces geometriques reconstituees, si on fournit des groupes de quadrangles non connexes.
+  On detecte les angles vifs, pour conserver des aretes vives delimitant des faces connexes.
+  @param meshQuad : maillages constitue de quadrangles constituant une ou plusieurs zones convexes
+  @return (fillings, noeuds_Bords) : liste de geomObject, listes des bords (bord = liste ordonnee de noeuds (geomObject))
   """
   logging.info("start")
 
@@ -33,12 +33,12 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
     isVecteurDefaut = True
     vecteurDefaut = shapeFissureParams['vecteurDefaut']
 
-  fillings = []       # les faces reconstituées, découpées selon les arêtes vives
+  fillings = []       # les faces reconstituees, decoupees selon les aretes vives
   noeuds_bords = []   #
-  bords_Partages = [] # contient a la fin les courbes correspondant aux arêtes vives
-  fillconts = []      # les faces reconstituées, sans découpage selon les arêtes vives
-  idFilToCont = []    # index face découpée vers face sans découpe
-  iface = 0           # index face découpée
+  bords_Partages = [] # contient a la fin les courbes correspondant aux aretes vives
+  fillconts = []      # les faces reconstituees, sans decoupage selon les aretes vives
+  idFilToCont = []    # index face decoupee vers face sans decoupe
+  iface = 0           # index face decoupee
   icont = 0           # index face continue
   
   allNodeIds = meshQuad.GetNodesId()
@@ -52,7 +52,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
         elem = elems[0]
         break;
     idStart = idNode # le noeud de coin
-    elemStart = elem # l'élément quadrangle au coin
+    elemStart = elem # l'element quadrangle au coin
     xyz = meshQuad.GetNodeXYZ(idStart)
     logging.debug("idStart %s, coords %s", idStart, str(xyz))
   
@@ -72,13 +72,13 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
       debutLigne = True
       nodeline = []
       elemline = []
-      while ligneIncomplete: # compléter la ligne de points
+      while ligneIncomplete: # completer la ligne de points
         nodeline.append(idNode)
         allNodeIds.remove(idNode)
         elemline.append(elem)
         nodes = meshQuad.GetElemNodes(elem)
-        i = nodes.index(idNode) # repérer l'index du noeud courant (i) dans l'élément quadrangle (0 a 3)
-        if agauche:             # déterminer le noeud suivant (j) et celui opposé (k) dans le quadrangle
+        i = nodes.index(idNode) # reperer l'index du noeud courant (i) dans l'element quadrangle (0 a 3)
+        if agauche:             # determiner le noeud suivant (j) et celui oppose (k) dans le quadrangle
           if i < 3:
             j = i+1
           else:
@@ -97,10 +97,10 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           else:
             k = 3
         isuiv = nodes[j]   #noeud suivant
-        iapres = nodes[k]  #noeud opposé
+        iapres = nodes[k]  #noeud oppose
         if debutLigne:
           debutLigne = False
-          # précédent a trouver, dernière ligne : précédent au lieu de suivant
+          # precedent a trouver, derniere ligne : precedent au lieu de suivant
           if agauche:
             if i > 0:
               iprec = nodes[i -1]
@@ -134,45 +134,45 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
     logging.debug("nodelines = %s", nodelines)
     longueur = [len(val) for val in nodelines]
     logging.debug("longueur = %s", longueur)
-    # on a constitué une liste de lignes de points connexes
+    # on a constitue une liste de lignes de points connexes
     logging.debug("dimensions [%s, %s]", len(nodelines),  len(nodeline))   
     
-    # stockage des coordonnées dans un tableau numpy
+    # stockage des coordonnees dans un tableau numpy
     mat = np.zeros((len(nodelines), len(nodeline), 3))
     for i, ligne in enumerate(nodelines):
       for j, nodeId in enumerate(ligne):
         mat[i,j] = meshQuad.GetNodeXYZ(nodeId)
-    logging.debug("matrice de coordonnées: \n%s",mat)
+    logging.debug("matrice de coordonnees: \n%s",mat)
     logging.debug("dimensions %s", mat.shape)
     
-    # recherche d'angles supérieurs a un seuil sur une ligne : angle entre deux vecteurs successifs
-    cosmin = math.cos(math.pi/4.)          # TODO: angle reference en paramètre
+    # recherche d'angles superieurs a un seuil sur une ligne : angle entre deux vecteurs successifs
+    cosmin = math.cos(math.pi/4.)          # TODO: angle reference en parametre
     vecx = mat[:, 1:,  :] - mat[:, :-1, :] # vecteurs selon direction "x"
     vx0 = vecx[:, :-1, :]                  # vecteurs amont
     vx1 = vecx[:, 1:,  :]                  # vecteurs aval
     e = np.einsum('ijk,ijk->ij', vx0, vx1) # produit scalaire des vecteurs
-    f = np.apply_along_axis(mydot, 2, vx0) # normes carrées vecteurs amont
-    g = np.apply_along_axis(mydot, 2, vx1) # normes carrées vecteurs aval
+    f = np.apply_along_axis(mydot, 2, vx0) # normes carrees vecteurs amont
+    g = np.apply_along_axis(mydot, 2, vx1) # normes carrees vecteurs aval
     h = e/(np.sqrt(f*g))                   # cosinus
     ruptureX = h < cosmin                  # True si angle > reference
     logging.debug("matrice de rupture X: \n%s",ruptureX)
     rupX = [x for x in range(len(nodeline)-2) if np.prod(ruptureX[:,x])]
     logging.debug("colonnes de rupture: %s",rupX)
-    # recherche d'angles supérieurs a un seuil sur une colonne : angle entre deux vecteurs successifs
+    # recherche d'angles superieurs a un seuil sur une colonne : angle entre deux vecteurs successifs
     vecy = mat[ 1:, :, :] - mat[:-1, :, :] # vecteurs selon direction "y"
     vy0 = vecy[:-1, :, :]                  # vecteurs amont
     vy1 = vecy[ 1:, :, :]                  # vecteurs aval
     e = np.einsum('ijk,ijk->ij', vy0, vy1) # produit scalaire des vecteurs
-    f = np.apply_along_axis(mydot, 2, vy0) # normes carrées vecteurs amont
-    g = np.apply_along_axis(mydot, 2, vy1) # normes carrées vecteurs aval
+    f = np.apply_along_axis(mydot, 2, vy0) # normes carrees vecteurs amont
+    g = np.apply_along_axis(mydot, 2, vy1) # normes carrees vecteurs aval
     h = e/(np.sqrt(f*g))                   # cosinus
     ruptureY = h < cosmin                  # True si angle > reference
     logging.debug("matrice de rupture Y: \n%s",ruptureY)
     rupY = [x for x in range(len(nodelines)-2) if np.prod(ruptureY[x, :])]
     logging.debug("lignes de rupture: %s",rupY)
     if (len(rupX)*len(rupY)) > 0:
-      logging.critical("""Cas non traité: présence d'angles vifs dans 2 directions, 
-      lors de la reconstitution des faces géométriques dans la zone remaillée""")
+      logging.critical("""Cas non traite: presence d'angles vifs dans 2 directions, 
+      lors de la reconstitution des faces geometriques dans la zone remaillee""")
     
     mats = []
     bordsPartages = []
@@ -188,7 +188,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           ifin = 0
         else:
           ifin = imax
-        bordsPartages.append([imin,ifin]) # les indices différents de 0 correspondent à des bords partagés
+        bordsPartages.append([imin,ifin]) # les indices differents de 0 correspondent a des bords partages
     elif (len(rupY)> 0):
       rupY.append(mat.shape[0]-1)
       for i, index in enumerate(rupY):
@@ -201,10 +201,10 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           ifin = 0
         else:
           ifin = imax
-        bordsPartages.append([imin,ifin]) # les indices différents de 0 correspondent à des bords partagés
+        bordsPartages.append([imin,ifin]) # les indices differents de 0 correspondent a des bords partages
     else:
       mats.append(mat)
-      bordsPartages.append([0,0])         # les indices différents de 0 correspondent à des bords partagés
+      bordsPartages.append([0,0])         # les indices differents de 0 correspondent a des bords partages
     
     curvconts = []
     for nmat, amat in enumerate(mats):
@@ -248,15 +248,15 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
         curve = geompy.MakeInterpol(nodeList, False, False)
         #name = "curve_%d"%i
         #geomPublish(initLog.debug,  curve, name )
-        if len(curvconts) == 0 or len(curves) > 0: # éliminer les doublons de la surface sans découpe 
+        if len(curvconts) == 0 or len(curves) > 0: # eliminer les doublons de la surface sans decoupe 
           curvconts.append(nodeList)
         curves.append(curve)
       if bordsPartages[nmat][0] :
-        bordsPartages[nmat][0] = curves[0]  # la première ligne est un bord partagé
+        bordsPartages[nmat][0] = curves[0]  # la premiere ligne est un bord partage
       else:
         bordsPartages[nmat][0] = None
       if bordsPartages[nmat][1] :
-        bordsPartages[nmat][1] = curves[-1] # la dernière ligne est un bord partagé
+        bordsPartages[nmat][1] = curves[-1] # la derniere ligne est un bord partage
       else:
         bordsPartages[nmat][1] = None
       filling = geompy.MakeFilling(geompy.MakeCompound(curves), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
@@ -284,12 +284,12 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           pointIn_z = shapeFissureParams['pointIn_z']
         if pointExplicite:
           cdg = geompy.MakeVertex(pointIn_x, pointIn_y, pointIn_z)
-          logging.debug("orientation filling par point intérieur %s", (pointIn_x, pointIn_y, pointIn_z))
+          logging.debug("orientation filling par point interieur %s", (pointIn_x, pointIn_y, pointIn_z))
           vecteurDefaut = geompy.MakeVector(cdg, vertex)
         
       if 'convexe' in shapeFissureParams:
         isConvexe = shapeFissureParams['convexe']
-        logging.debug("orientation filling par indication de convexité %s", isConvexe)
+        logging.debug("orientation filling par indication de convexite %s", isConvexe)
         cdg = geompy.MakeCDG(filling)
         if isConvexe:
           vecteurDefaut = geompy.MakeVector(cdg, vertex)
@@ -310,9 +310,9 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
       bords_Partages += bordsPartages
       logging.debug("bords_Partages = %s", bords_Partages)
       pass # --- loop on mats
-    # --- reconstruction des faces continues à partir des listes de noeuds
-    #     les courbes doivent suivre la courbure pour éviter les oscillations
-    if icont == iface - 1: # pas de découpe, on garde la même face
+    # --- reconstruction des faces continues a partir des listes de noeuds
+    #     les courbes doivent suivre la courbure pour eviter les oscillations
+    if icont == iface - 1: # pas de decoupe, on garde la meme face
       fillcont = fillings[-1]
     else:
       nbLignes = len(curvconts[0])

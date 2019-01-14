@@ -91,7 +91,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   # -----------------------------------------------------------------------------
   # --- peau et face de fissure
 
-  # --- partition peau defaut - face de fissure prolongee - wire de fond de fissure prolongée
+  # --- partition peau defaut - face de fissure prolongee - wire de fond de fissure prolongee
   partitionPeauFissFond = geompy.MakePartition([facePorteFissure, WirePorteFondFissure, fillingFaceExterne], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
   geomPublish(initLog.debug,  partitionPeauFissFond, 'partitionPeauFissFond' )
 
@@ -130,7 +130,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   [edgesInside, edgesOutside, edgesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
   [facesInside, facesOutside, facesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "FACE", 1.e-3)
 
-  # --- partition peau -face fissure - pipe fond de fissure prolongé
+  # --- partition peau -face fissure - pipe fond de fissure prolonge
   partitionPeauFissByPipe = geompy.MakePartition([facesInside[0], facesOnside[0]], [pipefiss], [], [], geompy.ShapeType["FACE"], 0, [], 0)
   geomPublish(initLog.debug,  partitionPeauFissByPipe, 'partitionPeauFissByPipe' )
 
@@ -182,7 +182,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     name = "verticesOutCercles_%d"%i
     geomPublishInFather(initLog.debug,facePeau, vertex, name)
 
-  # --- demi cercles  regroupés
+  # --- demi cercles  regroupes
   groupsDemiCerclesPeau = []
   for i, vertex in enumerate(verticesEdgePeauFiss):
     demis = []
@@ -320,7 +320,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   geompy.UnionList(groupGenerFiss, generFiss)
   geomPublishInFather(initLog.debug,pipeFondFiss, groupGenerFiss, "GenFiss")
 
-  # --- demi cercles externes regroupés
+  # --- demi cercles externes regroupes
   groupsDemiCerclesPipe = []
   for i, vertex in enumerate(verticesEdgePeauFiss):
     demis = []
@@ -371,7 +371,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   # -------------------------------------------------------------------------
   # --- maillage
 
-  # --- edges de bord face defaut à respecter
+  # --- edges de bord face defaut a respecter
 
   aFilterManager = smesh.CreateFilterManager()
   nbAdded, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])

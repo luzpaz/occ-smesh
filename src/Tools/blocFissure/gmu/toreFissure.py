@@ -21,7 +21,7 @@ def toreFissure(minRad,allonge,rayTore):
   @param allonge :rapport grand rayon / petit rayon
   @param rayTore :rayon du tore construit autour de la generatrice de l'ellipse
   @return (generatrice, FaceGenFiss, Pipe_1, FaceFissure, Plane_1, Pipe1Part) : ellipse, section du tore,
-  tore plein, face plane de le fissure, plan de la fissure, tore partitioné par le plan de fissure.
+  tore plein, face plane de le fissure, plan de la fissure, tore partitione par le plan de fissure.
   """
   logging.info("start ", minRad, allonge, rayTore)
   

@@ -11,7 +11,7 @@ initLog.setVerbose()
 #initLog.setRelease()
 #initLog.setPerfTests()
 
-# ---tous les cas en sequence, ou les cas selectionnés ...
+# ---tous les cas en sequence, ou les cas selectionnes ...
 runall = True
 if runall:
   torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]

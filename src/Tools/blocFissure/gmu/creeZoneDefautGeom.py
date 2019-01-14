@@ -12,10 +12,10 @@ from .prolongeVertices import prolongeVertices
 
 def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoyen, lgExtrusion=50):
   """
-  Construction CAO de la zone à remailler, quand on utilise la CAO d'origine,
+  Construction CAO de la zone a remailler, quand on utilise la CAO d'origine,
   apres appel creeZoneDefautMaillage
-  @param objetSain : la géometrie de l'objet initial
-  @param shapeDefaut : objet géometrique représentant la fissure
+  @param objetSain : la geometrie de l'objet initial
+  @param shapeDefaut : objet geometrique representant la fissure
   (selon les cas, un point central, ou une shape plus complexe,
   dont on ne garde que les vertices)
   @param origShapes : liste id subShapes

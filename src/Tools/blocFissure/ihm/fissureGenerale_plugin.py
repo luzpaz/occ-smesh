@@ -338,8 +338,8 @@ def fissureGeneraleDlg(context):
         self.ui.lb_calcul.show()
         logfile=os.path.join(dico['reptrav'], dico['nomres']+".log")
         self.setLogVerbosity(logfile)
-        from blocFissure.gmu import geomsmesh               # après intialisation log dans setLogVerbosity
-        from blocFissure.gmu.casStandard import casStandard # après intialisation log dans setLogVerbosity
+        from blocFissure.gmu import geomsmesh               # apres intialisation log dans setLogVerbosity
+        from blocFissure.gmu.casStandard import casStandard # apres intialisation log dans setLogVerbosity
         from blocFissure.gmu.fissError import fissError
         try:
           execInstance = casStandard(dico)
@@ -361,7 +361,7 @@ def fissureGeneraleDlg(context):
           mbox.setText(str(texte))
           mbox.exec_()
 #        except Exception as erreur:
-#          print "exception non répertoriée"
+#          print "exception non repertoriee"
       self.NOK = NOK
       self.ui.lb_calcul.hide()
       #self.accept()

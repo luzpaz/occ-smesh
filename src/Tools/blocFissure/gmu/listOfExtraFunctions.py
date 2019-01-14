@@ -12,12 +12,12 @@ from .geomsmesh import smesh
 def lookForCorner(maillageAScanner):
     
     """ Cette fonction permet de scanner la liste de noeuds qui composent le
-        maillage passé en paramètre. On recherche un ou plusieurs coins, ce
-        qui implique les caractéristiques suivantes:
-            - le noeud doit appartenir au moins à trois éléments distincts
-            - chaque élément doit appartenir à un ensemble distinct
-        La fonction renvoie une liste de coins par l'intermédiaire de l'IDs
-        chaque noeud. La liste contient en général au maximum deux coins.
+        maillage passe en parametre. On recherche un ou plusieurs coins, ce
+        qui implique les caracteristiques suivantes:
+            - le noeud doit appartenir au moins a trois elements distincts
+            - chaque element doit appartenir a un ensemble distinct
+        La fonction renvoie une liste de coins par l'intermediaire de l'IDs
+        chaque noeud. La liste contient en general au maximum deux coins.
     """
     
     logging.info("start")
@@ -28,46 +28,46 @@ def lookForCorner(maillageAScanner):
         # On parcours la liste de noeuds
         listOfElements = maillageAScanner.GetNodeInverseElements(ND)
         if len(listOfElements) >=3:
-            # On teste le nombre d'éléments qui partagent le même noeud
-            # --- Filtre selon le critère 'coplanar' --- #
+            # On teste le nombre d'elements qui partagent le meme noeud
+            # --- Filtre selon le critere 'coplanar' --- #
             listOfCriterion = [smesh.GetCriterion(SMESH.FACE, SMESH.FT_CoplanarFaces, \
                                SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30) \
                                for elem in listOfElements]
             listOfFilters = [smesh.GetFilterFromCriteria([criteria]) for criteria in listOfCriterion]
             listOfSets = [maillageAScanner.GetIdsFromFilter(filter) for filter in listOfFilters]
             if listOfSets.count(listOfSets[0]) == len(listOfSets):
-                # Si toutes les listes d'éléments sont similaires, on retourne
-                # au début pour éviter de travailler sur des éléments inutiles.
-                # Exemple : un noeud appartenant à 4 éléments sur la même face.
+                # Si toutes les listes d'elements sont similaires, on retourne
+                # au debut pour eviter de travailler sur des elements inutiles.
+                # Exemple : un noeud appartenant a 4 elements sur la meme face.
                 continue
             for s in listOfSets:
                 while listOfSets.count(s) > 1:
-                    # On supprime tant que la liste d'éléments n'est pas unique.
+                    # On supprime tant que la liste d'elements n'est pas unique.
                     listOfSets.remove(s)
             if len(listOfSets) >= 3:
-                # Si on a au moins 3 listes d'élements différentes, on considère
-                # qu'il y a présence d'un coin.
+                # Si on a au moins 3 listes d'elements differentes, on considere
+                # qu'il y a presence d'un coin.
                 listOfCorners.append(ND)
     return listOfCorners
 
 def createLinesFromMesh(maillageSupport):
     
-    """ Cette fonction permet de générer une liste de lignes à partir du 
-        maillage support passé en paramètre. On démarre à partir d'un coin
+    """ Cette fonction permet de generer une liste de lignes a partir du 
+        maillage support passe en parametre. On demarre a partir d'un coin
         simple et on parcourt tout les noeuds pour former une ligne. Soit la
         figure ci-dessous :
             
             1_____4_____7    On part du coin N1, et on cherche les noeuds
             |     |     |    successifs tels que [1, 2, 3]. Lorsqu'on arrive
             |  1  |  3  |    arrive sur le noeud de fin de ligne N3, on repart
-            |     |     |    du noeud précédent du premier élément (E1), à
+            |     |     |    du noeud precedent du premier element (E1), a
             2_____5_____8    savoir le noeud N4. On suit les noeuds succesifs
-            |     |     |    [4, 5, 6] comme précédemment et ainsi de suite.
+            |     |     |    [4, 5, 6] comme precedemment et ainsi de suite.
             |  2  |  4  |    Lorsqu'on arrive sur le dernier noeud de la
-            |     |     |    dernière ligne, à savoir le noeud N9, on considère
-            3_____6_____9    que toutes les lignes sont créées.
+            |     |     |    derniere ligne, a savoir le noeud N9, on considere
+            3_____6_____9    que toutes les lignes sont creees.
             
-        La fonction retourne une liste de lignes utilisées par la suite.
+        La fonction retourne une liste de lignes utilisees par la suite.
     """
     
     logging.info("start")
@@ -82,7 +82,7 @@ def createLinesFromMesh(maillageSupport):
             elem = elems[0]
             break;
         idStart = idNode # le noeud de coin
-        elemStart = elem # l'élément quadrangle au coin
+        elemStart = elem # l'element quadrangle au coin
         xyz = maillageSupport.GetNodeXYZ(idStart)
         logging.debug("idStart %s, coords %s", idStart, str(xyz))
     
@@ -102,13 +102,13 @@ def createLinesFromMesh(maillageSupport):
             debutLigne = True
             nodeline = []
             elemline = []
-            while ligneIncomplete:  # compléter la ligne de points
+            while ligneIncomplete:  # completer la ligne de points
                 nodeline.append(idNode)
                 allNodeIds.remove(idNode)
                 elemline.append(elem)
                 nodes = maillageSupport.GetElemNodes(elem)
-                i = nodes.index(idNode)  # repérer l'index du noeud courant (i) dans l'élément quadrangle (0 a 3)
-                if agauche:              # déterminer le noeud suivant (j) et celui opposÃ© (k) dans le quadrangle
+                i = nodes.index(idNode)  # reperer l'index du noeud courant (i) dans l'element quadrangle (0 a 3)
+                if agauche:              # determiner le noeud suivant (j) et celui opposÃ© (k) dans le quadrangle
                     if i < 3:
                         j = i+1
                     else:
@@ -127,10 +127,10 @@ def createLinesFromMesh(maillageSupport):
                     else:
                         k = 3
                 isuiv = nodes[j]   # noeud suivant
-                iapres = nodes[k]  # noeud opposé
+                iapres = nodes[k]  # noeud oppose
                 if debutLigne:
                     debutLigne = False
-                    # précédent a trouver, dernière ligne : précédent au lieu de suivant
+                    # precedent a trouver, derniere ligne : precedent au lieu de suivant
                     if agauche:
                         if i > 0:
                             iprec = nodes[i -1]
@@ -162,17 +162,17 @@ def createLinesFromMesh(maillageSupport):
             logging.debug("elemline %s", elemline)
             nodelines.append(nodeline)
              
-        # on a constitué une liste de lignes de points connexes
+        # on a constitue une liste de lignes de points connexes
         logging.debug("dimensions [%s, %s]", len(nodelines),  len(nodeline))
     
     return nodelines
 
 def createNewMeshesFromCorner(maillageSupport, listOfCorners):
     
-    """ Cette fonction permet de générer un nouveau maillage plus facile à
-        utiliser. On démarre d'un coin et on récupère les trois éléments
-        auquel le noeud appartient. Grâce à un filtre 'coplanar' sur les trois
-        éléments, on peut générer des faces distinctes.
+    """ Cette fonction permet de generer un nouveau maillage plus facile a
+        utiliser. On demarre d'un coin et on recupere les trois elements
+        auquel le noeud appartient. Grâce a un filtre 'coplanar' sur les trois
+        elements, on peut generer des faces distinctes.
     """
     
     logging.info("start")
@@ -182,7 +182,7 @@ def createNewMeshesFromCorner(maillageSupport, listOfCorners):
     for corner in listOfCorners:
         elems = maillageSupport.GetNodeInverseElements(corner)
         for i, elem in enumerate(elems):
-            # --- Filtre selon le critère 'coplanar' --- #
+            # --- Filtre selon le critere 'coplanar' --- #
             critere = smesh.GetCriterion(SMESH.FACE, SMESH.FT_CoplanarFaces, \
                                          SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30)
             filtre = smesh.GetFilterFromCriteria([critere])
@@ -190,8 +190,8 @@ def createNewMeshesFromCorner(maillageSupport, listOfCorners):
             # On copie le maillage en fonction du filtre
             msh = smesh.CopyMesh(grp, 'new_{0}'.format(i + 1), False, True)
             # On stocke l'ensemble des noeuds du maillage dans tmp
-            # On ajoute le maillage à la liste des nouveaux maillages
-            # seulement s'il n'y est pas déjà
+            # On ajoute le maillage a la liste des nouveaux maillages
+            # seulement s'il n'y est pas deja
             tmp.append(msh.GetNodesId())
             if tmp.count(msh.GetNodesId()) <= 1:
                 listOfNewMeshes.append(msh)

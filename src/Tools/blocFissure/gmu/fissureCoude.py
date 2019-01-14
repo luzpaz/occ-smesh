@@ -26,7 +26,7 @@ O, OX, OY, OZ = triedreBase()
 
 class fissureCoude(fissureGenerique):
   """
-  problème de fissure du Coude : version de base
+  probleme de fissure du Coude : version de base
   maillage hexa
   """
 
@@ -35,7 +35,7 @@ class fissureCoude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
     """
-    Paramètres géométriques du tuyau coudé sain:
+    Parametres geometriques du tuyau coude sain:
     angleCoude
     r_cintr
     l_tube_p1
@@ -291,17 +291,17 @@ class fissureCoude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour le tuyau coude
-    profondeur  : 0 < profondeur <= épaisseur
+    parametres de la fissure pour le tuyau coude
+    profondeur  : 0 < profondeur <= epaisseur
     rayonPipe   : rayon du pipe correspondant au maillage rayonnant
-    lenSegPipe  : longueur des mailles rayonnantes le long du fond de fissure (= rayonPipe par défaut)
+    lenSegPipe  : longueur des mailles rayonnantes le long du fond de fissure (= rayonPipe par defaut)
     azimut      : entre 0 et 360°
     alpha       : 0 < alpha < angleCoude
     longueur    : <=2*profondeur ==> force une fissure elliptique (longueur/profondeur = grand axe/petit axe).
-    orientation : 0° : longitudinale, 90° : circonférentielle, autre : uniquement fissures elliptiques
-    lgInfluence : distance autour de la shape de fissure a remailler (si 0, pris égal à profondeur. A ajuster selon le maillage)
-    elliptique  : True : fissure elliptique (longueur/profondeur = grand axe/petit axe); False : fissure longue (fond de fissure de profondeur constante, demi-cercles aux extrémites)
-    pointIn_x   : optionnel coordonnées x d'un point dans le solide, pas trop loin du centre du fond de fissure (idem y,z)
+    orientation : 0° : longitudinale, 90° : circonferentielle, autre : uniquement fissures elliptiques
+    lgInfluence : distance autour de la shape de fissure a remailler (si 0, pris egal a profondeur. A ajuster selon le maillage)
+    elliptique  : True : fissure elliptique (longueur/profondeur = grand axe/petit axe); False : fissure longue (fond de fissure de profondeur constante, demi-cercles aux extremites)
+    pointIn_x   : optionnel coordonnees x d'un point dans le solide, pas trop loin du centre du fond de fissure (idem y,z)
     externe     : True : fissure face externe, False : fissure face interne
     """
     logging.info("setParamShapeFissure %s", self.nomCas)
@@ -475,14 +475,14 @@ class fissureCoude(fissureGenerique):
       xs = []
       totx = 0
       for i in range(nbp+2):
-        x = math.sin(i*math.pi/(nbp+1)) # fonction de répartition des points : distance relative
+        x = math.sin(i*math.pi/(nbp+1)) # fonction de repartition des points : distance relative
         x2 = x*x
         totx += x2
         xs.append(totx)
         logging.debug("x2: %s, totx: %s", x2, totx)
       for i in range(nbp+1):
-        #posi = nbp -i             # répartition équidistante des points sur la courbe
-        posi = nbp*(1 -xs[i]/totx) # points plus resserrés aux extrémités de la courbe
+        #posi = nbp -i             # repartition equidistante des points sur la courbe
+        posi = nbp*(1 -xs[i]/totx) # points plus resserres aux extremites de la courbe
         angi = -dp*posi*(5.0*math.pi/8.0)/nbp
         pt = geompy.MakeRotation(pil, axl, angi)
         points.append(pt)
@@ -499,8 +499,8 @@ class fissureCoude(fissureGenerique):
       totx = 0
       for i in range(nbp+1):
         x = math.sin(i*math.pi/nbp)
-        #x = 1.0 # répartition équidistante des points sur la courbe
-        x2 = x*x # points plus resserrés aux extrémités de la courbe
+        #x = 1.0 # repartition equidistante des points sur la courbe
+        x2 = x*x # points plus resserres aux extremites de la courbe
         totx += x2
         xs.append(totx)
         logging.debug("x2: %s, totx: %s", x2, totx)
@@ -525,8 +525,8 @@ class fissureCoude(fissureGenerique):
         xs.append(totx)
         logging.debug("x2: %s, totx: %s", x2, totx)
       for i in range(nbp+1):
-        #posi = nbp -i        # répartition équidistante des points sur la courbe
-        posi = nbp*xs[i]/totx # points plus resserrés aux extrémités de la courbe
+        #posi = nbp -i        # repartition equidistante des points sur la courbe
+        posi = nbp*xs[i]/totx # points plus resserres aux extremites de la courbe
         angi = dp*posi*(5.0*math.pi/8.0)/nbp
         pt = geompy.MakeRotation(pir, axr, angi)
         points.append(pt)
@@ -567,7 +567,7 @@ class fissureCoude(fissureGenerique):
 
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
       edgesTriees, minl, maxl = sortEdges(edges)
-      edges = edgesTriees[:-1] # la plus grande correspond à arce, on l'elimine
+      edges = edgesTriees[:-1] # la plus grande correspond a arce, on l'elimine
       wiretube = geompy.MakeWire(edges)
       #wiretube = edgesTriees[-1]
       geomPublish(initLog.debug, wiretube, 'wiretubePlace' )
@@ -618,7 +618,7 @@ class fissureCoude(fissureGenerique):
       geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
       edgesTriees, minl, maxl = sortEdges(edges)
-      edgetube = edgesTriees[-1] # la plus grande correspond à arci
+      edgetube = edgesTriees[-1] # la plus grande correspond a arci
       wiretube = edgetube
 
       pc = geompy.MakeTranslation(pb, 0.5*prof*cosaz, 0.5*prof*sinaz, 0.)
@@ -632,11 +632,11 @@ class fissureCoude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
     """
-    Paramètres du maillage de la fissure pour le tuyau coudé
-    Voir également setParamShapeFissure, paramètres rayonPipe et lenSegPipe.
+    Parametres du maillage de la fissure pour le tuyau coude
+    Voir egalement setParamShapeFissure, parametres rayonPipe et lenSegPipe.
     nbSegRad = nombre de couronnes
     nbSegCercle = nombre de secteurs
-    areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
+    areteFaceFissure = taille cible de l'arete des triangles en face de fissure.
     """
     self.maillageFissureParams = dict(nomRep        = '.',
                                       nomFicSain    = self.nomCas,

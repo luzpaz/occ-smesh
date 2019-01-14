@@ -12,32 +12,32 @@ from .sortEdges import sortEdges
 def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                                        facesPipePeau, edgeRadFacePipePeau, nbsegCercle):
   """
-  construction des listes d'edges radiales sur chaque extrémité débouchante
+  construction des listes d'edges radiales sur chaque extremite debouchante
   """
   logging.info('start')
 
-  # --- listes de nappes radiales en filling à chaque extrémité débouchante
+  # --- listes de nappes radiales en filling a chaque extremite debouchante
 
   facesDebouchantes = [False, False]
-  idFacesDebouchantes = [-1, -1] # contiendra les indices des faces disque débouchantes (facesPipePeau)
+  idFacesDebouchantes = [-1, -1] # contiendra les indices des faces disque debouchantes (facesPipePeau)
   listNappes =[]
   for i, idisk in enumerate(idisklim):
     numout = idiskout[i]
-    logging.debug("extremité %s, indices disques interne %s, externe %s",i, idisk, numout)
+    logging.debug("extremite %s, indices disques interne %s, externe %s",i, idisk, numout)
     nappes = []
-    if  (idisk != 0) and (idisk != len(gptsdisks)-1): # si extrémité débouchante
+    if  (idisk != 0) and (idisk != len(gptsdisks)-1): # si extremite debouchante
       for k in range(nbsegCercle):
         if i == 0:
           iddeb = max(0, numout)
           idfin = max(iddeb+3,idisk+1) # il faut 3 rayons pour faire un filling qui suive le fond de fissure
-          #logging.debug("extremité %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
+          #logging.debug("extremite %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
           comp = geompy.MakeCompound(raydisks[k][iddeb:idfin])
           name='compoundRay%d'%k
           geomPublish(initLog.debug, comp, name)
         else:
           idfin = min(len(gptsdisks), numout+1)
           iddeb = min(idfin-3, idisk) # il faut 3 rayons pour faire un filling qui suive le fond de fissure
-          #logging.debug("extremité %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
+          #logging.debug("extremite %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
           comp = geompy.MakeCompound(raydisks[k][iddeb:idfin])
           name='compoundRay%d'%k
           geomPublish(initLog.debug, comp, name)
@@ -48,7 +48,7 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
         facesDebouchantes[i] = True
     listNappes.append(nappes)
 
-  # --- mise en correspondance avec les indices des faces disque débouchantes (facesPipePeau)
+  # --- mise en correspondance avec les indices des faces disque debouchantes (facesPipePeau)
   for i, nappes in enumerate(listNappes):
     if facesDebouchantes[i]:
       for k, face in enumerate(facesPipePeau):
@@ -61,10 +61,10 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
           break
   logging.debug("idFacesDebouchantes: %s", idFacesDebouchantes)
 
-  # --- construction des listes d'edges radiales sur chaque extrémité débouchante
+  # --- construction des listes d'edges radiales sur chaque extremite debouchante
   listEdges = []
   for i, nappes in enumerate(listNappes):
-    ifd = idFacesDebouchantes[i] # indice de face débouchante (facesPipePeau)
+    ifd = idFacesDebouchantes[i] # indice de face debouchante (facesPipePeau)
     if ifd < 0:
       listEdges.append([])
     else:
@@ -81,8 +81,8 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
             edge = edsorted[-1]
           else:
             maxl = geompy.BasicProperties(edge)[0]
-          if maxl < 0.01: # problème MakeSection
-            logging.info("problème MakeSection recherche edge radiale %s, longueur trop faible: %s, utilisation partition", k, maxl)
+          if maxl < 0.01: # probleme MakeSection
+            logging.info("probleme MakeSection recherche edge radiale %s, longueur trop faible: %s, utilisation partition", k, maxl)
             partNappeFace = geompy.MakePartition([face, nappes[k]], [] , [], [], geompy.ShapeType["FACE"], 0, [], 0)
             edps= geompy.ExtractShapes(partNappeFace, geompy.ShapeType["EDGE"], False)
             ednouv = []
@@ -101,10 +101,10 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
               for ii, ed in enumerate(ednouv):
                 geomPublish(initLog.debug, ed, "ednouv%d"%ii)
               [edsorted, minl,maxl] = sortEdges(ednouv)
-              logging.debug("  longueur edge trouvée: %s", maxl)
+              logging.debug("  longueur edge trouvee: %s", maxl)
               edge = edsorted[-1]
             else:
-              logging.info("problème partition recherche edge radiale %s", k)
+              logging.info("probleme partition recherche edge radiale %s", k)
               vxs = geompy.ExtractShapes(partNappeFace, geompy.ShapeType["VERTEX"], False)
               vxnouv=[]
               for ii,vx in enumerate(vxs):
@@ -120,7 +120,7 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                 edge = edsorted2[-1]
                 logging.debug("lg edge: %s", maxl)
               else:
-                logging.debug("problème recherche edge radiale %s non résolu", k)
+                logging.debug("probleme recherche edge radiale %s non resolu", k)
           edges.append(edge)
           name = 'edgeEndPipe%d'%k
           geomPublish(initLog.debug, edge, name)

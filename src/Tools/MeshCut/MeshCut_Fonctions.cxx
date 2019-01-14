@@ -70,25 +70,25 @@ int MESHCUT::positionNoeudPlan(int indiceNoeud)
 }
 
 /*!
- * Equation paramétrique de la droite AB:    OP = OA + lambda AB
+ * Equation parametrique de la droite AB:    OP = OA + lambda AB
  *
- * Fonction caractéristique du plan : PI(X,Y,Z) = nx X + ny Y + nz Z + d
+ * Fonction caracteristique du plan : PI(X,Y,Z) = nx X + ny Y + nz Z + d
  *
  * Pour un point P de la droite: PI(OP) = PI(OA) + lambda n.AB     avec n=(nx,ny,nz),
- * L'intersection AB/plan est donnée par le point P tel que PI(OP)=0.
+ * L'intersection AB/plan est donnee par le point P tel que PI(OP)=0.
  *
- * Il lui correspond la coordonnée   lambda = - PI(OA) / n.AB.
+ * Il lui correspond la coordonnee   lambda = - PI(OA) / n.AB.
  *
  * Cette intersection est dans le segment si lambda est dans [0,1]
  */
 int MESHCUT::intersectionSegmentPlan(int it4, int na)
 {
 
-  int ngA = -1, ngB = -1; // Numéros des noeuds extrémités AB
+  int ngA = -1, ngB = -1; // Numeros des noeuds extremites AB
   float lambda, ps; //, ab; // ab = longueur AB
   float A[3], B[3];
 
-  // Détermination des ng des extrémités de l'arête passée en argument na
+  // Determination des ng des extremites de l'arete passee en argument na
   int * offset = MAILLAGE1->CNX[TETRA4] + 4 * it4;
   if (na == 0)
     {
@@ -142,9 +142,9 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
       //      // Longueur AB
       //      float lx = B[0] - A[0], ly = B[1] - A[1], lz = B[2] - A[2];
       //      ab = sqrt(lx * lx + ly * ly + lz * lz);
-      //      // La longueur maximale théorique est 2 epsilon
+      //      // La longueur maximale theorique est 2 epsilon
       //      if (ab < 2 * epsilon * 0.9)
-      //        ERREUR("Arête de longueur inférieure au minimum théorique 2 epsilon");
+      //        ERREUR("Arete de longueur inferieure au minimum theorique 2 epsilon");
 
       // Calcul du produit scalaire AB.n
       ps = 0.0;
@@ -154,7 +154,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
 
       if (debug)
         {
-          cout << "Routine ISP : arête " << na << " -  ngA=" << ngA << " ngB=" << ngB << endl;
+          cout << "Routine ISP : arete " << na << " -  ngA=" << ngA << " ngB=" << ngB << endl;
           cout << "A : " << A[0] << ' ' << A[1] << ' ' << A[2] << endl;
           cout << "B : " << B[0] << ' ' << B[1] << ' ' << B[2] << endl;
           cout << "N : " << normale[0] << ' ' << normale[1] << ' ' << normale[2] << endl;
@@ -177,7 +177,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
       intersections[cle1] = indexNouveauxNoeuds;
       intersections[cle2] = indexNouveauxNoeuds;
 
-      //      cout << "création noeud " << indexNouveauxNoeuds << " : " << inter[0] << " " << inter[1] << " " << inter[2]
+      //      cout << "creation noeud " << indexNouveauxNoeuds << " : " << inter[0] << " " << inter[1] << " " << inter[2]
       //          << endl;
       if (debug)
         cout << " sortie nouveau noeud, lambda = " << lambda << " , noeud = " << indexNouveauxNoeuds << endl;

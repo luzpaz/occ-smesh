@@ -14,10 +14,10 @@ from .getSubshapeIds import getSubshapeIds
 
 def facesVolumesToriques(tore, plan, facesDefaut):
   """
-  Extraction des deux faces  et volumes du tore partitionné, qui suivent la génératrice elliptique.
-  @param tore : le tore partitionné et coupé.
+  Extraction des deux faces  et volumes du tore partitionne, qui suivent la generatrice elliptique.
+  @param tore : le tore partitionne et coupe.
   @param plan : le plan de coupe
-  @return (facetore1,facetore2) les 2 faces selon la génératrice
+  @return (facetore1,facetore2) les 2 faces selon la generatrice
   """
   logging.info("start")
 

@@ -12,7 +12,7 @@ from .substractSubShapes import substractSubShapes
 def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSorted,
                        edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees):
   """
-  identification précise des edges et disques des faces de peau selon index extremité fissure
+  identification precise des edges et disques des faces de peau selon index extremite fissure
   """
   logging.info('start')
 
@@ -23,9 +23,9 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   edgesListees = []
   edgesCircPeau = []
   verticesCircPeau = []
-  if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
+  if len(verticesPipePeau) > 0: # --- au moins une extremite du pipe sur cette face de peau
 
-    for face in facesPeauSorted[:-1]: # la ou les faces débouchantes, pas la grande face de peau
+    for face in facesPeauSorted[:-1]: # la ou les faces debouchantes, pas la grande face de peau
       logging.debug("examen face debouchante circulaire")
       for i,efep in enumerate(edgesFissExtPipe):
         dist = geompy.MinDistance(face, efep)
@@ -72,7 +72,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
       name = "pointEdgeCirc%d"%i
       geomPublishInFather(initLog.debug, facePeau, grpVertCircPeau, name)
       pass
-    pass # --- au moins une extrémité du pipe sur cette face de peau
+    pass # --- au moins une extremite du pipe sur cette face de peau
 
   # --- edges de bord de la face de peau
 
@@ -133,20 +133,20 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   logging.debug("aretesVivesCoupees %s",aretesVivesCoupees)
   geomPublishInFather(initLog.debug, facePeau, groupEdgesBordPeau , "EdgesBords")
 
-  # ---  edges de la face de peau partagées avec la face de fissure
+  # ---  edges de la face de peau partagees avec la face de fissure
 
   edgesPeau = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
   edges = substractSubShapes(facePeau, edgesPeau, edgesListees)
   edgesFissurePeau = []
-  if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
-    edgesFissurePeau = [None for i in range(len(verticesCircPeau))] # edges associés aux extrémités du pipe, en premier
+  if len(verticesPipePeau) > 0: # --- au moins une extremite du pipe sur cette face de peau
+    edgesFissurePeau = [None for i in range(len(verticesCircPeau))] # edges associes aux extremites du pipe, en premier
     for edge in edges:
       for i, grpVert in enumerate(verticesCircPeau):
         if (geompy.MinDistance(grpVert, edge) < 1.e-3) and (edge not in edgesFissurePeau):
           edgesFissurePeau[i] = edge
           name = "edgeFissurePeau%d"%i
           geomPublishInFather(initLog.debug, facePeau,  edge, name)
-    for edge in edges: # on ajoute après les edges manquantes
+    for edge in edges: # on ajoute apres les edges manquantes
       if edge not in edgesFissurePeau:
         edgesFissurePeau.append(edge)
   else:

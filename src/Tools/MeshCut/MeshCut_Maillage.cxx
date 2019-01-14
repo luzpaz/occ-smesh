@@ -60,12 +60,12 @@ void Maillage::afficheMailles(TYPE_MAILLE tm)
   cout << "Affichage des mailles du type " << TM2string(tm) << " (effectif " << EFFECTIFS_TYPES[tm] << "): " << endl;
   if (EFFECTIFS_TYPES[tm])
     {
-      // Boucle sur les connectivités d'un type tm
+      // Boucle sur les connectivites d'un type tm
       int nnoeuds = Nnoeuds(tm);
       for (int i = 0; i < EFFECTIFS_TYPES[tm]; i++)
         {
           cout << "\tMaille " << i << " :" << endl;
-          //Boucle sur les noeuds de la maille de numéro local i dans le type tm
+          //Boucle sur les noeuds de la maille de numero local i dans le type tm
           int * offset = CNX[tm] + nnoeuds * i;
           for (int j = 0; j < nnoeuds; j++)
             {
@@ -80,7 +80,7 @@ void Maillage::afficheMailles(TYPE_MAILLE tm)
 
 void Maillage::listeMaillesType(TYPE_MAILLE tm)
 {
-  cout << "La fonction \"Restitution des mailles par type\" est obsolète " << endl;
+  cout << "La fonction \"Restitution des mailles par type\" est obsolete " << endl;
 
   //  cout << "Restitution des mailles du type " << TM2string(tm) << " (effectif " << EFFECTIFS_TYPES[tm] << "): " << endl;
   //  if (EFFECTIFS_TYPES[tm])
@@ -123,7 +123,7 @@ void Maillage::listeMaillesGM(std::string nomGM)
 
 //void Maillage::listeMaillesGMordonne(std::string nomGM)
 //{
-//  cout << "Liste ordonnée des mailles du groupe " << nomGM << " (" << GM[nomGM].size() << " mailles) : ";
+//  cout << "Liste ordonnee des mailles du groupe " << nomGM << " (" << GM[nomGM].size() << " mailles) : ";
 //  sort(GM[nomGM].begin(), GM[nomGM].end());
 //  for (int j = 0; j < GM[nomGM].size(); j++)
 //    cout << GM[nomGM][j] << " ";
@@ -148,7 +148,7 @@ void Maillage::listeNoeudsGN(std::string nomGN)
 
 void Maillage::listeNoeudsGNordonne(std::string nomGN)
 {
-  cout << "Liste ordonnée des noeuds du groupe " << nomGN << " (" << GN[nomGN].size() << " noeuds) : ";
+  cout << "Liste ordonnee des noeuds du groupe " << nomGN << " (" << GN[nomGN].size() << " noeuds) : ";
   sort(GN[nomGN].begin(), GN[nomGN].end());
   for (unsigned int j = 0; j < GN[nomGN].size(); j++)
     cout << GN[nomGN][j] << " ";
@@ -253,7 +253,7 @@ float Maillage::distanceNoeudNoeud(int ng1, int ng2)
 //          int nnoeuds = Nnoeuds(tm);
 //          for (int i = 0; i < CON[tm].size() / nnoeuds; i++)
 //            {
-//              //Boucle sur les noeuds de la maille de numéro local i dans le type tm
+//              //Boucle sur les noeuds de la maille de numero local i dans le type tm
 //              for (int j = 0; j < nnoeuds; j++)
 //                {
 //                  //..... CON[tm][nnoeuds*i+j];
@@ -261,12 +261,12 @@ float Maillage::distanceNoeudNoeud(int ng1, int ng2)
 //            }
 //        }
 //    }
-//  // Boucle sur les connectivités d'un type tm
+//  // Boucle sur les connectivites d'un type tm
 //}
 
 void Maillage::inputMED(std::string fichierMED)
 {
-  //cout << endl << "Début procédure inputMED, fichier "<< fichierMED << endl;
+  //cout << endl << "Debut procedure inputMED, fichier "<< fichierMED << endl;
 
   //  int i, j, k, ichamp, igauss, ipt, ival;
   int j;
@@ -309,7 +309,7 @@ void Maillage::inputMED(std::string fichierMED)
   FAMILLES_NOEUDS.clear();
   GROUPES_MAILLES.clear();
   GROUPES_NOEUDS.clear();
-  RESIDU.clear(); // Sera initialisé à 1 par la routine acquisitionTYPE_inputMED
+  RESIDU.clear(); // Sera initialise a 1 par la routine acquisitionTYPE_inputMED
   tailleFAMILLES.clear();
   tailleGROUPES.clear();
 
@@ -346,7 +346,7 @@ void Maillage::inputMED(std::string fichierMED)
 
   //  nGauss = MEDnGauss(fid);
   //  if (debug > 0)
-  //    cout << "Nombre d'éléments portant des points de Gauss: " << (int) nGauss << endl;
+  //    cout << "Nombre d'elements portant des points de Gauss: " << (int) nGauss << endl;
   //  map<string, int> REFGAUSS;
   //  map<string, int>::iterator iterGAUSS;
   //  for (igauss = 1; igauss <= nGauss; igauss++)
@@ -393,7 +393,7 @@ void Maillage::inputMED(std::string fichierMED)
   //      pflval = (med_int*) malloc(sizeof(med_int) * nvalprofil);
   //      if (MEDprofilLire(fid, pflval, nomprofil) < 0)
   //        ERREUR("ERREUR MEDprofilLire");
-  //      //cout << "    Affichage des 100 premières valeurs:" << endl;
+  //      //cout << "    Affichage des 100 premieres valeurs:" << endl;
   //      //for (ival=0;ival<min(100,nvalprofil);ival++) cout << " " << *(pflval+ival) ;
   //      free(pflval);
   //    }
@@ -429,7 +429,7 @@ void Maillage::inputMED(std::string fichierMED)
   //          cout << "  Nom:  " << (string) nomChamp << endl;
   //          cout << "  Type:  " << typeChamp << endl;
   //          cout << "  Noms des composantes:  " << (string) compChamp << endl;
-  //          cout << "  Unités des composantes:  " << (string) unitChamp << endl;
+  //          cout << "  Unites des composantes:  " << (string) unitChamp << endl;
   //
   //          infoChamps((string) "NOEUDS", MED_NODE, MED_NONE, fid, maa, nomChamp, typeChamp, nCompChamp, REFGAUSS);
   //          infoChamps((string) "POI1", MED_CELL, MED_POINT1, fid, maa, nomChamp, typeChamp, nCompChamp, REFGAUSS);
@@ -450,7 +450,7 @@ void Maillage::inputMED(std::string fichierMED)
   //
   //        }
   //
-  //      cout << endl << "Rappel des codes de géométries: " << endl;
+  //      cout << endl << "Rappel des codes de geometries: " << endl;
   //      cout << " TETRA4 = " << MED_TETRA4 << endl;
   //      cout << " PENTA6 = " << MED_PENTA6 << endl;
   //      cout << " HEXA8 = " << MED_HEXA8 << endl;
@@ -552,14 +552,14 @@ void Maillage::inputMED(std::string fichierMED)
   string line, IDnoeud;
   float x0, x1, y0, y1, z0, z1;
 
-  vector<int> RESIDU_NOEUDS; // Table de vérité du résidu des noeuds
+  vector<int> RESIDU_NOEUDS; // Table de verite du residu des noeuds
 
   ostringstream OSCOORD;
 
   med_int nnoe = 0; // Nbre de noeuds
-  med_float *coo1 = 0; // Table des coordonnées
-  //  char nomcoo[mdim * MED_SNAME_SIZE + 1]; // Table des noms des coordonnées
-  //  char unicoo[mdim * MED_SNAME_SIZE + 1]; // Table des unités des coordonnées
+  med_float *coo1 = 0; // Table des coordonnees
+  //  char nomcoo[mdim * MED_SNAME_SIZE + 1]; // Table des noms des coordonnees
+  //  char unicoo[mdim * MED_SNAME_SIZE + 1]; // Table des unites des coordonnees
   char *nomnoe = 0;
 
   med_int *numnoe = 0;
@@ -604,7 +604,7 @@ void Maillage::inputMED(std::string fichierMED)
     if (MEDmeshNodeCoordinateRd(fid, maa, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE, coo1) < 0)
       ERREUR("Error while reading nodes coordinates");
 
-  //   // Les noeuds ont-ils un nom? un numéro?
+  //   // Les noeuds ont-ils un nom? un numero?
   //  if (nnoe > 0)
   //    {
   //      if (MEDnomLire(fid, maa, nomnoe, nnoe, MED_NODE, (med_geometry_type) 0) < 0)
@@ -618,9 +618,9 @@ void Maillage::inputMED(std::string fichierMED)
   //    }
   //
   //  if (inonoe)
-  //    cout << "WARNING input MED : les noms des noeuds sont ignorés" << endl;
+  //    cout << "WARNING input MED : les noms des noeuds sont ignores" << endl;
   //  if (inunoe)
-  //    cout << "WARNING input MED : les numéros des noeuds sont ignorés" << endl;
+  //    cout << "WARNING input MED : les numeros des noeuds sont ignores" << endl;
   //
   //  if (inonoe)
   //    {
@@ -669,7 +669,7 @@ void Maillage::inputMED(std::string fichierMED)
       z1 = 0.0;
     }
 
-  // Allocation mémoire pour les coordonnées XX YY ZZ
+  // Allocation memoire pour les coordonnees XX YY ZZ
   XX = (float*) malloc(sizeof(float) * nombreNoeudsMaillage);
   if (mdim > 1)
     YY = (float*) malloc(sizeof(float) * nombreNoeudsMaillage);
@@ -679,10 +679,10 @@ void Maillage::inputMED(std::string fichierMED)
   for (int i = 0; i < nnoe; i++)
     {
 
-      // Chargement des coordonnées X, Y et Z
+      // Chargement des coordonnees X, Y et Z
       // Calcul de l'enveloppe du maillage
 
-      FAMILLES_NOEUDS[*(famNoeuds + i)].push_back(i + 1); // ATTENTION! Les num. de noeuds commencent à 1
+      FAMILLES_NOEUDS[*(famNoeuds + i)].push_back(i + 1); // ATTENTION! Les num. de noeuds commencent a 1
       tailleFAMILLES[*(famNoeuds + i)]++;
 
       // IDnoeud = "N"+int2string(i+1);
@@ -731,7 +731,7 @@ void Maillage::inputMED(std::string fichierMED)
             x1 = *XXi;
         }
 
-      // Chargement des numéros de noeuds
+      // Chargement des numeros de noeuds
       //      if (inunoe)
       //        NUM_NOEUDS.push_back(*(numnoe + i));
       //      else
@@ -744,7 +744,7 @@ void Maillage::inputMED(std::string fichierMED)
   // Enveloppe du maillage
   enveloppeMaillage = new Cube(x0, x1, y0, y1, z0, z1);
 
-  // Libération mémoire
+  // Liberation memoire
   if (nnoe > 0)
     {
       free(coo1);
@@ -808,7 +808,7 @@ void Maillage::inputMED(std::string fichierMED)
       for (unsigned int i = 0; i < vfam.size(); i++)
         {
           int numf = vfam[i];
-          // Parcours simultané des vecteurs FAMILLES[numf] et FAM_TYPES[numfam] pour obtention du num local
+          // Parcours simultane des vecteurs FAMILLES[numf] et FAM_TYPES[numfam] pour obtention du num local
           // et du type des mailles de la famille numf
           for (unsigned int imaille = 0; imaille < FAMILLES[numf].size(); imaille++)
             {
@@ -850,7 +850,7 @@ void Maillage::inputMED(std::string fichierMED)
     }
 
   MEDfileClose(fid);
-  //  cout << "Fin procédure inputMED" << endl << endl;
+  //  cout << "Fin procedure inputMED" << endl << endl;
 }
 
 void Maillage::acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid, char maa[MED_NAME_SIZE + 1],
@@ -894,7 +894,7 @@ void Maillage::acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid
       tailleFAMILLES[numeroFamille]++;
       FAM_TYPES[numeroFamille].push_back(TYPE);
 
-      // Chargement des numéros de mailles
+      // Chargement des numeros de mailles
       //      if (inumTYPE)
       //        NUM_MAILLES[TYPE].push_back(*(numTYPE + i));
       //      else
@@ -938,7 +938,7 @@ void Maillage::outputMED(std::string fichierMED)
   string line, s, stype, nomnoeud;
   //  med_err ret = 0; // Code retour
   //  int ig, jg;
-  //  cout << endl << endl << "Début procédure outputMED, fichier " << fichierMED << endl;
+  //  cout << endl << endl << "Debut procedure outputMED, fichier " << fichierMED << endl;
 
   // Sortie sur erreur en cas de maillage sans noeuds
   if (nombreNoeudsMaillage <= 0)
@@ -947,10 +947,10 @@ void Maillage::outputMED(std::string fichierMED)
     }
 
   // ########################################################################
-  //    Ouverture du fichier MED et création du maillage
+  //    Ouverture du fichier MED et creation du maillage
   // ########################################################################
 
-  // Ouverture du fichier MED en création
+  // Ouverture du fichier MED en creation
   med_idt fid = MEDfileOpen(string2char(fichierMED), MED_ACC_CREAT);
   if (fid < 0)
     {
@@ -958,7 +958,7 @@ void Maillage::outputMED(std::string fichierMED)
       cout << "Error MEDfileOpen" << endl;
     }
 
-  // Création du maillage
+  // Creation du maillage
   char maa[MED_NAME_SIZE + 1]; // Nom du maillage de longueur maxi MED_NAME_SIZE
   strcpy(maa, string2char(ID));
 
@@ -966,7 +966,7 @@ void Maillage::outputMED(std::string fichierMED)
   if (dimensionMaillage == 0)
     {
       mdim = 3;
-      cout << "ATTENTION, dimension 3 attribuée par défaut!" << endl;
+      cout << "ATTENTION, dimension 3 attribuee par defaut!" << endl;
     }
   else
     mdim = dimensionMaillage;
@@ -1016,13 +1016,13 @@ void Maillage::outputMED(std::string fichierMED)
   vector<string> NOMSFAM;
   vector<vector<int> > ETIQFAM;
   int cptNOMFAM = 0;
-  map<string, int> NUMFAMETIQ; //  clé = étiquette  -  valeur = numéros de familles
+  map<string, int> NUMFAMETIQ; //  cle = etiquette  -  valeur = numeros de familles
 
 
   if (nGroupesNoeuds)
     {
 
-      // Pérennisation d'un ordre sur les GM dans le vecteur NOMS_GROUPES_MAILLES
+      // Perennisation d'un ordre sur les GM dans le vecteur NOMS_GROUPES_MAILLES
       vector<string> NOMS_GROUPES_NOEUDS;
       for (map<string, vector<int> >::iterator ITGN = GN.begin(); ITGN != GN.end(); ITGN++)
         {
@@ -1035,7 +1035,7 @@ void Maillage::outputMED(std::string fichierMED)
       for (unsigned int ig = 0; ig < NOMS_GROUPES_NOEUDS.size(); ig++)
         sort(GN[NOMS_GROUPES_NOEUDS[ig]].begin(), GN[NOMS_GROUPES_NOEUDS[ig]].end());
 
-      // Construction des étiquettes (familles)
+      // Construction des etiquettes (familles)
 
       // Initialisation des index de groupes
       for (unsigned int ig = 0; ig < NOMS_GROUPES_NOEUDS.size(); ig++)
@@ -1054,8 +1054,8 @@ void Maillage::outputMED(std::string fichierMED)
                   if (k == GN[nomgroupe][INDEX_N[ig]])
                     {
                       // Attention: l'indice 0 dans le vecteur ETIQUETTES correspond
-                      // à l'élément (noeud ou maille) de num. global 1
-                      // Par ailleurs, le numéro de groupe dans l'étiquette commence à 0
+                      // a l'element (noeud ou maille) de num. global 1
+                      // Par ailleurs, le numero de groupe dans l'etiquette commence a 0
                       ETIQUETTES_N[k - 1].push_back(ig);
                       tailleEtiquette++;
                       etiq += int2string(ig);
@@ -1064,7 +1064,7 @@ void Maillage::outputMED(std::string fichierMED)
                 }
             }
           ETIQUETTES_N[k - 1].resize(tailleEtiquette);
-          // Stockage de l'étiquette dans NOMSFAM ETIQFAM, si pas déjà stockée
+          // Stockage de l'etiquette dans NOMSFAM ETIQFAM, si pas deja stockee
           //          bool trouve = false;
           //          for (int i = 0; i < NOMSFAM.size(); i++)
           //            if (NOMSFAM[i] == ((string) "ETIQUETTE_" + etiq))
@@ -1084,11 +1084,11 @@ void Maillage::outputMED(std::string fichierMED)
       NOMSFAM.resize(cptNOMFAM);
       ETIQFAM.resize(cptNOMFAM);
 
-      // Création des familles de noeuds
+      // Creation des familles de noeuds
       for (unsigned int ifam = 0; ifam < NOMSFAM.size(); ifam++)
         {
           strcpy(nomfam, string2char(NOMSFAM[ifam]));
-          // Numéro de famille: ifam+1 (positif pour les noeuds + non nul)
+          // Numero de famille: ifam+1 (positif pour les noeuds + non nul)
           numfam = ifam + 1;
           ngro = ETIQFAM[ifam].size();
 
@@ -1098,8 +1098,8 @@ void Maillage::outputMED(std::string fichierMED)
           for (unsigned int ign = 0; ign < ETIQFAM[ifam].size(); ign++)
             {
               string nomGNcourant = NOMS_GROUPES_NOEUDS[ETIQFAM[ifam][ign]];
-              // ATTENTION! Il faut mettre à la fin de chaque segment un \0 qui est ensuite écrasé
-              // par le premier caractère du champ suivant dans le strcat !!!!
+              // ATTENTION! Il faut mettre a la fin de chaque segment un \0 qui est ensuite ecrase
+              // par le premier caractere du champ suivant dans le strcat !!!!
               if (ign == 0)
                 {
                   // Premier groupe
@@ -1118,7 +1118,7 @@ void Maillage::outputMED(std::string fichierMED)
               cptGN++;
             }
 
-          // Création de la famille
+          // Creation de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 0, MED_NO_GROUP) < 0)
             ERREUR("Error MEDfamilyCr");
           delete gro;
@@ -1133,9 +1133,9 @@ void Maillage::outputMED(std::string fichierMED)
   //  float x, y, z;
 
   med_int nnoe = nombreNoeudsMaillage; // Nombre de noeuds
-  med_float *coo = 0; // Table des coordonnées
+  med_float *coo = 0; // Table des coordonnees
 
-  // Noms des coordonnées (variable nomcoo)
+  // Noms des coordonnees (variable nomcoo)
   char* nomcoo = new char[mdim * MED_SNAME_SIZE + 1];
   string strX = (string) "X";
   while (strX.size() < MED_SNAME_SIZE)
@@ -1154,7 +1154,7 @@ void Maillage::outputMED(std::string fichierMED)
     strcpy(nomcoo, string2char(strX));
   nomcoo[mdim * MED_SNAME_SIZE] = '\0';
 
-  // Unités des coordonnées (variable unicoo)
+  // Unites des coordonnees (variable unicoo)
   char* unicoo = new char[mdim * MED_SNAME_SIZE + 1];
   string strmesure = (string) "SI";
   while (strmesure.size() < MED_SNAME_SIZE)
@@ -1210,7 +1210,7 @@ void Maillage::outputMED(std::string fichierMED)
       //        }
     }
 
-  // Chargement des coordonnées, numéros de familles et numéros de noeuds
+  // Chargement des coordonnees, numeros de familles et numeros de noeuds
   if (dimensionMaillage == 3)
     {
       int i3 = 0;
@@ -1225,7 +1225,7 @@ void Maillage::outputMED(std::string fichierMED)
           coo[i3 + 2] = *(ZZ + i);
           i3 = i3 + 3;
 
-          // Numéros de familles  -  Le num. global de noeud est i+1
+          // Numeros de familles  -  Le num. global de noeud est i+1
           if (nGroupesNoeuds)
             {
               vector<int> v = ETIQUETTES_N[i];
@@ -1238,7 +1238,7 @@ void Maillage::outputMED(std::string fichierMED)
           else
             *(nufano + i) = (med_int) 0;
 
-          // Numéros de noeuds
+          // Numeros de noeuds
           // *(numnoe + i) = (med_int) NUM_NOEUDS[i];
         }
     }
@@ -1250,7 +1250,7 @@ void Maillage::outputMED(std::string fichierMED)
           coo[i2] = *(XX + i);
           coo[i2 + 1] = *(YY + i);
           i2 = i2 + 2;
-          // Numéros de familles  -  Le num. global de noeud est i+1
+          // Numeros de familles  -  Le num. global de noeud est i+1
           if (nGroupesNoeuds)
             {
               vector<int> v = ETIQUETTES_N[i];
@@ -1262,7 +1262,7 @@ void Maillage::outputMED(std::string fichierMED)
             }
           else
             *(nufano + i) = (med_int) 0;
-          // Numéros de noeuds
+          // Numeros de noeuds
           // *(numnoe + i) = (med_int) NUM_NOEUDS[i];
         }
     }
@@ -1290,18 +1290,18 @@ void Maillage::outputMED(std::string fichierMED)
 
   map<TYPE_MAILLE, vector<vector<int> > > ETIQUETTES_M; // [ tm => [ nl => [ig1, ig2, ... ] ] ]
   // INDEX_M :
-  //  Clé :       tm
+  //  Cle :       tm
   //  Valeur :    vect. des compteurs par indice de GM dans NOMS_GROUPES_MAILLES
   map<TYPE_MAILLE, vector<unsigned int> > INDEX_M;
   NOMSFAM.clear();
   ETIQFAM.clear();
-  NUMFAMETIQ.clear(); //  clé = étiquette  -  valeur = numéros de familles
+  NUMFAMETIQ.clear(); //  cle = etiquette  -  valeur = numeros de familles
   cptNOMFAM = 0;
 
   if (nGroupesMailles)
     {
 
-      // Pérennisation d'un ordre sur les GM dans le vecteur NOMS_GROUPES_MAILLES
+      // Perennisation d'un ordre sur les GM dans le vecteur NOMS_GROUPES_MAILLES
       vector<string> NOMS_GROUPES_MAILLES;
       for (map<string, map<TYPE_MAILLE, vector<int> > >::iterator ITGM = GM.begin(); ITGM != GM.end(); ITGM++)
         {
@@ -1320,7 +1320,7 @@ void Maillage::outputMED(std::string fichierMED)
             }
         }
 
-      // Construction des étiquettes (familles)
+      // Construction des etiquettes (familles)
 
       // Initialisation 0 des index de groupes, et resize ETIQUETTES_M[tm]
       for (int itm = (int) POI1; itm <= (int) HEXA20; itm++)
@@ -1361,8 +1361,8 @@ void Maillage::outputMED(std::string fichierMED)
                           if (nl == GM[nomGM][tm][INDEX_M[tm][ig]])
                             {
                               // Attention: l'indice 0 dans le vecteur ETIQUETTES correspond
-                              // à l'élément (noeud ou maille) de num. global 1
-                              // Par ailleurs, le numéro de groupe dans l'étiquette commence à 0
+                              // a l'element (noeud ou maille) de num. global 1
+                              // Par ailleurs, le numero de groupe dans l'etiquette commence a 0
                               // cout << "\t\t\t" << "La maille est dans le groupe " << nomGM << endl;
                               ETIQUETTES_M[tm][nl].push_back(ig);
                               tailleEtiquette++;
@@ -1374,7 +1374,7 @@ void Maillage::outputMED(std::string fichierMED)
                     }
 
                   ETIQUETTES_M[tm][nl].resize(tailleEtiquette);
-                  // Stockage de l'étiquette dans NOMSFAM ETIQFAM, si pas déjà stockée
+                  // Stockage de l'etiquette dans NOMSFAM ETIQFAM, si pas deja stockee
                   //                  bool trouve = false;
                   //                  for (int i = 0; i < NOMSFAM.size(); i++)
                   //                    if (NOMSFAM[i] == ((string) "ETIQUETTE_" + etiq))
@@ -1399,11 +1399,11 @@ void Maillage::outputMED(std::string fichierMED)
       NOMSFAM.resize(cptNOMFAM);
       ETIQFAM.resize(cptNOMFAM);
 
-      // Création des familles de mailles
+      // Creation des familles de mailles
       for (unsigned int ifam = 0; ifam < NOMSFAM.size(); ifam++)
         {
           strcpy(nomfam, string2char(NOMSFAM[ifam]));
-          // Numéro de famille: -ifam-1 (négatif pour les mailles, et non nul)
+          // Numero de famille: -ifam-1 (negatif pour les mailles, et non nul)
           numfam = -ifam - 1;
           ngro = ETIQFAM[ifam].size();
 
@@ -1413,8 +1413,8 @@ void Maillage::outputMED(std::string fichierMED)
           for (unsigned int ign = 0; ign < ETIQFAM[ifam].size(); ign++)
             {
               string nomGMcourant = NOMS_GROUPES_MAILLES[ETIQFAM[ifam][ign]];
-              // ATTENTION! Il faut mettre à la fin de chaque segment un \0 qui est ensuite écrasé
-              // par le premier caractère du champ suivant dans le strcat !!!!
+              // ATTENTION! Il faut mettre a la fin de chaque segment un \0 qui est ensuite ecrase
+              // par le premier caractere du champ suivant dans le strcat !!!!
               if (ign == 0)
                 {
                   // Premier groupe
@@ -1433,7 +1433,7 @@ void Maillage::outputMED(std::string fichierMED)
               cptGM++;
             }
 
-          // Création de la famille
+          // Creation de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 1, gro) < 0)
             ERREUR("Error MEDfamilyCr");
 
@@ -1501,12 +1501,12 @@ void Maillage::outputMED(std::string fichierMED)
               // Boucle sur les mailles du type (indice = num. local)
               for (int nl = 0; nl < nTYPE; nl++)
                 {
-                  // Construction de l'étiquette de la maille au format string
+                  // Construction de l'etiquette de la maille au format string
                   vector<int> v = ETIQUETTES_M[tm][nl];
                   string sv = (string) "";
                   for (unsigned int j = 0; j < v.size(); j++)
                     sv += int2string(v[j]);
-                  // Accès au num. de la famille
+                  // Acces au num. de la famille
                   *(famTYPE + nl) = (med_int) NUMFAMETIQ[sv];
                 } // Boucle sur les mailles du type
             } // if (nGroupesMailles)
@@ -1561,16 +1561,16 @@ void Maillage::outputMED(std::string fichierMED)
   delete unicoo;
   delete nomcoo;
 
-  // cout << endl << endl << "Fin procédure outputMED" << endl;
+  // cout << endl << endl << "Fin procedure outputMED" << endl;
 } // outputMED
 
 
 int Maillage::NGLOBAL(TYPE_MAILLE typeMaille, int nlocal)
 {
-  // Attention, les num. globaux commencent à 1, les num. locaux à 0
+  // Attention, les num. globaux commencent a 1, les num. locaux a 0
   int cpt = 1 + nlocal;
   for (int itm = (int) POI1; itm < (int) typeMaille; itm++)
-    { // Attention! inférieur strict!
+    { // Attention! inferieur strict!
       TYPE_MAILLE tm = (TYPE_MAILLE) itm;
       cpt += EFFECTIFS_TYPES[tm];
     }
@@ -1579,7 +1579,7 @@ int Maillage::NGLOBAL(TYPE_MAILLE typeMaille, int nlocal)
 
 TYPE_MAILLE Maillage::TYPE(int nglobal)
 {
-  // Attention, les num. globaux commencent à 1, les num. locaux à 0
+  // Attention, les num. globaux commencent a 1, les num. locaux a 0
   TYPE_MAILLE resultat = (TYPE_MAILLE)-1;
   int cpt = 0;
   for (int itm = (int) POI1; itm <= (int) HEXA20; itm++)
@@ -1597,7 +1597,7 @@ TYPE_MAILLE Maillage::TYPE(int nglobal)
 
 int Maillage::NLOCAL(int nglobal, TYPE_MAILLE tm)
 {
-  // Attention, les num. globaux commencent à 1, les num. locaux à 0
+  // Attention, les num. globaux commencent a 1, les num. locaux a 0
   int nPOI1 = EFFECTIFS_TYPES[POI1];
   int nSEG2 = EFFECTIFS_TYPES[SEG2];
   int nSEG3 = EFFECTIFS_TYPES[SEG3];
@@ -1691,11 +1691,11 @@ int Maillage::NLOCAL(int nglobal, TYPE_MAILLE tm)
 /*!
  *  Suppression de mailles dans un type :
  *
- *  - Contraction de la connectivité concernée
- *  - Réécriture des GM avec les nouveaux numéros locaux des éléments du type concerné
- *  - Mise à jour nombreMaillesMaillage
+ *  - Contraction de la connectivite concernee
+ *  - Reecriture des GM avec les nouveaux numeros locaux des elements du type concerne
+ *  - Mise a jour nombreMaillesMaillage
  *
- *  Les noeuds ne sont pas affectés.
+ *  Les noeuds ne sont pas affectes.
  */
 void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 {
@@ -1703,15 +1703,15 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 
   cout << "Method eliminationMailles, listeMaillesSuppr.size()=" << listeMaillesSuppr.size() << endl;
 
-  // ************* Modification de la connectivité du type concerné
+  // ************* Modification de la connectivite du type concerne
 
   int* CNX2;
   int nNoeudsType = Nnoeuds(tm);
   int tailleCNX2 = nNoeudsType * (EFFECTIFS_TYPES[tm] - listeMaillesSuppr.size());
   CNX2 = (int*) malloc(sizeof(int) * tailleCNX2);
-  // Recopie sélective des connectivités
+  // Recopie selective des connectivites
   int isuppr = 0; // indice dans listeMaillesSuppr
-  int ih2 = 0; // nouveau numéro local ( remarque: ih2 = ih1 - isuppr )
+  int ih2 = 0; // nouveau numero local ( remarque: ih2 = ih1 - isuppr )
   for (int ih1 = 0; ih1 < EFFECTIFS_TYPES[tm]; ih1++)
     {
       if (listeMaillesSuppr[isuppr] != ih1)
@@ -1726,7 +1726,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
   free(CNX[tm]);
   CNX[tm] = CNX2;
 
-  // ************* Construction de la table de correspondance des NL dans le type concerné
+  // ************* Construction de la table de correspondance des NL dans le type concerne
   unsigned int offset = 0;
   for (int i = 0; i < EFFECTIFS_TYPES[tm]; i++)
     {
@@ -1736,7 +1736,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
             TABLE_NL[i] = i - offset;
           else if (i == listeMaillesSuppr[offset])
             {
-              TABLE_NL[i] = -1; // Element à supprimer
+              TABLE_NL[i] = -1; // Element a supprimer
               offset++;
             }
         }
@@ -1744,14 +1744,14 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
         TABLE_NL[i] = i - offset;
     }
 
-  // Contrôle
+  // Contrle
   if (offset != listeMaillesSuppr.size())
     {
       ERREUR("Incoherent offset, method eliminationMailles");
       exit(0);
     }
 
-  // ************* Mise à jour du type concerné dans les GM
+  // ************* Mise a jour du type concerne dans les GM
   for (map<string, map<TYPE_MAILLE, vector<int> > >::iterator I = GM.begin(); I != GM.end(); I++)
     {
       string nomGM = I->first;
@@ -1779,7 +1779,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
         }
     }
 
-  // ************* Mise à jour des effectifs
+  // ************* Mise a jour des effectifs
 
   EFFECTIFS_TYPES[tm] = EFFECTIFS_TYPES[tm] - listeMaillesSuppr.size();
   nombreMaillesMaillage = nombreMaillesMaillage - listeMaillesSuppr.size();

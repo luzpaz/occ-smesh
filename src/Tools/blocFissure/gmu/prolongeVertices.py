@@ -4,15 +4,15 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- prolongation des segments extremité des polylines, pour la découpe
+# --- prolongation des segments extremite des polylines, pour la decoupe
 
 def prolongeVertices(vertices):
   """
-  Prolongation des segments extremité d'une polyline définie par un vecteur de points.
-  Chaque nouvelle extremité est obtenue par symétrie point du voisin de cette ancienne extrémité
-  (symétrie de centre l'ancienne extrémite) : les segments extremes sont doublés.
-  @param vertices : liste ordonnée des points (geomObject) de la polyline
-  @return vertices : liste avec les deux extremités modifiées
+  Prolongation des segments extremite d'une polyline definie par un vecteur de points.
+  Chaque nouvelle extremite est obtenue par symetrie point du voisin de cette ancienne extremite
+  (symetrie de centre l'ancienne extremite) : les segments extremes sont doubles.
+  @param vertices : liste ordonnee des points (geomObject) de la polyline
+  @return vertices : liste avec les deux extremites modifiees
   """
   logging.info("start")
   if len(vertices) < 2:

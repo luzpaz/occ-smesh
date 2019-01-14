@@ -2,7 +2,7 @@
 
 """ FissureLauncher:
     Permet de lancer le script 'casStandard'
-    en fonction des paramètres contenus dans 'dicoParams'. """
+    en fonction des parametres contenus dans 'dicoParams'. """
 
 #import sys
 import salome

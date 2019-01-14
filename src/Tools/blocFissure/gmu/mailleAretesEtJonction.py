@@ -10,7 +10,7 @@ from .putName import putName
   
 def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   """
-  edges de bord, faces défaut à respecter
+  edges de bord, faces defaut a respecter
   """
   logging.info('start')
 
@@ -23,13 +23,13 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   bordsLibres = internalBoundary.MakeGroupByFilter( 'bords', filtre )
   smesh.SetName(bordsLibres, 'bordsLibres')
 
-  # --- pour aider l'algo hexa-tetra à ne pas mettre de pyramides à l'exterieur des volumes repliés sur eux-mêmes
-  #     on désigne les faces de peau en quadrangles par le groupe "skinFaces"
+  # --- pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
+  #     on designe les faces de peau en quadrangles par le groupe "skinFaces"
 
   skinFaces = internalBoundary.CreateEmptyGroup( SMESH.FACE, 'skinFaces' )
   nbAdd = skinFaces.AddFrom( internalBoundary.GetMesh() )
 
-  # --- maillage des éventuelles arêtes vives entre faces reconstruites
+  # --- maillage des eventuelles aretes vives entre faces reconstruites
   
   grpAretesVives = None
   if len(aretesVivesCoupees) > 0:

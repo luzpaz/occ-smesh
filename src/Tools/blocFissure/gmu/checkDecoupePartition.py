@@ -4,19 +4,19 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- teste si l'opération de partition a produit une modification
+# --- teste si l'operation de partition a produit une modification
 
 def checkDecoupePartition(shapes, part):
   """
-  Teste si l'opération de partition a produit une découpe
+  Teste si l'operation de partition a produit une decoupe
   (plus de shapes dans la partition).
-  Résultat non garanti si recouvrement des shapes d'origine.
+  Resultat non garanti si recouvrement des shapes d'origine.
   @param shapes : liste des shapes d'origine
-  @param part : résultat de la partition
-  @return True si la partition a découpé les shapes d'origine
+  @param part : resultat de la partition
+  @return True si la partition a decoupe les shapes d'origine
   """
   logging.info('start')
-  # TODO: ShapeInfo donne des résultats faux (deux faces au lieu de une)
+  # TODO: ShapeInfo donne des resultats faux (deux faces au lieu de une)
   
   isPart = False
   orig = {}

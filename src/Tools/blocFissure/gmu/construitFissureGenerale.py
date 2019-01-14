@@ -55,7 +55,7 @@ from .mailleFacesPeau import mailleFacesPeau
 from .fissError import fissError
 
 # -----------------------------------------------------------------------------
-# --- procédure complète fissure générale
+# --- procedure complete fissure generale
 
 def construitFissureGenerale(maillagesSains,
                              shapesFissure, shapeFissureParams,
@@ -65,7 +65,7 @@ def construitFissureGenerale(maillagesSains,
   """
   logging.info('start')
   
-  shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
+  shapeDefaut       = shapesFissure[0] # faces de fissure, debordant
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
 
   rayonPipe = shapeFissureParams['rayonPipe']
@@ -131,11 +131,11 @@ def construitFissureGenerale(maillagesSains,
   O, OX, OY, OZ = triedreBase()
 
   # --- restriction de la face de fissure au domaine solide :
-  #     partition face fissure étendue par fillings, on garde la face interne
+  #     partition face fissure etendue par fillings, on garde la face interne
   
   facesPortFissure = restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne)
  
-  # --- pipe de fond de fissure, prolongé, partition face fissure par pipe
+  # --- pipe de fond de fissure, prolonge, partition face fissure par pipe
   #     identification des edges communes pipe et face fissure
   
   (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss) = partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe)
@@ -145,36 +145,36 @@ def construitFissureGenerale(maillagesSains,
   
   # --- peau et face de fissure
   #
-  # --- partition peau défaut - face de fissure prolongée - wire de fond de fissure prolongée
-  #     il peut y avoir plusieurs faces externes, dont certaines sont découpées par la fissure
+  # --- partition peau defaut - face de fissure prolongee - wire de fond de fissure prolongee
+  #     il peut y avoir plusieurs faces externes, dont certaines sont decoupees par la fissure
   #     liste de faces externes : facesDefaut
   #     liste de partitions face externe - fissure : partitionPeauFissFond (None quand pas d'intersection)
 
   partitionsPeauFissFond = construitPartitionsPeauFissure(facesDefaut, fissPipe)
     
-  # --- arêtes vives détectées (dans quadranglesToShapeNoCorner
+  # --- aretes vives detectees (dans quadranglesToShapeNoCorner
   #                             et quadranglesToShapeWithCorner)
     
   aretesVivesC = compoundFromList(bordsPartages, "areteVive")
-  aretesVivesCoupees = []  # ensembles des arêtes vives identifiées sur les faces de peau dans l'itération sur partitionsPeauFissFond
+  aretesVivesCoupees = []  # ensembles des aretes vives identifiees sur les faces de peau dans l'iteration sur partitionsPeauFissFond
    
-  # --- inventaire des faces de peau coupées par la fissure
-  #     pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
+  # --- inventaire des faces de peau coupees par la fissure
+  #     pour chaque face de peau : 0, 1 ou 2 faces debouchante du fond de fissure
   #                                0, 1 ou plus edges de la face de fissure externe au pipe
   
   nbFacesFilling = len(partitionsPeauFissFond)
   
-  ptEdgeFond = [ []  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
-  fsPipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
-  edRadFPiPo = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
+  ptEdgeFond = [ []  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux debouches du pipe]
+  fsPipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe debouchantes]
+  edRadFPiPo = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe debouchantes ]
   fsFissuExt = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces de fissure externes au pipe]
   edFisExtPe = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
   edFisExtPi = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
-  facesPeaux = [None for i in range(nbFacesFilling)] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
-  edCircPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
-  ptCircPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
-  gpedgeBord = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
-  gpedgeVifs = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupes subshape des edges aux arêtes vives entre fillings
+  facesPeaux = [None for i in range(nbFacesFilling)] # pour chaque face : la face de peau finale a mailler (percee des faces debouchantes)
+  edCircPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux debouches du pipe]
+  ptCircPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux debouches du pipe]
+  gpedgeBord = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupe subshape des edges aux bords lies a la partie saine
+  gpedgeVifs = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupes subshape des edges aux aretes vives entre fillings
   edFissPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
   ptFisExtPi = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [point commun edFissPeau edCircPeau]
   
@@ -215,29 +215,29 @@ def construitFissureGenerale(maillagesSains,
                                                                                           edFisExtPi, edgesPipeFiss)
 
   # --- preparation maillage du pipe :
-  #     - détections des points a respecter : jonction des edges/faces constituant la face de fissure externe au pipe
+  #     - detections des points a respecter : jonction des edges/faces constituant la face de fissure externe au pipe
   #     - points sur les edges de fond de fissure et edges pipe/face fissure,
-  #     - vecteurs tangents au fond de fissure (normal au disque maillé)
+  #     - vecteurs tangents au fond de fissure (normal au disque maille)
   
   (centres, gptsdisks, raydisks) = calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut, 
                                                            centreFondFiss, wireFondFiss, wirePipeFiss,
                                                            lenSegPipe, rayonPipe, nbsegCercle, nbsegRad)
    
-  # --- recherche des points en trop (externes au volume à remailler)
-  #     - on associe chaque extrémité du pipe à une face filling 
-  #     - on part des disques aux extrémités du pipe
-  #     - pour chaque disque, on prend les vertices de géométrie,
-  #       on marque leur position relative à la face.
+  # --- recherche des points en trop (externes au volume a remailler)
+  #     - on associe chaque extremite du pipe a une face filling 
+  #     - on part des disques aux extremites du pipe
+  #     - pour chaque disque, on prend les vertices de geometrie,
+  #       on marque leur position relative a la face.
   #     - on s'arrete quand tous les noeuds sont dedans
   
   (idFillingFromBout, idisklim, idiskout) = elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCercle)
 
-  # --- construction des listes d'edges radiales sur chaque extrémité débouchante
+  # --- construction des listes d'edges radiales sur chaque extremite debouchante
   
   (listEdges, idFacesDebouchantes) = construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                                                                         facesPipePeau, edgeRadFacePipePeau, nbsegCercle)
     
-  # --- création des points du maillage du pipe sur la face de peau
+  # --- creation des points du maillage du pipe sur la face de peau
   
   (gptsdisks, idisklim) = creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
                                              ptEdgeFond, ptFisExtPi, edCircPeau, gptsdisks, idisklim, nbsegRad)
@@ -250,7 +250,7 @@ def construitFissureGenerale(maillagesSains,
 
   (meshPipe, meshPipeGroups, edgesCircPipeGroup) = construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad)
   
-  # --- edges de bord, faces défaut à respecter
+  # --- edges de bord, faces defaut a respecter
   
   (internalBoundary, bordsLibres, grpAretesVives) = mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives)
 
@@ -267,7 +267,7 @@ def construitFissureGenerale(maillagesSains,
                                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives,
                                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad)
 
-  # --- regroupement des maillages du défaut
+  # --- regroupement des maillages du defaut
 
   listMeshes = [internalBoundary.GetMesh(),
                 meshPipe.GetMesh(),
@@ -276,8 +276,8 @@ def construitFissureGenerale(maillagesSains,
     listMeshes.append(mp.GetMesh())
 
   meshBoiteDefaut = smesh.Concatenate(listMeshes, 1, 1, 1e-05,False)
-  # pour aider l'algo hexa-tetra à ne pas mettre de pyramides à l'exterieur des volumes repliés sur eux-mêmes
-  # on désigne les faces de peau en quadrangles par le groupe "skinFaces"
+  # pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
+  # on designe les faces de peau en quadrangles par le groupe "skinFaces"
   group_faceFissOutPipe = None
   group_faceFissInPipe = None
   groups = meshBoiteDefaut.GetGroups()
@@ -316,11 +316,11 @@ def construitFissureGenerale(maillagesSains,
   grps = [ grp for grp in groups if grp.GetName() == 'FONDFISS']
   fond = maillageComplet.GetMesh().CreateDimGroup( grps, SMESH.NODE, 'FONDFISS' )
 
-  logging.info("réorientation face de fissure FACE1")
+  logging.info("reorientation face de fissure FACE1")
   grps = [ grp for grp in groups if grp.GetName() == 'FACE1']
   nb = maillageComplet.Reorient2D( grps[0], normfiss, grps[0].GetID(1))
 
-  logging.info("réorientation face de fissure FACE2")
+  logging.info("reorientation face de fissure FACE2")
   plansim = geompy.MakePlane(O, normfiss, 10000)
   fissnorm = geompy.MakeMirrorByPlane(normfiss, plansim)
   grps = [ grp for grp in groups if grp.GetName() == 'FACE2']

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Génération de coude avec fissure</string>
+   <string>Generation de coude avec fissure</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0">
@@ -27,7 +27,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_3">
             <property name="title">
-             <string>Géométrie</string>
+             <string>Geometrie</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_2">
              <item row="0" column="0">
@@ -42,7 +42,7 @@
                <item row="0" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_angle">
                  <property name="toolTip">
-                  <string>Valeur de l'angle du coude en degrés</string>
+                  <string>Valeur de l'angle du coude en degres</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -75,7 +75,7 @@
                <item row="4" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_epais">
                  <property name="toolTip">
-                  <string>Valeur de l’épaisseur du coude et des embouts</string>
+                  <string>Valeur de l’epaisseur du coude et des embouts</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -95,7 +95,7 @@
                <item row="3" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_lTubeP2">
                  <property name="toolTip">
-                  <string>Valeur de la longueur de l’embout P2 à l’extrémité duquel seront appliqués les chargements</string>
+                  <string>Valeur de la longueur de l’embout P2 a l’extremite duquel seront appliques les chargements</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -122,7 +122,7 @@
                <item row="5" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_dext">
                  <property name="toolTip">
-                  <string>Valeur du diamètre externe du coude et des embouts droits</string>
+                  <string>Valeur du diametre externe du coude et des embouts droits</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -135,7 +135,7 @@
                <item row="2" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_lTubeP1">
                  <property name="toolTip">
-                  <string>Valeur de la longueur de l’embout P1 à l’extrémité duquel seront appliqués les chargements</string>
+                  <string>Valeur de la longueur de l’embout P1 a l’extremite duquel seront appliques les chargements</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -169,7 +169,7 @@
        <item>
         <widget class="QCheckBox" name="cb_optDiscrSain">
          <property name="toolTip">
-          <string>Paramètres optionnels de discretisation</string>
+          <string>Parametres optionnels de discretisation</string>
          </property>
          <property name="text">
           <string>Options de discretisation</string>
@@ -203,7 +203,7 @@
               <item row="0" column="1">
                <widget class="QSpinBox" name="sb_nbAxeTubeP1">
                 <property name="toolTip">
-                 <string>Nombre d’éléments le long de l’embout P1</string>
+                 <string>Nombre d’elements le long de l’embout P1</string>
                 </property>
                 <property name="maximum">
                  <number>10000</number>
@@ -223,7 +223,7 @@
               <item row="1" column="1">
                <widget class="QSpinBox" name="sb_nbAxeTubeP2">
                 <property name="toolTip">
-                 <string>Nombre d’éléments le long de l’embout P2</string>
+                 <string>Nombre d’elements le long de l’embout P2</string>
                 </property>
                 <property name="maximum">
                  <number>10000</number>
@@ -243,7 +243,7 @@
               <item row="2" column="1">
                <widget class="QSpinBox" name="sb_nbAxeCoude">
                 <property name="toolTip">
-                 <string>Nombre d’éléments le long de l’axe du coude</string>
+                 <string>Nombre d’elements le long de l’axe du coude</string>
                 </property>
                 <property name="maximum">
                  <number>10000</number>
@@ -263,7 +263,7 @@
               <item row="3" column="1">
                <widget class="QSpinBox" name="sb_nbCirconf">
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nombre d’éléments le long de la circonférence&lt;/p&gt;&lt;p&gt;(nombre pair)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nombre d’elements le long de la circonference&lt;/p&gt;&lt;p&gt;(nombre pair)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="maximum">
                  <number>10000</number>
@@ -283,7 +283,7 @@
               <item row="4" column="1">
                <widget class="QSpinBox" name="sb_nbEpaisseur">
                 <property name="toolTip">
-                 <string>Nombre d'éléments dans l'épaisseur</string>
+                 <string>Nombre d'elements dans l'epaisseur</string>
                 </property>
                 <property name="maximum">
                  <number>10000</number>
@@ -339,7 +339,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_5">
             <property name="title">
-             <string>Géométrie fissure</string>
+             <string>Geometrie fissure</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_12">
              <item row="0" column="0">
@@ -353,7 +353,7 @@
                   <item>
                    <widget class="QRadioButton" name="rb_fissInt">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fissure positionnée sur la face interne&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fissure positionnee sur la face interne&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>fissure interne</string>
@@ -363,7 +363,7 @@
                   <item>
                    <widget class="QRadioButton" name="rb_fissExt">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fissure positionnée sur la face externe&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fissure positionnee sur la face externe&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>fissure externe</string>
@@ -389,7 +389,7 @@
                <item row="1" column="0">
                 <widget class="QCheckBox" name="cb_forceEllipse">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Forcer une fissure de forme elliptique, même si elle est longue&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Forcer une fissure de forme elliptique, meme si elle est longue&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="accessibleDescription">
                   <string/>
@@ -419,7 +419,7 @@
                <item row="2" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_azimut">
                  <property name="toolTip">
-                  <string>Valeur de la position circonférentielle du centre de la fissure comptée positivement en degrés à partir de l’extrados jusqu’à l’intrados en passant par le flanc gauche</string>
+                  <string>Valeur de la position circonferentielle du centre de la fissure comptee positivement en degres a partir de l’extrados jusqu’a l’intrados en passant par le flanc gauche</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -445,7 +445,7 @@
                <item row="0" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_profondeur">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Profondeur de la fissure :&lt;/p&gt;&lt;p&gt;distance maximale entre le fond de fissure et la peau interne ou externe sur laquelle débouche la fissure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Profondeur de la fissure :&lt;/p&gt;&lt;p&gt;distance maximale entre le fond de fissure et la peau interne ou externe sur laquelle debouche la fissure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -479,7 +479,7 @@
                <item row="3" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_orientation">
                  <property name="toolTip">
-                  <string>Valeur de l’angle en degrés formé par le grand axe de la fissure et la génératrice du coude donnant ainsi l’orientation du défaut</string>
+                  <string>Valeur de l’angle en degres forme par le grand axe de la fissure et la generatrice du coude donnant ainsi l’orientation du defaut</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -498,7 +498,7 @@
                <item row="1" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_longueur">
                  <property name="toolTip">
-                  <string>Longueur du grand axe de la fissure mesurée sur le coude en peau interne ou externe, suivant la peau sur laquelle se trouve la fissure</string>
+                  <string>Longueur du grand axe de la fissure mesuree sur le coude en peau interne ou externe, suivant la peau sur laquelle se trouve la fissure</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -519,7 +519,7 @@
                 <item row="0" column="0">
                  <widget class="QRadioButton" name="rb_absCurv">
                   <property name="toolTip">
-                   <string>Définition de la position longitudinale par une abscisse curiviligne</string>
+                   <string>Definition de la position longitudinale par une abscisse curiviligne</string>
                   </property>
                   <property name="text">
                    <string>ABS_CURV</string>
@@ -529,7 +529,7 @@
                 <item row="1" column="0">
                  <widget class="QRadioButton" name="rb_posiAngul">
                   <property name="toolTip">
-                   <string>Définition de la position longitudinale par un angle</string>
+                   <string>Definition de la position longitudinale par un angle</string>
                   </property>
                   <property name="text">
                    <string>POSI_ANGUL</string>
@@ -539,7 +539,7 @@
                 <item row="0" column="1">
                  <widget class="QDoubleSpinBox" name="dsb_absCurv">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Valeur de la position longitudinale du centre de la fissure définie par rapport à l'interface de l'embout P1 :&lt;/p&gt;&lt;p&gt;Abcisse curviligne le long de l'axe du coude, sur la peau interne ou externe, selon la position de la fissure.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Valeur de la position longitudinale du centre de la fissure definie par rapport a l'interface de l'embout P1 :&lt;/p&gt;&lt;p&gt;Abcisse curviligne le long de l'axe du coude, sur la peau interne ou externe, selon la position de la fissure.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="decimals">
                    <number>5</number>
@@ -552,7 +552,7 @@
                 <item row="1" column="1">
                  <widget class="QDoubleSpinBox" name="dsb_posiAngul">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Valeur de la position longitudinale du centre de la fissure définie par rapport à l'interface de l'embout P1 :&lt;/p&gt;&lt;p&gt;Angle en degrés formé par la section contenant le centre de la fissure et l'interface de l'embout P1.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Valeur de la position longitudinale du centre de la fissure definie par rapport a l'interface de l'embout P1 :&lt;/p&gt;&lt;p&gt;Angle en degres forme par la section contenant le centre de la fissure et l'interface de l'embout P1.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="decimals">
                    <number>5</number>
@@ -628,7 +628,7 @@
                      <item row="2" column="1">
                       <widget class="QSpinBox" name="sb_nbCouronne">
                        <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pipe rayonnant construit sur le fond de fissure :&lt;/p&gt;&lt;p&gt;nombre de couronnes du maillage rayonnant autour de la ligne de fond de fissure, y compris la couronne centrale formée de prismes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pipe rayonnant construit sur le fond de fissure :&lt;/p&gt;&lt;p&gt;nombre de couronnes du maillage rayonnant autour de la ligne de fond de fissure, y compris la couronne centrale formee de prismes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                        </property>
                        <property name="minimum">
                         <number>1</number>
@@ -727,7 +727,7 @@
                 <item>
                  <widget class="QCheckBox" name="cb_optDiscrFiss">
                   <property name="toolTip">
-                   <string>Paramètres optionnels de discrétisation</string>
+                   <string>Parametres optionnels de discretisation</string>
                   </property>
                   <property name="text">
                    <string>Options de discretisation</string>
@@ -753,7 +753,7 @@
                    <item>
                     <widget class="QDoubleSpinBox" name="dsb_aretesFaceFissure">
                      <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Faces externes de la zone à remailler.&lt;/p&gt;&lt;p&gt;Mailage en triangles : valeur cible des arêtes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Faces externes de la zone a remailler.&lt;/p&gt;&lt;p&gt;Mailage en triangles : valeur cible des aretes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="decimals">
                       <number>5</number>
@@ -788,7 +788,7 @@
                 <bool>true</bool>
                </property>
                <property name="title">
-                <string>identification zone à remailler</string>
+                <string>identification zone a remailler</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_16">
                 <item row="0" column="0">
@@ -796,7 +796,7 @@
                   <item row="1" column="1">
                    <widget class="QDoubleSpinBox" name="dsb_influence">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;La zone remaillée contiendra toutes les mailles du maillage sain à une distance de la face de fissure inférieure à cette valeur.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;La zone remaillee contiendra toutes les mailles du maillage sain a une distance de la face de fissure inferieure a cette valeur.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="decimals">
                      <number>5</number>
@@ -914,7 +914,7 @@
      <item>
       <widget class="QPushButton" name="pb_reset">
        <property name="toolTip">
-        <string>réinitialisation de tous les paramètres à leur valeur par défaut</string>
+        <string>reinitialisation de tous les parametres a leur valeur par defaut</string>
        </property>
        <property name="text">
         <string>Reset</string>
@@ -924,17 +924,17 @@
      <item>
       <widget class="QPushButton" name="pb_valPrec">
        <property name="toolTip">
-        <string>réinitialisation de tous les paramètres à leur valeur de la précédente éxécution</string>
+        <string>reinitialisation de tous les parametres a leur valeur de la precedente execution</string>
        </property>
        <property name="text">
-        <string>Précédent</string>
+        <string>Precedent</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pb_recharger">
        <property name="toolTip">
-        <string>réinitialisation des paramètres à partir d'un fichier préalablement sauvegardé</string>
+        <string>reinitialisation des parametres a partir d'un fichier prealablement sauvegarde</string>
        </property>
        <property name="text">
         <string>Recharger</string>
@@ -944,7 +944,7 @@
      <item>
       <widget class="QPushButton" name="pb_sauver">
        <property name="toolTip">
-        <string>sauvegarde des paramètres dans un fichier à choisir</string>
+        <string>sauvegarde des parametres dans un fichier a choisir</string>
        </property>
        <property name="text">
         <string>Sauver</string>

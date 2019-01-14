@@ -3,7 +3,7 @@
 # test used in YACS, ForEachLoop
 
 def geomesh(l0, r0, h0, d0, d1, my_container, direc):
-  print("Géometrie et maillage barre : (l0, r0, h0, d0, d1)=", (l0, r0, h0, d0, d1))
+  print("Geometrie et maillage barre : (l0, r0, h0, d0, d1)=", (l0, r0, h0, d0, d1))
 
   import sys
   import salome
@@ -130,7 +130,7 @@ def geomesh(l0, r0, h0, d0, d1, my_container, direc):
   barre_1.ExportMED( direc + os.sep + nommed, auto_groups=0, minor=0, overwrite=1, meshPart=None, autoDimension=1 )
   measure = smesh.CreateMeasurements()
   meshvol = measure.Volume(barre_1.mesh)
-  print("Maillage publié : ", direc + os.sep + nommed)
+  print("Maillage publie : ", direc + os.sep + nommed)
   clearMesh(barre_1, salome.myStudy, nom)
   deltag = abs(geomvol - volume)/volume
   deltam = abs(meshvol - geomvol)/geomvol

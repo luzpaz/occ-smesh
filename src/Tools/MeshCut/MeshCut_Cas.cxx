@@ -26,7 +26,7 @@ using namespace std;
 
 /*!
  * Le cas 1 traduit le fait que deux des sommets du T4 initial sont dans le plan de coupe.
- * Le point d'intersection franc trouvé est sur l'arête opposée à ces deux points du T4.
+ * Le point d'intersection franc trouve est sur l'arete opposee a ces deux points du T4.
 
  * Le T4 initial produit deux nouveaux T4.
  */
@@ -36,7 +36,7 @@ void MESHCUT::cas1(int VN[6], int it4)
   //  cout << "Cas 1 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
-  // Numéros des noeuds du TETRA4
+  // Numeros des noeuds du TETRA4
   int ng0 = MAILLAGE1->CNX[TETRA4][4 * it4 + 0];
   int ng1 = MAILLAGE1->CNX[TETRA4][4 * it4 + 1];
   int ng2 = MAILLAGE1->CNX[TETRA4][4 * it4 + 2];
@@ -46,7 +46,7 @@ void MESHCUT::cas1(int VN[6], int it4)
 
   if (VN[0] != -1)
     {
-      // Le sommet de T4new1 servant à la détermination du groupe est le noeud 1 du T4 d'origine
+      // Le sommet de T4new1 servant a la determination du groupe est le noeud 1 du T4 d'origine
 
       // cout << "cas 1/0" << endl;
       newCNX[TETRA4].push_back(VN[0]);
@@ -77,7 +77,7 @@ void MESHCUT::cas1(int VN[6], int it4)
 
   else if (VN[1] != -1)
     {
-      // Le sommet de T4new1 servant à la détermination du groupe est le noeud 0 du T4 d'origine
+      // Le sommet de T4new1 servant a la determination du groupe est le noeud 0 du T4 d'origine
 
       // cout << "cas 1/1" << endl;
       newCNX[TETRA4].push_back(ng0);
@@ -108,7 +108,7 @@ void MESHCUT::cas1(int VN[6], int it4)
 
   else if (VN[2] != -1)
     {
-      // Le sommet de T4new1 servant à la détermination du groupe est le noeud 0 du T4 d'origine
+      // Le sommet de T4new1 servant a la determination du groupe est le noeud 0 du T4 d'origine
 
       // cout << "cas 1/2" << endl;
       newCNX[TETRA4].push_back(ng0);
@@ -139,7 +139,7 @@ void MESHCUT::cas1(int VN[6], int it4)
 
   else if (VN[3] != -1)
     {
-      // Le sommet de T4new1 servant à la détermination du groupe est le noeud 1 du T4 d'origine
+      // Le sommet de T4new1 servant a la determination du groupe est le noeud 1 du T4 d'origine
 
       // cout << "cas 1/3" << endl;
       newCNX[TETRA4].push_back(ng0);
@@ -170,7 +170,7 @@ void MESHCUT::cas1(int VN[6], int it4)
 
   else if (VN[4] != -1)
     {
-      // Le sommet de T4new1 servant à la détermination du groupe est le noeud 1 du T4 d'origine
+      // Le sommet de T4new1 servant a la determination du groupe est le noeud 1 du T4 d'origine
 
       // cout << "cas 1/4" << endl;
       newCNX[TETRA4].push_back(ng0);
@@ -201,7 +201,7 @@ void MESHCUT::cas1(int VN[6], int it4)
 
   else if (VN[5] != -1)
     {
-      // Le sommet de T4new1 servant à la détermination du groupe est le noeud 3 du T4 d'origine
+      // Le sommet de T4new1 servant a la determination du groupe est le noeud 3 du T4 d'origine
 
       // cout << "cas 1/5" << endl;
       newCNX[TETRA4].push_back(ng0);
@@ -241,10 +241,10 @@ void MESHCUT::cas1(int VN[6], int it4)
 
 /*!  Deux points d'intersection
  *  Le cas 2 traduit le fait qu'un des sommets du T4 est dans le plan de coupe.
- *  Ce sommet est celui des quatre qui n'appartient à aucune des deux arêtes sur lesquelles
- *  un point d'intersection non -1 a été calculé.
+ *  Ce sommet est celui des quatre qui n'appartient a aucune des deux aretes sur lesquelles
+ *  un point d'intersection non -1 a ete calcule.
  *
- *  Le T4 initial produit un nouveau T4 et un élément PYRAM5.
+ *  Le T4 initial produit un nouveau T4 et un element PYRAM5.
  *
  */
 void MESHCUT::cas2(int VN[6], int it4)
@@ -253,7 +253,7 @@ void MESHCUT::cas2(int VN[6], int it4)
   //  cout << "Cas 2 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
-  // Numéros des noeuds du TETRA4
+  // Numeros des noeuds du TETRA4
   int ng0 = MAILLAGE1->CNX[TETRA4][4 * it4 + 0];
   int ng1 = MAILLAGE1->CNX[TETRA4][4 * it4 + 1];
   int ng2 = MAILLAGE1->CNX[TETRA4][4 * it4 + 2];
@@ -639,14 +639,14 @@ void MESHCUT::cas2(int VN[6], int it4)
  *  N1 N2 N3 N4 N5 N6
  *
  *  où N1 N2 N3 sont les sommets du haut et N4 N5 N6 les sommets du bas
- *  (selon l'orientation donnée par le sens des triangles)
+ *  (selon l'orientation donnee par le sens des triangles)
  */
 void MESHCUT::cas3(int VN[6], int it4)
 {
   cutTetras.push_back(it4);
   // cout << "Cas 3 - it4="<<it4<<", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4] << " " << VN[5] << " " << endl;
 
-  // Numéros des noeuds du TETRA4
+  // Numeros des noeuds du TETRA4
   int ng0 = MAILLAGE1->CNX[TETRA4][4 * it4 + 0];
   int ng1 = MAILLAGE1->CNX[TETRA4][4 * it4 + 1];
   int ng2 = MAILLAGE1->CNX[TETRA4][4 * it4 + 2];
@@ -818,7 +818,7 @@ void MESHCUT::cas3(int VN[6], int it4)
  *  N1 N2 N3 N4 N5 N6
  *
  *  où N1 N2 N3 sont les sommets du haut et N4 N5 N6 les sommets du bas
- *  (selon l'orientation donnée par le sens des triangles)
+ *  (selon l'orientation donnee par le sens des triangles)
  */
 void MESHCUT::cas4(int VN[6], int it4)
 {
@@ -826,17 +826,17 @@ void MESHCUT::cas4(int VN[6], int it4)
   //  cout << "Cas 4 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
-  // Numéros des noeuds du TETRA4
+  // Numeros des noeuds du TETRA4
   int ng0 = MAILLAGE1->CNX[TETRA4][4 * it4 + 0];
   int ng1 = MAILLAGE1->CNX[TETRA4][4 * it4 + 1];
   int ng2 = MAILLAGE1->CNX[TETRA4][4 * it4 + 2];
   int ng3 = MAILLAGE1->CNX[TETRA4][4 * it4 + 3];
 
-  int i1, i2; // Numéros locaux dans le type des mailles créées
+  int i1, i2; // Numeros locaux dans le type des mailles creees
 
   if (VN[0] == -1 && VN[5] == -1)
     {
-      // Les deux arêtes opposées sont [0,1] et [2,3]
+      // Les deux aretes opposees sont [0,1] et [2,3]
 
       newCNX[PENTA6].push_back(ng0);
       newCNX[PENTA6].push_back(VN[1]);
@@ -871,7 +871,7 @@ void MESHCUT::cas4(int VN[6], int it4)
 
   else if (VN[1] == -1 && VN[4] == -1)
     {
-      // Les deux arêtes opposées sont [0,2] et [1,3]
+      // Les deux aretes opposees sont [0,2] et [1,3]
 
       newCNX[PENTA6].push_back(ng2);
       newCNX[PENTA6].push_back(VN[3]);
@@ -905,7 +905,7 @@ void MESHCUT::cas4(int VN[6], int it4)
 
   else if (VN[2] == -1 && VN[3] == -1)
     {
-      // Les deux arêtes opposées sont [0,3] et [1,2]
+      // Les deux aretes opposees sont [0,3] et [1,2]
 
       newCNX[PENTA6].push_back(ng0);
       newCNX[PENTA6].push_back(VN[0]);

@@ -15,11 +15,11 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
   Partition du bloc defaut par la generatrice de l'ellipse,
   le tore elliptique, la face plane de fissure
   @param volDefaut : le bloc defaut
-  @param gener : la generatrice de l'ellipse, positionnée dans l'espace
-  @param pipe : le tore partitionné par le plan de fissure, positionné
+  @param gener : la generatrice de l'ellipse, positionnee dans l'espace
+  @param pipe : le tore partitionne par le plan de fissure, positionne
   dans l'espace
-  @param facefis : la face plane de la fissure, positionnée dans l'espace
-  @return (volDefautPart, blocp, tore, faceFissure), le bloc partitionné,
+  @param facefis : la face plane de la fissure, positionnee dans l'espace
+  @return (volDefautPart, blocp, tore, faceFissure), le bloc partitionne,
   les sous shapes issues de la partition
   (le bloc moins le tore, la generatrice, le tore, la face de fissure)
   """
@@ -105,7 +105,7 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
         facesExternes.append(facesExt[j])
         facesExtBloc.append(facesExt[j])
 
-  if len(facesExtBloc) < len(faces): # toutes les faces externes du bloc n'ont pas été trouvées. TODO eliminer les detections  multiples
+  if len(facesExtBloc) < len(faces): # toutes les faces externes du bloc n'ont pas ete trouvees. TODO eliminer les detections  multiples
     logging.info("  recherche faces externes par aretes partagees avec faces externes ellipsoide")
     facesBloc = geompy.ExtractShapes(blocp, geompy.ShapeType["FACE"], True)
     for i in range(len(facesBloc)):

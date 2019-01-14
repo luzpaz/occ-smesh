@@ -13,9 +13,9 @@ def partitionVolumeSain(volumeSain,boiteDefaut):
   """
   Partition du volume complet sur lequel porte le calcul par le cube qui contiendra le defaut
   @param volumeSain : volume complet (geomObject)
-  @param boiteDefaut : cube qui contiendra le defaut, positionné dans l'espace (son centre doit être au voisinage
+  @param boiteDefaut : cube qui contiendra le defaut, positionne dans l'espace (son centre doit etre au voisinage
   immediat de la peau de l'objet sain: le tore elliptique debouche de paroi)
-  @return (volumeSainPart, partieSaine, volDefaut, faceBloc) : volume complet partionné par le cube, partie saine,
+  @return (volumeSainPart, partieSaine, volDefaut, faceBloc) : volume complet partionne par le cube, partie saine,
   bloc du defaut (solide commun au cube et au volume complet), face du bloc defaut correspondant à la paroi.
   """
   logging.info("start")

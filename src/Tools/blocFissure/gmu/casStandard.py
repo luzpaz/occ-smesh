@@ -27,11 +27,11 @@ O, OX, OY, OZ = triedreBase()
 
 class casStandard(fissureGenerique):
   """
-  problème de fissure standard, défini par :
-  - un maillage sain (hexaèdres),
-  - une face géométrique de fissure, qui doit légèrement dépasser hors du volume maillé
-  - les numéros d'arêtes (edges géométriques) correspondant au fond de fissure
-  - les paramètres de maillage de la fissure
+  probleme de fissure standard, defini par :
+  - un maillage sain (hexaedres),
+  - une face geometrique de fissure, qui doit legerement depasser hors du volume maille
+  - les numeros d'arêtes (edges geometriques) correspondant au fond de fissure
+  - les parametres de maillage de la fissure
   """
 
   # ---------------------------------------------------------------------------
@@ -61,10 +61,10 @@ class casStandard(fissureGenerique):
     if 'step' in self.dicoParams:
       step = self.dicoParams['step']
     else:
-      step = -1 # exécuter toutes les étapes
+      step = -1 # executer toutes les etapes
     if 'aretesVives' not in self.dicoParams:
       self.dicoParams['aretesVives'] = 0
-    if self.numeroCas == 0: # valeur par défaut : exécution immédiate, sinon execution différée dans le cas d'une liste de problèmes
+    if self.numeroCas == 0: # valeur par defaut : execution immediate, sinon execution differee dans le cas d'une liste de problemes
       self.executeProbleme(step)
     
   # ---------------------------------------------------------------------------
@@ -79,11 +79,11 @@ class casStandard(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode insereFissureGenerale
+    parametres de la fissure pour methode insereFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
-    rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
+    rayonPipe   : le rayon du pile maille en hexa autour du fond de fissure
     convexe     : True : la face est convexe (vue de l'exterieur) sert si on ne donne pas de point interne
-    pointIn_x   : optionnel : coordonnée x d'un point dans le solide sain (pour orienter la face - idem avec y,z)
+    pointIn_x   : optionnel : coordonnee x d'un point dans le solide sain (pour orienter la face - idem avec y,z)
     """
     logging.info("setParamShapeFissure %s", self.nomCas)
     if 'pointInterieur' in self.dicoParams:

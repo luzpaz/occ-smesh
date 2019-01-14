@@ -24,7 +24,7 @@ O, OX, OY, OZ = triedreBase()
 
 class ellipse_1(fissureGenerique):
   """
-  problème de fissure non plane, débouchante non normale
+  probleme de fissure non plane, debouchante non normale
   """
 
   nomProbleme = "ellipse1"
@@ -47,11 +47,11 @@ class ellipse_1(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode construitFissureGenerale
+    parametres de la fissure pour methode construitFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
-    rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
+    rayonPipe   : le rayon du pile maille en hexa autour du fond de fissure
     convexe     : optionnel, True : la face est convexe (vue de l'exterieur) sert si on ne donne pas de point interne
-    pointIn_x   : optionnel, coordonnée x d'un point dans le solide sain (pour orienter la face)
+    pointIn_x   : optionnel, coordonnee x d'un point dans le solide sain (pour orienter la face)
     """
     logging.info("setParamShapeFissure %s", self.nomCas)
     self.shapeFissureParams = dict(lgInfluence = 50,

@@ -18,7 +18,7 @@ from .getCentreFondFiss import getCentreFondFiss
 def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
                                 shapeFissureParams, maillageFissureParams):
   """
-  #TODO: a compléter
+  #TODO: a completer
   """
   logging.info('start')
 
@@ -51,7 +51,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   edgeFondExt, centreFondFiss, tgtCentre = getCentreFondFiss(shapesFissure)
   
 
-  # --- zone de défaut
+  # --- zone de defaut
   nomZones = "zoneDefaut"
 
   [origShapes, verticesShapes, dmoyen] = \
@@ -84,7 +84,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
       creeZoneDefautGeom( geometrieSaine, shapeDefaut, origShapes, verticesShapes, dmoyen, lgExtrusion)
     bordsPartages = []
     for face in facesDefaut:
-      bordsPartages.append([None,None]) # TODO : traitement des arêtes vives ?
+      bordsPartages.append([None,None]) # TODO : traitement des aretes vives ?
     fillconts = facesDefaut
     idFilToCont = list(range(len(facesDefaut)))
 

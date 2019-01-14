@@ -7,14 +7,14 @@ from .geomsmesh import geomPublishInFather
 from . import initLog
 
 # -----------------------------------------------------------------------------
-# --- crée zone géométrique défaut a partir d'un filling
+# --- cree zone geometrique defaut a partir d'un filling
 
 def creeZoneDefautFilling(filling, shapeDefaut, lgExtrusion=50):
   """
-  Construction CAO de la zone à remailler, quand on utilise un filling,
-  après appel creeZoneDefautMaillage et quadranglesToShapeNoCorner
-  @param filling : la CAO de la peau du défaut reconstituée
-  @param shapeDefaut : objet géométrique représentant la fissure
+  Construction CAO de la zone a remailler, quand on utilise un filling,
+  apres appel creeZoneDefautMaillage et quadranglesToShapeNoCorner
+  @param filling : la CAO de la peau du defaut reconstituee
+  @param shapeDefaut : objet geometrique representant la fissure
   (selon les cas, un point central, ou une shape plus complexe,
   dont on ne garde que les vertices)
   @return (facesDefaut = filling, centreDefaut, normalDefaut, extrusionDefaut)

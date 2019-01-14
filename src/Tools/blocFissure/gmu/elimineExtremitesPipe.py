@@ -7,11 +7,11 @@ from .whichSideVertex import whichSideVertex
 
 def elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCercle):
   """
-  recherche des points en trop (externes au volume à remailler)
-  - on associe chaque extrémité du pipe à une face filling 
-  - on part des disques aux extrémités du pipe
-  - pour chaque disque, on prend les vertices de géométrie,
-    on marque leur position relative à la face.
+  recherche des points en trop (externes au volume a remailler)
+  - on associe chaque extremite du pipe a une face filling 
+  - on part des disques aux extremites du pipe
+  - pour chaque disque, on prend les vertices de geometrie,
+    on marque leur position relative a la face.
   - on s'arrete quand tous les noeuds sont dedans
   """
   
@@ -19,17 +19,17 @@ def elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCerc
 
   pt0 = centres[0]
   pt1 = centres[-1]
-  idFillingFromBout = [None, None]                 # contiendra l'index du filling pour les extrémités 0 et 1
+  idFillingFromBout = [None, None]                 # contiendra l'index du filling pour les extremites 0 et 1
   nbFacesFilling = len(ptEdgeFond)
   for ifil in range(nbFacesFilling):
-    for ipt, pt in enumerate(ptEdgeFond[ifil]): # il y a un ou deux points débouchant sur cette face
+    for ipt, pt in enumerate(ptEdgeFond[ifil]): # il y a un ou deux points debouchant sur cette face
       if geompy.MinDistance(pt,pt0) < geompy.MinDistance(pt,pt1): # TODO: trouver plus fiable pour les cas tordus...
         idFillingFromBout[0] = ifil
       else: 
         idFillingFromBout[1] = ifil
   logging.debug("association bouts du pipe - faces de filling: %s", idFillingFromBout)
      
-  logging.debug("recherche des disques de noeuds complètement internes")
+  logging.debug("recherche des disques de noeuds completement internes")
   idisklim = [] # indices des premier et dernier disques internes
   idiskout = [] # indices des premier et dernier disques externes
   for bout in range(2):
@@ -53,9 +53,9 @@ def elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCerc
         for j, pt in enumerate(points):
           side = whichSideVertex(facesDefaut[idFillingFromBout[bout]], pt)
           if side < 0:
-            if outside: # premier point detecté dedans
+            if outside: # premier point detecte dedans
               outside = False
-              numout = idisk -inc # le disque précédent était dehors
+              numout = idisk -inc # le disque precedent etait dehors
           else:
             inside = False # ce point est dehors              
         if not inside and not outside:

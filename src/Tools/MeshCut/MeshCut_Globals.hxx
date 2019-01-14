@@ -28,11 +28,11 @@
 
 namespace MESHCUT
   {
-    /*! Table des points d'intersection calculés.
-     *  Si on a calculé une intersection entre le plan et un segment reliant N1 et N2
-     *  de numéros globaux n1 et n2, on stocke dans ce tableau, sous les libellés "n1_n2" et "n2_n1",
-     *  le numéro global du point d'intersection (noeud créé).
-     *  On évite ainsi de calculer deux fois l'intersection d'une même arête de T4 avec le plan
+    /*! Table des points d'intersection calcules.
+     *  Si on a calcule une intersection entre le plan et un segment reliant N1 et N2
+     *  de numeros globaux n1 et n2, on stocke dans ce tableau, sous les libelles "n1_n2" et "n2_n1",
+     *  le numero global du point d'intersection (noeud cree).
+     *  On evite ainsi de calculer deux fois l'intersection d'une meme arete de T4 avec le plan
      */
     extern std::map<std::string, int> intersections;
 
@@ -47,13 +47,13 @@ namespace MESHCUT
     extern std::vector<int> cutTetras;
 
     extern float *DNP; //!< Distance Noeud Plan
-    extern int *POSN; //!<  Version -1/0/+1 du précédent, selon epsilon
+    extern int *POSN; //!<  Version -1/0/+1 du precedent, selon epsilon
 
     extern std::string str_id_maillagenew;
 
-    extern float normale[3], pointPlan[3]; //!<  Définition du plan de coupe
-    extern float d; //!<  coefficient constant de l'équation du plan de coupe
-    extern float epsilon; //!<  distance en dessous de laquelle un point est considéré comme appartenant au plan de coupe
+    extern float normale[3], pointPlan[3]; //!<  Definition du plan de coupe
+    extern float d; //!<  coefficient constant de l'equation du plan de coupe
+    extern float epsilon; //!<  distance en dessous de laquelle un point est considere comme appartenant au plan de coupe
 
     extern bool debug;
     extern int Naretes;

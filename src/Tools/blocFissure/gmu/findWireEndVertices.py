@@ -12,7 +12,7 @@ from . import initLog
 def findWireEndVertices(aWire, getNormals=False):
   """
   trouver les vertices extremites d'un wire
-  calcul optionnel des tangentes. Attention à la tolérance qui peut être élevée (> 0.001)
+  calcul optionnel des tangentes. Attention a la tolerance qui peut etre elevee (> 0.001)
   """
   logging.info("start")
   if geompy.NumberOfEdges(aWire) > 1:

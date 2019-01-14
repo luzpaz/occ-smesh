@@ -24,7 +24,7 @@ O, OX, OY, OZ = triedreBase()
 
 class eprouvetteDroite_2(eprouvetteDroite):
   """
-  problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan
+  probleme de fissure plane coupant 3 faces (eprouvette), debouches non normaux, objet plan
   """
 
   nomProbleme = "eprouvetteDroite2"

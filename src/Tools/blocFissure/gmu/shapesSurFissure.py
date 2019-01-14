@@ -4,7 +4,7 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- identification des shapes modifiées par la duplication des noeuds de la face fissure (d'un coté de la face)
+# --- identification des shapes modifiees par la duplication des noeuds de la face fissure (d'un cote de la face)
 
 def shapesSurFissure(blocPartition, plane1, faceFissure, gencnt):
   """

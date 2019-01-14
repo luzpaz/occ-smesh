@@ -4,11 +4,11 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- éliminer les doublons d'une liste de subshapes
+# --- eliminer les doublons d'une liste de subshapes
 
 def eliminateDoubles(obj, subshapes):
   """
-  éliminer les doublons d'une liste de subshapes
+  eliminer les doublons d'une liste de subshapes
   """
   idsubs = {}
   for sub in subshapes:

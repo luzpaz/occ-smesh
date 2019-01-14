@@ -9,7 +9,7 @@ from . import initLog
 from .whichSideMulti import whichSideMulti
 
 # -----------------------------------------------------------------------------
-# --- renvoie l'extraction des shapes d'un objet selon leur position par rapport à la face.
+# --- renvoie l'extraction des shapes d'un objet selon leur position par rapport a la face.
 
 def extractionOrienteeMulti(faces, ifil, obj, centre, shapeType, tol, prefix=""):
   """

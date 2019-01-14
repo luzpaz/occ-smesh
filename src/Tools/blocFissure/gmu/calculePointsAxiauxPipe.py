@@ -11,10 +11,10 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
                             lenSegPipe, rayonPipe, nbsegCercle, nbsegRad):
   """
   preparation maillage du pipe :
-  - détections des points a respecter : jonction des edges/faces constituant
+  - detections des points a respecter : jonction des edges/faces constituant
     la face de fissure externe au pipe
   - points sur les edges de fond de fissure et edges pipe/face fissure,
-  - vecteurs tangents au fond de fissure (normal au disque maillé)  
+  - vecteurs tangents au fond de fissure (normal au disque maille)  
   """
   
   logging.info('start')
@@ -41,7 +41,7 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
   isDone = meshFondExt.Compute()
   
-  ptGSdic = {} # dictionnaire [paramètre sur la courbe] --> point géométrique
+  ptGSdic = {} # dictionnaire [parametre sur la courbe] --> point geometrique
   allNodeIds = meshFondExt.GetNodesId()
   for nodeId in allNodeIds:
     xyz = meshFondExt.GetNodeXYZ(nodeId)
@@ -65,7 +65,7 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
     plan = geompy.MakePlane(vertcx, norm, 3*rayonPipe)
     part = geompy.MakePartition([plan], [wirePipeFiss], [], [], geompy.ShapeType["VERTEX"], 0, [], 0)
     liste = geompy.ExtractShapes(part, geompy.ShapeType["VERTEX"], True)
-    if len(liste) == 5: # 4 coins du plan plus intersection recherchée
+    if len(liste) == 5: # 4 coins du plan plus intersection recherchee
       for point in liste:
         if geompy.MinDistance(point, vertcx) < 1.1*rayonPipe: # les quatre coins sont plus loin
           vertpx = point
@@ -80,23 +80,23 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
 #      name = "plan%d"%i
 #      geompy.addToStudyInFather(wireFondFiss, plan, name)
 
-  # --- maillage du pipe étendu, sans tenir compte de l'intersection avec la face de peau
+  # --- maillage du pipe etendu, sans tenir compte de l'intersection avec la face de peau
       
   logging.debug("nbsegCercle %s", nbsegCercle)
   
   # -----------------------------------------------------------------------
-  # --- points géométriques
+  # --- points geometriques
   
-  gptsdisks = [] # vertices géométrie de tous les disques
+  gptsdisks = [] # vertices geometrie de tous les disques
   raydisks = [[] for i in range(nbsegCercle)]
   for i in range(len(centres)): # boucle sur les disques
-    gptdsk = [] # vertices géométrie d'un disque
+    gptdsk = [] # vertices geometrie d'un disque
     vertcx = centres[i]
     vertpx = origins[i]
     normal = normals[i]
     vec1 = geompy.MakeVector(vertcx, vertpx)
     
-    points = [vertcx] # les points du rayon de référence
+    points = [vertcx] # les points du rayon de reference
     for j in range(nbsegRad):
       pt = geompy.MakeTranslationVectorDistance(vertcx, vec1, (j+1)*float(rayonPipe)/nbsegRad)
       points.append(pt)

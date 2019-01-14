@@ -7,16 +7,16 @@ from .geomsmesh import geomPublishInFather
 from . import initLog
 
 # -----------------------------------------------------------------------------
-# --- identification des faces tore et fissure dans le solide hors tore du bloc partitionné
+# --- identification des faces tore et fissure dans le solide hors tore du bloc partitionne
 
 def facesToreInBloc(blocp, facefissoutore, facetore1, facetore2):
   """
-  identification des faces tore et fissure dans le bloc partitionné : sous shapes du bloc
-  @param blocp : bloc partitionné
+  identification des faces tore et fissure dans le bloc partitionne : sous shapes du bloc
+  @param blocp : bloc partitionne
   @param facefissoutore : la face de fissure externe au tore
-  @param facetore1 : face du tore selon la génératrice
-  @param facetore2 : face du tore selon la génératrice
-  @return (blocFaceFiss, blocFaceTore1, blocFaceTore2) sous shapes reperées
+  @param facetore1 : face du tore selon la generatrice
+  @param facetore2 : face du tore selon la generatrice
+  @return (blocFaceFiss, blocFaceTore1, blocFaceTore2) sous shapes reperees
   """
   logging.info('start')
 

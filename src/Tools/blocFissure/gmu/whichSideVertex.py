@@ -4,13 +4,13 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)
+# --- calcul de la position d'une shape par rapport a une face (dessus, dessous, sur la surface meme)
 
 def whichSideVertex(face, vertex, tol = 1.e-3):
   """
-  Position d'un vertex par rapport a une face (non nécessairement plane).
-  renvoie 1 si le vertex est du coté de la normale à la face,
-  -1 de l'autre coté, 0 si il est sur la face
+  Position d'un vertex par rapport a une face (non necessairement plane).
+  renvoie 1 si le vertex est du cote de la normale a la face,
+  -1 de l'autre cote, 0 si il est sur la face
   """
   #logging.info('start')
   side = 0

@@ -9,12 +9,12 @@ from . import initLog
 from .whichSide import whichSide
 
 # -----------------------------------------------------------------------------
-# --- renvoie l'extraction des shapes d'un objet selon leur position par rapport à la face.
+# --- renvoie l'extraction des shapes d'un objet selon leur position par rapport a la face.
 
 def extractionOrientee(face, obj, ref, shapeType, tol, prefix=""):
   """
   renvoie l'extraction des shapes d'un objet selon leur position
-  par rapport à la face.
+  par rapport a la face.
   shapeType in ["VERTEX", "EDGE", "FACE",...]
   """
   logging.info('start')

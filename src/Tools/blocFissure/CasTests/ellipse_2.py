@@ -24,7 +24,7 @@ O, OX, OY, OZ = triedreBase()
 
 class ellipse_2(ellipse_1):
   """
-  problème de fissure non plane, débouchante non normale
+  probleme de fissure non plane, debouchante non normale
   """
 
   nomProbleme = "ellipse2"

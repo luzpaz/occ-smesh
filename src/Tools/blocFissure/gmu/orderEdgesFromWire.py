@@ -8,7 +8,7 @@ from .geomsmesh import geompy
 
 def orderEdgesFromWire(aWire):
   """
-  fournit les edges ordonnées d'un wire selon ExtractShapes(,,False), 
+  fournit les edges ordonnees d'un wire selon ExtractShapes(,,False), 
   et l'ordre des edges selon le sens de parcours (ordre des indices de la liste d'edges)
   """
   logging.info("start")
@@ -39,15 +39,15 @@ def orderEdgesFromWire(aWire):
   debut = -1
   fin = -1    
   for k, kvs in idsubs.items():
-    if len(kvs) == 1: # une extremité
+    if len(kvs) == 1: # une extremite
       kv = kvs[0]
       if kv[1] == 0:
         debut = kv[0]
       else:
         fin = kv[0]
-  logging.debug("nombre d'edges: %s, indice edge début: %s, fin: %s",len(edges), debut, fin)
+  logging.debug("nombre d'edges: %s, indice edge debut: %s, fin: %s",len(edges), debut, fin)
   if debut < 0:
-    logging.critical("les edges du wire ne sont pas orientées dans le même sens: pas de début trouvé")
+    logging.critical("les edges du wire ne sont pas orientees dans le meme sens: pas de debut trouve")
     return edges, list(range(len(edges)))
   
   orderedList = [debut]
@@ -61,12 +61,12 @@ def orderEdgesFromWire(aWire):
             orderedList.append(k[0])
             break
           else:
-            logging.critical("les edges du wire ne sont pas orientées dans le même sens: une edge à l'envers")
+            logging.critical("les edges du wire ne sont pas orientees dans le meme sens: une edge a l'envers")
             return edges, list(range(len(edges)))
 
-  logging.debug("liste des edges ordonnées selon le sens de parcours: %s", orderedList)
+  logging.debug("liste des edges ordonnees selon le sens de parcours: %s", orderedList)
   accessList = list(range(len(orderedList)))
   for i,k in enumerate(orderedList):
     accessList[k] = i
-  logging.info("position ordonnée des edges selon le sens de parcours: %s", accessList)
+  logging.info("position ordonnee des edges selon le sens de parcours: %s", accessList)
   return edges, accessList

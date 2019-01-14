@@ -60,7 +60,7 @@ Written in C++, SpherePadder is free software licensed under the terms
 of the GNU General Public License. 
 
 Bibliography:
-- [1] J.-F.Jerier, V.Richefeu, D.Imbault, F.-V. Donzé, “Packing spherical discrete elements for large scale simulations”, Computer Methods in Applied Mechanics and Engineering 199 (2010) 1668–1676.
+- [1] J.-F.Jerier, V.Richefeu, D.Imbault, F.-V. Donze, “Packing spherical discrete elements for large scale simulations”, Computer Methods in Applied Mechanics and Engineering 199 (2010) 1668–1676.
 - [2] CGAL, Computational Geometry Algorithms Library. https://gforge.inria.fr.
 - [3] EUROPLEXUS: a computer program for the finite element simulation of fluid–structure systems under transient dynamic loading. http://europlexus.jrc.ec.europa.eu, (User’s Manual).
 

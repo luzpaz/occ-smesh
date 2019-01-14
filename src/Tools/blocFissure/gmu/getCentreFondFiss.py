@@ -12,22 +12,22 @@ publie = False
 def getCentreFondFiss(shapesFissure):
   """
   identification du centre de fond de fissure,
-  transformation fond de fissure en edge unique (seulement pour la procédure construitFissureGenerale).
-  On distingue le cas d'utilisation de la procédure insereFissureLongue par le nombre d'éléments de shapesFissure.
+  transformation fond de fissure en edge unique (seulement pour la procedure construitFissureGenerale).
+  On distingue le cas d'utilisation de la procedure insereFissureLongue par le nombre d'elements de shapesFissure.
   """
   global publie
   logging.debug("start")
   
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
-  if len(shapesFissure) == 6:          # procédure construitFissureGenerale, et edge fond de fissure fournie explicitement
+  if len(shapesFissure) == 6:          # procedure construitFissureGenerale, et edge fond de fissure fournie explicitement
     edgeFondExt     = shapesFissure[5]
   else:
     edgeFondExt     = None
   
-  if len(shapesFissure) > 6:           # procédure insereFissureLongue (fissure plane, plusieurs edges sur le fond de fissure)
+  if len(shapesFissure) > 6:           # procedure insereFissureLongue (fissure plane, plusieurs edges sur le fond de fissure)
     centreFondFiss = shapesFissure[1]
     tgtCentre = None
-  else:                                # procédure construitFissureGenerale, détermination edge unique et milieu de l'edge
+  else:                                # procedure construitFissureGenerale, determination edge unique et milieu de l'edge
     if geompy.NumberOfEdges(fondFiss) > 1:
       if geompy.NbShapes(fondFiss, geompy.ShapeType["WIRE"]) > 0: # wire
         aWire = fondFiss
@@ -53,16 +53,16 @@ def getCentreFondFiss(shapesFissure):
     logging.debug("lgsumEdges %s", lgSumEd)
     logging.debug("id edge: %s, lgOnEdge: %s, lgEdge: %s",iedr, lgOnEdge, lgEdges[iedr])
     if iedr > 0: # il y a une edge avant celle du milieu
-      if geompy.MinDistance(edges[iedr-1], geompy.MakeVertexOnCurve(edges[iedr], 0.0 )) < 1.e-3: # edge orientée croissante 
+      if geompy.MinDistance(edges[iedr-1], geompy.MakeVertexOnCurve(edges[iedr], 0.0 )) < 1.e-3: # edge orientee croissante 
         centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], lgOnEdge/lgEdges[iedr])
       else:
         centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], 1.0 - lgOnEdge/lgEdges[iedr])
-    elif iedr < len(edges)-1: # il y a une edge après celle du milieu
-      if geompy.MinDistance(edges[iedr+1], geompy.MakeVertexOnCurve(edges[iedr], 1.0 )) < 1.e-3: # edge orientée croissante
+    elif iedr < len(edges)-1: # il y a une edge apres celle du milieu
+      if geompy.MinDistance(edges[iedr+1], geompy.MakeVertexOnCurve(edges[iedr], 1.0 )) < 1.e-3: # edge orientee croissante
         centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], lgOnEdge/lgEdges[iedr])
       else:
         centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], 1.0 - lgOnEdge/lgEdges[iedr])
-    else: # on ne sait pas comment est orientée l'edge unique, mais ça n'a pas d'importance
+    else: # on ne sait pas comment est orientee l'edge unique, mais ça n'a pas d'importance
       centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], lgOnEdge/lgEdges[iedr])
     geomPublishInFather(initLog.debug,aWire, centreFondFiss, "centreFondFiss")
     tgtCentre = geompy.MakeTangentOnCurve(edges[iedr], lgOnEdge/ lgEdges[iedr])

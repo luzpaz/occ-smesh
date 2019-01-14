@@ -14,13 +14,13 @@
    <string>Insertion de fissure dans un maillage sain</string>
   </property>
   <property name="toolTip">
-   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaédrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier Med.&lt;/p&gt;&lt;p&gt;La face de fissure est décrite par une géométrie dans un fichier brep.&lt;/p&gt;&lt;p&gt;La ou les arêtes de fond de fissure sont données par leurs index dans la face de fissure.&lt;/p&gt;&lt;p&gt;La procédure identfie des mailles saines à enlever et remailler, construit un maillage régulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complète la zone à remailler en tétraèdres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaedrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier Med.&lt;/p&gt;&lt;p&gt;La face de fissure est decrite par une geometrie dans un fichier brep.&lt;/p&gt;&lt;p&gt;La ou les aretes de fond de fissure sont donnees par leurs index dans la face de fissure.&lt;/p&gt;&lt;p&gt;La procedure identfie des mailles saines a enlever et remailler, construit un maillage regulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complete la zone a remailler en tetraedres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>maillage sain et géometries de fissure</string>
+      <string>maillage sain et geometries de fissure</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="1" column="0">
@@ -35,7 +35,7 @@
         <item>
          <widget class="QLineEdit" name="le_fondfiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des edges décrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(on peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des edges decrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(on peut recuperer ces valeurs a l'aide du dialogue de creation de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -59,14 +59,14 @@
         <item row="0" column="1">
          <widget class="QLineEdit" name="le_maillage">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fichier med du maillage sain (hexaedres)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
          <widget class="QPushButton" name="pb_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;selection du fichier brep (geometrie) decrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond a un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>face fissure</string>
@@ -76,14 +76,14 @@
         <item row="1" column="1">
          <widget class="QLineEdit" name="le_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fichier brep (geometrie) decrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="0" column="0">
          <widget class="QPushButton" name="pb_maillage">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;selection du fichier med du maillage sain (hexaedres)&lt;/p&gt;&lt;p&gt;Un champ rouge correspond a un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>maillage sain</string>
@@ -102,7 +102,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_2">
        <property name="title">
-        <string>identification zone à remailler</string>
+        <string>identification zone a remailler</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
@@ -117,7 +117,7 @@
           <item>
            <widget class="QDoubleSpinBox" name="dsb_influence">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;La zone remaillée contiendra toutes les mailles du maillage sain à une distance de la face de fissure inférieure à cette valeur.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;La zone remaillee contiendra toutes les mailles du maillage sain a une distance de la face de fissure inferieure a cette valeur.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="decimals">
              <number>5</number>
@@ -131,7 +131,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_3">
             <property name="title">
-             <string>prémaillage face fissure</string>
+             <string>premaillage face fissure</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
              <item>
@@ -146,7 +146,7 @@
                <item row="0" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_meshBrepMin">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour faciliter la détermination de la zone à remailler, il faut des points sur la face de fissure, suffisament resserrés, en relation avec la taille des mailles du maillage sain.&lt;/p&gt;&lt;p&gt;Ces points sont obtenus par pré maillage de la face de fissure, en triangles. On donne la taille min et max des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour faciliter la determination de la zone a remailler, il faut des points sur la face de fissure, suffisament resserres, en relation avec la taille des mailles du maillage sain.&lt;/p&gt;&lt;p&gt;Ces points sont obtenus par pre maillage de la face de fissure, en triangles. On donne la taille min et max des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -166,7 +166,7 @@
                <item row="1" column="1">
                 <widget class="QDoubleSpinBox" name="dsb_meshBrepMax">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour faciliter la détermination de la zone à remailler, il faut des points sur la face de fissure, suffisament resserrés, en relation avec la taille des mailles du maillage sain.&lt;/p&gt;&lt;p&gt;Ces points sont obtenus par pré maillage de la face de fissure, en triangles. On donne la taille min et max des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour faciliter la determination de la zone a remailler, il faut des points sur la face de fissure, suffisament resserres, en relation avec la taille des mailles du maillage sain.&lt;/p&gt;&lt;p&gt;Ces points sont obtenus par pre maillage de la face de fissure, en triangles. On donne la taille min et max des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="decimals">
                   <number>5</number>
@@ -216,7 +216,7 @@
                <item>
                 <widget class="QComboBox" name="cb_log">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'affichage de messages pendant le calcul peut aider à la mise au point du maillage. Les messages sont écrits dans un fichier de log, dans le répertoire d'exécution.&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;silencieux&lt;/span&gt; donne très peu d'information,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;verbeux&lt;/span&gt; liste les principales étapes du calcul,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;debug&lt;/span&gt; donne un maximum de détail, et publie des objets intermédiaires dans l'étude.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'affichage de messages pendant le calcul peut aider a la mise au point du maillage. Les messages sont ecrits dans un fichier de log, dans le repertoire d'execution.&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;silencieux&lt;/span&gt; donne tres peu d'information,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;verbeux&lt;/span&gt; liste les principales etapes du calcul,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;debug&lt;/span&gt; donne un maximum de detail, et publie des objets intermediaires dans l'etude.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <item>
                   <property name="text">
@@ -427,7 +427,7 @@
              <item row="0" column="1">
               <widget class="QDoubleSpinBox" name="dsb_areteFaceFissure">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Faces externes de la zone à remailler.&lt;/p&gt;&lt;p&gt;Maillage en triangles : valeur cible des arêtes des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Faces externes de la zone a remailler.&lt;/p&gt;&lt;p&gt;Maillage en triangles : valeur cible des aretes des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="decimals">
                 <number>5</number>
@@ -447,7 +447,7 @@
              <item row="1" column="1">
               <widget class="QDoubleSpinBox" name="dsb_aretesVives">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Arêtes vives de la zone à remailler.&lt;/p&gt;&lt;p&gt;Longueur des segments sur ces arêtes.&lt;/p&gt;&lt;p&gt;Ce paramètre est &lt;span style=&quot; font-weight:600; font-style:italic; color:#2631c1;&quot;&gt;optionnel&lt;/span&gt; : laissé à 0,&lt;/p&gt;&lt;p&gt;il est est ajusté automatiquement.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Aretes vives de la zone a remailler.&lt;/p&gt;&lt;p&gt;Longueur des segments sur ces aretes.&lt;/p&gt;&lt;p&gt;Ce parametre est &lt;span style=&quot; font-weight:600; font-style:italic; color:#2631c1;&quot;&gt;optionnel&lt;/span&gt; : laisse a 0,&lt;/p&gt;&lt;p&gt;il est est ajuste automatiquement.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="decimals">
                 <number>5</number>
@@ -485,28 +485,28 @@
      <item row="0" column="0">
       <widget class="QPushButton" name="pb_reptrav">
        <property name="text">
-        <string>répertoire de travail</string>
+        <string>repertoire de travail</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="le_reptrav">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Répertoire dans lequel seront rangés le maillage final, les objets intermédiaires, la log d'exécution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Repertoire dans lequel seront ranges le maillage final, les objets intermediaires, la log d'execution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="pb_nomres">
        <property name="text">
-        <string>nom résultat</string>
+        <string>nom resultat</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="le_nomres">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nom des résultats.&lt;/p&gt;&lt;p&gt;Le fichier maillage résultat sera rangé dans le répertoire de travail, sous le nom &lt;span style=&quot; font-weight:600; font-style:italic; color:#0055ff;&quot;&gt;Nom&lt;/span&gt;.med&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nom des resultats.&lt;/p&gt;&lt;p&gt;Le fichier maillage resultat sera range dans le repertoire de travail, sous le nom &lt;span style=&quot; font-weight:600; font-style:italic; color:#0055ff;&quot;&gt;Nom&lt;/span&gt;.med&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -572,7 +572,7 @@
      <item>
       <widget class="QPushButton" name="pb_exemple">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;génération de jeux de données exemple :&lt;/p&gt;&lt;p&gt;maillages sain et face de fissure.&lt;/p&gt;&lt;p&gt;(from blocFissure.materielCasTests import genereMateriel)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;generation de jeux de donnees exemple :&lt;/p&gt;&lt;p&gt;maillages sain et face de fissure.&lt;/p&gt;&lt;p&gt;(from blocFissure.materielCasTests import genereMateriel)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Exemple</string>
@@ -582,7 +582,7 @@
      <item>
       <widget class="QPushButton" name="pb_reset">
        <property name="toolTip">
-        <string>réinitialisation de tous les paramètres à leur valeur par défaut</string>
+        <string>reinitialisation de tous les parametres a leur valeur par defaut</string>
        </property>
        <property name="text">
         <string>Reset</string>
@@ -592,17 +592,17 @@
      <item>
       <widget class="QPushButton" name="pb_valPrec">
        <property name="toolTip">
-        <string>réinitialisation de tous les paramètres à leur valeur de la précédente éxécution</string>
+        <string>reinitialisation de tous les parametres a leur valeur de la precedente execution</string>
        </property>
        <property name="text">
-        <string>Précédent</string>
+        <string>Precedent</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pb_recharger">
        <property name="toolTip">
-        <string>réinitialisation des paramètres à partir d'un fichier préalablement sauvegardé</string>
+        <string>reinitialisation des parametres a partir d'un fichier prealablement sauvegarde</string>
        </property>
        <property name="text">
         <string>Recharger</string>
@@ -612,7 +612,7 @@
      <item>
       <widget class="QPushButton" name="pb_sauver">
        <property name="toolTip">
-        <string>sauvegarde des paramètres dans un fichier à choisir</string>
+        <string>sauvegarde des parametres dans un fichier a choisir</string>
        </property>
        <property name="text">
         <string>Sauver</string>
@@ -635,7 +635,7 @@
      <item>
       <widget class="QDialogButtonBox" name="bb_OkCancel">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OK : lancer le calcul, sans sauver les paramètres.&lt;/p&gt;&lt;p&gt;Close : fermer le dialogue sans exécution ni sauvegarde.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OK : lancer le calcul, sans sauver les parametres.&lt;/p&gt;&lt;p&gt;Close : fermer le dialogue sans execution ni sauvegarde.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

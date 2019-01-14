@@ -12,11 +12,11 @@ from . import initLog
 
 def facesCirculaires(bloc, tore):
   """
-  Extraction des faces demi circulaires à l'intersection du tore partitionné et de la paroi,
+  Extraction des faces demi circulaires a l'intersection du tore partitionne et de la paroi,
   de leur centre, les edges de ces faces situees dans le plan de fissure et un booleen par edge,
   indiquant son sens (normal / reversed).
   @param bloc : bloc defaut
-  @param tore : le tore partitionné et coupé
+  @param tore : le tore partitionne et coupe
   @return (faces, centres, edges, reverses)
   """
   logging.info("start")

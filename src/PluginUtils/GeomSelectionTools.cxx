@@ -275,7 +275,7 @@ GeomAbs_SurfaceType GeomSelectionTools::getFaceInformation(TopoDS_Shape S)
     std::cout << "******************" << std::endl;
     std::stringstream buffer;
     buffer << "Degre U : " <<  surf_adap.UDegree();
-   //conversion nécessaire pour affichage
+   //conversion necessaire pour affichage
     std::cout << buffer.str() << std::endl;
     std::cout <<  " Degre V : " <<  surf_adap.VDegree() << std::endl;
     std::cout <<  " Nb Poles U : " <<  surf_adap.NbUPoles() << std::endl;

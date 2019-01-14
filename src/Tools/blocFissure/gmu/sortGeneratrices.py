@@ -11,10 +11,10 @@ from . import initLog
 
 def sortGeneratrices(tore, geners):
   """
-  tri des 3 edges 'génératrices' selon leur longueur.
+  tri des 3 edges 'generatrices' selon leur longueur.
   @param tore
   @param les edges 'generatrices'
-  @return (genext, genint, gencnt) les 3 edges, de la plus grande à la plus petite
+  @return (genext, genint, gencnt) les 3 edges, de la plus grande a la plus petite
   """
   logging.info("start")
 

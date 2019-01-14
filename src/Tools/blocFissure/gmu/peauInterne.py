@@ -14,8 +14,8 @@ from .fusionMaillageAttributionDefaut import fusionMaillageDefaut
 
 def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   """
-  Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
-  On récupère le volume et la peau de la zone de défaut, les éventuelles faces et arêtes internes de cette zone.
+  Retrouve les groupes de defaut dans le maillage sain modifie par CreateHoleSkin (CreeZoneDefautMaillage)
+  On recupere le volume et la peau de la zone de defaut, les eventuelles faces et aretes internes de cette zone.
   """
   logging.info("start")
   ([maillageSain], status) = smesh.CreateMeshesFromMED(fichierMaillage)
@@ -43,7 +43,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
       zoneDefaut_internalEdges = grp
       break
     
-  # --- Le groupe ZoneDefaut ne doit contenir que des Hexaèdres"
+  # --- Le groupe ZoneDefaut ne doit contenir que des Hexaedres"
   
   info=maillageSain.GetMeshInfo(zoneDefaut)
   keys = list(info.keys()); keys.sort()
@@ -57,9 +57,9 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   if (nbelem == 0) or (nbhexa < nbelem) :
     texte = "La zone a remailler est incorrecte.<br>"
     texte += "Causes possibles :<ul>"
-    texte += "<li>Les mailles à enlever dans le maillage sain n'ont pas été détectées.</li>"
-    texte += "<li>Certaines faces du maillage sain sont à l'envers : les normales aux faces en paroi de volume doivent être sortantes.</li>"
-    texte += "<li>Il n'y a pas que des Hexaèdres réglés linéaires dans la zone à remailler (notamment mailles quadratiques, tetraèdres non traités)</li></ul>"
+    texte += "<li>Les mailles a enlever dans le maillage sain n'ont pas ete detectees.</li>"
+    texte += "<li>Certaines faces du maillage sain sont a l'envers : les normales aux faces en paroi de volume doivent etre sortantes.</li>"
+    texte += "<li>Il n'y a pas que des Hexaedres regles lineaires dans la zone a remailler (notamment mailles quadratiques, tetraedres non traites)</li></ul>"
     raise fissError(traceback.extract_stack(),texte)
 
   nbAdded, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
@@ -70,7 +70,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   listOfCorner = lookForCorner(maillageDefautCible)
   logging.debug("listOfCorner = %s", listOfCorner)
   if len(listOfCorner) > 0:
-      logging.info("présence de coins à la surface externe de la zone à reconstruire")
+      logging.info("presence de coins a la surface externe de la zone a reconstruire")
       zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
 
   return maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges

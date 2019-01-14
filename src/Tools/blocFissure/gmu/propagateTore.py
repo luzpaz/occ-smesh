@@ -12,7 +12,7 @@ from . import initLog
 def propagateTore(tore):
   """
   Classement des edges du tore par une operation 'propagate'
-  @param tore partionné et coupé
+  @param tore partionne et coupe
   @return (diams, circles, geners) edges dans le plan de fissure, edges demi circulaires,
   edges selon la generatrice (liste de compounds)
   """

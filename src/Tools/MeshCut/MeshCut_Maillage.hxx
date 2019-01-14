@@ -31,9 +31,9 @@ namespace MESHCUT
     class Maillage
     {
     public:
-      // Toutes ces variables doivent être placées au niveau du principal pour être connues de toutes les fonctions
+      // Toutes ces variables doivent etre placees au niveau du principal pour etre connues de toutes les fonctions
 
-      // Vecteurs des familles d'éléments
+      // Vecteurs des familles d'elements
       std::map<int, std::vector<int> > FAMILLES;
       std::map<int, std::vector<TYPE_MAILLE> > FAM_TYPES;
 
@@ -45,10 +45,10 @@ namespace MESHCUT
       std::map<std::string, std::vector<int> > GROUPES_NOEUDS;
 
       // Commun noeuds et mailles
-      std::map<int, int> tailleFAMILLES; // la clé est un num. de famille
-      std::map<std::string, int> tailleGROUPES; // Tailles des vecteurs GROUPES_MAILLES et GROUPES_NOEUDS - la clé est un nom de groupe (de noeuds ou de mailles)
+      std::map<int, int> tailleFAMILLES; // la cle est un num. de famille
+      std::map<std::string, int> tailleGROUPES; // Tailles des vecteurs GROUPES_MAILLES et GROUPES_NOEUDS - la cle est un nom de groupe (de noeuds ou de mailles)
 
-      // Résidus mailles
+      // Residus mailles
       std::map<TYPE_MAILLE, std::vector<int> > RESIDU;
 
     public:
@@ -68,13 +68,13 @@ namespace MESHCUT
       float *YY;
       float *ZZ; // ****** MED-OBLIGATOIRE ******
 
-      // Effectifs des éléments par type
+      // Effectifs des elements par type
       std::map<TYPE_MAILLE, int> EFFECTIFS_TYPES; // ****** MED-OBLIGATOIRE ******
 
-      // Connectivités des types
-      // Le numéro global du j-ième noeud de la maille de numéro global i est stocké à l'adresse
+      // Connectivites des types
+      // Le numero global du j-ieme noeud de la maille de numero global i est stocke a l'adresse
       //           CNX[tm]+t*(i-1)+(j-1)
-      // (t = taille du type, i.e. nombre de noeuds de l'élément)
+      // (t = taille du type, i.e. nombre de noeuds de l'element)
       std::map<TYPE_MAILLE, int*> CNX; // ****** MED-OBLIGATOIRE ******
 
       // Enveloppes cubiques
@@ -124,7 +124,7 @@ namespace MESHCUT
       TYPE_MAILLE TYPE(int nglobal);
       void eliminationMailles(TYPE_MAILLE typeMaille, std::vector<int> listeMaillesSuppr);
 
-      // acquisitionTYPE_inputMED appelée par inputMED
+      // acquisitionTYPE_inputMED appelee par inputMED
       void
           acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid, char maa[MED_NAME_SIZE + 1], med_int mdim);
 

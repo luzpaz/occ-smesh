@@ -13,9 +13,9 @@ def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne
   logging.info('start')
   
   edgesPFE = geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False)
-  verticesPFE = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermédiaires (des points en trop dans ptsInWireFissExtPipe)
-  idiskmin = idisklim[0] + 1 # on ne prend pas le disque sur la peau, déjà ajusté
-  idiskmax = idisklim[1]     # on ne prend pas le disque sur la peau, déjà ajusté
+  verticesPFE = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermediaires (des points en trop dans ptsInWireFissExtPipe)
+  idiskmin = idisklim[0] + 1 # on ne prend pas le disque sur la peau, deja ajuste
+  idiskmax = idisklim[1]     # on ne prend pas le disque sur la peau, deja ajuste
   idiskint = []
   for vtx in verticesPFE:
     distPtVt = []
@@ -32,7 +32,7 @@ def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne
       break
     logging.debug("ajustement point sur edgePipeFissureExterne: %s", idisk)
     gptdsk = gptsdisks[idisk]
-    pt = gptdsk[0][-1]       # le point sur l'edge de la fissure externe au pipe
+    pt = gptdsk[0][-1]       # le point sur l edge de la fissure externe au pipe
     distPtEd = [(geompy.MinDistance(pt, edgePFE), k, edgePFE) for k, edgePFE in enumerate(edgesPFE)]
     distPtEd.sort()
     edgePFE = distPtEd[0][2]

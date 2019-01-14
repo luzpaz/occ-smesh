@@ -12,7 +12,7 @@ from .rotTrans import rotTrans
 from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
 # -----------------------------------------------------------------------------
-# --- création élements géométriques fissure elliptique
+# --- creation elements geometriques fissure elliptique
 
 def genereElemsFissureElliptique(shapeFissureParams):
   """

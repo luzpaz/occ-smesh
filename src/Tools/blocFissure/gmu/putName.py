@@ -3,7 +3,7 @@
 from .geomsmesh import smesh
 
 # -----------------------------------------------------------------------------
-# --- nommage des objets mesh (algorithme, hypothèse, subMesh)
+# --- nommage des objets mesh (algorithme, hypothese, subMesh)
 
 def putName(objmesh,name, i=-1):
   if i >= 0:

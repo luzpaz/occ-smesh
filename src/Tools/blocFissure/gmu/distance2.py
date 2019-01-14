@@ -7,7 +7,7 @@ import logging
 
 def distance2(xyz1, xyz2):
   """
-  carré de la distance entre deux points donnés par des triplets [x,y,z]
+  carre de la distance entre deux points donnes par des triplets [x,y,z]
   """
   #logging.info("start")
   

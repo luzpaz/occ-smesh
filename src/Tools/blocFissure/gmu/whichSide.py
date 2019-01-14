@@ -4,15 +4,15 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)
+# --- calcul de la position d'une shape par rapport a une face (dessus, dessous, sur la surface meme)
 
 def whichSide(face, obj, tol = 1.e-3):
   """
-  Position d'un objet par rapport a une face (non nécessairement plane).
-  L'objet est supposé situé entierement d'un coté de la face,
+  Position d'un objet par rapport a une face (non necessairement plane).
+  L'objet est suppose situe entierement d'un cote de la face,
   ou lui appartenant totalement (objets traversants non pris en compte)
-  renvoie 1 si 'objet est du coté de la normale à la face,
-  -1 de l'autre coté, 0 si il est sur la face
+  renvoie 1 si 'objet est du cote de la normale a la face,
+  -1 de l'autre cote, 0 si il est sur la face
   """
   logging.debug('start')
   side = 0

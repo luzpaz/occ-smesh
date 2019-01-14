@@ -102,7 +102,7 @@ while not ERROR :
   except :
     MESSAGE += "\nImpossible d'utiliser "+TEXTE
     ERROR += 1
-#   On arrete tout en cas de problème car les suivants en dépendent
+#   On arrete tout en cas de probleme car les suivants en dependent
     break
   else :
     if ComputeMeshes :
@@ -202,5 +202,5 @@ while not ERROR :
 if ERROR :
   raise Exception("\n\nNombre d'erreurs : %d" % ERROR + MESSAGE + "\n")
 else :
-  print("\nAucun problème\n")
+  print("\nAucun probleme\n")
 

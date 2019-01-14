@@ -24,7 +24,7 @@ O, OX, OY, OZ = triedreBase()
 
 class cubeAngle(fissureGenerique):
   """
-  problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
+  probleme de fissure plane coupant 2 faces (angle), debouches normaux, objet plan
   """
 
   nomProbleme = "cubeAngle"
@@ -41,9 +41,9 @@ class cubeAngle(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode construitFissureGenerale
+    parametres de la fissure pour methode construitFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
-    rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
+    rayonPipe   : le rayon du pile maille en hexa autour du fond de fissure
     """
     logging.info("setParamShapeFissure %s", self.nomCas)
     self.shapeFissureParams = dict(lgInfluence = 20,

@@ -22,7 +22,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
   logging.info('start')
   nbFacesFilling = len(partitionsPeauFissFond)
   boutFromIfil = [None for i in range(nbFacesFilling)]
-  if idFillingFromBout[0] != idFillingFromBout[1]: # repérage des extremites du pipe quand elles débouchent sur des faces différentes
+  if idFillingFromBout[0] != idFillingFromBout[1]: # reperage des extremites du pipe quand elles debouchent sur des faces differentes
     boutFromIfil[idFillingFromBout[0]] = 0
     boutFromIfil[idFillingFromBout[1]] = 1
   
@@ -50,12 +50,12 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
       
     else:
       
-      logging.debug("meshFacePeau %d coupée par la fissure", ifil)
-      facePeau           = facesPeaux[ifil] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
-      edgesCircPeau      = edCircPeau[ifil] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
-      verticesCircPeau   = ptCircPeau[ifil] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
-      groupEdgesBordPeau = gpedgeBord[ifil] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
-      bordsVifs          = gpedgeVifs[ifil] # pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
+      logging.debug("meshFacePeau %d coupee par la fissure", ifil)
+      facePeau           = facesPeaux[ifil] # pour chaque face : la face de peau finale a mailler (percee des faces debouchantes)
+      edgesCircPeau      = edCircPeau[ifil] # pour chaque face de peau : [subshape edge circulaire aux debouches du pipe]
+      verticesCircPeau   = ptCircPeau[ifil] # pour chaque face de peau : [subshape point sur edge circulaire aux debouches du pipe]
+      groupEdgesBordPeau = gpedgeBord[ifil] # pour chaque face de peau : groupe subshape des edges aux bords lies a la partie saine
+      bordsVifs          = gpedgeVifs[ifil] # pour chaque face de peau : groupe subshape des edges aux bords correspondant a des arêtes vives
       edgesFissurePeau   = edFissPeau[ifil] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
 
       meshFacePeau = smesh.Mesh(facePeau)

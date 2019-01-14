@@ -24,7 +24,7 @@ O, OX, OY, OZ = triedreBase()
 
 class cylindre(fissureGenerique):
   """
-  problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle
+  probleme de fissure plane sur cylindre, grand fond de fissure en arc de cercle
   """
 
   nomProbleme = "cylindre"
@@ -32,8 +32,8 @@ class cylindre(fissureGenerique):
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
     """
-    génère le maillage de l'objet sain, par chargement d'un fichier med
-    ici, les paramètres de géométrie et de maillage ne sont pas utiles
+    genere le maillage de l'objet sain, par chargement d'un fichier med
+    ici, les parametres de geometrie et de maillage ne sont pas utiles
     """
     logging.info("genereMaillageSain %s", self.nomCas)
 
@@ -45,9 +45,9 @@ class cylindre(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode construitFissureGenerale
+    parametres de la fissure pour methode construitFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
-    rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
+    rayonPipe   : le rayon du pile maille en hexa autour du fond de fissure
     """
     logging.info("setParamShapeFissure %s", self.nomCas)
     self.shapeFissureParams = dict(lgInfluence = 20,

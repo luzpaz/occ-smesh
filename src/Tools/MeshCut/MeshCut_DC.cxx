@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
       char *id_maillagenew = argv[3];
       str_id_maillagenew = (string) id_maillagenew;
 
-      // Groupes créés
+      // Groupes crees
       char *id_GMplus = argv[4];
       str_id_GMplus = (string) id_GMplus;
       char *id_GMmoins = argv[5];
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
       char *charzm = argv[11];
       zm = char2float(charzm);
 
-      // Tolérance :  epsilon = tolérance * longueur arête moyenne - où epsilon est la tolérance absolue (distance)
+      // Tolerance :  epsilon = tolerance * longueur arete moyenne - où epsilon est la tolerance absolue (distance)
       char *chtolerance = argv[12];
       tolerance = char2float(chtolerance);
     }
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
   pointPlan[1] = ym;
   pointPlan[2] = zm;
 
-  // Calcul du coefficient d de l'équation du plan  xn x + yn y + zn n + d = 0
+  // Calcul du coefficient d de l'equation du plan  xn x + yn y + zn n + d = 0
   d = -normale[0] * xm - normale[1] * ym - normale[2] * zm;
 
   intersections.clear();
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
       cout << salome_chrono() << " - Finished!" << endl << endl;
       exit(0);
     }
-  // A partir de cet instant le maillage contient forcément des TETRA4
+  // A partir de cet instant le maillage contient forcement des TETRA4
 
 
   // Chargement des distances noeud-plan DNP
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
     DNP[k] = distanceNoeudPlan(k + 1);
   cout << salome_chrono() << " - End of computation of distances between nodes and plane" << endl;
 
-  // Longueur d'arête moyenne des T4 intersectant le plan de coupe
+  // Longueur d'arete moyenne des T4 intersectant le plan de coupe
   float LONGUEURS = 0.0;
   int cptLONGUEURS = 0;
   for (int it4 = 0; it4 < MAILLAGE1->EFFECTIFS_TYPES[TETRA4]; it4++)
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
         }
       if (plus && moins)
         {
-          // Ce tetra est à cheval sur le plan de coupe: on calcule ses longueurs d'arêtes
+          // Ce tetra est a cheval sur le plan de coupe: on calcule ses longueurs d'aretes
           LONGUEURS += longueurSegment(*(offset + 0), *(offset + 1));
           cptLONGUEURS++;
           LONGUEURS += longueurSegment(*(offset + 0), *(offset + 2));
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
         }
     }
 
-  // Aucun TETRA4 intercepté par le plan de coupe : on rend MAILLAGE1
+  // Aucun TETRA4 intercepte par le plan de coupe : on rend MAILLAGE1
   if (cptLONGUEURS == 0)
     {
       cout
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
       cout << salome_chrono() << " - Finished!" << endl << endl;
       exit(0);
     }
-  // A partir de cet instant le maillage contient forcément des TETRA4 intersectant le plan de coupe
+  // A partir de cet instant le maillage contient forcement des TETRA4 intersectant le plan de coupe
 
 
   float longueurMoyenne = LONGUEURS / cptLONGUEURS;
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
   cout << "Tolerance = " << tolerance << endl;
   cout << "Epsilon = " << epsilon << endl;
 
-  // Détermination des positions de noeuds par rapport au plan de coupe - POSN
+  // Determination des positions de noeuds par rapport au plan de coupe - POSN
   POSN = (int*) malloc(sizeof(int) * MAILLAGE1->nombreNoeudsMaillage);
   for (int k = 0; k < MAILLAGE1->nombreNoeudsMaillage; k++)
     {
@@ -296,7 +296,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == -1 && S[1] == -1 && S[2] == -1 && S[3] == 1)
-        { // Cas 3 - Arêtes 2 4 5
+        { // Cas 3 - Aretes 2 4 5
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == -1 && S[1] == -1 && S[2] == 0 && S[3] == 1)
-        { // Cas 2, arêtes 2 4
+        { // Cas 2, aretes 2 4
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == -1 && S[1] == -1 && S[2] == 1 && S[3] == -1)
-        { // Cas 3, arêtes 1 3 5
+        { // Cas 3, aretes 1 3 5
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -339,7 +339,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == -1 && S[2] == 1 && S[3] == 0)
-        { // Cas 2, arêtes 1 3
+        { // Cas 2, aretes 1 3
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == -1 && S[2] == 1 && S[3] == 1)
-        { // Cas 4, arêtes 1 2 3 4
+        { // Cas 4, aretes 1 2 3 4
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == -1 && S[1] == 0 && S[2] == -1 && S[3] == 1)
-        { // Cas 2, arêtes 2 5
+        { // Cas 2, aretes 2 5
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -388,7 +388,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == -1 && S[1] == 0 && S[2] == 0 && S[3] == 1)
-        { // Cas 1, arête 2
+        { // Cas 1, arete 2
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == -1 && S[1] == 0 && S[2] == 1 && S[3] == -1)
-        { // Cas 2, arêtes 1 5
+        { // Cas 2, aretes 1 5
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -412,7 +412,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 0 && S[2] == 1 && S[3] == 0)
-        { // Cas 1, arête 1
+        { // Cas 1, arete 1
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 0 && S[2] == 1 && S[3] == 1)
-        { // Cas 2, arêtes 1 2
+        { // Cas 2, aretes 1 2
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -436,7 +436,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == -1 && S[3] == -1)
-        { // Cas 3, arêtes 0 3 4
+        { // Cas 3, aretes 0 3 4
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -447,7 +447,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == -1 && S[3] == 0)
-        { // Cas 2, arêtes 0 3
+        { // Cas 2, aretes 0 3
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -458,7 +458,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == -1 && S[3] == 1)
-        { // Cas 4, arêtes 0 2 3 5
+        { // Cas 4, aretes 0 2 3 5
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -471,7 +471,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == 0 && S[3] == -1)
-        { // Cas 2, arêtes 0 4
+        { // Cas 2, aretes 0 4
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -482,7 +482,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == 0 && S[3] == 0)
-        { // Cas 1, arête 0
+        { // Cas 1, arete 0
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -493,7 +493,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == 0 && S[3] == 1)
-        { // Cas 2, arêtes 0 2
+        { // Cas 2, aretes 0 2
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -506,7 +506,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == 1 && S[3] == -1)
-        { // Cas 4, arêtes 0 1 4 5
+        { // Cas 4, aretes 0 1 4 5
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -517,7 +517,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == 1 && S[3] == 0)
-        { // Cas 2, arêtes 0 1
+        { // Cas 2, aretes 0 1
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -528,7 +528,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == -1 && S[1] == 1 && S[2] == 1 && S[3] == 1)
-        { // Cas 3, arêtes 0 1 2
+        { // Cas 3, aretes 0 1 2
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == 0 && S[1] == -1 && S[2] == -1 && S[3] == 1)
-        { // Cas 2, arêtes 4 5
+        { // Cas 2, aretes 4 5
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -566,7 +566,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == 0 && S[1] == -1 && S[2] == 0 && S[3] == 1)
-        { // Cas 1, arête 4
+        { // Cas 1, arete 4
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -579,7 +579,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 0 && S[1] == -1 && S[2] == 1 && S[3] == -1)
-        { // Cas 2, arêtes 3 5
+        { // Cas 2, aretes 3 5
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -590,7 +590,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 0 && S[1] == -1 && S[2] == 1 && S[3] == 0)
-        { // Cas 1, arête 3
+        { // Cas 1, arete 3
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -601,7 +601,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 0 && S[1] == -1 && S[2] == 1 && S[3] == 1)
-        { // Cas 2, arêtes 3 4
+        { // Cas 2, aretes 3 4
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -620,7 +620,7 @@ int main(int argc, char *argv[])
         GMmoins[TETRA4].push_back(it4);
 
       else if (S[0] == 0 && S[1] == 0 && S[2] == -1 && S[3] == 1)
-        { // Cas 1, arête 5
+        { // Cas 1, arete 5
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -649,7 +649,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 0 && S[1] == 0 && S[2] == 1 && S[3] == -1)
-        { // Cas 1, arête 5
+        { // Cas 1, arete 5
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -668,7 +668,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 0 && S[1] == 1 && S[2] == -1 && S[3] == -1)
-        { // Cas 2, arêtes 3 4
+        { // Cas 2, aretes 3 4
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -679,7 +679,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 0 && S[1] == 1 && S[2] == -1 && S[3] == 0)
-        { // Cas 1, arête 3
+        { // Cas 1, arete 3
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -690,7 +690,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 0 && S[1] == 1 && S[2] == -1 && S[3] == 1)
-        { // Cas 2, arêtes 3 5
+        { // Cas 2, aretes 3 5
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -703,7 +703,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 0 && S[1] == 1 && S[2] == 0 && S[3] == -1)
-        { // Cas 1, arête 4
+        { // Cas 1, arete 4
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -722,7 +722,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 0 && S[1] == 1 && S[2] == 1 && S[3] == -1)
-        { // Cas 2, arêtes 4 5
+        { // Cas 2, aretes 4 5
           V[0] = -1;
           V[1] = -1;
           V[2] = -1;
@@ -741,7 +741,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == -1 && S[3] == -1)
-        { // Cas 3, arêtes 0 1 2
+        { // Cas 3, aretes 0 1 2
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -752,7 +752,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == -1 && S[3] == 0)
-        { // Cas 2, arêtes 0 1
+        { // Cas 2, aretes 0 1
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -763,7 +763,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == -1 && S[3] == 1)
-        { // Cas 4, arêtes 0 1 4 5
+        { // Cas 4, aretes 0 1 4 5
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -776,7 +776,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == 0 && S[3] == -1)
-        { // Cas 2, arêtes 0 2
+        { // Cas 2, aretes 0 2
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -787,7 +787,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == 0 && S[3] == 0)
-        { // Cas 1, arête 0
+        { // Cas 1, arete 0
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -798,7 +798,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == 0 && S[3] == 1)
-        { // Cas 2, arêtes 0 4
+        { // Cas 2, aretes 0 4
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -811,7 +811,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == 1 && S[3] == -1)
-        { // Cas 4, arêtes 0 2 3 5
+        { // Cas 4, aretes 0 2 3 5
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -822,7 +822,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == 1 && S[3] == 0)
-        { // Cas 2, arêtes 0 3
+        { // Cas 2, aretes 0 3
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -833,7 +833,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == -1 && S[2] == 1 && S[3] == 1)
-        { // Cas 3, arêtes 0 3 4
+        { // Cas 3, aretes 0 3 4
           V[0] = intersectionSegmentPlan(it4, 0);
           V[1] = -1;
           V[2] = -1;
@@ -846,7 +846,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == 0 && S[2] == -1 && S[3] == -1)
-        { // Cas 2, arêtes 1 2
+        { // Cas 2, aretes 1 2
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -857,7 +857,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == 0 && S[2] == -1 && S[3] == 0)
-        { // Cas 1, arête 1
+        { // Cas 1, arete 1
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -868,7 +868,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == 0 && S[2] == -1 && S[3] == 1)
-        { // Cas 2, arêtes 1 5
+        { // Cas 2, aretes 1 5
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -881,7 +881,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == 0 && S[2] == 0 && S[3] == -1)
-        { // Cas 1, arête 2
+        { // Cas 1, arete 2
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -900,7 +900,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == 0 && S[2] == 1 && S[3] == -1)
-        { // Cas 2, arêtes 2 5
+        { // Cas 2, aretes 2 5
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -919,7 +919,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == 1 && S[2] == -1 && S[3] == -1)
-        { // Cas 4, arêtes 1 2 3 4
+        { // Cas 4, aretes 1 2 3 4
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -930,7 +930,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == 1 && S[2] == -1 && S[3] == 0)
-        { // Cas 2, arêtes 1 3
+        { // Cas 2, aretes 1 3
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -941,7 +941,7 @@ int main(int argc, char *argv[])
         }
 
       else if (S[0] == 1 && S[1] == 1 && S[2] == -1 && S[3] == 1)
-        { // Cas 3, arêtes 1 3 5
+        { // Cas 3, aretes 1 3 5
           V[0] = -1;
           V[1] = intersectionSegmentPlan(it4, 1);
           V[2] = -1;
@@ -954,7 +954,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == 1 && S[2] == 0 && S[3] == -1)
-        { // Cas 2, arêtes 2 4
+        { // Cas 2, aretes 2 4
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -973,7 +973,7 @@ int main(int argc, char *argv[])
       // -------------------------------------------------------------------
 
       else if (S[0] == 1 && S[1] == 1 && S[2] == 1 && S[3] == -1)
-        { // Cas 3, arêtes 2 4 5
+        { // Cas 3, aretes 2 4 5
           V[0] = -1;
           V[1] = -1;
           V[2] = intersectionSegmentPlan(it4, 2);
@@ -1022,10 +1022,10 @@ int main(int argc, char *argv[])
   MAILLAGE2->nombreMaillesMaillage = MAILLAGE1->nombreMaillesMaillage + cptNouvellesMailles[TETRA4]
       + cptNouvellesMailles[PYRAM5] + cptNouvellesMailles[PENTA6];
 
-  // ---------- Coordonnées
-  // Optimisation de la mémoire au détriment du temps
+  // ---------- Coordonnees
+  // Optimisation de la memoire au detriment du temps
 
-  // Héritage des coordonnées MAILLAGE1
+  // Heritage des coordonnees MAILLAGE1
   MAILLAGE2->XX = (float*) malloc(sizeof(float) * MAILLAGE2->nombreNoeudsMaillage);
   for (int i = 0; i < MAILLAGE1->nombreNoeudsMaillage; i++)
     *(MAILLAGE2->XX + i) = *(MAILLAGE1->XX + i);
@@ -1039,7 +1039,7 @@ int main(int argc, char *argv[])
     *(MAILLAGE2->ZZ + i) = *(MAILLAGE1->ZZ + i);
   free(MAILLAGE1->ZZ);
 
-  // Coordonnées des noeuds créés
+  // Coordonnees des noeuds crees
   for (int i = 0; i < MAILLAGE2->nombreNoeudsMaillage - MAILLAGE1->nombreNoeudsMaillage; i++)
     {
       *(MAILLAGE2->XX + MAILLAGE1->nombreNoeudsMaillage + i) = newXX[i];
@@ -1061,7 +1061,7 @@ int main(int argc, char *argv[])
         }
       else
         {
-          // Pour les types TETRA4 PYRAM5 PENTA6 on recopie CNX1 et on ajoute à la suite les newCNX
+          // Pour les types TETRA4 PYRAM5 PENTA6 on recopie CNX1 et on ajoute a la suite les newCNX
           // cout << "Legacy " << tm << " effectif " << MAILLAGE1->EFFECTIFS_TYPES[tm] << endl;
           int tailleType = Nnoeuds(tm);
 

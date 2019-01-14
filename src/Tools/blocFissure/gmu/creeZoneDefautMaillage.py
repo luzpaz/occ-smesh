@@ -13,21 +13,21 @@ from .fissError import fissError
 def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
                            nomZones, coordsNoeudsFissure):
   """
-  Identification de la zone à remailler, opérations sur le maillage
+  Identification de la zone a remailler, operations sur le maillage
   de l'objet sain.
-  La zone à remailler est définie à partir d'un objet géométrique
-  ou à partir d'un jeu de points et d'une distance d'influence.
+  La zone a remailler est definie a partir d'un objet geometrique
+  ou a partir d'un jeu de points et d'une distance d'influence.
   @param maillagesSains : (le maillage de l'objet initial, booleen isHexa)
-  @param shapeDefaut : objet géométrique représentant la fissure
+  @param shapeDefaut : objet geometrique representant la fissure
   (selon les cas, un point central, ou une shape plus complexe,
   dont on ne garde que les vertices)
-  @param tailleDefaut : distance d'influence définissant la zone à remailler:
-  tous les éléments du maillage initial qui pénètrent dans cette zone
-  sont détectés
-  @param nomZones : préfixe des noms de groupes créés dans le maillage initial. S'il y a un groupe de noeuds
-  @coordsNoeudsFissure : jeu de points donné par une liste (x1,y1,z1, x2,y2,z2, ...)
+  @param tailleDefaut : distance d'influence definissant la zone a remailler:
+  tous les elements du maillage initial qui penetrent dans cette zone
+  sont detectes
+  @param nomZones : prefixe des noms de groupes crees dans le maillage initial. S'il y a un groupe de noeuds
+  @coordsNoeudsFissure : jeu de points donne par une liste (x1,y1,z1, x2,y2,z2, ...)
   @return (origShapes, verticesShapes, dmoyen) liste id subShapes,
-  listes noeuds de bord, longueur arête moyenne bord
+  listes noeuds de bord, longueur arete moyenne bord
   """
   logging.info("start")
   
@@ -41,8 +41,8 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
   origShapes = []
   verticesShapes = []
 
-  cumul = 0 # somme des distances carrées entre point ordonnés (taille des arêtes)
-  nb = 0    # nombre d'arêtes évaluées
+  cumul = 0 # somme des distances carrees entre point ordonnes (taille des aretes)
+  nb = 0    # nombre d'aretes evaluees
 
   for aList in lists:
     aShape = aList[0]
@@ -63,11 +63,11 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
     pass
 
   if (nb == 0) :
-    texte = "La zone à remailler n'est pas détectée correctement.<br>"
+    texte = "La zone a remailler n'est pas detectee correctement.<br>"
     texte += "Cause possible :<ul>"
     texte += "<li>La distance d'influence est trop petite. "
-    texte += "L'ordre de grandeur minimal correspond à la taille des mailles du maillage sain dans la zone à remailler.</li></ul>"
+    texte += "L'ordre de grandeur minimal correspond a la taille des mailles du maillage sain dans la zone a remailler.</li></ul>"
     raise fissError(traceback.extract_stack(),texte)
 
-  dmoyen = math.sqrt(cumul/nb) # ~ taille de l'arête moyenne du maillage global
+  dmoyen = math.sqrt(cumul/nb) # ~ taille de l'arete moyenne du maillage global
   return origShapes, verticesShapes, dmoyen

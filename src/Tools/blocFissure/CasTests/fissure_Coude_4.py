@@ -11,7 +11,7 @@ class fissure_Coude_4(fissure_Coude):
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
     """
-    Paramètres géométriques du tuyau coudé sain:
+    Parametres geometriques du tuyau coude sain:
     angleCoude
     r_cintr
     l_tube_p1
@@ -38,12 +38,12 @@ class fissure_Coude_4(fissure_Coude):
 # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure
-    profondeur  : 0 < profondeur <= épaisseur
+    parametres de la fissure
+    profondeur  : 0 < profondeur <= epaisseur
     azimut      : entre 0 et 360°
     alpha       : 0 < alpha < angleCoude
     longueur    : <=2*profondeur ==> ellipse, >2*profondeur = fissure longue
-    orientation : 0° : longitudinale, 90° : circonférentielle, autre : uniquement fissures elliptiques
+    orientation : 0° : longitudinale, 90° : circonferentielle, autre : uniquement fissures elliptiques
     externe     : True : fissure face externe, False : fissure face interne
     """
     print("setParamShapeFissure", self.nomCas)

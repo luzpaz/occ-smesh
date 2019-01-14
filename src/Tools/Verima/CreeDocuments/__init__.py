@@ -19,5 +19,5 @@
 #
 """
     Ce package contient les fonctionnalites  necessaires
-    pour l'acquisition des données
+    pour l'acquisition des donnees
 """

@@ -16,12 +16,12 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
                 aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords,
                 nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle, nbsegFis, dmoyen, lensegEllipsoide):
   """
-  Maillage du bloc partitionné
+  Maillage du bloc partitionne
   TODO: a completer
   """
   logging.info('start')
 
-  # --- edges de bord à respecter
+  # --- edges de bord a respecter
 
   aFilterManager = smesh.CreateFilterManager()
   nbAdded, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])

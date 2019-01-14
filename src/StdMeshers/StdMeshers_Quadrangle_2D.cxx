@@ -1842,10 +1842,10 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (FaceQuadStruct::Ptr quad)
   if ( !quad->uv_grid.empty() )
     return true;
 
-  // Algorithme décrit dans "Génération automatique de maillages"
+  // Algorithme decrit dans "Generation automatique de maillages"
   // P.L. GEORGE, MASSON, § 6.4.1 p. 84-85
-  // traitement dans le domaine paramétrique 2d u,v
-  // transport - projection sur le carré unité
+  // traitement dans le domaine parametrique 2d u,v
+  // transport - projection sur le carre unite
 
   //      max             min                    0     x1     1
   //     |<----north-2-------^                a3 -------------> a2

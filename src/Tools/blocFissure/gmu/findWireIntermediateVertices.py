@@ -11,8 +11,8 @@ from . import initLog
 
 def findWireIntermediateVertices(aWire, getNormals=False):
   """
-  trouver les vertices d'un wire qui ne sont pas aux extremités
-  calcul optionnel des tangentes. Attention à la tolérance qui peut être élevée (> 0.001)
+  trouver les vertices d'un wire qui ne sont pas aux extremites
+  calcul optionnel des tangentes. Attention a la tolerance qui peut etre elevee (> 0.001)
   """
   logging.info("start")
   edges = geompy.ExtractShapes(aWire, geompy.ShapeType["EDGE"], False)

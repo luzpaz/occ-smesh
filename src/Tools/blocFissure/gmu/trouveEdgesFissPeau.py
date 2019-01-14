@@ -9,7 +9,7 @@ from . import initLog
 
 def trouveEdgesFissPeau(facesInside, facesOnside, edgesPipeIn, edgesFondIn, partitionPeauFissFond, edgesFissExtPeau):
   """
-  pour les faces de peau sans extremité débouchante de fissure, il faut recenser les edges de fissure sur la face de peau
+  pour les faces de peau sans extremite debouchante de fissure, il faut recenser les edges de fissure sur la face de peau
   """
   logging.info('start')
   

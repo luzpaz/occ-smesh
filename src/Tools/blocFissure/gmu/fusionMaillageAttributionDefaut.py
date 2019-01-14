@@ -18,11 +18,11 @@ from .listOfExtraFunctions import createNewMeshesFromCorner
 from .listOfExtraFunctions import createLinesFromMesh
 
 # -----------------------------------------------------------------------------
-# --- groupe de quadrangles de face transformé en face géométrique par filling
+# --- groupe de quadrangles de face transforme en face geometrique par filling
 
 def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible, zoneDefaut_skin, shapeDefaut, listOfCorners):
     """ """
-    # TODO: rédiger la docstring
+    # TODO: rediger la docstring
     
     logging.info("start")
     
@@ -31,7 +31,7 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
     maillagesNonCoupes = []
     maillagesCoupes = []
         
-    # On crée une liste contenant le maillage de chaque face.
+    # On cree une liste contenant le maillage de chaque face.
     listOfNewMeshes = createNewMeshesFromCorner(maillageDefautCible, listOfCorners)
     
     i = 0
@@ -39,8 +39,8 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
         lines = createLinesFromMesh(listOfNewMeshes[i])
         setOfLines = []
         for line in lines:
-            # On possède l'information 'ID' de chaque noeud composant chaque
-            # ligne de la face. A partir de l'ID, on crée un vertex. Un
+            # On possede l'information 'ID' de chaque noeud composant chaque
+            # ligne de la face. A partir de l'ID, on cree un vertex. Un
             # ensemble de vertices constitue une ligne. Un ensemble de lignes
             # constitue la face.
             tmpCoords = [maillageDefautCible.GetNodeXYZ(node) for node in line]
@@ -49,7 +49,7 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
             setOfLines.append(line)
         
         # A partir des lignes de la face,
-        # on recrée un objet GEOM temporaire par filling.
+        # on recree un objet GEOM temporaire par filling.
         filling = geompy.MakeFilling(geompy.MakeCompound(setOfLines), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
         #logging.debug("face de filling")
         #geomPublish(initLog.debug, filling, 'filling_{0}'.format(i + 1))

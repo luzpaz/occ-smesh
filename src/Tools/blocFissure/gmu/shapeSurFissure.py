@@ -7,7 +7,7 @@ from .geomsmesh import geomPublishInFather
 from . import initLog
 
 # -----------------------------------------------------------------------------
-# --- construction d'une shape de dectection des éléments à modifier suite à la la duplication des noeuds de la face fissure (d'un coté de la face)
+# --- construction d'une shape de dectection des elements a modifier suite a la la duplication des noeuds de la face fissure (d'un cote de la face)
 
 def shapeSurFissure(facesFissure):
   """

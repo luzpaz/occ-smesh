@@ -131,7 +131,7 @@
        <item>
         <widget class="QPushButton" name="PBGroupesRef">
          <property name="text">
-          <string>Table Groupes Référence</string>
+          <string>Table Groupes Reference</string>
          </property>
         </widget>
        </item>

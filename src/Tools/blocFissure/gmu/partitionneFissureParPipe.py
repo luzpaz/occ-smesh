@@ -13,11 +13,11 @@ from .fissError import fissError
 
 def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
   """
-  pipe de fond de fissure, prolongé, partition face fissure par pipe
+  pipe de fond de fissure, prolonge, partition face fissure par pipe
   identification des edges communes pipe et face fissure
   """
   logging.info('start')
-  shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
+  shapeDefaut       = shapesFissure[0] # faces de fissure, debordant
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
   centreFondFiss    = elementsDefaut[15]
   tgtCentre         = elementsDefaut[16]
@@ -32,13 +32,13 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
   extrem, norms = findWireEndVertices(fondFiss, True)
   logging.debug("extrem: %s, norm: %s",extrem, norms)
   cercle = geompy.MakeCircle(extrem[0], norms[0], rayonPipe)
-  cercle = geompy.MakeRotation(cercle, norms[0], math.pi/3.0 ) # éviter d'avoir l'arête de couture du pipe presque confondue avec la face fissure
+  cercle = geompy.MakeRotation(cercle, norms[0], math.pi/3.0 ) # eviter d'avoir l'arete de couture du pipe presque confondue avec la face fissure
   geomPublish(initLog.debug, cercle, 'cercle')
   fondFissProlonge = prolongeWire(fondFiss, extrem, norms, 2*rayonPipe)
   try:
     pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
   except:
-    texte = "génération du pipe le long de la ligne de fond de fissure prolongée impossible. "
+    texte = "generation du pipe le long de la ligne de fond de fissure prolongee impossible. "
     texte += "Cause possible : la ligne s'autointersecte lorsqu'on la prolonge."
     raise fissError(traceback.extract_stack(),texte)
   geomPublish(initLog.debug, pipeFiss, 'pipeFiss')

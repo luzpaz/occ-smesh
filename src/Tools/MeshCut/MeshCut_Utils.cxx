@@ -52,13 +52,13 @@ void MESHCUT::ERREUR(const char* msg)
 
 char* MESHCUT::string2char(std::string str)
 {
-  // créer le buffer pour copier la chaîne
+  // creer le buffer pour copier la chaine
   size_t size = str.size() + 1;
   char* buffer = new char[size];
-  // copier la chaîne
+  // copier la chaine
   strncpy(buffer, str.c_str(), size);
 
-  // libérer la mémoire
+  // liberer la memoire
   //delete [] buffer;
 
   return buffer;
@@ -498,15 +498,15 @@ std::string MESHCUT::ASTER8(std::string s)
 }
 
 /*!
- *  Distance à laquelle doit se tenir l'observateur sur un axe
- *  pour voir sous 90° un objet centré de dimensions a et b selon les deux autres axes.
+ *  Distance a laquelle doit se tenir l'observateur sur un axe
+ *  pour voir sous 90° un objet centre de dimensions a et b selon les deux autres axes.
  *  Si on ne tient pas compte de la dimension de l'objet selon l'axe choisi,
  *  la formule d_obs=max(a,b)/2 donne la cote
  *  qui permet de voir l'objet plat dans un angle de 90°.
  *  A cela il faut ajouter la dimension de l'objet selon l'axe d'observation = c.
  *
- *  @param a dimensions de l'objet selon un des axes normal à l'axe d'observation
- *  @param b dimensions de l'objet selon l'autre axe normal à l'axe d'observation
+ *  @param a dimensions de l'objet selon un des axes normal a l'axe d'observation
+ *  @param b dimensions de l'objet selon l'autre axe normal a l'axe d'observation
  *  @param c est la dimension de l'objet selon l'axe d'observation
  */
 float MESHCUT::dObservateur(float a, float b, float c)
@@ -541,7 +541,7 @@ med_geometry_type MESHCUT::InstanceMGE(TYPE_MAILLE TYPE)
   {
     case POI1:
       typeBanaliseMED = MED_POINT1;
-      break; // Attention, piège !
+      break; // Attention, piege !
     case SEG2:
       typeBanaliseMED = MED_SEG2;
       break;
@@ -568,10 +568,10 @@ med_geometry_type MESHCUT::InstanceMGE(TYPE_MAILLE TYPE)
       break;
     case PYRAM5:
       typeBanaliseMED = MED_PYRA5;
-      break; // Attention, piège !
+      break; // Attention, piege !
     case PYRAM13:
       typeBanaliseMED = MED_PYRA13;
-      break; // Attention, piège !
+      break; // Attention, piege !
     case PENTA6:
       typeBanaliseMED = MED_PENTA6;
       break;
@@ -924,7 +924,7 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
 
       if (debug)
         {
-          cout << endl << "       Liste des valeurs du champ brut aux 3 premiers éléments:" << endl;
+          cout << endl << "       Liste des valeurs du champ brut aux 3 premiers elements:" << endl;
           for (imaille = 0; imaille < std::min(nmailles, 3); imaille++)
             {
               cout << "         Maille " << imaille << endl;
@@ -977,8 +977,8 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
               cout << "********************************************************************" << endl;
               cout << endl;
               cout << "   Champ: " << (string) nomChampMoy << endl;
-              cout << "   Géométrie: " << MGE2string(MGE) << endl;
-              cout << "   Pas de temps " << ipt << " ignoré" << endl;
+              cout << "   Geometrie: " << MGE2string(MGE) << endl;
+              cout << "   Pas de temps " << ipt << " ignore" << endl;
               cout << endl << endl;
               continue;
             }
@@ -986,10 +986,10 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
           if (debug)
             cout << "    Writing mean values in new field: OK " << endl;
 
-          // Restitution du champ moyenné
+          // Restitution du champ moyenne
           if (debug)
             {
-              cout << endl << "       Liste des valeurs du champ moyenné aux 3 premiers éléments:" << endl;
+              cout << endl << "       Liste des valeurs du champ moyenne aux 3 premiers elements:" << endl;
               for (imaille = 0; imaille < min(nmailles, 3); imaille++)
                 {
                   cout << "         Maille " << imaille << endl;
@@ -1033,7 +1033,7 @@ float MESHCUT::distance2(float x1, float y1, float z1, float x2, float y2, float
 }
 
 /*!
- *  Conversion HL-MED d'une table de connectivités
+ *  Conversion HL-MED d'une table de connectivites
  */
 void MESHCUT::conversionCNX(int *CNXtm, TYPE_MAILLE tm, int N)
 {

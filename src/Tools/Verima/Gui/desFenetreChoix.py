@@ -91,7 +91,7 @@ class Ui_Choix(object):
         self.PBMaillage.setText(_translate("Choix", "Table Maillages"))
         self.PBMachine.setText(_translate("Choix", "Table Machines"))
         self.PBVersion.setText(_translate("Choix", "Table Versions"))
-        self.PBGroupesRef.setText(_translate("Choix", "Table Groupes Référence"))
+        self.PBGroupesRef.setText(_translate("Choix", "Table Groupes Reference"))
 
 
 if __name__ == "__main__":

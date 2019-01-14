@@ -4,7 +4,7 @@ import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- subShapes communes à deux listes
+# --- subShapes communes a deux listes
 
 def commonSubShapes(obj, sub1, sub2):
   """

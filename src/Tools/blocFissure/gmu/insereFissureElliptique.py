@@ -108,7 +108,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
   #geomPublish(initLog.debug,  plane1, 'plane1' )
   #geomPublish(initLog.debug,  ellipsoide1, 'ellipsoide1' )
 
-  # --- partition du bloc défaut par génératrice, tore et plan fissure
+  # --- partition du bloc defaut par generatrice, tore et plan fissure
   if step == 7:
     return None
 
@@ -118,7 +118,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
     partitionBlocDefaut(extrusionDefaut, facesDefaut, gener1, pipe1,
                         facefis1, ellipsoide1)
   if not isHexa:
-    edgesBords = None # maillage sain hexa ==> filling, et maillage edges Bords imposés du maillage sain
+    edgesBords = None # maillage sain hexa ==> filling, et maillage edges Bords imposes du maillage sain
 
   # --- TORE
   # --- faces toriques du tore
@@ -139,7 +139,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
 
   [diams, circles, geners] = propagateTore(tore)
 
-  # --- tri par longueur des 3 génératrices
+  # --- tri par longueur des 3 generatrices
   if step == 11:
     return None
 
@@ -159,7 +159,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
   [blocFaceFiss, blocFaceTore1, blocFaceTore2] = \
     facesToreInBloc(ellipsoidep, facefissoutore, facetore1, facetore2)
 
-  # --- identification des shapes modifiées par la duplication des noeuds de la face fissure (d'un coté de la face)
+  # --- identification des shapes modifiees par la duplication des noeuds de la face fissure (d'un cote de la face)
 
   #shapesAModifier = self.shapesSurFissure(blocPartition, plane1 faceFissure, gencnt)
   if step == 14:

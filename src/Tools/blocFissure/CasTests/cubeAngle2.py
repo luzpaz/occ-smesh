@@ -4,7 +4,7 @@ from .cubeAngle import cubeAngle
 
 class cubeAngle2(cubeAngle):
   """
-  problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
+  probleme de fissure plane coupant 2 faces (angle), debouches normaux, objet plan
   detection d'un probleme de tolerance sur les edges de jonction pipe et face fissure externe 
   """
 
@@ -13,9 +13,9 @@ class cubeAngle2(cubeAngle):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode construitFissureGenerale
+    parametres de la fissure pour methode construitFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
-    rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
+    rayonPipe   : le rayon du pile maille en hexa autour du fond de fissure
     """
     self.shapeFissureParams = dict(lgInfluence = 20,
                                    rayonPipe   = 5)

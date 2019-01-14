@@ -85,7 +85,7 @@ The GUI is a window with mandatory and optional parameters. Optional parameters 
 +------------------------+---------------------------------------------------+
 |**RAYON_TORE**          | Tore radius                                       |
 +------------------------+---------------------------------------------------+
-|/**Arêtes face fissure**| Approximate size of elements on the external face |
+|/**Aretes face fissure**| Approximate size of elements on the external face |
 |                        | of the Box mesh after crack insertion             |
 +------------------------+---------------------------------------------------+
 |/**Distance influence** | Length that defines the criterion to include mesh |
@@ -94,7 +94,7 @@ The GUI is a window with mandatory and optional parameters. Optional parameters 
 
 - **Reset**: clears all the parameters
 
-- **Précédent**: loads the last set of parameters used
+- **Precedent**: loads the last set of parameters used
 
 - **Recharger**: loads a .dic file containing parameters
 

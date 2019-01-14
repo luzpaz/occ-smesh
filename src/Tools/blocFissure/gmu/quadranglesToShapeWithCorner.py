@@ -16,11 +16,11 @@ from .listOfExtraFunctions import createNewMeshesFromCorner
 from .listOfExtraFunctions import createLinesFromMesh
 
 # -----------------------------------------------------------------------------
-# --- groupe de quadrangles de face transformé en face géométrique par filling
+# --- groupe de quadrangles de face transforme en face geometrique par filling
 
 def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, shapeFissureParams, centreFondFiss, listOfCorners):
     """ """
-    # TODO: rédiger la docstring
+    # TODO: rediger la docstring
     
     logging.info("start")
 
@@ -40,19 +40,19 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, shapeFissureParams, cent
     setOfNodes = []
     setOfLines = []
     listOfEdges = []
-    # On crée une liste contenant le maillage de chaque face.
+    # On cree une liste contenant le maillage de chaque face.
     listOfNewMeshes = createNewMeshesFromCorner(meshQuad, listOfCorners)
     for msh in listOfNewMeshes:
-        # On crée une liste de noeuds correspondant aux faces suivant
-        # le modèle liste[face][ligne][noeud].
+        # On cree une liste de noeuds correspondant aux faces suivant
+        # le modele liste[face][ligne][noeud].
         lines = createLinesFromMesh(msh, listOfCorners[0])
         setOfNodes.append(lines)
     
     for face in setOfNodes:
         tmpFace = []
         for line in face:
-            # On possède l'information 'ID' de chaque noeud composant chaque
-            # ligne de chaque face. A partir de l'ID, on crée un vertex. Un
+            # On possede l'information 'ID' de chaque noeud composant chaque
+            # ligne de chaque face. A partir de l'ID, on cree un vertex. Un
             # ensemble de vertices constitue une ligne. Un ensemble de lignes
             # constitue une face.
             tmpCoords = [meshQuad.GetNodeXYZ(node) for node in line]
@@ -63,17 +63,17 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, shapeFissureParams, cent
     
     for i, face in enumerate(setOfLines):
         # A partir des lignes de chaque face,
-        # on recrée un objet GEOM temporaire par filling.
+        # on recree un objet GEOM temporaire par filling.
         filling = geompy.MakeFilling(geompy.MakeCompound(face), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
         geomPublish(initLog.debug, filling, 'filling_{0}'.format(i + 1)) 
         tmpFillings.append(filling)
 
     for face in setOfNodes:
-        # On prend la première ligne qui correspond aux bords partagés
+        # On prend la premiere ligne qui correspond aux bords partages
         listOfEdges.append(face[0])
     
     for edge in listOfEdges:
-        # On utilise les points de bords pour créer des aretes vives
+        # On utilise les points de bords pour creer des aretes vives
         tmpCoords = [meshQuad.GetNodeXYZ(node) for node in list(edge)]
         tmpPoints = [geompy.MakeVertex(val[0], val[1], val[2]) for val in tmpCoords]
         line = geompy.MakeInterpol(tmpPoints, False, False)

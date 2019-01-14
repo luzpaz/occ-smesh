@@ -10,17 +10,17 @@ from .triedreBase import triedreBase
 O, OX, OY, OZ = triedreBase()
 
 # -----------------------------------------------------------------------------
-# --- operateur de rotation translation d'un objet centré à l'origine
+# --- operateur de rotation translation d'un objet centre a l'origine
 
 def rotTrans(objet, orientation, point, normal, trace = False):
   """
-  Déplacement par rotation translation d'un objet centré à l'origine, vers un point de la surface de la pièce saine
-  dans laquelle on insère le défaut.
-  @param objet : objet original centré à l'origine (geomObject)
-  @param orientation : rotation selon OX de l'objet original (degrés)
-  @param point : le point qui sera le centre de l'objet déplacé (geomObject), en général sur la surface de la pièce saine
-  @param normal : la normale à la surface de la pièce saine au point central (geomObject)
-  @return trans : objet transformé (geomObject)
+  Deplacement par rotation translation d'un objet centre a l'origine, vers un point de la surface de la piece saine
+  dans laquelle on insere le defaut.
+  @param objet : objet original centre a l'origine (geomObject)
+  @param orientation : rotation selon OX de l'objet original (degres)
+  @param point : le point qui sera le centre de l'objet deplace (geomObject), en general sur la surface de la piece saine
+  @param normal : la normale a la surface de la piece saine au point central (geomObject)
+  @return trans : objet transforme (geomObject)
   """
   logging.info("start")
   planXY = geompy.MakePlaneLCS(None, 2000, 1)

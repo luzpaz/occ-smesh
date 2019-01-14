@@ -11,16 +11,16 @@ from .projettePointSurCourbe import projettePointSurCourbe
 def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
                        ptEdgeFond, ptFisExtPi, edCircPeau, gptsdisks, idisklim, nbsegRad):
   """
-  création des points du maillage du pipe sur la face de peau
+  creation des points du maillage du pipe sur la face de peau
   """
   logging.info('start')
   
   for i, edges in enumerate(listEdges):
-    idf = idFacesDebouchantes[i] # indice de face débouchante (facesPipePeau)
+    idf = idFacesDebouchantes[i] # indice de face debouchante (facesPipePeau)
     if idf >= 0:
       gptdsk = []
       if idf > 0: # idf vaut 0 ou 1
-        idf = -1  # si idf vaut 1, on prend le dernier élément de la liste (1 ou 2 extrémités débouchent sur la face)
+        idf = -1  # si idf vaut 1, on prend le dernier element de la liste (1 ou 2 extremites debouchent sur la face)
       centre = ptEdgeFond[idFillingFromBout[i]][idf]
       name = "centre%d"%idf
       geomPublish(initLog.debug, centre, name)
@@ -36,13 +36,13 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
           bout = extrems[1]
         else:
           bout = extrems[0]
-        # ajustement du point extrémité (bout) sur l'edge circulaire en face de peau
+        # ajustement du point extremite (bout) sur l'edge circulaire en face de peau
         logging.debug("edgesCirc: %s", edgesCirc)
         distEdgeCirc = [(geompy.MinDistance(bout, edgeCirc), k2, edgeCirc) for k2, edgeCirc in enumerate(edgesCirc)]
         distEdgeCirc.sort()
         logging.debug("distEdgeCirc: %s", distEdgeCirc)
         u = projettePointSurCourbe(bout, distEdgeCirc[0][2])
-        if (abs(u) < 0.02) or (abs(1-u) < 0.02): # les points très proches d'une extrémité doivent y être mis précisément.
+        if (abs(u) < 0.02) or (abs(1-u) < 0.02): # les points tres proches d'une extremite doivent y etre mis precisement.
           extrCircs = geompy.ExtractShapes(distEdgeCirc[0][2], geompy.ShapeType["VERTEX"], True)
           if geompy.MinDistance(bout, extrCircs[0]) < geompy.MinDistance(bout, extrCircs[1]):
             bout = extrCircs[0]

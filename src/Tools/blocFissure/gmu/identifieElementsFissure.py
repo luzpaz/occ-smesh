@@ -16,7 +16,7 @@ def identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond,
   """
   # -----------------------------------------------------------------------
   # --- identification edges fond de fissure, edges pipe sur la face de fissure,
-  #     edges prolongées
+  #     edges prolongees
   #     edges internes communes pipe et fissure, points communs edges fissure peau et edges circulaires
   """
 
@@ -50,7 +50,7 @@ def identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond,
       logging.debug("edgePipeIn%s ne coupe pas les faces OnSide", i)
 
   edgesFondIn =[]
-  if len(verticesPipePeau) > 0: # au moins une extrémité du pipe sur cette face de peau  
+  if len(verticesPipePeau) > 0: # au moins une extremite du pipe sur cette face de peau  
     #tmp = geompy.GetSharedShapesMulti([edgesFondC, geompy.MakeCompound(edgesOutside)], geompy.ShapeType["EDGE"])
     #edgesFondOut = [ ed for ed in tmp if geompy.MinDistance(ed, geompy.MakeCompound(facesOnside)) < 1.e-3] 
     tmp = geompy.GetSharedShapesMulti([edgesFondC, geompy.MakeCompound(edgesInside)], geompy.ShapeType["EDGE"])

@@ -23,7 +23,7 @@ O, OX, OY, OZ = triedreBase()
 
 class fissure_Coude(fissureGenerique):
   """
-  problème de fissure du Coude : version de base
+  probleme de fissure du Coude : version de base
   maillage hexa
   """
 
@@ -32,7 +32,7 @@ class fissure_Coude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
     """
-    Paramètres géométriques du tuyau coudé sain:
+    Parametres geometriques du tuyau coude sain:
     angleCoude
     r_cintr
     l_tube_p1
@@ -254,13 +254,13 @@ class fissure_Coude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure
-    profondeur  : 0 < profondeur <= épaisseur
+    parametres de la fissure
+    profondeur  : 0 < profondeur <= epaisseur
     azimut      : entre 0 et 360°
     alpha       : 0 < alpha < angleCoude
     longueur    : <=2*profondeur ==> ellipse, >2*profondeur = fissure longue
-    lgInfluence : distance autour de la shape de fissure a remailler (si 0, pris égal à profondeur. A ajuster selon le maillage)
-    orientation : 0° : longitudinale, 90° : circonférentielle, autre : uniquement fissures elliptiques
+    lgInfluence : distance autour de la shape de fissure a remailler (si 0, pris egal a profondeur. A ajuster selon le maillage)
+    orientation : 0° : longitudinale, 90° : circonferentielle, autre : uniquement fissures elliptiques
     externe     : True : fissure face externe, False : fissure face interne
     """
     logging.info("setParamShapeFissure %s", self.nomCas)

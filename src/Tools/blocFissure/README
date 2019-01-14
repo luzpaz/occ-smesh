@@ -1,38 +1,38 @@
 
-Exécution des exemples et cas tests :
+Execution des exemples et cas tests :
 =====================================
 
 - lancer salome
-- exécuter les instructions suivantes dans la console Python embarquée,
+- executer les instructions suivantes dans la console Python embarquee,
   ou dans une console Python avec l'environnement SALOME (salome shell)
 
-  # les shapes et fichiers med nécessaires aux tests sont créés dans
+  # les shapes et fichiers med necessaires aux tests sont crees dans
     ${SMESH_ROOT_DIR}/lib/python2.7/site-packages/salome/blocFissure/CasTests
 
-  # les maillages fissurés sont écrits dans le répertoire d'exécution.
+  # les maillages fissures sont ecrits dans le repertoire d'execution.
 
 
-# préparation des shapes et fichiers MED
+# preparation des shapes et fichiers MED
 ----------------------------------------
 
 from blocFissure.materielCasTests import genereMateriel
 
-# exécution exemple
+# execution exemple
 -------------------
 
 from blocFissure import exemple
 
-# exécution des cas tests (long: 1/2 heure)
+# execution des cas tests (long: 1/2 heure)
 -------------------------------------------
 
 from blocFissure.CasTests import execution_Cas
 
-# bug et problèmes des cas tests
+# bug et problemes des cas tests
 --------------------------------
 
-Mauvaise détection d'arête vive avec GetInPlace : cas 7, 24
+Mauvaise detection d'arete vive avec GetInPlace : cas 7, 24
 
-Le maillage longitudinal du pipe peut creer des mailles de faible épaisseur
-à une des extrémités : le maillage en triangles des faces de fissure et de peau
-peut être moche au voisinage, de même que les tétraèdres qui s'appuient dessus.
+Le maillage longitudinal du pipe peut creer des mailles de faible epaisseur
+a une des extremites : le maillage en triangles des faces de fissure et de peau
+peut etre moche au voisinage, de meme que les tetraedres qui s'appuient dessus.
 (2,3,16,26 ?)

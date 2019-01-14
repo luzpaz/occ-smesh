@@ -51,7 +51,7 @@ Inputs are similar to those of :ref:`script mode <script>`. GUI is accessible in
 | **repertoire de      | *[string]*                        |  Absolute address of the directory where files are    |
 | travail**            | ex: /home/A123456                 |  saved                                                |
 +----------------------+-----------------------------------+-------------------------------------------------------+
-| **nom résultat**     | *[string]*                        |  Name of the resulting mesh                           |
+| **nom resultat**     | *[string]*                        |  Name of the resulting mesh                           |
 |                      | ex: maillage_fissure              |                                                       |
 +----------------------+-----------------------------------+-------------------------------------------------------+
 | **mode**             | *[choice]*                        |  Verbose mode for Salome messages                     |
@@ -67,7 +67,7 @@ Inputs are similar to those of :ref:`script mode <script>`. GUI is accessible in
 
 - **Reset**: clears all the parameters
 
-- **Précédent**: loads the last set of parameters used
+- **Precedent**: loads the last set of parameters used
 
 - **Recharger**: loads a .dic file containing parameters
 
