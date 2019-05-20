@@ -44,13 +44,13 @@ class QLineEdit;
 class QPushButton;
 class QButtonGroup;
 
-class SMESHGUI;
-class SMESHGUI_IdValidator;
-class SMESHGUI_FilterDlg;
-class SMESH_Actor;
-class SVTK_Selector;
 class LightApp_SelectionMgr;
-class SUIT_SelectionFilter;
+class SMESHGUI;
+class SMESHGUI_FilterDlg;
+class SMESHGUI_IdValidator;
+class SMESH_Actor;
+class SMESH_TypeFilter;
+class SVTK_Selector;
 
 //=================================================================================
 // class    : SMESHGUI_CopyMeshDlg
@@ -90,7 +90,7 @@ private:
   SMESH::SMESH_Mesh_var  myMesh;
   GEOM::GEOM_Object_var  myNewGeometry;
   SMESH_Actor*           myActor;
-  SUIT_SelectionFilter*  myIdSourceFilter;
+  SMESH_TypeFilter*      myIdSourceFilter;
 
   SMESH::SMESH_IDSource_var mySelectedObject;
 

@@ -680,7 +680,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
 
 //=======================================================================
 //function : PublishSubMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theMesh,
