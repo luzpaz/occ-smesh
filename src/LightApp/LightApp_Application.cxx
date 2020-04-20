@@ -2315,7 +2315,6 @@ void LightApp_Application::createPreferences( LightApp_Preferences* pref )
 
   // ... "Language" group <<start>>
   int langGroup = pref->addPreference( tr( "PREF_GROUP_LANGUAGE" ), genTab );
-  INFOS("    langGroup  = "<< langGroup);
   pref->setItemProperty( "columns", 2, langGroup );
   // .... -> application language
   int curLang = pref->addPreference( tr( "PREF_CURRENT_LANGUAGE" ), langGroup,
