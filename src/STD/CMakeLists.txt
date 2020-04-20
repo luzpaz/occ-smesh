@@ -57,6 +57,7 @@ SET(_ts_RESOURCES
   resources/STD_images.ts
   resources/STD_msg_en.ts
   resources/STD_msg_fr.ts
+  resources/STD_msg_es.ts
   resources/STD_msg_ja.ts
 )
 
