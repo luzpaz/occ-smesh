@@ -215,6 +215,7 @@ SET(_ts_RESOURCES
   resources/LightApp_images.ts
   resources/LightApp_msg_en.ts
   resources/LightApp_msg_fr.ts
+  resources/LightApp_msg_es.ts
   resources/LightApp_msg_ja.ts
 )
 
