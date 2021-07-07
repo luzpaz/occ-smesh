@@ -105,6 +105,6 @@ if ret != 0:
     print("Number of volumes     : ", mesh.NbVolumes())
     print("Number of tetrahedrons: ", mesh.NbTetras())
 else:
-    print("probleme when computing the mesh")
+    print("problem when computing the mesh")
 
 salome.sg.updateObjBrowser()

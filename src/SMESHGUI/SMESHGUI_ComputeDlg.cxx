@@ -1576,7 +1576,7 @@ SMESHGUI_ComputeOp::~SMESHGUI_ComputeOp()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: compute mesh
+ * \brief perform its intended action: compute mesh
  */
 //================================================================================
 
@@ -1647,7 +1647,7 @@ LightApp_Dialog* SMESHGUI_PrecomputeOp::dlg() const
 
 //================================================================================
 /*!
- * \brief perform it's intention action: prepare data
+ * \brief perform its intended action: prepare data
  */
 //================================================================================
 
@@ -1731,7 +1731,7 @@ void SMESHGUI_PrecomputeOp::stopOperation()
 
 //================================================================================
 /*!
- * \brief reinitialize dialog after operaiton become active again
+ * \brief reinitialize dialog after operation becomes active again
  */
 //================================================================================
 
@@ -1744,7 +1744,7 @@ void SMESHGUI_PrecomputeOp::resumeOperation()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: reinitialise dialog
+ * \brief perform its intended action: reinitialize dialog
  */
 //================================================================================
 
@@ -1879,7 +1879,7 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject)  theMesh,
 
 //================================================================================
 /*!
- * \brief perform it's intention action: compute mesh
+ * \brief perform its intended action: compute mesh
  */
 //================================================================================
 
@@ -1896,7 +1896,7 @@ void SMESHGUI_PrecomputeOp::onCompute()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: compute mesh
+ * \brief perform its intended action: compute mesh
  */
 //================================================================================
 
@@ -1946,7 +1946,7 @@ void SMESHGUI_PrecomputeOp::onCancel()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: preview mesh
+ * \brief perform its intended action: preview mesh
  */
 //================================================================================
 
@@ -2170,7 +2170,7 @@ SMESHGUI_EvaluateOp::~SMESHGUI_EvaluateOp()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: compute mesh
+ * \brief perform its intended action: compute mesh
  */
 //================================================================================
 

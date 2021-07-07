@@ -3256,7 +3256,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
     }
 
     // search elements to fuse starting from startElem or links of elements
-    // fused earlyer - startLinks
+    // fused earlier - startLinks
     list< SMESH_TLink > startLinks;
     while ( startElem || !startLinks.empty() ) {
       while ( !startElem && !startLinks.empty() ) {

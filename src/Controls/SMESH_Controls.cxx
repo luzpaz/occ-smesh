@@ -1044,7 +1044,7 @@ namespace{
    * 2. Compute the quality of every tetra with the same formula as for the standard quality,
    *    except that the factor for the normalization is not the same because the final goal
    *    is to have a quality equal to 1 for a perfect cube. So the formula is:
-   *    qual = max(lengthes of 6 edges) * (sum of surfaces of 4 faces) / (7.6569*6*volume)
+   *    qual = max(lengths of 6 edges) * (sum of surfaces of 4 faces) / (7.6569*6*volume)
    * 3. The quality of the hexa is the highest value of the qualities of the 24 tetra
    */
   //================================================================================

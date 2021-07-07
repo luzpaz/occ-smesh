@@ -155,7 +155,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     retrieveParams();
     Dlg->show(); // w/o this Dlg blocks selection
     Dlg->resize( Dlg->minimumSizeHint() );
-    Dlg->exec(); // w/o this we cant wait until edition ends when applying a hypo-set
+    Dlg->exec(); // w/o this we can't wait until edition ends when applying a hypo-set
   }
   else {
     emit finished( QDialog::Accepted );

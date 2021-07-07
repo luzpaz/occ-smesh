@@ -105,6 +105,6 @@ if ret != 0:
     print("Number of triangles  : ", mesh.NbTriangles())
     print("Number of volumes    : ", mesh.NbVolumes())
 else:
-    print("probleme when computing the mesh")
+    print("problem when computing the mesh")
 
 salome.sg.updateObjBrowser()

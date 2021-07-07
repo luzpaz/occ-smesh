@@ -88,6 +88,6 @@ try:
                                       'Add a crack in a mesh with Zcracks plug-in',
                                       ZcracksLct)
 except Exception as e:
-  #print 'probleme zcracks'
+  #print 'problem zcracks'
   salome_pluginsmanager.logger.info('ERROR: Zcrack plug-in is unavailable: {}'.format(e))
   pass

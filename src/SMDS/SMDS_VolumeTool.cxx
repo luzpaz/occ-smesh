@@ -1842,7 +1842,7 @@ bool SMDS_VolumeTool::IsFreeFaceAdv( int faceIndex, const SMDS_MeshElement** oth
 //       if ( nbSharedLinks == nbFaceNodes )
 //         return !free; // is not free
 //       if ( nbFaceNodes == 4 ) {
-//         // check traingle parts 1 & 3
+//         // check triangle parts 1 & 3
 //         if ( isShared[1] && isShared[3] )
 //           return !free; // is not free
 //         // check triangle parts 0 & 2;

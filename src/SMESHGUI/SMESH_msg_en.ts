@@ -3087,7 +3087,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
-        <translation>Choosen time step</translation>
+        <translation>Chosen time step</translation>
     </message>
     <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
@@ -3242,7 +3242,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>STATE_HYP_NOTCONFORM</source>
-        <translation>%3 %2D algorithm &quot;%1&quot; would produce not conform mesh: global &quot;Not Conform Mesh Allowed&quot; hypotesis is missing</translation>
+        <translation>%3 %2D algorithm &quot;%1&quot; would produce not conform mesh: global &quot;Not Conform Mesh Allowed&quot; hypothesis is missing</translation>
     </message>
     <message>
         <source>STB_ADV_INFO</source>
@@ -6354,7 +6354,7 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>GROUPCOLOR_ERROR</source>
-        <translation>Color of group can not be undefied
+        <translation>Color of group can not be undefined
 Please enter correct value and try again</translation>
     </message>
     <message>

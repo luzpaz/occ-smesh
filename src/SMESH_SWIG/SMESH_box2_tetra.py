@@ -63,7 +63,7 @@ print("number of Shells in box2 : ", len(subShellList))
 print("number of Faces  in box2 : ", len(subFaceList))
 print("number of Edges  in box2 : ", len(subEdgeList))
 
-# append the tow boxes to make ine shel, referrencing only once
+# append the two boxes to make ine shell, referencing only once
 # the internal interface
 
 shell = geompy.MakePartition([box1, box2])
@@ -136,6 +136,6 @@ if ret != 0:
     print("Number of volumes     : ", mesh.NbVolumes())
     print("Number of tetrahedrons: ", mesh.NbTetras())
 else:
-    print("probleme when computing the mesh")
+    print("problem when computing the mesh")
 
 salome.sg.updateObjBrowser()

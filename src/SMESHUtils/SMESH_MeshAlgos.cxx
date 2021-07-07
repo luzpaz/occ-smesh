@@ -796,7 +796,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
 
   if ( !seamLinks.empty() )
   {
-    // There are internal boundaries touching the outher one,
+    // There are internal boundaries touching the outer one,
     // find all faces of internal boundaries in order to find
     // faces of boundaries of holes, if any.
 
